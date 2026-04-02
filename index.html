@@ -391,7 +391,7 @@ function loadState(){
     var s=localStorage.getItem('scoreMasterData');
     if(s){var d=JSON.parse(s);currentCombined=d.combined||null;appStats=d.stats||{total:0,wins:0,losses:0,pending:0};}
 }
-function saveState(){supabaseClient.setItem('scoreMasterData',JSON.stringify({combined:currentCombined,stats:appStats}));}
+function saveState(){localStorage.setItem('scoreMasterData',JSON.stringify({combined:currentCombined,stats:appStats}));}
 
 window.addEventListener('load',function(){
     setLogos();loadState();
@@ -400,11 +400,47 @@ window.addEventListener('load',function(){
     setTimeout(function(){document.getElementById('splash-screen').classList.add('hidden');setTimeout(function(){document.getElementById('login-screen').classList.add('active');},300);},2500);
 });
 
-function handleLogin(){
-    var e=document.getElementById('login-email').value,p=document.getElementById('login-password').value;
-    if(e&&p){document.getElementById('login-screen').style.opacity='0';setTimeout(function(){document.getElementById('login-screen').classList.remove('active');document.getElementById('login-screen').style.opacity='';document.getElementById('app').classList.add('active');renderCombined();updateStats();},400);}
-    else{document.getElementById('login-error').classList.add('show');setTimeout(function(){document.getElementById('login-error').classList.remove('show');},3000);}
+async function handleLogin() {
+    var email = document.getElementById('login-email').value;
+    var password = document.getElementById('login-password').value;
+
+    if(email && password) {
+        // 1. On demande à Supabase de connecter l'utilisateur
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        if (error) {
+            // Mauvais mot de passe ou email
+            document.getElementById('login-error').classList.add('show');
+            setTimeout(function(){ document.getElementById('login-error').classList.remove('show'); }, 3000);
+            return;
+        }
+
+        // 2. Connexion réussie ! On vérifie s'il est VIP
+        const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('is_vip')
+            .eq('id', data.user.id)
+            .single();
+
+        // On stocke l'info VIP pour l'affichage
+        window.isUserVip = profile ? profile.is_vip : false;
+
+        // 3. On affiche l'application
+        document.getElementById('login-screen').style.opacity = '0';
+        setTimeout(function(){ 
+            document.getElementById('login-screen').classList.remove('active');
+            document.getElementById('login-screen').style.opacity = '';
+            document.getElementById('app').classList.add('active');
+            
+            // On charge les données maintenant qu'on est connecté (fonction à ajouter ensuite)
+            // chargerDonnees(); 
+        }, 400);
+    }
 }
+   
 document.getElementById('login-password').addEventListener('keypress',function(e){if(e.key==='Enter')handleLogin();});
 
 function navigateTo(page){
