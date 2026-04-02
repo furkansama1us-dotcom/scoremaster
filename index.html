@@ -726,10 +726,8 @@ function promptAdminCode(){
         showToast('Accès refusé. Vous n\'êtes pas administrateur.', true);
     }
 }
-<div class="admin-section"><button class="admin-submit-btn" onclick="publishCombined()"><i class="fas fa-paper-plane"></i> Publier le combiné</button><button class="admin-delete-btn" onclick="deleteCombined()"><i class="fas fa-trash-alt"></i> Supprimer le combiné</button></div>
-</div>
+</script>
 
-<!-- 1. COLLEZ LE POPUP ICI (En dehors de la balise script) -->
 <!-- POPUP NON-VIP -->
 <div id="vip-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9500;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;">
     <div style="background:var(--bg-card);padding:30px;border-radius:20px;text-align:center;width:80%;max-width:350px;border:1px solid var(--border-color);transform:scale(0.9);transition:transform 0.3s;animation: splashFadeIn 0.3s forwards;">
@@ -741,9 +739,5 @@ function promptAdminCode(){
     </div>
 </div>
 
-<!-- 2. LA BALISE SCRIPT COMMENCE EN DESSOUS -->
-<script>
-function setLogos(){
-</script>
 </body>
 </html>
