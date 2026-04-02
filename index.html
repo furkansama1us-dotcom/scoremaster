@@ -294,10 +294,13 @@
         <div class="login-form-title" id="title-username" style="display:none;">Pseudo</div>
         <input type="text" class="login-input" id="login-username" placeholder="Votre pseudo" style="display:none;">
         
-        <div class="login-form-title">Mot de passe</div>
-<div style="position: relative;">
-    <input type="password" class="login-input" id="login-password" placeholder="••••••••••••" style="padding-right: 45px; margin-bottom: 20px;">
-    <i class="fas fa-eye" id="togglePassword" style="position: absolute; right: 15px; top: 15px; color: var(--text-gray); cursor: pointer; font-size: 16px;"></i>
+       <div class="login-form-title">Mot de passe</div>
+<div style="position: relative; width: 100%;">
+    <!-- Le champ mot de passe avec un espace à droite pour l'icône -->
+    <input type="password" class="login-input" id="login-password" placeholder="••••••••••••" style="padding-right: 45px; margin-bottom: 20px; width: 100%;">
+    
+    <!-- L'icône de l'œil positionnée par-dessus l'input -->
+    <i class="fas fa-eye" id="togglePassword" style="position: absolute; right: 15px; top: 15px; color: var(--text-gray); cursor: pointer; font-size: 16px; z-index: 10;"></i>
 </div>
         
         <button class="login-btn" id="btn-action" onclick="handleAuth()">Connexion</button>
@@ -427,17 +430,13 @@ document.addEventListener('click', function(e) {
     if (e.target && e.target.id === 'togglePassword') {
         const passwordInput = document.getElementById('login-password');
         const isPassword = passwordInput.getAttribute('type') === 'password';
-        
-        // On change le type : de password à text pour voir, et inversement
         passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
-        
-        // On change l'icône (œil ouvert / œil barré)
         e.target.classList.toggle('fa-eye');
         e.target.classList.toggle('fa-eye-slash');
     }
 });
 
-// 2. Ta nouvelle fonction handleAuth (Gestion de l'Inscription, Connexion et Pseudo)
+// 2. Fonction handleAuth corrigée (Anti-Bug)
 async function handleAuth() {
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
@@ -451,11 +450,9 @@ async function handleAuth() {
     try {
         let result;
         if (isSignUpMode) {
-            // --- INSCRIPTION ---
             result = await supabaseClient.auth.signUp({ email, password });
             if (result.error) throw result.error;
             
-            // On crée le profil dans la table avec le pseudo choisi
             await supabaseClient.from('profiles').insert([{
                 id: result.data.user.id,
                 email: email,
@@ -468,12 +465,10 @@ async function handleAuth() {
             toggleAuthMode();
             return;
         } else {
-            // --- CONNEXION ---
             result = await supabaseClient.auth.signInWithPassword({ email, password });
             if (result.error) throw result.error;
         }
 
-        // Récupération des droits et du Pseudo de l'utilisateur
         const { data: profile } = await supabaseClient
             .from('profiles')
             .select('is_vip, is_admin, username')
@@ -483,20 +478,19 @@ async function handleAuth() {
         window.isUserVip = profile ? profile.is_vip : false;
         window.isAdmin = profile ? profile.is_admin : false;
 
-        // MISE À JOUR DU PSEUDO : On remplace "Admin SM" par le pseudo réel
+        // PROTECTION ANTI-ECRAN NOIR : On vérifie si l'élément existe avant de le modifier
         let finalUsername = (profile && profile.username) ? profile.username : "Utilisateur";
+        const homeName = document.querySelector('.home-username');
+        if (homeName) homeName.innerHTML = finalUsername + ' <i class="fas fa-chevron-down"></i>';
         
-        const homeNameEl = document.querySelector('.home-username');
-        if (homeNameEl) homeNameEl.innerHTML = finalUsername + ' <i class="fas fa-chevron-down"></i>';
-        
-        const vipNameEl = document.querySelector('.vip-user-info h3');
-        if (vipNameEl) vipNameEl.textContent = finalUsername;
+        const vipName = document.querySelector('.vip-user-info h3');
+        if (vipName) vipName.textContent = finalUsername;
 
-        // Transition vers l'application
+        // Passage à l'application
         document.getElementById('login-screen').style.opacity = '0';
         setTimeout(() => { 
             document.getElementById('login-screen').classList.remove('active');
-            document.getElementById('app').classList.add('active');
+            document.getElementById('app').classList.add('active'); // On affiche l'app
             chargerDonnees(); 
         }, 400);
 
@@ -504,6 +498,11 @@ async function handleAuth() {
         showToast(err.message || 'Erreur d\'authentification', true);
     }
 }
+
+// 3. Correction de l'écouteur "Entrée" (Il appelait handleLogin au lieu de handleAuth)
+document.getElementById('login-password').addEventListener('keypress', function(e) { 
+    if(e.key === 'Enter') handleAuth(); 
+});
    
 async function chargerDonnees() {
     try {
