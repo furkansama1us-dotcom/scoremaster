@@ -412,22 +412,20 @@ async function handleLogin() {
         });
 
         if (error) {
-            // Mauvais mot de passe ou email
             document.getElementById('login-error').classList.add('show');
             setTimeout(function(){ document.getElementById('login-error').classList.remove('show'); }, 3000);
             return;
         }
 
-       // 2. Connexion réussie ! On vérifie s'il est VIP ET s'il est Admin
+        // 2. Connexion réussie ! On vérifie s'il est VIP ET s'il est Admin
         const { data: profile } = await supabaseClient
             .from('profiles')
-            .select('is_vip, is_admin') // <-- IL MANQUAIT ", is_admin" ICI !
+            .select('is_vip, is_admin')
             .eq('id', data.user.id)
             .single();
 
-        // On stocke les infos pour l'affichage et les droits
         window.isUserVip = profile ? profile.is_vip : false;
-        window.isAdmin = profile ? profile.is_admin : false; // <-- IL MANQUAIT CETTE LIGNE !
+        window.isAdmin = profile ? profile.is_admin : false;
 
         // 3. On affiche l'application
         document.getElementById('login-screen').style.opacity = '0';
@@ -436,8 +434,7 @@ async function handleLogin() {
             document.getElementById('login-screen').style.opacity = '';
             document.getElementById('app').classList.add('active');
             
-            // On charge les données maintenant qu'on est connecté (fonction à ajouter ensuite)
-            // chargerDonnees(); 
+            chargerDonnees(); 
         }, 400);
     }
 }
