@@ -477,21 +477,24 @@ async function handleAuth() {
         window.isUserVip = profile ? profile.is_vip : false;
         window.isAdmin = profile ? profile.is_admin : false;
 
-        // 🌟 LA MAGIE EST ICI : On remplace "Admin SM" par le vrai pseudo !
+       // ... (après la récupération du profil)
+        window.isUserVip = profile ? profile.is_vip : false;
+        window.isAdmin = profile ? profile.is_admin : false;
+
         let displayUsername = (profile && profile.username) ? profile.username : 'Utilisateur';
         
-        // Sur la page d'accueil
-        document.querySelector('.home-username').innerHTML = displayUsername + ' <i class="fas fa-chevron-down"></i>';
-        // Dans l'espace VIP
-        document.querySelector('.vip-user-info h3').textContent = displayUsername;
+        // On met à jour les pseudos seulement si les éléments existent
+        const homeUser = document.querySelector('.home-username');
+        if(homeUser) homeUser.innerHTML = displayUsername + ' <i class="fas fa-chevron-down"></i>';
+        
+        const vipUser = document.querySelector('.vip-user-info h3');
+        if(vipUser) vipUser.textContent = displayUsername;
 
-        // On affiche l'application
+        // Transition vers l'app
         document.getElementById('login-screen').style.opacity = '0';
         setTimeout(function(){ 
             document.getElementById('login-screen').classList.remove('active');
-            document.getElementById('login-screen').style.opacity = '';
-            document.getElementById('app').classList.add('active');
-            
+            document.getElementById('app').classList.add('active'); // Vérifie que l'ID est bien "app"
             chargerDonnees(); 
         }, 400);
     }
