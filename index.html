@@ -295,7 +295,10 @@
         <input type="text" class="login-input" id="login-username" placeholder="Votre pseudo" style="display:none;">
         
         <div class="login-form-title">Mot de passe</div>
-        <input type="password" class="login-input" id="login-password" placeholder="••••••••••••">
+<div style="position: relative;">
+    <input type="password" class="login-input" id="login-password" placeholder="••••••••••••" style="padding-right: 45px; margin-bottom: 20px;">
+    <i class="fas fa-eye" id="togglePassword" style="position: absolute; right: 15px; top: 15px; color: var(--text-gray); cursor: pointer; font-size: 16px;"></i>
+</div>
         
         <button class="login-btn" id="btn-action" onclick="handleAuth()">Connexion</button>
         <div class="login-error" id="login-error"><i class="fas fa-exclamation-circle"></i> Identifiants incorrects</div>
@@ -790,6 +793,13 @@ function promptAdminCode(){
         showToast('Accès refusé. Vous n\'êtes pas administrateur.', true);
     }
 }
+   document.getElementById('togglePassword').addEventListener('click', function () {
+    const passwordInput = document.getElementById('login-password');
+    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordInput.setAttribute('type', type);
+    this.classList.toggle('fa-eye');
+    this.classList.toggle('fa-eye-slash');
+});
 </script>
 
 <!-- POPUP NON-VIP -->
