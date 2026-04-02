@@ -280,113 +280,8 @@
    const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-</script>
 
-<div id="splash-screen"><div class="splash-content"><img id="img-splash" alt="ScoreMaster" class="splash-logo-img"><div class="splash-loader"><span></span><span></span><span></span></div></div></div>
-
-<div id="login-screen">
-    <div class="login-header"><img id="img-login" alt="ScoreMaster" class="login-logo-img"></div>
-    <div class="login-form-container">
-        <div class="login-form-title">Email</div>
-        <input type="email" class="login-input" id="login-email" placeholder="Votre email">
-        
-       <!-- Nouveau champ Pseudo (Caché en mode connexion) -->
-        <div class="login-form-title" id="title-username" style="display:none;">Pseudo</div>
-        <input type="text" class="login-input" id="login-username" placeholder="Votre pseudo" style="display:none;">
-        
-       <div class="login-form-title">Mot de passe</div>
-<div style="position: relative; width: 100%;">
-    <!-- Le champ mot de passe avec un espace à droite pour l'icône -->
-    <input type="password" class="login-input" id="login-password" placeholder="••••••••••••" style="padding-right: 45px; margin-bottom: 20px; width: 100%;">
-    
-    <!-- L'icône de l'œil positionnée par-dessus l'input -->
-    <i class="fas fa-eye" id="togglePassword" style="position: absolute; right: 15px; top: 15px; color: var(--text-gray); cursor: pointer; font-size: 16px; z-index: 10;"></i>
-</div>
-        
-        <button class="login-btn" id="btn-action" onclick="handleAuth()">Connexion</button>
-        <div class="login-error" id="login-error"><i class="fas fa-exclamation-circle"></i> Identifiants incorrects</div>
-        
-        <div class="login-options">
-            <a href="#" class="forgot-password" id="toggle-auth" onclick="toggleAuthMode(); return false;">Créer un compte</a>
-            <div class="remember-me"><div class="toggle-switch active" onclick="this.classList.toggle('active')"></div><span>Se souvenir de moi</span></div>
-        </div>
-        
-        <div class="api-badge-login"><i class="fas fa-plug"></i><span>API Betclic connectée</span><div class="api-status-dot"></div></div>
-    </div> <!-- Cette balise ferme proprement login-form-container -->
-
-<div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toast-message"></span></div>
-
-<div id="app">
-    <div class="pages-container">
-        <!-- HOME -->
-        <div class="page active" id="page-home">
-            <div class="home-header fade-in-up delay-1">
-                <div class="home-user"><div class="logo-avatar small" id="avatar-home"></div><div><div class="home-greeting">Bienvenue !</div><div class="home-username">Admin SM <i class="fas fa-chevron-down"></i></div></div></div>
-                <div class="home-notif" onclick="showToast('Pas de nouvelles notifications',true)"><i class="fas fa-bell"></i><div class="notif-dot"></div></div>
-            </div>
-            <div class="search-bar fade-in-up delay-2"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un match..."><i class="fas fa-microphone mic-btn"></i></div>
-            <div class="api-banner fade-in-up delay-2"><div class="api-icon"><i class="fas fa-plug"></i></div><div class="api-info"><div class="api-title">API Betclic connectée <div class="live-dot"></div></div><div class="api-desc">Données en temps réel • Cotes actualisées</div></div><span class="betclic-badge">BETCLIC</span></div>
-            <div class="section-header fade-in-up delay-3"><span class="section-title">Découvrez nos packs !</span><span class="section-more" onclick="navigateTo('packs')">Voir plus</span></div>
-            <div class="packs-scroll">
-                <div class="pack-card fade-in-up delay-3" onclick="navigateTo('packs')"><div class="logo-pack-icon green" id="pack-icon-1"></div><div class="pack-card-info"><div class="pack-card-name">SM S.E Journalier</div><div class="pack-card-tag"><i class="fas fa-circle"></i> Livraison instantanée !</div><div class="pack-card-btn" style="background:var(--green);color:#fff;">Découvrir !</div></div><i class="far fa-heart heart-icon" onclick="event.stopPropagation();this.classList.toggle('liked');this.classList.toggle('far');this.classList.toggle('fas');"></i></div>
-                <div class="pack-card fade-in-up delay-4" onclick="navigateTo('packs')"><div class="logo-pack-icon red" id="pack-icon-2"></div><div class="pack-card-info"><div class="pack-card-name">SM VIP+ (à vie)</div><div class="pack-card-tag"><i class="fas fa-circle"></i> Livraison instantanée !</div><div class="pack-card-btn" style="background:var(--red);color:#fff;">Découvrir !</div></div><i class="far fa-heart heart-icon" onclick="event.stopPropagation();this.classList.toggle('liked');this.classList.toggle('far');this.classList.toggle('fas');"></i></div>
-            </div>
-            <div class="home-vip-section fade-in-up delay-5"><h3>🔥 Dernier Combiné VIP+</h3><div id="home-combined-container"><div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div></div></div>
-            <div class="help-card fade-in-up delay-5"><div class="help-card-icon"><i class="fas fa-comment-dots"></i></div><div class="help-card-info"><div class="help-card-title">Un problème, ou besoin d'aide ?</div><div class="help-card-desc">Pas de panique ! Contactez nous ici !</div></div><i class="fas fa-chevron-right help-card-arrow"></i></div>
-            <div style="height:20px;"></div>
-        </div>
-        <!-- PACKS -->
-        <div class="page" id="page-packs">
-            <div class="page-title-bar"><h2>Nos Packs</h2></div>
-            <div class="packs-page-list">
-                <div class="pack-detail-card"><div class="pack-detail-top"><div class="logo-pack-detail green" id="pack-detail-1"></div><div><div class="pack-detail-name">SM Score Exact Journalier</div><div class="pack-detail-desc">Recevez chaque jour notre meilleur pronostic en score exact avec une analyse détaillée.</div></div></div><div class="pack-detail-features"><div class="pack-feature"><i class="fas fa-check"></i> 1 score exact / jour</div><div class="pack-feature"><i class="fas fa-check"></i> Analyse détaillée</div><div class="pack-feature"><i class="fas fa-check"></i> Support 7j/7</div><div class="pack-feature"><i class="fas fa-check"></i> Notification push</div></div><div class="pack-detail-bottom"><div class="pack-price-container"><span class="price-old">89,99€</span><span class="price-new" style="color:var(--green);">50€</span><span class="price-label">unique</span></div><button class="pack-subscribe-btn" style="background:var(--green);color:#fff;">S'abonner</button></div></div>
-                <div class="pack-detail-card"><div class="pack-detail-top"><div class="logo-pack-detail red" id="pack-detail-2"></div><div><div class="pack-detail-name">SM VIP+ (à vie)</div><div class="pack-detail-desc">Accès illimité et à vie à tous nos pronostics, combinés exclusifs et espace membre VIP+.</div></div></div><div class="pack-detail-features"><div class="pack-feature"><i class="fas fa-check"></i> Accès à vie</div><div class="pack-feature"><i class="fas fa-check"></i> 4 à 5 combinés S.E / semaine</div><div class="pack-feature"><i class="fas fa-check"></i> Espace membre VIP+</div><div class="pack-feature"><i class="fas fa-check"></i> Canal Telegram VIP</div><div class="pack-feature"><i class="fas fa-check"></i> Priorité support</div></div><div class="pack-detail-bottom"><div class="pack-price-container"><span class="price-old">179,99€</span><span class="price-new" style="color:var(--primary-yellow);">99,99€</span><span class="price-label">unique</span></div><button class="pack-subscribe-btn" style="background:var(--red);color:#fff;">S'abonner</button></div></div>
-                <div class="pack-detail-card"><div class="pack-detail-top"><div class="logo-pack-detail blue" id="pack-detail-3"></div><div><div class="pack-detail-name">SM Combiné Hebdo</div><div class="pack-detail-desc">Chaque semaine, recevez un combiné score exact soigneusement sélectionné avec des cotes élevées.</div></div></div><div class="pack-detail-features"><div class="pack-feature"><i class="fas fa-check"></i> 1 combiné S.E / semaine</div><div class="pack-feature"><i class="fas fa-check"></i> Cotes élevées</div><div class="pack-feature"><i class="fas fa-check"></i> Suivi en direct</div><div class="pack-feature"><i class="fas fa-check"></i> Récap hebdomadaire</div></div><div class="pack-detail-bottom"><div class="pack-price-container"><span class="price-old">129,99€</span><span class="price-new" style="color:var(--blue);">69,99€</span><span class="price-label">unique</span></div><button class="pack-subscribe-btn" style="background:var(--blue);color:#fff;">S'abonner</button></div></div>
-            </div>
-            <div style="height:20px;"></div>
-        </div>
-        <!-- CONTACT -->
-        <div class="page" id="page-contact">
-            <div class="page-title-bar"><h2>Contact</h2></div>
-            <div class="contact-page">
-                <a href="https://t.me/scoremasteroff" target="_blank" rel="noopener" class="contact-link"><div class="contact-card"><div class="contact-card-icon telegram"><i class="fab fa-telegram-plane"></i></div><div class="contact-card-info"><h4>Telegram</h4><p>Rejoignez notre canal officiel</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div></a>
-                <div class="contact-card"><div class="contact-card-icon instagram"><i class="fab fa-instagram"></i></div><div class="contact-card-info"><h4>Instagram</h4><p>@scoremaster.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
-                <div class="contact-card"><div class="contact-card-icon twitter"><i class="fab fa-x-twitter"></i></div><div class="contact-card-info"><h4>X (Twitter)</h4><p>@ScoreMasterFR</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
-                <div class="contact-card"><div class="contact-card-icon email"><i class="fas fa-envelope"></i></div><div class="contact-card-info"><h4>Email</h4><p>contact@scoremaster.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
-            </div>
-        </div>
-        <!-- VIP -->
-        <div class="page" id="page-vip">
-            <div class="vip-header"><h2>Espace SM VIP+</h2></div>
-            <div class="vip-profile"><div class="logo-avatar medium" id="avatar-vip"></div><div class="vip-user-info"><h3>Admin SM</h3></div><button class="vip-modify-btn" onclick="promptAdminCode()" style="border-color:transparent;color:transparent;">Modifier</button>
-</div>
-            <div class="vip-notice">Le prochain combiné apparaîtra ci-dessous une fois disponible ! (activez vos notifs !)</div>
-            <div class="api-banner" style="margin:0 20px 15px;"><div class="api-icon"><i class="fas fa-plug"></i></div><div class="api-info"><div class="api-title">API Betclic connectée <div class="live-dot"></div></div><div class="api-desc">Données en temps réel • Cotes actualisées</div></div><span class="betclic-badge">BETCLIC</span></div>
-            <div id="vip-combined-status-bar"></div>
-            <div class="vip-combined-container" id="vip-combined-container"><div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.<br><span style="font-size:12px;color:var(--text-gray);">Revenez bientôt !</span></div></div>
-            <div class="help-card" style="margin:0 20px 20px;"><div class="help-card-icon"><i class="fas fa-comment-dots"></i></div><div class="help-card-info"><div class="help-card-title">Un problème, ou besoin d'aide ?</div><div class="help-card-desc">Pas de panique ! Contactez nous ici !</div></div><i class="fas fa-chevron-right help-card-arrow"></i></div>
-        </div>
-    </div>
-    <div class="bottom-nav">
-        <div class="nav-item active" onclick="navigateTo('home')"><i class="fas fa-home"></i><span>Accueil</span></div>
-        <div class="nav-item" onclick="navigateTo('packs')"><i class="fas fa-clone"></i><span>Nos packs</span></div>
-        <div class="nav-item" onclick="navigateTo('contact')"><i class="fas fa-envelope"></i><span>Contact</span></div>
-        <div class="nav-item vip" onclick="navigateTo('vip')"><i class="fas fa-user-shield"></i><span>Espace<br>SM VIP+</span></div>
-    </div>
-</div>
-
-<!-- ADMIN -->
-<div id="admin-page">
-    <div class="admin-header"><h2><img id="img-admin" alt="SM" class="admin-header-logo"> Panel Admin</h2><button class="admin-close" onclick="closeAdmin()"><i class="fas fa-times"></i></button></div>
-    <div class="admin-section"><div class="admin-stats"><div class="admin-stat-card yellow"><i class="fas fa-futbol"></i><span class="stat-value" id="stat-total">0</span><div class="stat-label">Combinés publiés</div></div><div class="admin-stat-card green"><i class="fas fa-check-circle"></i><span class="stat-value" id="stat-wins">0</span><div class="stat-label">Gagnés</div></div><div class="admin-stat-card blue"><i class="fas fa-clock"></i><span class="stat-value" id="stat-pending">0</span><div class="stat-label">En cours</div></div><div class="admin-stat-card red"><i class="fas fa-times-circle"></i><span class="stat-value" id="stat-losses">0</span><div class="stat-label">Perdus</div></div></div></div>
-    <div class="admin-section"><div class="admin-section-title"><i class="fas fa-plus-circle"></i> Créer un combiné</div><div class="admin-card"><div class="admin-row"><div class="admin-field"><div class="admin-label"><i class="fas fa-calendar"></i> Date</div><input type="date" class="admin-input" id="admin-date"></div><div class="admin-field"><div class="admin-label"><i class="fas fa-flag"></i> Statut</div><select class="admin-select" id="admin-status"><option value="en-cours">En cours</option><option value="termine">Terminé ✅</option><option value="perdu">Perdu ❌</option></select></div></div><button onclick="updateDateOnly()" style="width:100%;padding:12px;background:transparent;border:1px solid var(--primary-yellow);color:var(--primary-yellow);border-radius:10px;font-size:13px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="fas fa-calendar-check"></i> Modifier la date / statut uniquement</button></div></div>
-    <div class="admin-section"><div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs</div><div id="admin-matches"></div><button class="admin-add-match-btn" onclick="addMatchEntry()"><i class="fas fa-plus"></i> Ajouter un match</button></div>
-    <div class="admin-section"><div class="admin-section-title"><i class="fas fa-coins"></i> Mise & Résumé</div><div class="admin-card"><div class="admin-field"><div class="admin-label"><i class="fas fa-money-bill"></i> Mise (€)</div><input type="number" class="admin-input" id="admin-mise" placeholder="100.00" oninput="calculateGains()"></div></div><div class="admin-summary"><div class="admin-summary-row"><span class="admin-summary-label">Matchs</span><span class="admin-summary-value" id="summary-matches">0</span></div><div class="admin-summary-row"><span class="admin-summary-label">Cote totale</span><span class="admin-summary-value" id="summary-odds">0.00</span></div><div class="admin-summary-row"><span class="admin-summary-label">Mise</span><span class="admin-summary-value" id="summary-mise">0,00 €</span></div><div class="admin-summary-row"><span class="admin-summary-label">Gains potentiels</span><span class="admin-summary-value gains" id="summary-gains">0,00 €</span></div></div></div>
-    <div class="admin-section"><button class="admin-submit-btn" onclick="publishCombined()"><i class="fas fa-paper-plane"></i> Publier le combiné</button><button class="admin-delete-btn" onclick="deleteCombined()"><i class="fas fa-trash-alt"></i> Supprimer le combiné</button></div>
-</div>
-
-<script>
-function setLogos(){
+   function setLogos(){
     document.getElementById('img-splash').src=LOGO_SPLASH;
     document.getElementById('img-login').src=LOGO_LIGHT;
     document.getElementById('img-admin').src=LOGO_DARK;
@@ -802,6 +697,109 @@ function promptAdminCode(){
     this.classList.toggle('fa-eye-slash');
 });
 </script>
+
+<div id="splash-screen"><div class="splash-content"><img id="img-splash" alt="ScoreMaster" class="splash-logo-img"><div class="splash-loader"><span></span><span></span><span></span></div></div></div>
+
+<div id="login-screen">
+    <div class="login-header"><img id="img-login" alt="ScoreMaster" class="login-logo-img"></div>
+    <div class="login-form-container">
+        <div class="login-form-title">Email</div>
+        <input type="email" class="login-input" id="login-email" placeholder="Votre email">
+        
+       <!-- Nouveau champ Pseudo (Caché en mode connexion) -->
+        <div class="login-form-title" id="title-username" style="display:none;">Pseudo</div>
+        <input type="text" class="login-input" id="login-username" placeholder="Votre pseudo" style="display:none;">
+        
+       <div class="login-form-title">Mot de passe</div>
+<div style="position: relative; width: 100%;">
+    <!-- Le champ mot de passe avec un espace à droite pour l'icône -->
+    <input type="password" class="login-input" id="login-password" placeholder="••••••••••••" style="padding-right: 45px; margin-bottom: 20px; width: 100%;">
+    
+    <!-- L'icône de l'œil positionnée par-dessus l'input -->
+    <i class="fas fa-eye" id="togglePassword" style="position: absolute; right: 15px; top: 15px; color: var(--text-gray); cursor: pointer; font-size: 16px; z-index: 10;"></i>
+</div>
+        
+        <button class="login-btn" id="btn-action" onclick="handleAuth()">Connexion</button>
+        <div class="login-error" id="login-error"><i class="fas fa-exclamation-circle"></i> Identifiants incorrects</div>
+        
+        <div class="login-options">
+            <a href="#" class="forgot-password" id="toggle-auth" onclick="toggleAuthMode(); return false;">Créer un compte</a>
+            <div class="remember-me"><div class="toggle-switch active" onclick="this.classList.toggle('active')"></div><span>Se souvenir de moi</span></div>
+        </div>
+        
+        <div class="api-badge-login"><i class="fas fa-plug"></i><span>API Betclic connectée</span><div class="api-status-dot"></div></div>
+    </div> <!-- Cette balise ferme proprement login-form-container -->
+
+<div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toast-message"></span></div>
+
+<div id="app">
+    <div class="pages-container">
+        <!-- HOME -->
+        <div class="page active" id="page-home">
+            <div class="home-header fade-in-up delay-1">
+                <div class="home-user"><div class="logo-avatar small" id="avatar-home"></div><div><div class="home-greeting">Bienvenue !</div><div class="home-username">Admin SM <i class="fas fa-chevron-down"></i></div></div></div>
+                <div class="home-notif" onclick="showToast('Pas de nouvelles notifications',true)"><i class="fas fa-bell"></i><div class="notif-dot"></div></div>
+            </div>
+            <div class="search-bar fade-in-up delay-2"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un match..."><i class="fas fa-microphone mic-btn"></i></div>
+            <div class="api-banner fade-in-up delay-2"><div class="api-icon"><i class="fas fa-plug"></i></div><div class="api-info"><div class="api-title">API Betclic connectée <div class="live-dot"></div></div><div class="api-desc">Données en temps réel • Cotes actualisées</div></div><span class="betclic-badge">BETCLIC</span></div>
+            <div class="section-header fade-in-up delay-3"><span class="section-title">Découvrez nos packs !</span><span class="section-more" onclick="navigateTo('packs')">Voir plus</span></div>
+            <div class="packs-scroll">
+                <div class="pack-card fade-in-up delay-3" onclick="navigateTo('packs')"><div class="logo-pack-icon green" id="pack-icon-1"></div><div class="pack-card-info"><div class="pack-card-name">SM S.E Journalier</div><div class="pack-card-tag"><i class="fas fa-circle"></i> Livraison instantanée !</div><div class="pack-card-btn" style="background:var(--green);color:#fff;">Découvrir !</div></div><i class="far fa-heart heart-icon" onclick="event.stopPropagation();this.classList.toggle('liked');this.classList.toggle('far');this.classList.toggle('fas');"></i></div>
+                <div class="pack-card fade-in-up delay-4" onclick="navigateTo('packs')"><div class="logo-pack-icon red" id="pack-icon-2"></div><div class="pack-card-info"><div class="pack-card-name">SM VIP+ (à vie)</div><div class="pack-card-tag"><i class="fas fa-circle"></i> Livraison instantanée !</div><div class="pack-card-btn" style="background:var(--red);color:#fff;">Découvrir !</div></div><i class="far fa-heart heart-icon" onclick="event.stopPropagation();this.classList.toggle('liked');this.classList.toggle('far');this.classList.toggle('fas');"></i></div>
+            </div>
+            <div class="home-vip-section fade-in-up delay-5"><h3>🔥 Dernier Combiné VIP+</h3><div id="home-combined-container"><div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div></div></div>
+            <div class="help-card fade-in-up delay-5"><div class="help-card-icon"><i class="fas fa-comment-dots"></i></div><div class="help-card-info"><div class="help-card-title">Un problème, ou besoin d'aide ?</div><div class="help-card-desc">Pas de panique ! Contactez nous ici !</div></div><i class="fas fa-chevron-right help-card-arrow"></i></div>
+            <div style="height:20px;"></div>
+        </div>
+        <!-- PACKS -->
+        <div class="page" id="page-packs">
+            <div class="page-title-bar"><h2>Nos Packs</h2></div>
+            <div class="packs-page-list">
+                <div class="pack-detail-card"><div class="pack-detail-top"><div class="logo-pack-detail green" id="pack-detail-1"></div><div><div class="pack-detail-name">SM Score Exact Journalier</div><div class="pack-detail-desc">Recevez chaque jour notre meilleur pronostic en score exact avec une analyse détaillée.</div></div></div><div class="pack-detail-features"><div class="pack-feature"><i class="fas fa-check"></i> 1 score exact / jour</div><div class="pack-feature"><i class="fas fa-check"></i> Analyse détaillée</div><div class="pack-feature"><i class="fas fa-check"></i> Support 7j/7</div><div class="pack-feature"><i class="fas fa-check"></i> Notification push</div></div><div class="pack-detail-bottom"><div class="pack-price-container"><span class="price-old">89,99€</span><span class="price-new" style="color:var(--green);">50€</span><span class="price-label">unique</span></div><button class="pack-subscribe-btn" style="background:var(--green);color:#fff;">S'abonner</button></div></div>
+                <div class="pack-detail-card"><div class="pack-detail-top"><div class="logo-pack-detail red" id="pack-detail-2"></div><div><div class="pack-detail-name">SM VIP+ (à vie)</div><div class="pack-detail-desc">Accès illimité et à vie à tous nos pronostics, combinés exclusifs et espace membre VIP+.</div></div></div><div class="pack-detail-features"><div class="pack-feature"><i class="fas fa-check"></i> Accès à vie</div><div class="pack-feature"><i class="fas fa-check"></i> 4 à 5 combinés S.E / semaine</div><div class="pack-feature"><i class="fas fa-check"></i> Espace membre VIP+</div><div class="pack-feature"><i class="fas fa-check"></i> Canal Telegram VIP</div><div class="pack-feature"><i class="fas fa-check"></i> Priorité support</div></div><div class="pack-detail-bottom"><div class="pack-price-container"><span class="price-old">179,99€</span><span class="price-new" style="color:var(--primary-yellow);">99,99€</span><span class="price-label">unique</span></div><button class="pack-subscribe-btn" style="background:var(--red);color:#fff;">S'abonner</button></div></div>
+                <div class="pack-detail-card"><div class="pack-detail-top"><div class="logo-pack-detail blue" id="pack-detail-3"></div><div><div class="pack-detail-name">SM Combiné Hebdo</div><div class="pack-detail-desc">Chaque semaine, recevez un combiné score exact soigneusement sélectionné avec des cotes élevées.</div></div></div><div class="pack-detail-features"><div class="pack-feature"><i class="fas fa-check"></i> 1 combiné S.E / semaine</div><div class="pack-feature"><i class="fas fa-check"></i> Cotes élevées</div><div class="pack-feature"><i class="fas fa-check"></i> Suivi en direct</div><div class="pack-feature"><i class="fas fa-check"></i> Récap hebdomadaire</div></div><div class="pack-detail-bottom"><div class="pack-price-container"><span class="price-old">129,99€</span><span class="price-new" style="color:var(--blue);">69,99€</span><span class="price-label">unique</span></div><button class="pack-subscribe-btn" style="background:var(--blue);color:#fff;">S'abonner</button></div></div>
+            </div>
+            <div style="height:20px;"></div>
+        </div>
+        <!-- CONTACT -->
+        <div class="page" id="page-contact">
+            <div class="page-title-bar"><h2>Contact</h2></div>
+            <div class="contact-page">
+                <a href="https://t.me/scoremasteroff" target="_blank" rel="noopener" class="contact-link"><div class="contact-card"><div class="contact-card-icon telegram"><i class="fab fa-telegram-plane"></i></div><div class="contact-card-info"><h4>Telegram</h4><p>Rejoignez notre canal officiel</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div></a>
+                <div class="contact-card"><div class="contact-card-icon instagram"><i class="fab fa-instagram"></i></div><div class="contact-card-info"><h4>Instagram</h4><p>@scoremaster.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
+                <div class="contact-card"><div class="contact-card-icon twitter"><i class="fab fa-x-twitter"></i></div><div class="contact-card-info"><h4>X (Twitter)</h4><p>@ScoreMasterFR</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
+                <div class="contact-card"><div class="contact-card-icon email"><i class="fas fa-envelope"></i></div><div class="contact-card-info"><h4>Email</h4><p>contact@scoremaster.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
+            </div>
+        </div>
+        <!-- VIP -->
+        <div class="page" id="page-vip">
+            <div class="vip-header"><h2>Espace SM VIP+</h2></div>
+            <div class="vip-profile"><div class="logo-avatar medium" id="avatar-vip"></div><div class="vip-user-info"><h3>Admin SM</h3></div><button class="vip-modify-btn" onclick="promptAdminCode()" style="border-color:transparent;color:transparent;">Modifier</button>
+</div>
+            <div class="vip-notice">Le prochain combiné apparaîtra ci-dessous une fois disponible ! (activez vos notifs !)</div>
+            <div class="api-banner" style="margin:0 20px 15px;"><div class="api-icon"><i class="fas fa-plug"></i></div><div class="api-info"><div class="api-title">API Betclic connectée <div class="live-dot"></div></div><div class="api-desc">Données en temps réel • Cotes actualisées</div></div><span class="betclic-badge">BETCLIC</span></div>
+            <div id="vip-combined-status-bar"></div>
+            <div class="vip-combined-container" id="vip-combined-container"><div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.<br><span style="font-size:12px;color:var(--text-gray);">Revenez bientôt !</span></div></div>
+            <div class="help-card" style="margin:0 20px 20px;"><div class="help-card-icon"><i class="fas fa-comment-dots"></i></div><div class="help-card-info"><div class="help-card-title">Un problème, ou besoin d'aide ?</div><div class="help-card-desc">Pas de panique ! Contactez nous ici !</div></div><i class="fas fa-chevron-right help-card-arrow"></i></div>
+        </div>
+    </div>
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="navigateTo('home')"><i class="fas fa-home"></i><span>Accueil</span></div>
+        <div class="nav-item" onclick="navigateTo('packs')"><i class="fas fa-clone"></i><span>Nos packs</span></div>
+        <div class="nav-item" onclick="navigateTo('contact')"><i class="fas fa-envelope"></i><span>Contact</span></div>
+        <div class="nav-item vip" onclick="navigateTo('vip')"><i class="fas fa-user-shield"></i><span>Espace<br>SM VIP+</span></div>
+    </div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin-page">
+    <div class="admin-header"><h2><img id="img-admin" alt="SM" class="admin-header-logo"> Panel Admin</h2><button class="admin-close" onclick="closeAdmin()"><i class="fas fa-times"></i></button></div>
+    <div class="admin-section"><div class="admin-stats"><div class="admin-stat-card yellow"><i class="fas fa-futbol"></i><span class="stat-value" id="stat-total">0</span><div class="stat-label">Combinés publiés</div></div><div class="admin-stat-card green"><i class="fas fa-check-circle"></i><span class="stat-value" id="stat-wins">0</span><div class="stat-label">Gagnés</div></div><div class="admin-stat-card blue"><i class="fas fa-clock"></i><span class="stat-value" id="stat-pending">0</span><div class="stat-label">En cours</div></div><div class="admin-stat-card red"><i class="fas fa-times-circle"></i><span class="stat-value" id="stat-losses">0</span><div class="stat-label">Perdus</div></div></div></div>
+    <div class="admin-section"><div class="admin-section-title"><i class="fas fa-plus-circle"></i> Créer un combiné</div><div class="admin-card"><div class="admin-row"><div class="admin-field"><div class="admin-label"><i class="fas fa-calendar"></i> Date</div><input type="date" class="admin-input" id="admin-date"></div><div class="admin-field"><div class="admin-label"><i class="fas fa-flag"></i> Statut</div><select class="admin-select" id="admin-status"><option value="en-cours">En cours</option><option value="termine">Terminé ✅</option><option value="perdu">Perdu ❌</option></select></div></div><button onclick="updateDateOnly()" style="width:100%;padding:12px;background:transparent;border:1px solid var(--primary-yellow);color:var(--primary-yellow);border-radius:10px;font-size:13px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="fas fa-calendar-check"></i> Modifier la date / statut uniquement</button></div></div>
+    <div class="admin-section"><div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs</div><div id="admin-matches"></div><button class="admin-add-match-btn" onclick="addMatchEntry()"><i class="fas fa-plus"></i> Ajouter un match</button></div>
+    <div class="admin-section"><div class="admin-section-title"><i class="fas fa-coins"></i> Mise & Résumé</div><div class="admin-card"><div class="admin-field"><div class="admin-label"><i class="fas fa-money-bill"></i> Mise (€)</div><input type="number" class="admin-input" id="admin-mise" placeholder="100.00" oninput="calculateGains()"></div></div><div class="admin-summary"><div class="admin-summary-row"><span class="admin-summary-label">Matchs</span><span class="admin-summary-value" id="summary-matches">0</span></div><div class="admin-summary-row"><span class="admin-summary-label">Cote totale</span><span class="admin-summary-value" id="summary-odds">0.00</span></div><div class="admin-summary-row"><span class="admin-summary-label">Mise</span><span class="admin-summary-value" id="summary-mise">0,00 €</span></div><div class="admin-summary-row"><span class="admin-summary-label">Gains potentiels</span><span class="admin-summary-value gains" id="summary-gains">0,00 €</span></div></div></div>
+    <div class="admin-section"><button class="admin-submit-btn" onclick="publishCombined()"><i class="fas fa-paper-plane"></i> Publier le combiné</button><button class="admin-delete-btn" onclick="deleteCombined()"><i class="fas fa-trash-alt"></i> Supprimer le combiné</button></div>
+</div>
 
 <!-- POPUP NON-VIP -->
 <div id="vip-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
