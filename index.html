@@ -440,6 +440,43 @@ async function handleLogin() {
         }, 400);
     }
 }
+   async function chargerDonnees() {
+    // 1. On récupère d'abord les infos publiques (que tout le monde a le droit de voir)
+    const { data: publicData, error: publicErr } = await supabaseClient
+        .from('combineds_public')
+        .select('*')
+        .limit(1)
+        .single(); // On prend le dernier combiné
+
+    if (!publicData) {
+        currentCombined = null; // Aucun combiné en ligne
+        renderCombined();
+        return;
+    }
+
+    if (window.isUserVip) {
+        // 2. L'utilisateur est VIP ! On demande la table secrète 🤫
+        const { data: vipData } = await supabaseClient
+            .from('combineds_vip')
+            .select('*')
+            .eq('id', publicData.id) // On cherche les scores de ce combiné précis
+            .single();
+
+        if (vipData) {
+            // On fusionne les données publiques (date, statut) et VIP (scores, gains)
+            currentCombined = { ...publicData, ...vipData };
+        } else {
+            currentCombined = publicData; // Sécurité au cas où
+        }
+    } else {
+        // 3. L'utilisateur n'est pas VIP. 
+        // Supabase ne nous enverrait rien de toute façon à cause de la RLS.
+        currentCombined = publicData; 
+    }
+
+    // On lance l'affichage à l'écran
+    renderCombined();
+}
    
 document.getElementById('login-password').addEventListener('keypress',function(e){if(e.key==='Enter')handleLogin();});
 
@@ -521,25 +558,49 @@ function renderCombined(){
     sb.innerHTML='<div class="vip-combined-status" style="margin:0 20px 15px;">Combiné du '+df+' <span class="disponible">DISPONIBLE !</span></div>';
 }
 
-function buildCC(c,sc,sl,pw,isHome){
-    var mH='';
-    c.matches.forEach(function(m){
-        var scoreHtml=isHome?'<span class="match-score blurred-value">'+m.score+'</span>':'<span class="match-score">'+m.score+'</span>';
-        var oddsHtml=isHome?'<div class="match-odds blurred-value">'+m.odds.toFixed(2)+'</div>':'<div class="match-odds">'+m.odds.toFixed(2)+'</div>';
-        mH+='<div class="match-row"><div class="match-row-top"><div class="match-type"><i class="fas fa-futbol"></i> Score exact '+scoreHtml+'</div>'+oddsHtml+'</div><div class="match-row-bottom"><div class="match-teams"><i class="fas fa-shield-alt"></i> '+m.teams+'</div><div class="match-time">'+m.time+'</div></div></div>';
+function buildCC(c, sc, sl, pw, isHome) {
+    var mH = '';
+    
+    // CRUCIAL : Si c.matches n'existe pas (non-VIP), on crée une fausse structure
+    var matchesToDisplay = c.matches ? c.matches : Array(c.nombre_matchs || 2).fill({ teams: 'Match caché', time: '--:--', odds: 0 });
+    
+    // On floute si on est sur l'accueil OU si on a pas reçu les données VIP
+    var isObscured = isHome || !c.matches; 
+
+    matchesToDisplay.forEach(function(m, i) {
+        var displayScore = isObscured ? '?-?' : m.score;
+        var displayOdds = isObscured ? '***' : m.odds.toFixed(2);
+        var teamsName = m.teams || 'Équipe A vs Équipe B';
+        var matchTime = m.time || '';
+
+        var scoreHtml = isObscured ? '<span class="match-score blurred-value">' + displayScore + '</span>' : '<span class="match-score">' + displayScore + '</span>';
+        var oddsHtml = isObscured ? '<div class="match-odds blurred-value">' + displayOdds + '</div>' : '<div class="match-odds">' + displayOdds + '</div>';
+
+        mH += '<div class="match-row"><div class="match-row-top"><div class="match-type"><i class="fas fa-futbol"></i> Score exact ' + scoreHtml + '</div>' + oddsHtml + '</div><div class="match-row-bottom"><div class="match-teams"><i class="fas fa-shield-alt"></i> ' + teamsName + '</div><div class="match-time">' + matchTime + '</div></div></div>';
     });
-   var ic='';
-    c.matches.forEach(function(_,i){ic+='<div class="match-icon-circle '+(i===c.matches.length-1?'highlight':'')+'"><i class="fas fa-futbol" style="font-size:14px;color:'+(i===c.matches.length-1?'white':'var(--text-gray)')+'"></i></div>';});
-    var pc=c.status==='perdu'?'background:linear-gradient(90deg,var(--red),#990000);':c.status==='termine'?'background:linear-gradient(90deg,var(--green),#00E676);':'background:linear-gradient(90deg,var(--green),var(--blue));';
-    var gainsHtml=isHome?'<span class="combined-footer-value gains blurred-value">'+fmtC(c.gains)+'</span>':'<span class="combined-footer-value gains">'+fmtC(c.gains)+'</span>';
-    var totalOddsHtml=isHome?'<span class="combined-footer-value blurred-value">'+c.totalOdds.toFixed(2)+'</span>':'<span class="combined-footer-value">'+c.totalOdds.toFixed(2)+'</span>';
-    var ctaBtn=isHome
-        ?'<a href="'+TELEGRAM_LINK+'" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>'
-        :'<button class="combined-complete-btn">Compléter</button>';
-    return '<div class="combined-card"><div class="combined-header"><div class="combined-status"><span class="status-badge '+sc+'">'+sl[sc]+'</span><span class="combined-label">Combiné</span><div class="combined-count"><i class="fas fa-futbol"></i> '+c.matches.length+'</div></div><i class="fas fa-ellipsis-h combined-more"></i></div><div class="combined-progress"><div class="combined-progress-fill" style="width:'+pw+';'+pc+'"></div></div><div class="combined-matches-icons">'+ic+'<span style="font-size:12px;color:var(--text-gray);margin-left:4px;">'+c.matches.length+'</span></div><div class="combined-body">'+mH+'</div><div class="combined-footer"><img src="'+LOGO_DARK+'" alt="SM" class="watermark-img"><div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span>'+totalOddsHtml+'</div><div class="combined-footer-row"><span class="combined-footer-label">Mise</span><span class="combined-footer-value">'+fmtC(c.mise)+'</span></div><div class="combined-footer-row"><span class="combined-footer-label">Gains potentiels</span>'+gainsHtml+'</div></div>'+ctaBtn+'</div>';
+
+    var ic = '';
+    matchesToDisplay.forEach(function(_, i) {
+        ic += '<div class="match-icon-circle ' + (i === matchesToDisplay.length - 1 ? 'highlight' : '') + '"><i class="fas fa-futbol" style="font-size:14px;color:' + (i === matchesToDisplay.length - 1 ? 'white' : 'var(--text-gray)') + '"></i></div>';
+    });
+
+    var pc = c.status === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : c.status === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
+
+    // Sécurisation des gains, mises et cotes totales
+    var displayGains = isObscured ? '***,** €' : fmtC(c.gains || 0);
+    var displayTotalOdds = isObscured ? '***.**' : (c.total_odds || c.totalOdds || 0).toFixed(2);
+    var displayMise = isObscured ? '***,** €' : fmtC(c.mise || 0);
+
+    var gainsHtml = isHome ? '<span class="combined-footer-value gains blurred-value">' + displayGains + '</span>' : '<span class="combined-footer-value gains">' + displayGains + '</span>';
+    var totalOddsHtml = isHome ? '<span class="combined-footer-value blurred-value">' + displayTotalOdds + '</span>' : '<span class="combined-footer-value">' + displayTotalOdds + '</span>';
+
+    var ctaBtn = isHome
+        ? '<a href="' + TELEGRAM_LINK + '" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>'
+        : '<button class="combined-complete-btn">Compléter</button>';
+
+    return '<div class="combined-card"><div class="combined-header"><div class="combined-status"><span class="status-badge ' + sc + '">' + sl[sc] + '</span><span class="combined-label">Combiné</span><div class="combined-count"><i class="fas fa-futbol"></i> ' + matchesToDisplay.length + '</div></div><i class="fas fa-ellipsis-h combined-more"></i></div><div class="combined-progress"><div class="combined-progress-fill" style="width:' + pw + ';' + pc + '"></div></div><div class="combined-matches-icons">' + ic + '<span style="font-size:12px;color:var(--text-gray);margin-left:4px;">' + matchesToDisplay.length + '</span></div><div class="combined-body">' + mH + '</div><div class="combined-footer"><img src="' + LOGO_DARK + '" alt="SM" class="watermark-img"><div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span>' + totalOddsHtml + '</div><div class="combined-footer-row"><span class="combined-footer-label">Mise</span><span class="combined-footer-value">' + displayMise + '</span></div><div class="combined-footer-row"><span class="combined-footer-label">Gains potentiels</span>' + gainsHtml + '</div></div>' + ctaBtn + '</div>';
 }
-
-
+   
 function updateDateOnly(){
     if(!currentCombined){showToast('Aucun combiné à modifier !',true);return;}
     var newDate=document.getElementById('admin-date').value,newStatus=document.getElementById('admin-status').value;
