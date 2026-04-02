@@ -442,7 +442,7 @@ async function handleLogin() {
 }
 async function chargerDonnees() {
     try {
-        // 1. On récupère d'abord les infos publiques
+        // 1. Tentez d'abord de récupérer les infos PUBLIQUES
         const { data: publicData, error: publicErr } = await supabaseClient
             .from('combineds_public')
             .select('*')
@@ -452,29 +452,30 @@ async function chargerDonnees() {
             .single();
 
         if (publicErr || !publicData) {
-             // S'il n'y a VRAIMENT aucun combiné publié par l'admin
+             // S'il n'y a VRAIMENT aucun combiné publié dans la table publique
              currentCombined = null; 
              renderCombined();
              return;
         }
 
         if (window.isUserVip) {
-            // 2. L'utilisateur est VIP ! On demande la table secrète 🤫
+            // 2. L'utilisateur est VIP ! Tentez d'ouvrir le coffre-fort 🤫
             const { data: vipData, error: vipErr } = await supabaseClient
                 .from('combineds_vip')
                 .select('*')
-                .eq('id', publicData.id)
+                .eq('id', publicData.id) // On cherche les scores secrets de ce combiné précis
                 .single();
 
             if (vipData && !vipErr) {
-                // Succès total !
+                // Succès total ! On fusionne les infos publiques et VIP
                 currentCombined = { ...publicData, ...vipData };
             } else {
                  // Erreur de récupération VIP (ex: RLS bloque), on se rabat sur le public
-                currentCombined = publicData;
+                 console.warn("Accès VIP refusé (RLS)");
+                 currentCombined = publicData;
             }
         } else {
-            // 3. L'utilisateur n'est pas VIP
+            // 3. L'utilisateur n'est pas VIP. On utilise uniquement les infos publiques.
             currentCombined = publicData; 
         }
     } catch (e) {
@@ -482,7 +483,8 @@ async function chargerDonnees() {
         currentCombined = null; // En cas de gros crash, on n'affiche rien
     }
 
-    // On lance l'affichage à l'écran
+    // On lance l'affichage à l'écran. 
+    // Rappel: Votre fonction buildCC() doit utiliser "?-?" et "***" si currentCombined.matches n'existe pas.
     renderCombined();
 }
    
@@ -729,13 +731,21 @@ function promptAdminCode(){
 </script>
 
 <!-- POPUP NON-VIP -->
-<div id="vip-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9500;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;">
-    <div style="background:var(--bg-card);padding:30px;border-radius:20px;text-align:center;width:80%;max-width:350px;border:1px solid var(--border-color);transform:scale(0.9);transition:transform 0.3s;animation: splashFadeIn 0.3s forwards;">
-        <i class="fas fa-lock" style="font-size:40px;color:var(--red);margin-bottom:15px;"></i>
-        <h3 style="font-size:18px;font-weight:700;margin-bottom:10px;">Accès Réservé</h3>
-        <p style="font-size:13px;color:var(--text-gray);margin-bottom:20px;line-height:1.5;">Vous n'avez pas accès à l'espace SM VIP+ :( <br><br>Rejoignez-nous pour débloquer tous les scores exacts !</p>
-        <button onclick="document.getElementById('vip-popup').style.display='none'; navigateTo('packs');" style="width:100%;padding:14px;background:var(--red);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:10px;">Découvrir les packs</button>
-        <button onclick="document.getElementById('vip-popup').style.display='none'" style="width:100%;padding:12px;background:transparent;color:var(--text-gray);border:none;font-size:13px;cursor:pointer;">Fermer</button>
+<div id="vip-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+    <div style="background:var(--bg-card);padding:40px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow: 0 10px 40px rgba(0,0,0,0.4);">
+        
+        <div style="position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:120px;height:120px;background:var(--red);border-radius:50%;filter:blur(40px);opacity:0.6;z-index:-1;"></div>
+
+        <div style="width:70px;height:70px;background:rgba(239,83,80,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 25px auto;">
+            <i class="fas fa-lock" style="font-size:35px;color:var(--red);"></i>
+        </div>
+
+        <h3 style="font-size:22px;font-weight:700;margin-bottom:12px;color:#fff;font-family:'Montserrat',sans-serif;">Accès Réservé</h3>
+        <p style="font-size:14px;color:var(--text-gray);margin-bottom:30px;line-height:1.6;font-family:'Montserrat',sans-serif;">Vous n'avez pas accès à l'espace SM VIP+ :( <br><br>Passez au niveau supérieur pour débloquer tous les scores exacts, les cotes exclusives et décupler vos gains !</p>
+        
+        <button onclick="document.getElementById('vip-popup').style.display='none'; navigateTo('packs');" style="width:100%;padding:16px;background:linear-gradient(135deg, var(--red) 0%, #B71C1C 100%);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:12px;box-shadow: 0 4px 15px rgba(239,83,80,0.3);border:1px solid rgba(255,255,255,0.1);">🔥 Découvrir les packs VIP+</button>
+        
+        <button onclick="document.getElementById('vip-popup').style.display='none'" style="width:100%;padding:12px;background:transparent;color:var(--text-gray);border:none;font-size:13px;font-family:'Montserrat',sans-serif;cursor:pointer;font-weight:500;">Plus tard</button>
     </div>
 </div>
 
