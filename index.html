@@ -1,826 +1,265 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-   <script src="supabase.min.js"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ScoreMaster</title>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="ScoreMaster">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#0D0D0D">
-    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlNjb3JlTWFzdGVyIiwKICAic2hvcnRfbmFtZSI6ICJTTSB2aXAiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBEMEQwRCIsCiAgInRoZW1lX2NvbG9yIjogIiMwRDBEMEQiLAogICJvcmllbnRhdGlvbiI6ICJwb3J0cmFpdCIKfQ==">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
         :root{--primary-yellow:#FFD700;--dark-yellow:#E6C200;--bg-dark:#0D0D0D;--bg-card:#1A1A1A;--bg-input:#2A2A2A;--text-white:#FFFFFF;--text-gray:#8A8A8A;--text-light-gray:#B0B0B0;--green:#00C853;--red:#FF3D3D;--blue:#4A90D9;--border-color:#333333;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
         html,body{font-family:'Inter','Montserrat',sans-serif;background:var(--bg-dark);color:var(--text-white);overflow:hidden;height:100%;width:100%;position:fixed;top:0;left:0}
+        
         #splash-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;z-index:10000;transition:opacity .6s,visibility .6s}
         #splash-screen.hidden{opacity:0;visibility:hidden}
-        .splash-content{text-align:center;animation:splashFadeIn 1s ease-out}
-        .splash-logo-img{width:300px;height:auto;max-height:350px;object-fit:contain;filter:drop-shadow(0 0 40px rgba(255,215,0,.15))}
-        .splash-loader{margin-top:40px;display:flex;gap:8px;justify-content:center}
-        .splash-loader span{width:8px;height:8px;background:var(--primary-yellow);border-radius:50%;animation:loaderBounce 1.4s ease infinite}
-        .splash-loader span:nth-child(2){animation-delay:.2s}
-        .splash-loader span:nth-child(3){animation-delay:.4s}
-        @keyframes splashFadeIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+        .splash-loader span{width:8px;height:8px;background:var(--primary-yellow);border-radius:50%;display:inline-block;margin:0 4px;animation:loaderBounce 1.4s ease infinite}
         @keyframes loaderBounce{0%,80%,100%{transform:scale(.6);opacity:.3}40%{transform:scale(1);opacity:1}}
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-        @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-        @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-        .fade-in-up{animation:fadeInUp .5s ease forwards}
-        .delay-1{animation-delay:.1s;opacity:0}.delay-2{animation-delay:.2s;opacity:0}.delay-3{animation-delay:.3s;opacity:0}.delay-4{animation-delay:.4s;opacity:0}.delay-5{animation-delay:.5s;opacity:0}
+
         #login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,var(--primary-yellow) 0%,var(--primary-yellow) 42%,var(--bg-dark) 42%);z-index:9000;display:none;flex-direction:column;transition:opacity .4s}
         #login-screen.active{display:flex}
-        .login-header{flex:0 0 auto;padding-top:calc(30px + var(--safe-top));padding-bottom:20px;text-align:center}
-        .login-logo-img{width:130px;height:auto;object-fit:contain;filter:drop-shadow(0 4px 15px rgba(0,0,0,.25))}
-        .login-form-container{flex:1;background:var(--bg-dark);border-radius:30px 30px 0 0;padding:35px 25px;padding-bottom:calc(30px + var(--safe-bottom))}
-        .login-form-title{font-size:13px;color:var(--text-gray);margin-bottom:8px;font-weight:500}
-        .login-input{width:100%;padding:14px 16px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:12px;color:var(--text-white);font-size:15px;font-family:'Inter',sans-serif;margin-bottom:20px;outline:none;transition:border-color .3s}
-        .login-input:focus{border-color:var(--primary-yellow)}
-        .login-input::placeholder{color:var(--text-gray)}
-        .login-btn{width:100%;padding:15px;background:var(--primary-yellow);color:#000;border:none;border-radius:12px;font-size:16px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:10px;transition:all .3s}
-        .login-btn:active{transform:scale(.98);background:var(--dark-yellow)}
-        .login-options{display:flex;justify-content:space-between;align-items:center;margin-top:18px}
-        .forgot-password{color:var(--primary-yellow);font-size:13px;text-decoration:none;font-weight:500}
-        .remember-me{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-light-gray)}
-        .toggle-switch{width:44px;height:24px;background:var(--bg-input);border-radius:12px;position:relative;cursor:pointer;transition:background .3s}
-        .toggle-switch.active{background:var(--primary-yellow)}
-        .toggle-switch::after{content:'';width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .3s;box-shadow:0 2px 4px rgba(0,0,0,.3)}
-        .toggle-switch.active::after{transform:translateX(20px)}
-        .login-error{color:var(--red);font-size:13px;text-align:center;margin-top:12px;display:none;animation:shake .5s ease}
-        .login-error.show{display:block}
-        .api-badge-login{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:30px;padding:10px 16px;background:rgba(74,144,217,.1);border:1px solid rgba(74,144,217,.2);border-radius:10px}
-        .api-badge-login i{color:var(--blue);font-size:14px}
-        .api-badge-login span{font-size:11px;color:var(--text-light-gray);font-weight:500}
-        .api-badge-login .api-status-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
+        .login-header{padding:calc(30px + var(--safe-top)) 0 20px;text-align:center}
+        .login-logo-img{width:130px;filter:drop-shadow(0 4px 15px rgba(0,0,0,.25))}
+        .login-form-container{flex:1;background:var(--bg-dark);border-radius:30px 30px 0 0;padding:35px 25px}
+        .login-form-title{font-size:13px;color:var(--text-gray);margin-bottom:8px}
+        .login-input{width:100%;padding:14px 16px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:12px;color:#fff;margin-bottom:20px;outline:none}
+        .login-btn{width:100%;padding:15px;background:var(--primary-yellow);color:#000;border:none;border-radius:12px;font-weight:700;cursor:pointer}
+        
         #app{display:none;height:100%;width:100%;flex-direction:column}
         #app.active{display:flex}
-        .pages-container{flex:1;overflow:hidden;position:relative;padding-top:var(--safe-top)}
-        .page{position:absolute;top:0;left:0;width:100%;height:100%;overflow-y:auto;overflow-x:hidden;opacity:0;visibility:hidden;transition:opacity .3s,transform .3s;transform:translateY(10px);-webkit-overflow-scrolling:touch;padding-top:var(--safe-top);padding-bottom:20px}
-        .page.active{opacity:1;visibility:visible;transform:translateY(0)}
-        .bottom-nav{height:calc(65px + var(--safe-bottom));background:#111;border-top:1px solid var(--border-color);display:flex;align-items:flex-start;justify-content:space-around;flex-shrink:0;padding-top:8px;padding-bottom:var(--safe-bottom)}
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 12px;border-radius:12px;transition:all .3s}
-        .nav-item i{font-size:20px;color:var(--text-gray);transition:color .3s}
-        .nav-item span{font-size:10px;color:var(--text-gray);font-weight:500;text-align:center;line-height:1.2;transition:color .3s}
-        .nav-item.active i{color:var(--primary-yellow)}
-        .nav-item.active span{color:var(--primary-yellow)}
-        .nav-item.vip.active i{color:var(--red)}
-        .nav-item.vip.active span{color:var(--red)}
-        .logo-avatar{border-radius:50%;overflow:hidden;border:2px solid var(--primary-yellow);display:flex;align-items:center;justify-content:center;background:#000;flex-shrink:0}
-        .logo-avatar img{width:75%;height:75%;object-fit:contain}
-        .logo-avatar.small{width:44px;height:44px}
-        .logo-avatar.medium{width:60px;height:60px}
-        .logo-pack-icon{width:55px;height:55px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;padding:8px}
-        .logo-pack-icon img{width:100%;height:100%;object-fit:contain}
-        .logo-pack-icon.yellow{background:linear-gradient(135deg,var(--primary-yellow),var(--dark-yellow))}
-        .logo-pack-icon.red{background:linear-gradient(135deg,#FF3D3D,#CC0000)}
-        .logo-pack-icon.green{background:linear-gradient(135deg,#00C853,#009624)}
-        .logo-pack-icon.blue{background:linear-gradient(135deg,#4A90D9,#2E6AAD)}
-        .logo-pack-detail{width:60px;height:60px;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;padding:10px}
-        .logo-pack-detail img{width:100%;height:100%;object-fit:contain}
-        .logo-pack-detail.yellow{background:linear-gradient(135deg,var(--primary-yellow),var(--dark-yellow))}
-        .logo-pack-detail.red{background:linear-gradient(135deg,#FF3D3D,#CC0000)}
-        .logo-pack-detail.green{background:linear-gradient(135deg,#00C853,#009624)}
-        .logo-pack-detail.blue{background:linear-gradient(135deg,#4A90D9,#2E6AAD)}
-        .home-header{padding:15px 20px;display:flex;align-items:center;justify-content:space-between}
-        .home-user{display:flex;align-items:center;gap:12px}
-        .home-greeting{font-size:12px;color:var(--text-gray)}
-        .home-username{font-size:16px;font-weight:700;display:flex;align-items:center;gap:5px}
-        .home-username i{font-size:12px;color:var(--text-gray)}
-        .home-notif{width:40px;height:40px;background:var(--bg-card);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
-        .home-notif i{color:var(--text-white);font-size:18px}
-        .home-notif .notif-dot{width:8px;height:8px;background:var(--red);border-radius:50%;position:absolute;top:10px;right:10px}
-        .search-bar{margin:5px 20px 15px;display:flex;align-items:center;background:var(--bg-card);border-radius:14px;padding:12px 16px;gap:10px;border:1px solid var(--border-color)}
-        .search-bar i{color:var(--text-gray);font-size:16px}
-        .search-bar input{flex:1;background:none;border:none;color:var(--text-white);font-size:14px;outline:none;font-family:'Inter',sans-serif}
-        .search-bar input::placeholder{color:var(--text-gray)}
-        .search-bar .mic-btn{color:var(--primary-yellow);cursor:pointer}
-        .api-banner{margin:0 20px 15px;padding:10px 16px;background:linear-gradient(135deg,rgba(74,144,217,.15),rgba(74,144,217,.05));border:1px solid rgba(74,144,217,.25);border-radius:12px;display:flex;align-items:center;gap:10px}
-        .api-banner .api-icon{width:32px;height:32px;background:rgba(74,144,217,.2);border-radius:8px;display:flex;align-items:center;justify-content:center}
-        .api-banner .api-icon i{color:var(--blue);font-size:16px}
-        .api-banner .api-info{flex:1}
-        .api-banner .api-title{font-size:12px;font-weight:600;color:var(--text-white);display:flex;align-items:center;gap:6px}
-        .api-banner .api-title .live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
-        .api-banner .api-desc{font-size:10px;color:var(--text-gray);margin-top:2px}
-        .betclic-badge{font-weight:800;font-size:12px;color:var(--red);background:rgba(255,61,61,.15);padding:5px 10px;border-radius:6px;letter-spacing:.5px}
-        .section-header{display:flex;justify-content:space-between;align-items:center;padding:0 20px;margin-bottom:15px}
-        .section-title{font-size:17px;font-weight:700}
-        .section-more{font-size:13px;color:var(--primary-yellow);font-weight:600;cursor:pointer}
-        .packs-scroll{padding:0 20px;display:flex;flex-direction:column;gap:14px;margin-bottom:20px}
-        .pack-card{background:var(--bg-card);border-radius:16px;padding:18px;display:flex;align-items:center;gap:15px;cursor:pointer;transition:all .3s;border:1px solid var(--border-color)}
-        .pack-card:active{transform:scale(.98);border-color:var(--primary-yellow)}
-        .pack-card-info{flex:1}
-        .pack-card-name{font-size:15px;font-weight:700;margin-bottom:4px}
-        .pack-card-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--green);background:rgba(0,200,83,.1);padding:3px 8px;border-radius:6px;margin-bottom:6px}
-        .pack-card-tag i{font-size:8px}
-        .pack-card-btn{display:inline-block;padding:6px 16px;border-radius:8px;font-size:12px;font-weight:700}
-        .pack-card .heart-icon{color:var(--text-gray);font-size:18px;cursor:pointer}
-        .pack-card .heart-icon.liked{color:var(--red)}
-        .home-vip-section{margin:0 20px 20px}
-        .home-vip-section h3{font-size:17px;font-weight:700;margin-bottom:12px}
-        .combined-card{background:#1E1E2E;border-radius:16px;overflow:hidden;border:1px solid #2A2A3A}
-        .combined-header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2A2A3A}
-        .combined-status{display:flex;align-items:center;gap:8px}
-        .status-badge{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase}
+        .pages-container{flex:1;overflow:hidden;position:relative}
+        .page{position:absolute;top:0;left:0;width:100%;height:100%;overflow-y:auto;opacity:0;visibility:hidden;padding:var(--safe-top) 20px 80px}
+        .page.active{opacity:1;visibility:visible}
+        
+        .bottom-nav{height:calc(65px + var(--safe-bottom));background:#111;border-top:1px solid var(--border-color);display:flex;justify-content:space-around;padding-top:8px}
+        .nav-item{text-align:center;color:var(--text-gray);font-size:10px;cursor:pointer}
+        .nav-item.active{color:var(--primary-yellow)}
+        .nav-item.vip.active{color:var(--red)}
+
+        .combined-card{background:#1E1E2E;border-radius:16px;padding:16px;margin-bottom:20px;border:1px solid #2A2A3A}
+        .status-badge{padding:4px 8px;border-radius:6px;font-size:10px;font-weight:700;text-transform:uppercase}
         .status-badge.en-cours{background:rgba(0,200,83,.15);color:var(--green)}
-        .status-badge.termine{background:rgba(74,144,217,.15);color:var(--blue)}
-        .status-badge.perdu{background:rgba(255,61,61,.15);color:var(--red)}
-        .combined-label{font-size:15px;font-weight:700}
-        .combined-count{display:flex;align-items:center;gap:4px;background:#2A2A3A;padding:4px 10px;border-radius:12px;font-size:12px;color:var(--text-light-gray)}
-        .combined-count i{font-size:14px;color:var(--blue)}
-        .combined-more{color:var(--text-gray);font-size:18px}
-        .combined-progress{height:3px;background:#2A2A3A}
-        .combined-progress-fill{height:100%;border-radius:3px;transition:width .8s}
-        .combined-matches-icons{padding:10px 16px;display:flex;align-items:center;gap:8px}
-        .match-icon-circle{width:32px;height:32px;border-radius:50%;background:#2A2A3A;display:flex;align-items:center;justify-content:center}
-        .match-icon-circle.highlight{background:var(--blue)}
-        .combined-body{padding:0 16px}
-        .match-row{padding:14px 0;border-bottom:1px solid #2A2A3A}
-        .match-row:last-child{border-bottom:none}
-        .match-row-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-        .match-type{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600}
-        .match-type i{color:var(--blue);font-size:14px}
-        .match-score{color:var(--green);font-weight:700}
-        .match-odds{background:#2A2A3A;padding:4px 12px;border-radius:6px;font-size:14px;font-weight:700}
-        .match-row-bottom{display:flex;align-items:center;justify-content:space-between}
-        .match-teams{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-light-gray)}
-        .match-teams i{font-size:12px;color:var(--text-gray)}
-        .match-time{font-size:11px;color:var(--text-gray)}
-        .combined-footer{padding:14px 16px;border-top:1px solid #2A2A3A;position:relative}
-        .combined-footer-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-        .combined-footer-row:last-child{margin-bottom:0}
-        .combined-footer-label{font-size:13px;color:var(--text-gray)}
-        .combined-footer-value{font-size:15px;font-weight:700}
-        .combined-footer-value.gains{color:var(--green);font-size:18px}
-        .watermark-img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80px;opacity:.07;pointer-events:none}
-        /* BLUR for home page */
-        .blurred-value{filter:blur(6px);user-select:none;-webkit-user-select:none;pointer-events:none}
-        /* TELEGRAM CTA button */
-        .combined-cta-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:calc(100% - 32px);margin:0 16px 16px;padding:15px;background:linear-gradient(135deg,#0088cc,#006faa);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;text-decoration:none;text-align:center;box-shadow:0 6px 20px rgba(0,136,204,.35);transition:all .3s;position:relative;overflow:hidden}
-        .combined-cta-btn i.tg-icon{font-size:20px}
-        .combined-cta-btn .cta-lock{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.7}
-        .combined-cta-btn:active{transform:scale(.97);box-shadow:0 3px 10px rgba(0,136,204,.3)}
-        /* Normal VIP button */
-        .combined-complete-btn{display:block;width:calc(100% - 32px);margin:0 16px 16px;padding:13px;background:var(--text-white);color:#000;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;text-align:center}
-        .help-card{margin:15px 20px;padding:16px;background:var(--bg-card);border-radius:14px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1px solid var(--border-color)}
-        .help-card-icon{width:40px;height:40px;background:var(--bg-input);border-radius:50%;display:flex;align-items:center;justify-content:center}
-        .help-card-icon i{color:var(--text-gray);font-size:16px}
-        .help-card-info{flex:1}
-        .help-card-title{font-size:14px;font-weight:600}
-        .help-card-desc{font-size:12px;color:var(--text-gray)}
-        .help-card-arrow{color:var(--text-gray);font-size:16px}
-        .no-combined-message{text-align:center;padding:40px 20px;color:var(--text-gray);font-size:14px}
-        .no-combined-message i{font-size:40px;margin-bottom:15px;color:var(--border-color);display:block}
-        .page-title-bar{padding:15px 20px;display:flex;align-items:center;justify-content:space-between}
-        .page-title-bar h2{font-size:22px;font-weight:800}
-        .packs-page-list{padding:0 20px}
-        .pack-detail-card{background:var(--bg-card);border-radius:16px;padding:20px;margin-bottom:14px;border:1px solid var(--border-color)}
-        .pack-detail-top{display:flex;align-items:center;gap:14px;margin-bottom:14px}
-        .pack-detail-name{font-size:17px;font-weight:700;margin-bottom:4px}
-        .pack-detail-desc{font-size:12px;color:var(--text-gray);line-height:1.4}
-        .pack-detail-features{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
-        .pack-feature{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-light-gray);background:var(--bg-input);padding:5px 10px;border-radius:8px}
-        .pack-feature i{color:var(--green);font-size:10px}
-        .pack-detail-bottom{display:flex;align-items:center;justify-content:space-between}
-        .pack-price-container{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
-        .price-old{font-size:14px;color:var(--red);text-decoration:line-through;font-weight:600}
-        .price-new{font-size:24px;font-weight:800}
-        .price-label{font-size:13px;color:var(--text-gray);font-weight:400}
-        .pack-subscribe-btn{padding:10px 24px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:all .3s}
-        .pack-subscribe-btn:active{transform:scale(.95)}
-        .contact-page{padding:0 20px}
-        .contact-card{background:var(--bg-card);border-radius:16px;padding:20px;margin-bottom:14px;border:1px solid var(--border-color);display:flex;align-items:center;gap:14px;transition:all .3s}
-        .contact-card:active{border-color:var(--primary-yellow)}
-        .contact-link{text-decoration:none;color:inherit;display:block}
-        .contact-card-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-        .contact-card-icon.telegram{background:rgba(0,136,204,.15)}
-        .contact-card-icon.telegram i{color:#0088cc;font-size:22px}
-        .contact-card-icon.instagram{background:rgba(225,48,108,.15)}
-        .contact-card-icon.instagram i{color:#E1306C;font-size:22px}
-        .contact-card-icon.email{background:rgba(255,215,0,.15)}
-        .contact-card-icon.email i{color:var(--primary-yellow);font-size:22px}
-        .contact-card-icon.twitter{background:rgba(29,161,242,.15)}
-        .contact-card-icon.twitter i{color:#1DA1F2;font-size:22px}
-        .contact-card-info h4{font-size:15px;font-weight:600}
-        .contact-card-info p{font-size:12px;color:var(--text-gray);margin-top:2px}
-        .contact-card-arrow{margin-left:auto;color:var(--text-gray)}
-        .vip-header{padding:15px 20px;display:flex;align-items:center;justify-content:space-between}
-        .vip-header h2{font-size:20px;font-weight:800}
-        .vip-settings{width:36px;height:36px;background:var(--bg-card);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
-        .vip-settings i{color:var(--text-white);font-size:16px}
-        .vip-profile{padding:0 20px;display:flex;align-items:center;gap:14px;margin-bottom:20px}
-        .vip-user-info h3{font-size:18px;font-weight:700}
-        .vip-modify-btn{padding:5px 14px;background:transparent;border:1px solid var(--red);color:var(--red);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;margin-left:auto}
-        .vip-notice{margin:0 20px 15px;padding:14px 16px;background:var(--bg-card);border-radius:12px;font-size:13px;color:var(--text-light-gray);line-height:1.5;text-align:center}
-        .vip-combined-status{padding:14px;background:var(--primary-yellow);border-radius:12px;text-align:center;font-size:14px;font-weight:700;color:#000}
-        .vip-combined-status .disponible{color:var(--green);font-weight:800}
-        .vip-combined-container{padding:0 20px;margin-bottom:15px}
-        #admin-page{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg-dark);z-index:8000;overflow-y:auto;-webkit-overflow-scrolling:touch}
-        #admin-page.active{display:block}
-        .admin-header{padding:calc(15px + var(--safe-top)) 20px 15px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg-dark);z-index:10}
-        .admin-header h2{font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px}
-        .admin-header-logo{width:30px;height:30px;object-fit:contain}
-        .admin-close{width:36px;height:36px;background:var(--bg-card);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;color:var(--text-white);font-size:16px}
-        .admin-section{padding:0 20px;margin-bottom:20px}
-        .admin-section-title{font-size:14px;font-weight:700;color:var(--primary-yellow);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:8px}
-        .admin-section-title i{font-size:14px}
-        .admin-card{background:var(--bg-card);border-radius:16px;padding:20px;border:1px solid var(--border-color);margin-bottom:12px}
-        .admin-field{margin-bottom:16px}
-        .admin-field:last-child{margin-bottom:0}
-        .admin-label{font-size:12px;color:var(--text-gray);margin-bottom:6px;font-weight:500;display:flex;align-items:center;gap:5px}
-        .admin-label i{font-size:11px;color:var(--primary-yellow)}
-        .admin-input{width:100%;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;color:var(--text-white);font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color .3s}
-        .admin-input:focus{border-color:var(--primary-yellow)}
-        .admin-input::placeholder{color:#555}
-        .admin-row{display:flex;gap:10px}
-        .admin-row .admin-field{flex:1}
-        .admin-select{width:100%;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;color:var(--text-white);font-size:14px;font-family:'Inter',sans-serif;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238A8A8A'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:24px}
-        .admin-select:focus{border-color:var(--primary-yellow)}
-        .match-entry{background:var(--bg-card);border-radius:14px;padding:16px;border:1px solid var(--border-color);margin-bottom:12px}
-        .match-entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-        .match-entry-number{font-size:13px;font-weight:700;color:var(--primary-yellow);display:flex;align-items:center;gap:6px}
-        .match-entry-number i{font-size:14px}
-        .match-entry-remove{width:28px;height:28px;background:rgba(255,61,61,.15);border:none;border-radius:8px;color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
-        .admin-add-match-btn{width:100%;padding:12px;background:transparent;border:2px dashed var(--border-color);border-radius:12px;color:var(--text-gray);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px}
-        .admin-summary{background:linear-gradient(135deg,#1E1E2E,#252540);border-radius:16px;padding:18px;border:1px solid #2A2A3A}
-        .admin-summary-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #2A2A3A}
-        .admin-summary-row:last-child{border-bottom:none}
-        .admin-summary-label{font-size:13px;color:var(--text-gray)}
-        .admin-summary-value{font-size:16px;font-weight:700}
-        .admin-summary-value.gains{color:var(--green);font-size:20px}
-        .admin-submit-btn{width:100%;padding:16px;background:var(--primary-yellow);color:#000;border:none;border-radius:14px;font-size:16px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:10px;margin-bottom:15px;display:flex;align-items:center;justify-content:center;gap:8px}
-        .admin-submit-btn:active{transform:scale(.98);background:var(--dark-yellow)}
-        .admin-delete-btn{width:100%;padding:14px;background:rgba(255,61,61,.1);color:var(--red);border:1px solid rgba(255,61,61,.3);border-radius:14px;font-size:14px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:calc(40px + var(--safe-bottom));display:flex;align-items:center;justify-content:center;gap:8px}
-        .admin-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
-        .admin-stat-card{background:var(--bg-card);border-radius:14px;padding:16px;text-align:center;border:1px solid var(--border-color)}
-        .admin-stat-card i{font-size:24px;margin-bottom:8px}
-        .admin-stat-card .stat-value{font-size:22px;font-weight:800;display:block}
-        .admin-stat-card .stat-label{font-size:11px;color:var(--text-gray);margin-top:4px}
-        .admin-stat-card.yellow i{color:var(--primary-yellow)}
-        .admin-stat-card.green i{color:var(--green)}
-        .admin-stat-card.blue i{color:var(--blue)}
-        .admin-stat-card.red i{color:var(--red)}
-        .toast{position:fixed;top:calc(20px + var(--safe-top));left:50%;transform:translateX(-50%) translateY(-100px);background:var(--green);color:#000;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:700;z-index:99999;transition:transform .4s;display:flex;align-items:center;gap:8px;box-shadow:0 10px 30px rgba(0,200,83,.3);max-width:calc(100% - 40px)}
+        .blurred-value{filter:blur(6px)}
+        
+        .toast{position:fixed;top:40px;left:50%;transform:translateX(-50%) translateY(-100px);background:var(--green);color:#000;padding:12px 24px;border-radius:10px;transition:0.4s;z-index:10001}
         .toast.show{transform:translateX(-50%) translateY(0)}
-        .toast.error{background:var(--red);color:#fff;box-shadow:0 10px 30px rgba(255,61,61,.3)}
-        .toast i{font-size:18px}
-        ::-webkit-scrollbar{width:0}
-        @media(min-width:500px){body{display:flex;align-items:center;justify-content:center;background:#000}#splash-screen,#login-screen,#app,#admin-page{max-width:420px;max-height:900px;border-radius:30px;overflow:hidden}#admin-page.active{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);max-width:420px;max-height:900px;border-radius:30px}}
+        .toast.error{background:var(--red);color:#fff}
+
+        #admin-page{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg-dark);z-index:9500;padding:40px 20px;overflow-y:auto}
+        #admin-page.active{display:block}
     </style>
 </head>
 <body>
-<script>
-   const LOGO_DARK="logo-dark.png";
-   const LOGO_LIGHT="logo-light.png";
-   const LOGO_SPLASH="logo-splash.png";
-   const TELEGRAM_LINK="https://t.me/scoremasteroff";
-   const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
-   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
-   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-</script>
 
-<div id="splash-screen"><div class="splash-content"><img id="img-splash" alt="ScoreMaster" class="splash-logo-img"><div class="splash-loader"><span></span><span></span><span></span></div></div></div>
+<div id="splash-screen"><div class="splash-content"><div class="splash-loader"><span></span><span></span><span></span></div></div></div>
 
 <div id="login-screen">
-    <div class="login-header"><img id="img-login" alt="ScoreMaster" class="login-logo-img"></div>
+    <div class="login-header"><img src="logo-light.png" class="login-logo-img" alt="Logo"></div>
     <div class="login-form-container">
         <div class="login-form-title">Email</div>
-        <input type="email" class="login-input" id="login-email" placeholder="Votre email">
+        <input type="email" class="login-input" id="login-email" placeholder="Email">
         
-       <!-- Nouveau champ Pseudo (Caché en mode connexion) -->
-        <div class="login-form-title" id="title-username" style="display:none;">Pseudo</div>
-        <input type="text" class="login-input" id="login-username" placeholder="Votre pseudo" style="display:none;">
-        
-       <div class="login-form-title">Mot de passe</div>
-<div style="position: relative; width: 100%;">
-    <!-- Le champ mot de passe avec un espace à droite pour l'icône -->
-    <input type="password" class="login-input" id="login-password" placeholder="••••••••••••" style="padding-right: 45px; margin-bottom: 20px; width: 100%;">
-    
-    <!-- L'icône de l'œil positionnée par-dessus l'input -->
-    <i class="fas fa-eye" id="togglePassword" style="position: absolute; right: 15px; top: 15px; color: var(--text-gray); cursor: pointer; font-size: 16px; z-index: 10;"></i>
-</div>
-        
-        <button class="login-btn" id="btn-action" onclick="handleAuth()">Connexion</button>
-        <div class="login-error" id="login-error"><i class="fas fa-exclamation-circle"></i> Identifiants incorrects</div>
-        
-        <div class="login-options">
-            <a href="#" class="forgot-password" id="toggle-auth" onclick="toggleAuthMode(); return false;">Créer un compte</a>
-            <div class="remember-me"><div class="toggle-switch active" onclick="this.classList.toggle('active')"></div><span>Se souvenir de moi</span></div>
+        <div id="signup-fields" style="display:none;">
+            <div class="login-form-title">Pseudo</div>
+            <input type="text" class="login-input" id="login-username" placeholder="Pseudo">
         </div>
-        
-        <div class="api-badge-login"><i class="fas fa-plug"></i><span>API Betclic connectée</span><div class="api-status-dot"></div></div>
-    </div> <!-- Cette balise ferme proprement login-form-container -->
 
-<div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toast-message"></span></div>
+        <div class="login-form-title">Mot de passe</div>
+        <div style="position: relative;">
+            <input type="password" class="login-input" id="login-password" placeholder="••••••••">
+            <i class="fas fa-eye" id="togglePassword" style="position:absolute;right:15px;top:15px;color:var(--text-gray);cursor:pointer"></i>
+        </div>
+
+        <button class="login-btn" id="btn-action" onclick="handleAuth()">Connexion</button>
+        <p style="text-align:center;margin-top:20px;font-size:13px">
+            <a href="#" id="toggle-auth" onclick="toggleAuthMode();return false;" style="color:var(--primary-yellow)">Créer un compte</a>
+        </p>
+    </div>
+</div>
 
 <div id="app">
     <div class="pages-container">
-        <!-- HOME -->
         <div class="page active" id="page-home">
-            <div class="home-header fade-in-up delay-1">
-                <div class="home-user"><div class="logo-avatar small" id="avatar-home"></div><div><div class="home-greeting">Bienvenue !</div><div class="home-username">Admin SM <i class="fas fa-chevron-down"></i></div></div></div>
-                <div class="home-notif" onclick="showToast('Pas de nouvelles notifications',true)"><i class="fas fa-bell"></i><div class="notif-dot"></div></div>
-            </div>
-            <div class="search-bar fade-in-up delay-2"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un match..."><i class="fas fa-microphone mic-btn"></i></div>
-            <div class="api-banner fade-in-up delay-2"><div class="api-icon"><i class="fas fa-plug"></i></div><div class="api-info"><div class="api-title">API Betclic connectée <div class="live-dot"></div></div><div class="api-desc">Données en temps réel • Cotes actualisées</div></div><span class="betclic-badge">BETCLIC</span></div>
-            <div class="section-header fade-in-up delay-3"><span class="section-title">Découvrez nos packs !</span><span class="section-more" onclick="navigateTo('packs')">Voir plus</span></div>
-            <div class="packs-scroll">
-                <div class="pack-card fade-in-up delay-3" onclick="navigateTo('packs')"><div class="logo-pack-icon green" id="pack-icon-1"></div><div class="pack-card-info"><div class="pack-card-name">SM S.E Journalier</div><div class="pack-card-tag"><i class="fas fa-circle"></i> Livraison instantanée !</div><div class="pack-card-btn" style="background:var(--green);color:#fff;">Découvrir !</div></div><i class="far fa-heart heart-icon" onclick="event.stopPropagation();this.classList.toggle('liked');this.classList.toggle('far');this.classList.toggle('fas');"></i></div>
-                <div class="pack-card fade-in-up delay-4" onclick="navigateTo('packs')"><div class="logo-pack-icon red" id="pack-icon-2"></div><div class="pack-card-info"><div class="pack-card-name">SM VIP+ (à vie)</div><div class="pack-card-tag"><i class="fas fa-circle"></i> Livraison instantanée !</div><div class="pack-card-btn" style="background:var(--red);color:#fff;">Découvrir !</div></div><i class="far fa-heart heart-icon" onclick="event.stopPropagation();this.classList.toggle('liked');this.classList.toggle('far');this.classList.toggle('fas');"></i></div>
-            </div>
-            <div class="home-vip-section fade-in-up delay-5"><h3>🔥 Dernier Combiné VIP+</h3><div id="home-combined-container"><div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div></div></div>
-            <div class="help-card fade-in-up delay-5"><div class="help-card-icon"><i class="fas fa-comment-dots"></i></div><div class="help-card-info"><div class="help-card-title">Un problème, ou besoin d'aide ?</div><div class="help-card-desc">Pas de panique ! Contactez nous ici !</div></div><i class="fas fa-chevron-right help-card-arrow"></i></div>
-            <div style="height:20px;"></div>
+            <h2 class="home-username">Bienvenue</h2>
+            <div id="home-combined-container"></div>
         </div>
-        <!-- PACKS -->
-        <div class="page" id="page-packs">
-            <div class="page-title-bar"><h2>Nos Packs</h2></div>
-            <div class="packs-page-list">
-                <div class="pack-detail-card"><div class="pack-detail-top"><div class="logo-pack-detail green" id="pack-detail-1"></div><div><div class="pack-detail-name">SM Score Exact Journalier</div><div class="pack-detail-desc">Recevez chaque jour notre meilleur pronostic en score exact avec une analyse détaillée.</div></div></div><div class="pack-detail-features"><div class="pack-feature"><i class="fas fa-check"></i> 1 score exact / jour</div><div class="pack-feature"><i class="fas fa-check"></i> Analyse détaillée</div><div class="pack-feature"><i class="fas fa-check"></i> Support 7j/7</div><div class="pack-feature"><i class="fas fa-check"></i> Notification push</div></div><div class="pack-detail-bottom"><div class="pack-price-container"><span class="price-old">89,99€</span><span class="price-new" style="color:var(--green);">50€</span><span class="price-label">unique</span></div><button class="pack-subscribe-btn" style="background:var(--green);color:#fff;">S'abonner</button></div></div>
-                <div class="pack-detail-card"><div class="pack-detail-top"><div class="logo-pack-detail red" id="pack-detail-2"></div><div><div class="pack-detail-name">SM VIP+ (à vie)</div><div class="pack-detail-desc">Accès illimité et à vie à tous nos pronostics, combinés exclusifs et espace membre VIP+.</div></div></div><div class="pack-detail-features"><div class="pack-feature"><i class="fas fa-check"></i> Accès à vie</div><div class="pack-feature"><i class="fas fa-check"></i> 4 à 5 combinés S.E / semaine</div><div class="pack-feature"><i class="fas fa-check"></i> Espace membre VIP+</div><div class="pack-feature"><i class="fas fa-check"></i> Canal Telegram VIP</div><div class="pack-feature"><i class="fas fa-check"></i> Priorité support</div></div><div class="pack-detail-bottom"><div class="pack-price-container"><span class="price-old">179,99€</span><span class="price-new" style="color:var(--primary-yellow);">99,99€</span><span class="price-label">unique</span></div><button class="pack-subscribe-btn" style="background:var(--red);color:#fff;">S'abonner</button></div></div>
-                <div class="pack-detail-card"><div class="pack-detail-top"><div class="logo-pack-detail blue" id="pack-detail-3"></div><div><div class="pack-detail-name">SM Combiné Hebdo</div><div class="pack-detail-desc">Chaque semaine, recevez un combiné score exact soigneusement sélectionné avec des cotes élevées.</div></div></div><div class="pack-detail-features"><div class="pack-feature"><i class="fas fa-check"></i> 1 combiné S.E / semaine</div><div class="pack-feature"><i class="fas fa-check"></i> Cotes élevées</div><div class="pack-feature"><i class="fas fa-check"></i> Suivi en direct</div><div class="pack-feature"><i class="fas fa-check"></i> Récap hebdomadaire</div></div><div class="pack-detail-bottom"><div class="pack-price-container"><span class="price-old">129,99€</span><span class="price-new" style="color:var(--blue);">69,99€</span><span class="price-label">unique</span></div><button class="pack-subscribe-btn" style="background:var(--blue);color:#fff;">S'abonner</button></div></div>
-            </div>
-            <div style="height:20px;"></div>
-        </div>
-        <!-- CONTACT -->
-        <div class="page" id="page-contact">
-            <div class="page-title-bar"><h2>Contact</h2></div>
-            <div class="contact-page">
-                <a href="https://t.me/scoremasteroff" target="_blank" rel="noopener" class="contact-link"><div class="contact-card"><div class="contact-card-icon telegram"><i class="fab fa-telegram-plane"></i></div><div class="contact-card-info"><h4>Telegram</h4><p>Rejoignez notre canal officiel</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div></a>
-                <div class="contact-card"><div class="contact-card-icon instagram"><i class="fab fa-instagram"></i></div><div class="contact-card-info"><h4>Instagram</h4><p>@scoremaster.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
-                <div class="contact-card"><div class="contact-card-icon twitter"><i class="fab fa-x-twitter"></i></div><div class="contact-card-info"><h4>X (Twitter)</h4><p>@ScoreMasterFR</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
-                <div class="contact-card"><div class="contact-card-icon email"><i class="fas fa-envelope"></i></div><div class="contact-card-info"><h4>Email</h4><p>contact@scoremaster.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
-            </div>
-        </div>
-        <!-- VIP -->
+        <div class="page" id="page-packs"><h2>Nos Packs</h2></div>
+        <div class="page" id="page-contact"><h2>Contact</h2></div>
         <div class="page" id="page-vip">
-            <div class="vip-header"><h2>Espace SM VIP+</h2></div>
-            <div class="vip-profile"><div class="logo-avatar medium" id="avatar-vip"></div><div class="vip-user-info"><h3>Admin SM</h3></div><button class="vip-modify-btn" onclick="promptAdminCode()" style="border-color:transparent;color:transparent;">Modifier</button>
-</div>
-            <div class="vip-notice">Le prochain combiné apparaîtra ci-dessous une fois disponible ! (activez vos notifs !)</div>
-            <div class="api-banner" style="margin:0 20px 15px;"><div class="api-icon"><i class="fas fa-plug"></i></div><div class="api-info"><div class="api-title">API Betclic connectée <div class="live-dot"></div></div><div class="api-desc">Données en temps réel • Cotes actualisées</div></div><span class="betclic-badge">BETCLIC</span></div>
-            <div id="vip-combined-status-bar"></div>
-            <div class="vip-combined-container" id="vip-combined-container"><div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.<br><span style="font-size:12px;color:var(--text-gray);">Revenez bientôt !</span></div></div>
-            <div class="help-card" style="margin:0 20px 20px;"><div class="help-card-icon"><i class="fas fa-comment-dots"></i></div><div class="help-card-info"><div class="help-card-title">Un problème, ou besoin d'aide ?</div><div class="help-card-desc">Pas de panique ! Contactez nous ici !</div></div><i class="fas fa-chevron-right help-card-arrow"></i></div>
+            <div class="vip-header">
+                <h2 class="vip-username">Espace VIP+</h2>
+                <button id="admin-btn" onclick="openAdmin()" style="display:none;padding:5px 10px;background:var(--red);color:#fff;border:none;border-radius:5px;margin-top:10px">Modifier</button>
+            </div>
+            <div id="vip-combined-container"></div>
         </div>
     </div>
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="navigateTo('home')"><i class="fas fa-home"></i><span>Accueil</span></div>
-        <div class="nav-item" onclick="navigateTo('packs')"><i class="fas fa-clone"></i><span>Nos packs</span></div>
-        <div class="nav-item" onclick="navigateTo('contact')"><i class="fas fa-envelope"></i><span>Contact</span></div>
-        <div class="nav-item vip" onclick="navigateTo('vip')"><i class="fas fa-user-shield"></i><span>Espace<br>SM VIP+</span></div>
+        <div class="nav-item active" onclick="navigateTo('home')"><i class="fas fa-home"></i><br>Accueil</div>
+        <div class="nav-item" onclick="navigateTo('packs')"><i class="fas fa-clone"></i><br>Packs</div>
+        <div class="nav-item" onclick="navigateTo('contact')"><i class="fas fa-envelope"></i><br>Contact</div>
+        <div class="nav-item vip" onclick="navigateTo('vip')"><i class="fas fa-user-shield"></i><br>VIP+</div>
     </div>
 </div>
 
-<!-- ADMIN -->
 <div id="admin-page">
-    <div class="admin-header"><h2><img id="img-admin" alt="SM" class="admin-header-logo"> Panel Admin</h2><button class="admin-close" onclick="closeAdmin()"><i class="fas fa-times"></i></button></div>
-    <div class="admin-section"><div class="admin-stats"><div class="admin-stat-card yellow"><i class="fas fa-futbol"></i><span class="stat-value" id="stat-total">0</span><div class="stat-label">Combinés publiés</div></div><div class="admin-stat-card green"><i class="fas fa-check-circle"></i><span class="stat-value" id="stat-wins">0</span><div class="stat-label">Gagnés</div></div><div class="admin-stat-card blue"><i class="fas fa-clock"></i><span class="stat-value" id="stat-pending">0</span><div class="stat-label">En cours</div></div><div class="admin-stat-card red"><i class="fas fa-times-circle"></i><span class="stat-value" id="stat-losses">0</span><div class="stat-label">Perdus</div></div></div></div>
-    <div class="admin-section"><div class="admin-section-title"><i class="fas fa-plus-circle"></i> Créer un combiné</div><div class="admin-card"><div class="admin-row"><div class="admin-field"><div class="admin-label"><i class="fas fa-calendar"></i> Date</div><input type="date" class="admin-input" id="admin-date"></div><div class="admin-field"><div class="admin-label"><i class="fas fa-flag"></i> Statut</div><select class="admin-select" id="admin-status"><option value="en-cours">En cours</option><option value="termine">Terminé ✅</option><option value="perdu">Perdu ❌</option></select></div></div><button onclick="updateDateOnly()" style="width:100%;padding:12px;background:transparent;border:1px solid var(--primary-yellow);color:var(--primary-yellow);border-radius:10px;font-size:13px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="fas fa-calendar-check"></i> Modifier la date / statut uniquement</button></div></div>
-    <div class="admin-section"><div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs</div><div id="admin-matches"></div><button class="admin-add-match-btn" onclick="addMatchEntry()"><i class="fas fa-plus"></i> Ajouter un match</button></div>
-    <div class="admin-section"><div class="admin-section-title"><i class="fas fa-coins"></i> Mise & Résumé</div><div class="admin-card"><div class="admin-field"><div class="admin-label"><i class="fas fa-money-bill"></i> Mise (€)</div><input type="number" class="admin-input" id="admin-mise" placeholder="100.00" oninput="calculateGains()"></div></div><div class="admin-summary"><div class="admin-summary-row"><span class="admin-summary-label">Matchs</span><span class="admin-summary-value" id="summary-matches">0</span></div><div class="admin-summary-row"><span class="admin-summary-label">Cote totale</span><span class="admin-summary-value" id="summary-odds">0.00</span></div><div class="admin-summary-row"><span class="admin-summary-label">Mise</span><span class="admin-summary-value" id="summary-mise">0,00 €</span></div><div class="admin-summary-row"><span class="admin-summary-label">Gains potentiels</span><span class="admin-summary-value gains" id="summary-gains">0,00 €</span></div></div></div>
-    <div class="admin-section"><button class="admin-submit-btn" onclick="publishCombined()"><i class="fas fa-paper-plane"></i> Publier le combiné</button><button class="admin-delete-btn" onclick="deleteCombined()"><i class="fas fa-trash-alt"></i> Supprimer le combiné</button></div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:20px">
+        <h3>Panel Admin</h3>
+        <button onclick="closeAdmin()">Fermer</button>
+    </div>
+    <input type="date" id="admin-date" class="login-input">
+    <select id="admin-status" class="login-input">
+        <option value="en-cours">En cours</option>
+        <option value="termine">Terminé ✅</option>
+        <option value="perdu">Perdu ❌</option>
+    </select>
+    <div id="admin-matches"></div>
+    <button onclick="addMatchEntry()">+ Ajouter Match</button>
+    <input type="number" id="admin-mise" class="login-input" placeholder="Mise (€)" style="margin-top:20px">
+    <button class="login-btn" onclick="publishCombined()">PUBLIER LE COMBINÉ</button>
 </div>
+
+<div class="toast" id="toast"><span id="toast-message"></span></div>
 
 <script>
-function setLogos(){
-    document.getElementById('img-splash').src=LOGO_SPLASH;
-    document.getElementById('img-login').src=LOGO_LIGHT;
-    document.getElementById('img-admin').src=LOGO_DARK;
-    document.getElementById('avatar-home').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
-    document.getElementById('avatar-vip').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
-    document.getElementById('pack-icon-1').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
-    document.getElementById('pack-icon-2').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
-    document.getElementById('pack-detail-1').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
-    document.getElementById('pack-detail-2').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
-    document.getElementById('pack-detail-3').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
-}
+    const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-var currentCombined=null,matchEntryCount=0,appStats={total:0,wins:0,losses:0,pending:0};
-function loadState(){
-    var s=localStorage.getItem('scoreMasterData');
-    if(s){var d=JSON.parse(s);currentCombined=d.combined||null;appStats=d.stats||{total:0,wins:0,losses:0,pending:0};}
-}
-function saveState(){localStorage.setItem('scoreMasterData',JSON.stringify({combined:currentCombined,stats:appStats}));}
+    let isSignUpMode = false;
+    let currentCombined = null;
 
-window.addEventListener('load',function(){
-    setLogos();loadState();
-    document.getElementById('admin-date').value=new Date().toISOString().split('T')[0];
-    addMatchEntry();addMatchEntry();
-    setTimeout(function(){document.getElementById('splash-screen').classList.add('hidden');setTimeout(function(){document.getElementById('login-screen').classList.add('active');},300);},2500);
-});
+    // --- INITIALISATION ---
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            document.getElementById('splash-screen').classList.add('hidden');
+            document.getElementById('login-screen').classList.add('active');
+        }, 2000);
+    });
 
-let isSignUpMode = false; // Variable pour savoir si on est sur Inscription ou Connexion
-
-function toggleAuthMode() {
-    isSignUpMode = !isSignUpMode;
-    // On affiche ou cache le champ Pseudo
-    document.getElementById('title-username').style.display = isSignUpMode ? 'block' : 'none';
-    document.getElementById('login-username').style.display = isSignUpMode ? 'block' : 'none';
-    // On change les textes des boutons
-    document.getElementById('btn-action').textContent = isSignUpMode ? 'S\'inscrire' : 'Connexion';
-    document.getElementById('toggle-auth').textContent = isSignUpMode ? 'Déjà un compte ? Connexion' : 'Créer un compte';
-}
-
-// 1. Script pour faire fonctionner l'œil (Afficher/Cacher le MDP)
-document.addEventListener('click', function(e) {
-    if (e.target && e.target.id === 'togglePassword') {
-        const passwordInput = document.getElementById('login-password');
-        const isPassword = passwordInput.getAttribute('type') === 'password';
-        passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
-        e.target.classList.toggle('fa-eye');
-        e.target.classList.toggle('fa-eye-slash');
-    }
-});
-
-// 2. Fonction handleAuth corrigée (Anti-Bug)
-async function handleAuth() {
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    const username = document.getElementById('login-username').value;
-
-    if (!email || !password || (isSignUpMode && !username)) {
-        showToast('Veuillez remplir tous les champs', true);
-        return;
+    // --- AUTHENTIFICATION ---
+    function toggleAuthMode() {
+        isSignUpMode = !isSignUpMode;
+        document.getElementById('signup-fields').style.display = isSignUpMode ? 'block' : 'none';
+        document.getElementById('btn-action').textContent = isSignUpMode ? 'S\'inscrire' : 'Connexion';
+        document.getElementById('toggle-auth').textContent = isSignUpMode ? 'Déjà un compte ? Connexion' : 'Créer un compte';
     }
 
-    try {
-        let result;
-        if (isSignUpMode) {
-            result = await supabaseClient.auth.signUp({ email, password });
-            if (result.error) throw result.error;
-            
-            await supabaseClient.from('profiles').insert([{
-                id: result.data.user.id,
-                email: email,
-                username: username,
-                is_vip: false,
-                is_admin: false
-            }]);
-            
-            showToast('Compte créé ! Connectez-vous.');
-            toggleAuthMode();
-            return;
-        } else {
-            result = await supabaseClient.auth.signInWithPassword({ email, password });
-            if (result.error) throw result.error;
-        }
+    document.getElementById('togglePassword').addEventListener('click', function() {
+        const input = document.getElementById('login-password');
+        const type = input.type === 'password' ? 'text' : 'password';
+        input.type = type;
+        this.classList.toggle('fa-eye');
+        this.classList.toggle('fa-eye-slash');
+    });
 
-        const { data: profile } = await supabaseClient
-            .from('profiles')
-            .select('is_vip, is_admin, username')
-            .eq('id', result.data.user.id)
-            .single();
+    async function handleAuth() {
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        const username = document.getElementById('login-username').value;
 
-        window.isUserVip = profile ? profile.is_vip : false;
-        window.isAdmin = profile ? profile.is_admin : false;
-
-        // PROTECTION ANTI-ECRAN NOIR : On vérifie si l'élément existe avant de le modifier
-        let finalUsername = (profile && profile.username) ? profile.username : "Utilisateur";
-        const homeName = document.querySelector('.home-username');
-        if (homeName) homeName.innerHTML = finalUsername + ' <i class="fas fa-chevron-down"></i>';
-        
-        const vipName = document.querySelector('.vip-user-info h3');
-        if (vipName) vipName.textContent = finalUsername;
-
-        // Passage à l'application
-        document.getElementById('login-screen').style.opacity = '0';
-        setTimeout(() => { 
-            document.getElementById('login-screen').classList.remove('active');
-            document.getElementById('app').classList.add('active'); // On affiche l'app
-            chargerDonnees(); 
-        }, 400);
-
-    } catch (err) {
-        showToast(err.message || 'Erreur d\'authentification', true);
-    }
-}
-
-// 3. Correction de l'écouteur "Entrée" (Il appelait handleLogin au lieu de handleAuth)
-document.getElementById('login-password').addEventListener('keypress', function(e) { 
-    if(e.key === 'Enter') handleAuth(); 
-});
-   
-async function chargerDonnees() {
-    try {
-        // 1. Tentez d'abord de récupérer les infos PUBLIQUES
-        const { data: publicData, error: publicErr } = await supabaseClient
-            .from('combineds_public')
-            .select('*')
-            // Trie pour avoir le plus récent en premier
-            .order('id', { ascending: false }) 
-            .limit(1)
-            .single();
-
-        if (publicErr || !publicData) {
-             // S'il n'y a VRAIMENT aucun combiné publié dans la table publique
-             currentCombined = null; 
-             renderCombined();
-             return;
-        }
-
-        if (window.isUserVip) {
-            // 2. L'utilisateur est VIP ! Tentez d'ouvrir le coffre-fort 🤫
-            const { data: vipData, error: vipErr } = await supabaseClient
-                .from('combineds_vip')
-                .select('*')
-                .eq('id', publicData.id) // On cherche les scores secrets de ce combiné précis
-                .single();
-
-            if (vipData && !vipErr) {
-                // Succès total ! On fusionne les infos publiques et VIP
-                currentCombined = { ...publicData, ...vipData };
+        try {
+            let user;
+            if (isSignUpMode) {
+                const { data, error } = await supabaseClient.auth.signUp({ email, password });
+                if (error) throw error;
+                await supabaseClient.from('profiles').insert([{ id: data.user.id, email, username, is_vip: false, is_admin: false }]);
+                showToast("Compte créé ! Connectez-vous.");
+                toggleAuthMode();
+                return;
             } else {
-                 // Erreur de récupération VIP (ex: RLS bloque), on se rabat sur le public
-                 console.warn("Accès VIP refusé (RLS)");
-                 currentCombined = publicData;
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                user = data.user;
             }
-        } else {
-            // 3. L'utilisateur n'est pas VIP. On utilise uniquement les infos publiques.
-            currentCombined = publicData; 
-        }
-    } catch (e) {
-        console.error("Erreur lors du chargement des données :", e);
-        currentCombined = null; // En cas de gros crash, on n'affiche rien
-    }
 
-    // On lance l'affichage à l'écran. 
-    // Rappel: Votre fonction buildCC() doit utiliser "?-?" et "***" si currentCombined.matches n'existe pas.
-    renderCombined();
-}
-   
-document.getElementById('login-password').addEventListener('keypress', function(e) { 
-    if(e.key === 'Enter') handleAuth(); 
-});
+            const { data: profile } = await supabaseClient.from('profiles').select('*').eq('id', user.id).single();
+            window.isUserVip = profile.is_vip;
+            window.isAdmin = profile.is_admin;
 
-function navigateTo(page) {
-    // INTERCEPTION POUR LA PAGE VIP
-    if (page === 'vip') {
-        // On vérifie le vrai statut stocké (et pas juste le visuel)
-        if (!window.isUserVip) {
-            // L'utilisateur n'est pas VIP : On affiche le popup et on arrête la fonction !
-            var popup = document.getElementById('vip-popup');
-            popup.style.display = 'flex';
-            // Petit délai pour l'animation d'opacité
-            setTimeout(function() { popup.style.opacity = '1'; }, 10); 
-            return; 
+            // UI Updates
+            document.querySelector('.home-username').textContent = "Salut, " + (profile.username || "Utilisateur");
+            if(window.isAdmin) document.getElementById('admin-btn').style.display = 'block';
+
+            document.getElementById('login-screen').classList.remove('active');
+            document.getElementById('app').classList.add('active');
+            chargerDonnees();
+
+        } catch (err) {
+            showToast(err.message, true);
         }
     }
 
-    // Comportement normal si c'est une autre page OU si l'utilisateur est VIP
-    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
-    document.getElementById('page-'+page).classList.add('active');
-    
-    // Pour mettre à jour les icônes du menu du bas (en gérant le cas où le clic vient d'ailleurs que la barre de navigation)
-    document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
-    
-    // On cherche le bouton nav-item correspondant à la page pour le mettre en surbrillance
-    var navItemToActivate = Array.from(document.querySelectorAll('.nav-item')).find(item => item.getAttribute('onclick') === `navigateTo('${page}')`);
-    if(navItemToActivate) {
-         navItemToActivate.classList.add('active');
-    }
-}
-
-function openAdmin(){
-    document.getElementById('admin-page').classList.add('active');
-    if(currentCombined){
-        document.getElementById('admin-date').value=currentCombined.date||'';
-        document.getElementById('admin-status').value=currentCombined.status||'en-cours';
-        document.getElementById('admin-mise').value=currentCombined.mise||'';
-        document.getElementById('admin-matches').innerHTML='';matchEntryCount=0;
-        currentCombined.matches.forEach(function(m){addMatchEntry(m);});calculateGains();
-    }
-    updateStats();
-}
-function closeAdmin(){document.getElementById('admin-page').classList.remove('active');}
-
-function addMatchEntry(data){
-    data=data||null;matchEntryCount++;
-    var c=document.getElementById('admin-matches'),e=document.createElement('div');e.className='match-entry';
-    e.innerHTML='<div class="match-entry-header"><span class="match-entry-number"><i class="fas fa-futbol"></i> Match '+matchEntryCount+'</span><button class="match-entry-remove" onclick="removeMatchEntry(this)"><i class="fas fa-trash"></i></button></div><div class="admin-field"><div class="admin-label"><i class="fas fa-users"></i> Équipes</div><input type="text" class="admin-input match-teams-input" placeholder="Équipe A - Équipe B" value="'+(data?data.teams:'')+'" oninput="calculateGains()"></div><div class="admin-row"><div class="admin-field"><div class="admin-label"><i class="fas fa-bullseye"></i> Score exact</div><input type="text" class="admin-input match-score-input" placeholder="2 - 1" value="'+(data?data.score:'')+'" oninput="calculateGains()"></div><div class="admin-field"><div class="admin-label"><i class="fas fa-chart-line"></i> Cote</div><input type="number" step="0.01" class="admin-input match-odds-input" placeholder="7.00" value="'+(data?data.odds:'')+'" oninput="calculateGains()"></div></div><div class="admin-field"><div class="admin-label"><i class="fas fa-clock"></i> Horaire</div><input type="text" class="admin-input match-time-input" placeholder="Dem. 21:00" value="'+(data?data.time:'')+'"></div>';
-    c.appendChild(e);calculateGains();
-}
-function removeMatchEntry(btn){var e=btn.closest('.match-entry');e.style.opacity='0';e.style.transform='scale(0.95)';e.style.transition='all .3s';setTimeout(function(){e.remove();renumberMatches();calculateGains();},300);}
-function renumberMatches(){var entries=document.querySelectorAll('.match-entry');matchEntryCount=entries.length;entries.forEach(function(e,i){e.querySelector('.match-entry-number').innerHTML='<i class="fas fa-futbol"></i> Match '+(i+1);});}
-
-function calculateGains(){
-    var entries=document.querySelectorAll('.match-entry'),mise=parseFloat(document.getElementById('admin-mise').value)||0;
-    var tot=1,cnt=0;entries.forEach(function(e){var o=parseFloat(e.querySelector('.match-odds-input').value)||0;if(o>0){tot*=o;cnt++;}});if(cnt===0)tot=0;
-    document.getElementById('summary-matches').textContent=entries.length;
-    document.getElementById('summary-odds').textContent=tot.toFixed(2);
-    document.getElementById('summary-mise').textContent=fmtC(mise);
-    document.getElementById('summary-gains').textContent=fmtC(mise*tot);
-}
-function fmtC(v){return new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR',minimumFractionDigits:2}).format(v);}
-
-async function publishCombined() {
-    var entries = document.querySelectorAll('.match-entry');
-    var date = document.getElementById('admin-date').value;
-    var status = document.getElementById('admin-status').value;
-    var mise = parseFloat(document.getElementById('admin-mise').value) || 0;
-
-    if (!entries.length) { showToast('Ajoutez au moins un match !', true); return; }
-    if (mise <= 0) { showToast('Saisissez une mise !', true); return; }
-
-    var matches = [], valid = true;
-    entries.forEach(function(e) {
-        var t = e.querySelector('.match-teams-input').value.trim();
-        var s = e.querySelector('.match-score-input').value.trim();
-        var o = parseFloat(e.querySelector('.match-odds-input').value) || 0;
-        var ti = e.querySelector('.match-time-input').value.trim();
-        if (!t || !s || o <= 0) valid = false;
-        matches.push({ teams: t, score: s, odds: o, time: ti });
-    });
-
-    if (!valid) { showToast('Remplissez tous les champs !', true); return; }
-
-    var tot = 1;
-    matches.forEach(function(m) { tot *= m.odds; });
-    var gains = mise * tot;
-
-    // 1. ENVOI À SUPABASE : Table Publique
-    // On insère le statut et la date, et on récupère l'ID officiel généré par Supabase
-    const { data: publicData, error: publicErr } = await supabaseClient
-        .from('combineds_public')
-        .insert([{ date: date, status: status, nombre_matchs: matches.length }])
-        .select()
-        .single();
-
-    if (publicErr) { 
-        showToast('Erreur de publication publique', true); 
-        console.error(publicErr); 
-        return; 
+    // --- NAVIGATION ---
+    function navigateTo(page) {
+        if(page === 'vip' && !window.isUserVip) {
+            showToast("Accès réservé aux membres VIP+", true);
+            return;
+        }
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + page).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     }
 
-    // 2. ENVOI À SUPABASE : Table VIP (Le coffre-fort)
-    // On lie les scores VIP à l'ID public qu'on vient de récupérer
-    const { error: vipErr } = await supabaseClient
-        .from('combineds_vip')
-        .insert([{
-            id: publicData.id,
-            matches: matches,
-            mise: mise,
-            gains: gains,
-            total_odds: tot
-        }]);
-
-    if (vipErr) { 
-        showToast('Erreur de publication VIP', true); 
-        console.error(vipErr); 
-        return; 
-    }
-
-    // 3. Succès ! On met à jour l'application locale
-    currentCombined = { ...publicData, matches: matches, mise: mise, gains: gains, totalOdds: tot };
-    
-    // Mise à jour de vos petites stats locales
-    if (status === 'en-cours') appStats.pending++;
-    else if (status === 'termine') appStats.wins++;
-    else appStats.losses++;
-    appStats.total++;
-    saveState(); // Sauvegarde juste les stats
-    
-    updateStats();
-    renderCombined();
-    
-    showToast('Combiné publié avec succès !');
-    setTimeout(function() { closeAdmin(); }, 1000);
-}
-
-async function deleteCombined() {
-    if (currentCombined && currentCombined.id) {
+    // --- DATA ---
+    async function chargerDonnees() {
+        const { data: pub } = await supabaseClient.from('combineds_public').select('*').order('id', {ascending:false}).limit(1).single();
+        if(!pub) return;
         
-        // 1. On supprime d'abord les données VIP (car elles dépendent de la table publique)
-        await supabaseClient.from('combineds_vip').delete().eq('id', currentCombined.id);
-        
-        // 2. Ensuite on supprime la donnée publique
-        await supabaseClient.from('combineds_public').delete().eq('id', currentCombined.id);
-        
-        // 3. On nettoie l'interface
-        currentCombined = null;
-        saveState(); 
-        renderCombined();
-        showToast('Combiné supprimé !', true);
-        
-        document.getElementById('admin-matches').innerHTML = '';
-        matchEntryCount = 0;
-        document.getElementById('admin-mise').value = '';
-        addMatchEntry(); 
-        addMatchEntry(); 
-        calculateGains();
-    } else {
-        showToast('Aucun combiné à supprimer !', true);
+        currentCombined = pub;
+        if(window.isUserVip) {
+            const { data: vip } = await supabaseClient.from('combineds_vip').select('*').eq('id', pub.id).single();
+            if(vip) currentCombined = {...pub, ...vip};
+        }
+        render();
     }
-}
 
-function updateStats(){
-    document.getElementById('stat-total').textContent=appStats.total;
-    document.getElementById('stat-wins').textContent=appStats.wins;
-    document.getElementById('stat-pending').textContent=appStats.pending;
-    document.getElementById('stat-losses').textContent=appStats.losses;
-}
-
-function renderCombined(){
-    var vc=document.getElementById('vip-combined-container'),hc=document.getElementById('home-combined-container'),sb=document.getElementById('vip-combined-status-bar');
-    if(!currentCombined){var empty='<div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div>';vc.innerHTML=empty;hc.innerHTML=empty;sb.innerHTML='';return;}
-    var df=fmtD(currentCombined.date),sc=currentCombined.status,sl={'en-cours':'En cours','termine':'Terminé','perdu':'Perdu'};
-    var pw='50%';if(sc==='termine'||sc==='perdu')pw='100%';
-    // VIP: full info + Compléter button
-    vc.innerHTML=buildCC(currentCombined,sc,sl,pw,false);
-    // Home: blurred sensitive info + Telegram CTA button
-    hc.innerHTML=buildCC(currentCombined,sc,sl,pw,true);
-    sb.innerHTML='<div class="vip-combined-status" style="margin:0 20px 15px;">Combiné du '+df+' <span class="disponible">DISPONIBLE !</span></div>';
-}
-
-function buildCC(c, sc, sl, pw, isHome) {
-    var mH = '';
-    
-    // CRUCIAL : Si c.matches n'existe pas (non-VIP), on crée une fausse structure
-    var matchesToDisplay = c.matches ? c.matches : Array(c.nombre_matchs || 2).fill({ teams: 'Match caché', time: '--:--', odds: 0 });
-    
-    // On floute si on est sur l'accueil OU si on a pas reçu les données VIP
-    var isObscured = isHome || !c.matches; 
-
-    matchesToDisplay.forEach(function(m, i) {
-        var displayScore = isObscured ? '?-?' : m.score;
-        var displayOdds = isObscured ? '***' : m.odds.toFixed(2);
-        var teamsName = m.teams || 'Équipe A vs Équipe B';
-        var matchTime = m.time || '';
-
-        var scoreHtml = isObscured ? '<span class="match-score blurred-value">' + displayScore + '</span>' : '<span class="match-score">' + displayScore + '</span>';
-        var oddsHtml = isObscured ? '<div class="match-odds blurred-value">' + displayOdds + '</div>' : '<div class="match-odds">' + displayOdds + '</div>';
-
-        mH += '<div class="match-row"><div class="match-row-top"><div class="match-type"><i class="fas fa-futbol"></i> Score exact ' + scoreHtml + '</div>' + oddsHtml + '</div><div class="match-row-bottom"><div class="match-teams"><i class="fas fa-shield-alt"></i> ' + teamsName + '</div><div class="match-time">' + matchTime + '</div></div></div>';
-    });
-
-    var ic = '';
-    matchesToDisplay.forEach(function(_, i) {
-        ic += '<div class="match-icon-circle ' + (i === matchesToDisplay.length - 1 ? 'highlight' : '') + '"><i class="fas fa-futbol" style="font-size:14px;color:' + (i === matchesToDisplay.length - 1 ? 'white' : 'var(--text-gray)') + '"></i></div>';
-    });
-
-    var pc = c.status === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : c.status === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
-
-    // Sécurisation des gains, mises et cotes totales
-    var displayGains = isObscured ? '***,** €' : fmtC(c.gains || 0);
-    var displayTotalOdds = isObscured ? '***.**' : (c.total_odds || c.totalOdds || 0).toFixed(2);
-    var displayMise = isObscured ? '***,** €' : fmtC(c.mise || 0);
-
-    var gainsHtml = isHome ? '<span class="combined-footer-value gains blurred-value">' + displayGains + '</span>' : '<span class="combined-footer-value gains">' + displayGains + '</span>';
-    var totalOddsHtml = isHome ? '<span class="combined-footer-value blurred-value">' + displayTotalOdds + '</span>' : '<span class="combined-footer-value">' + displayTotalOdds + '</span>';
-
-    var ctaBtn = isHome
-        ? '<a href="' + TELEGRAM_LINK + '" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>'
-        : '<button class="combined-complete-btn">Compléter</button>';
-
-    return '<div class="combined-card"><div class="combined-header"><div class="combined-status"><span class="status-badge ' + sc + '">' + sl[sc] + '</span><span class="combined-label">Combiné</span><div class="combined-count"><i class="fas fa-futbol"></i> ' + matchesToDisplay.length + '</div></div><i class="fas fa-ellipsis-h combined-more"></i></div><div class="combined-progress"><div class="combined-progress-fill" style="width:' + pw + ';' + pc + '"></div></div><div class="combined-matches-icons">' + ic + '<span style="font-size:12px;color:var(--text-gray);margin-left:4px;">' + matchesToDisplay.length + '</span></div><div class="combined-body">' + mH + '</div><div class="combined-footer"><img src="' + LOGO_DARK + '" alt="SM" class="watermark-img"><div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span>' + totalOddsHtml + '</div><div class="combined-footer-row"><span class="combined-footer-label">Mise</span><span class="combined-footer-value">' + displayMise + '</span></div><div class="combined-footer-row"><span class="combined-footer-label">Gains potentiels</span>' + gainsHtml + '</div></div>' + ctaBtn + '</div>';
-}
-   
-function updateDateOnly(){
-    if(!currentCombined){showToast('Aucun combiné à modifier !',true);return;}
-    var newDate=document.getElementById('admin-date').value,newStatus=document.getElementById('admin-status').value;
-    if(!newDate){showToast('Sélectionnez une date !',true);return;}
-    currentCombined.date=newDate;currentCombined.status=newStatus;
-    saveState();renderCombined();showToast('Date et statut mis à jour !');
-}
-function fmtD(d){if(!d)return'';var dt=new Date(d);return String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0');}
-function showToast(msg,err){err=err||false;var t=document.getElementById('toast');document.getElementById('toast-message').textContent=msg;t.querySelector('i').className=err?'fas fa-exclamation-circle':'fas fa-check-circle';t.classList.toggle('error',err);t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
-function promptAdminCode(){
-    if(window.isAdmin === true){
-        openAdmin();
-    } else {
-        showToast('Accès refusé. Vous n\'êtes pas administrateur.', true);
+    function render() {
+        const container = document.getElementById('home-combined-container');
+        const vipContainer = document.getElementById('vip-combined-container');
+        const html = `<div class="combined-card">
+            <span class="status-badge en-cours">${currentCombined.status}</span>
+            <p style="margin-top:10px">Combiné du ${currentCombined.date}</p>
+            <div style="margin-top:10px">
+                ${(currentCombined.matches || []).map(m => `<p>Match: ${m.teams} <br> Score: <span class="${!window.isUserVip ? 'blurred-value' : ''}">${m.score}</span></p>`).join('')}
+            </div>
+        </div>`;
+        container.innerHTML = html;
+        if(window.isUserVip) vipContainer.innerHTML = html;
     }
-}
-   document.getElementById('togglePassword').addEventListener('click', function () {
-    const passwordInput = document.getElementById('login-password');
-    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-    passwordInput.setAttribute('type', type);
-    this.classList.toggle('fa-eye');
-    this.classList.toggle('fa-eye-slash');
-});
+
+    // --- ADMIN ---
+    let matches = [];
+    function addMatchEntry() {
+        const id = Date.now();
+        const div = document.createElement('div');
+        div.innerHTML = `<input type="text" placeholder="Equipe A - B" id="t-${id}"> <input type="text" placeholder="Score" id="s-${id}">`;
+        document.getElementById('admin-matches').appendChild(div);
+        matches.push(id);
+    }
+
+    async function publishCombined() {
+        const date = document.getElementById('admin-date').value;
+        const status = document.getElementById('admin-status').value;
+        const mise = document.getElementById('admin-mise').value;
+        const matchesData = matches.map(id => ({ teams: document.getElementById('t-'+id).value, score: document.getElementById('s-'+id).value }));
+
+        const { data: pub } = await supabaseClient.from('combineds_public').insert([{ date, status, nombre_matchs: matchesData.length }]).select().single();
+        await supabaseClient.from('combineds_vip').insert([{ id: pub.id, matches: matchesData, mise, total_odds: 10 }]);
+        showToast("Publié !");
+        closeAdmin();
+        chargerDonnees();
+    }
+
+    function openAdmin() { document.getElementById('admin-page').classList.add('active'); }
+    function closeAdmin() { document.getElementById('admin-page').classList.remove('active'); }
+    function showToast(m, e) {
+        const t = document.getElementById('toast');
+        t.textContent = m;
+        t.classList.toggle('error', e);
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    }
 </script>
-
-<!-- POPUP NON-VIP -->
-<div id="vip-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
-    <div style="background:var(--bg-card);padding:40px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow: 0 10px 40px rgba(0,0,0,0.4);">
-        
-        <div style="position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:120px;height:120px;background:var(--red);border-radius:50%;filter:blur(40px);opacity:0.6;z-index:-1;"></div>
-
-        <div style="width:70px;height:70px;background:rgba(239,83,80,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 25px auto;">
-            <i class="fas fa-lock" style="font-size:35px;color:var(--red);"></i>
-        </div>
-
-        <h3 style="font-size:22px;font-weight:700;margin-bottom:12px;color:#fff;font-family:'Montserrat',sans-serif;">Accès Réservé</h3>
-        <p style="font-size:14px;color:var(--text-gray);margin-bottom:30px;line-height:1.6;font-family:'Montserrat',sans-serif;">Vous n'avez pas accès à l'espace SM VIP+ :( <br><br>Passez au niveau supérieur pour débloquer tous les scores exacts, les cotes exclusives et décupler vos gains !</p>
-        
-        <button onclick="document.getElementById('vip-popup').style.display='none'; navigateTo('packs');" style="width:100%;padding:16px;background:linear-gradient(135deg, var(--red) 0%, #B71C1C 100%);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:12px;box-shadow: 0 4px 15px rgba(239,83,80,0.3);border:1px solid rgba(255,255,255,0.1);">🔥 Découvrir les packs VIP+</button>
-        
-        <button onclick="document.getElementById('vip-popup').style.display='none'" style="width:100%;padding:12px;background:transparent;color:var(--text-gray);border:none;font-size:13px;font-family:'Montserrat',sans-serif;cursor:pointer;font-weight:500;">Plus tard</button>
-    </div>
-</div>
-
 </body>
 </html>
