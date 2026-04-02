@@ -418,15 +418,16 @@ async function handleLogin() {
             return;
         }
 
-        // 2. Connexion réussie ! On vérifie s'il est VIP
+       // 2. Connexion réussie ! On vérifie s'il est VIP ET s'il est Admin
         const { data: profile } = await supabaseClient
             .from('profiles')
-            .select('is_vip')
+            .select('is_vip, is_admin') // <-- IL MANQUAIT ", is_admin" ICI !
             .eq('id', data.user.id)
             .single();
 
-        // On stocke l'info VIP pour l'affichage
+        // On stocke les infos pour l'affichage et les droits
         window.isUserVip = profile ? profile.is_vip : false;
+        window.isAdmin = profile ? profile.is_admin : false; // <-- IL MANQUAIT CETTE LIGNE !
 
         // 3. On affiche l'application
         document.getElementById('login-screen').style.opacity = '0';
