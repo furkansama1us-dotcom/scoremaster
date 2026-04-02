@@ -287,19 +287,26 @@
 <div id="login-screen">
     <div class="login-header"><img id="img-login" alt="ScoreMaster" class="login-logo-img"></div>
     <div class="login-form-container">
-        <div class="login-form-title">Email / Identifiant</div>
-        <input type="text" class="login-input" id="login-email" placeholder="Votre identifiant" value="Admin SM">
+        <div class="login-form-title">Email</div>
+        <input type="email" class="login-input" id="login-email" placeholder="Votre email">
+        
+        <!-- Nouveau champ Pseudo (Caché en mode connexion) -->
+        <div class="login-form-title" id="title-username" style="display:none;">Pseudo</div>
+        <input type="text" class="login-input" id="login-username" placeholder="Votre pseudo" style="display:none;">
+        
         <div class="login-form-title">Mot de passe</div>
-        <input type="password" class="login-input" id="login-password" placeholder="••••••••••••" value="admin123">
-        <button class="login-btn" onclick="handleLogin()">Connexion</button>
+        <input type="password" class="login-input" id="login-password" placeholder="••••••••••••">
+        
+        <button class="login-btn" id="btn-action" onclick="handleAuth()">Connexion</button>
         <div class="login-error" id="login-error"><i class="fas fa-exclamation-circle"></i> Identifiants incorrects</div>
+        
         <div class="login-options">
-            <a href="#" class="forgot-password">Mot de passe oublié?</a>
+            <a href="#" class="forgot-password" id="toggle-auth" onclick="toggleAuthMode(); return false;">Créer un compte</a>
             <div class="remember-me"><div class="toggle-switch active" onclick="this.classList.toggle('active')"></div><span>Se souvenir de moi</span></div>
         </div>
+        
         <div class="api-badge-login"><i class="fas fa-plug"></i><span>API Betclic connectée</span><div class="api-status-dot"></div></div>
     </div>
-</div>
 
 <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toast-message"></span></div>
 
@@ -400,12 +407,55 @@ window.addEventListener('load',function(){
     setTimeout(function(){document.getElementById('splash-screen').classList.add('hidden');setTimeout(function(){document.getElementById('login-screen').classList.add('active');},300);},2500);
 });
 
-async function handleLogin() {
+let isSignUpMode = false; // Variable pour savoir si on est sur Inscription ou Connexion
+
+function toggleAuthMode() {
+    isSignUpMode = !isSignUpMode;
+    // On affiche ou cache le champ Pseudo
+    document.getElementById('title-username').style.display = isSignUpMode ? 'block' : 'none';
+    document.getElementById('login-username').style.display = isSignUpMode ? 'block' : 'none';
+    // On change les textes des boutons
+    document.getElementById('btn-action').textContent = isSignUpMode ? 'S\'inscrire' : 'Connexion';
+    document.getElementById('toggle-auth').textContent = isSignUpMode ? 'Déjà un compte ? Connexion' : 'Créer un compte';
+}
+
+async function handleAuth() {
     var email = document.getElementById('login-email').value;
     var password = document.getElementById('login-password').value;
+    var username = document.getElementById('login-username').value;
 
-    if(email && password) {
-        // 1. On demande à Supabase de connecter l'utilisateur
+    if (!email || !password || (isSignUpMode && !username)) {
+        showToast('Veuillez remplir tous les champs', true);
+        return;
+    }
+
+    if (isSignUpMode) {
+        // --- MODE INSCRIPTION ---
+        const { data, error } = await supabaseClient.auth.signUp({
+            email: email,
+            password: password
+        });
+
+        if (error) {
+            showToast(error.message, true);
+            return;
+        }
+
+        // On crée son profil avec les statuts de base (Ni VIP, Ni Admin)
+        await supabaseClient.from('profiles').insert([{
+            id: data.user.id,
+            email: email,
+            username: username,
+            is_vip: false,
+            is_admin: false
+        }]);
+
+        showToast('Compte créé avec succès ! Connectez-vous.');
+        toggleAuthMode(); // On le remet sur la page de connexion
+        document.getElementById('login-password').value = '';
+
+    } else {
+        // --- MODE CONNEXION ---
         const { data, error } = await supabaseClient.auth.signInWithPassword({
             email: email,
             password: password
@@ -417,17 +467,25 @@ async function handleLogin() {
             return;
         }
 
-        // 2. Connexion réussie ! On vérifie s'il est VIP ET s'il est Admin
+        // On récupère ses droits ET son pseudo
         const { data: profile } = await supabaseClient
             .from('profiles')
-            .select('is_vip, is_admin')
+            .select('is_vip, is_admin, username')
             .eq('id', data.user.id)
             .single();
 
         window.isUserVip = profile ? profile.is_vip : false;
         window.isAdmin = profile ? profile.is_admin : false;
 
-        // 3. On affiche l'application
+        // 🌟 LA MAGIE EST ICI : On remplace "Admin SM" par le vrai pseudo !
+        let displayUsername = (profile && profile.username) ? profile.username : 'Utilisateur';
+        
+        // Sur la page d'accueil
+        document.querySelector('.home-username').innerHTML = displayUsername + ' <i class="fas fa-chevron-down"></i>';
+        // Dans l'espace VIP
+        document.querySelector('.vip-user-info h3').textContent = displayUsername;
+
+        // On affiche l'application
         document.getElementById('login-screen').style.opacity = '0';
         setTimeout(function(){ 
             document.getElementById('login-screen').classList.remove('active');
@@ -438,6 +496,7 @@ async function handleLogin() {
         }, 400);
     }
 }
+   
 async function chargerDonnees() {
     try {
         // 1. Tentez d'abord de récupérer les infos PUBLIQUES
