@@ -2,8 +2,23 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ScoreMaster - Maîtriser les Scores, C'est Notre Art</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ScoreMaster</title>
+
+    <!-- ===== PWA : Supprime la barre Safari ===== -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ScoreMaster">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0D0D0D">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    <!-- ===== Icône pour l'écran d'accueil ===== -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23000' width='100' height='100' rx='20'/><text x='50' y='55' text-anchor='middle' dy='.1em' font-size='40' font-weight='900' fill='%23FFD700' font-family='Arial'>SM</text><text x='50' y='25' text-anchor='middle' font-size='20'>👑</text></svg>">
+
+    <!-- ===== Manifest PWA ===== -->
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlNjb3JlTWFzdGVyIiwKICAic2hvcnRfbmFtZSI6ICJTTSB2aXAiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBEMEQwRCIsCiAgInRoZW1lX2NvbG9yIjogIiMwRDBEMEQiLAogICJvcmllbnRhdGlvbiI6ICJwb3J0cmFpdCIsCiAgImljb25zIjogW3sKICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sLDxzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgMTAwIDEwMCc+PHJlY3QgZmlsbD0nJTIzMDAwJyB3aWR0aD0nMTAwJyBoZWlnaHQ9JzEwMCcgcng9JzIwJy8+PHRleHQgeD0nNTAnIHk9JzU1JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyBkeT0nLjFlbScgZm9udC1zaXplPSc0MCcgZm9udC13ZWlnaHQ9JzkwMCcgZmlsbD0nJTIzRkZENzAwJyBmb250LWZhbWlseT0nQXJpYWwnPlNNPC90ZXh0Pjwvc3ZnPiIsCiAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogIH1dCn0=">
+
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
@@ -12,6 +27,9 @@
             padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         :root {
@@ -28,18 +46,29 @@
             --red: #FF3D3D;
             --blue: #4A90D9;
             --border-color: #333333;
-            --status-bar-height: 44px;
-            --bottom-nav-height: 75px;
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
 
-        body {
+        html, body {
             font-family: 'Inter', 'Montserrat', sans-serif;
             background: var(--bg-dark);
             color: var(--text-white);
             overflow: hidden;
-            height: 100vh;
-            width: 100vw;
+            height: 100%;
+            width: 100%;
             position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        /* Safe area padding pour iPhone notch */
+        .safe-top {
+            padding-top: var(--safe-top);
+        }
+
+        .safe-bottom {
+            padding-bottom: var(--safe-bottom);
         }
 
         /* ==================== SPLASH SCREEN ==================== */
@@ -72,6 +101,7 @@
             height: 180px;
             margin-bottom: 20px;
             position: relative;
+            display: inline-block;
         }
 
         .splash-logo .crown {
@@ -161,7 +191,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(180deg, var(--primary-yellow) 0%, var(--primary-yellow) 45%, var(--bg-dark) 45%);
+            background: linear-gradient(180deg, var(--primary-yellow) 0%, var(--primary-yellow) 42%, var(--bg-dark) 42%);
             z-index: 9000;
             display: none;
             flex-direction: column;
@@ -174,7 +204,10 @@
 
         .login-header {
             flex: 0 0 auto;
-            padding: 60px 30px 30px;
+            padding-top: calc(20px + var(--safe-top));
+            padding-left: 30px;
+            padding-right: 30px;
+            padding-bottom: 25px;
             text-align: center;
         }
 
@@ -223,8 +256,8 @@
             flex: 1;
             background: var(--bg-dark);
             border-radius: 30px 30px 0 0;
-            padding: 40px 25px;
-            margin-top: -20px;
+            padding: 35px 25px;
+            padding-bottom: calc(30px + var(--safe-bottom));
         }
 
         .login-form-title {
@@ -269,31 +302,11 @@
             cursor: pointer;
             margin-top: 10px;
             transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
         }
 
         .login-btn:active {
             transform: scale(0.98);
             background: var(--dark-yellow);
-        }
-
-        .login-btn::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(255,255,255,0.2);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .login-btn:active::after {
-            width: 300px;
-            height: 300px;
         }
 
         .login-options {
@@ -407,7 +420,7 @@
         /* ==================== MAIN APP ==================== */
         #app {
             display: none;
-            height: 100vh;
+            height: 100%;
             width: 100%;
             flex-direction: column;
             position: relative;
@@ -417,31 +430,12 @@
             display: flex;
         }
 
-        /* Status Bar */
-        .status-bar {
-            height: var(--status-bar-height);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 20px;
-            background: var(--bg-dark);
-            font-size: 14px;
-            font-weight: 600;
-            flex-shrink: 0;
-        }
-
-        .status-icons {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 13px;
-        }
-
-        /* Pages Container */
+        /* Pages Container - NO status bar anymore */
         .pages-container {
             flex: 1;
             overflow: hidden;
             position: relative;
+            padding-top: var(--safe-top);
         }
 
         .page {
@@ -457,6 +451,7 @@
             transition: opacity 0.3s ease, transform 0.3s ease;
             transform: translateY(10px);
             -webkit-overflow-scrolling: touch;
+            padding-top: var(--safe-top);
             padding-bottom: 20px;
         }
 
@@ -468,14 +463,15 @@
 
         /* Bottom Navigation */
         .bottom-nav {
-            height: var(--bottom-nav-height);
+            height: calc(65px + var(--safe-bottom));
             background: #111111;
             border-top: 1px solid var(--border-color);
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: space-around;
             flex-shrink: 0;
-            padding-bottom: 10px;
+            padding-top: 8px;
+            padding-bottom: var(--safe-bottom);
         }
 
         .nav-item {
@@ -484,10 +480,9 @@
             align-items: center;
             gap: 4px;
             cursor: pointer;
-            padding: 8px 12px;
+            padding: 6px 12px;
             border-radius: 12px;
             transition: all 0.3s;
-            position: relative;
         }
 
         .nav-item i {
@@ -501,6 +496,8 @@
             color: var(--text-gray);
             font-weight: 500;
             transition: color 0.3s;
+            text-align: center;
+            line-height: 1.2;
         }
 
         .nav-item.active i {
@@ -562,7 +559,6 @@
             left: 50%;
             transform: translateX(-50%);
             font-size: 14px;
-            color: var(--primary-yellow);
         }
 
         .home-greeting {
@@ -610,7 +606,6 @@
             right: 10px;
         }
 
-        /* Search Bar */
         .search-bar {
             margin: 5px 20px 15px;
             display: flex;
@@ -646,7 +641,6 @@
             cursor: pointer;
         }
 
-        /* API Connected Banner */
         .api-banner {
             margin: 0 20px 15px;
             padding: 10px 16px;
@@ -707,10 +701,8 @@
             background: rgba(255, 61, 61, 0.1);
             padding: 4px 8px;
             border-radius: 6px;
-            letter-spacing: 0.5px;
         }
 
-        /* Section Title */
         .section-header {
             display: flex;
             justify-content: space-between;
@@ -731,7 +723,6 @@
             cursor: pointer;
         }
 
-        /* Pack Cards */
         .packs-scroll {
             padding: 0 20px;
             display: flex;
@@ -776,10 +767,6 @@
             background: linear-gradient(135deg, #FF3D3D, #CC0000);
         }
 
-        .pack-card-icon.blue {
-            background: linear-gradient(135deg, #4A90D9, #2E6AAD);
-        }
-
         .pack-card-icon .icon-text {
             font-family: 'Montserrat', sans-serif;
             font-weight: 900;
@@ -793,7 +780,6 @@
             left: 50%;
             transform: translateX(-50%);
             font-size: 12px;
-            color: var(--primary-yellow);
         }
 
         .pack-card-info {
@@ -830,7 +816,6 @@
             border-radius: 8px;
             font-size: 12px;
             font-weight: 700;
-            cursor: pointer;
         }
 
         .pack-card .heart-icon {
@@ -844,7 +829,6 @@
             color: var(--red);
         }
 
-        /* VIP Combined Section on Home */
         .home-vip-section {
             margin: 0 20px 20px;
         }
@@ -883,7 +867,7 @@
             gap: 8px;
         }
 
-        .combined-status .status-badge {
+        .status-badge {
             padding: 4px 10px;
             border-radius: 6px;
             font-size: 11px;
@@ -936,7 +920,6 @@
         .combined-progress {
             height: 3px;
             background: #2A2A3A;
-            position: relative;
         }
 
         .combined-progress-fill {
@@ -967,7 +950,6 @@
         .match-icon-circle.highlight {
             background: var(--blue);
             color: white;
-            font-weight: 700;
         }
 
         .combined-body {
@@ -995,7 +977,6 @@
             align-items: center;
             gap: 6px;
             font-size: 13px;
-            color: var(--text-white);
             font-weight: 600;
         }
 
@@ -1015,7 +996,6 @@
             border-radius: 6px;
             font-size: 14px;
             font-weight: 700;
-            color: var(--text-white);
         }
 
         .match-row-bottom {
@@ -1042,7 +1022,6 @@
             color: var(--text-gray);
         }
 
-        /* Combined Footer */
         .combined-footer {
             padding: 14px 16px;
             border-top: 1px solid #2A2A3A;
@@ -1068,7 +1047,6 @@
         .combined-footer-value {
             font-size: 15px;
             font-weight: 700;
-            color: var(--text-white);
         }
 
         .combined-footer-value.gains {
@@ -1102,11 +1080,6 @@
             font-family: 'Montserrat', sans-serif;
             cursor: pointer;
             text-align: center;
-            transition: all 0.3s;
-        }
-
-        .combined-complete-btn:active {
-            transform: scale(0.98);
         }
 
         /* ==================== HELP CARD ==================== */
@@ -1156,6 +1129,20 @@
             font-size: 16px;
         }
 
+        .no-combined-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-gray);
+            font-size: 14px;
+        }
+
+        .no-combined-message i {
+            font-size: 40px;
+            margin-bottom: 15px;
+            color: var(--border-color);
+            display: block;
+        }
+
         /* ==================== PACKS PAGE ==================== */
         .page-title-bar {
             padding: 15px 20px;
@@ -1179,12 +1166,6 @@
             padding: 20px;
             margin-bottom: 14px;
             border: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .pack-detail-card:active {
-            border-color: var(--primary-yellow);
         }
 
         .pack-detail-top {
@@ -1202,8 +1183,11 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            position: relative;
         }
+
+        .pack-detail-icon.yellow { background: linear-gradient(135deg, var(--primary-yellow), var(--dark-yellow)); }
+        .pack-detail-icon.red { background: linear-gradient(135deg, #FF3D3D, #CC0000); }
+        .pack-detail-icon.blue { background: linear-gradient(135deg, #4A90D9, #2E6AAD); }
 
         .pack-detail-icon .icon-text {
             font-family: 'Montserrat', sans-serif;
@@ -1274,11 +1258,6 @@
             font-size: 14px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .pack-subscribe-btn:active {
-            transform: scale(0.95);
         }
 
         /* ==================== CONTACT PAGE ==================== */
@@ -1295,12 +1274,6 @@
             display: flex;
             align-items: center;
             gap: 14px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .contact-card:active {
-            border-color: var(--primary-yellow);
         }
 
         .contact-card-icon {
@@ -1313,59 +1286,20 @@
             flex-shrink: 0;
         }
 
-        .contact-card-icon.telegram {
-            background: rgba(0, 136, 204, 0.15);
-        }
+        .contact-card-icon.telegram { background: rgba(0, 136, 204, 0.15); }
+        .contact-card-icon.telegram i { color: #0088cc; font-size: 22px; }
+        .contact-card-icon.instagram { background: rgba(225, 48, 108, 0.15); }
+        .contact-card-icon.instagram i { color: #E1306C; font-size: 22px; }
+        .contact-card-icon.email { background: rgba(255, 215, 0, 0.15); }
+        .contact-card-icon.email i { color: var(--primary-yellow); font-size: 22px; }
+        .contact-card-icon.twitter { background: rgba(29, 161, 242, 0.15); }
+        .contact-card-icon.twitter i { color: #1DA1F2; font-size: 22px; }
 
-        .contact-card-icon.telegram i {
-            color: #0088cc;
-            font-size: 22px;
-        }
+        .contact-card-info h4 { font-size: 15px; font-weight: 600; }
+        .contact-card-info p { font-size: 12px; color: var(--text-gray); margin-top: 2px; }
+        .contact-card-arrow { margin-left: auto; color: var(--text-gray); }
 
-        .contact-card-icon.instagram {
-            background: rgba(225, 48, 108, 0.15);
-        }
-
-        .contact-card-icon.instagram i {
-            color: #E1306C;
-            font-size: 22px;
-        }
-
-        .contact-card-icon.email {
-            background: rgba(255, 215, 0, 0.15);
-        }
-
-        .contact-card-icon.email i {
-            color: var(--primary-yellow);
-            font-size: 22px;
-        }
-
-        .contact-card-icon.twitter {
-            background: rgba(29, 161, 242, 0.15);
-        }
-
-        .contact-card-icon.twitter i {
-            color: #1DA1F2;
-            font-size: 22px;
-        }
-
-        .contact-card-info h4 {
-            font-size: 15px;
-            font-weight: 600;
-        }
-
-        .contact-card-info p {
-            font-size: 12px;
-            color: var(--text-gray);
-            margin-top: 2px;
-        }
-
-        .contact-card-arrow {
-            margin-left: auto;
-            color: var(--text-gray);
-        }
-
-        /* ==================== VIP PAGE (FOLLOWERS VIEW) ==================== */
+        /* ==================== VIP PAGE ==================== */
         .vip-header {
             padding: 15px 20px;
             display: flex;
@@ -1389,10 +1323,7 @@
             cursor: pointer;
         }
 
-        .vip-settings i {
-            color: var(--text-white);
-            font-size: 16px;
-        }
+        .vip-settings i { color: var(--text-white); font-size: 16px; }
 
         .vip-profile {
             padding: 0 20px;
@@ -1426,13 +1357,9 @@
             left: 50%;
             transform: translateX(-50%);
             font-size: 16px;
-            color: var(--primary-yellow);
         }
 
-        .vip-user-info h3 {
-            font-size: 18px;
-            font-weight: 700;
-        }
+        .vip-user-info h3 { font-size: 18px; font-weight: 700; }
 
         .vip-modify-btn {
             padding: 5px 14px;
@@ -1466,8 +1393,6 @@
             font-size: 14px;
             font-weight: 700;
             color: #000;
-            cursor: pointer;
-            transition: all 0.3s;
         }
 
         .vip-combined-status .disponible {
@@ -1478,20 +1403,6 @@
         .vip-combined-container {
             padding: 0 20px;
             margin-bottom: 15px;
-        }
-
-        .no-combined-message {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--text-gray);
-            font-size: 14px;
-        }
-
-        .no-combined-message i {
-            font-size: 40px;
-            margin-bottom: 15px;
-            color: var(--border-color);
-            display: block;
         }
 
         /* ==================== ADMIN PAGE ==================== */
@@ -1513,7 +1424,7 @@
         }
 
         .admin-header {
-            padding: 50px 20px 15px;
+            padding: calc(15px + var(--safe-top)) 20px 15px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -1531,9 +1442,7 @@
             gap: 8px;
         }
 
-        .admin-header h2 i {
-            color: var(--primary-yellow);
-        }
+        .admin-header h2 i { color: var(--primary-yellow); }
 
         .admin-close {
             width: 36px;
@@ -1566,9 +1475,7 @@
             gap: 8px;
         }
 
-        .admin-section-title i {
-            font-size: 14px;
-        }
+        .admin-section-title i { font-size: 14px; }
 
         .admin-card {
             background: var(--bg-card);
@@ -1582,9 +1489,7 @@
             margin-bottom: 16px;
         }
 
-        .admin-field:last-child {
-            margin-bottom: 0;
-        }
+        .admin-field:last-child { margin-bottom: 0; }
 
         .admin-label {
             font-size: 12px;
@@ -1596,10 +1501,7 @@
             gap: 5px;
         }
 
-        .admin-label i {
-            font-size: 11px;
-            color: var(--primary-yellow);
-        }
+        .admin-label i { font-size: 11px; color: var(--primary-yellow); }
 
         .admin-input {
             width: 100%;
@@ -1614,22 +1516,15 @@
             transition: border-color 0.3s;
         }
 
-        .admin-input:focus {
-            border-color: var(--primary-yellow);
-        }
-
-        .admin-input::placeholder {
-            color: #555;
-        }
+        .admin-input:focus { border-color: var(--primary-yellow); }
+        .admin-input::placeholder { color: #555; }
 
         .admin-row {
             display: flex;
             gap: 10px;
         }
 
-        .admin-row .admin-field {
-            flex: 1;
-        }
+        .admin-row .admin-field { flex: 1; }
 
         .admin-select {
             width: 100%;
@@ -1649,9 +1544,7 @@
             background-size: 24px;
         }
 
-        .admin-select:focus {
-            border-color: var(--primary-yellow);
-        }
+        .admin-select:focus { border-color: var(--primary-yellow); }
 
         .match-entry {
             background: var(--bg-card);
@@ -1659,7 +1552,6 @@
             padding: 16px;
             border: 1px solid var(--border-color);
             margin-bottom: 12px;
-            position: relative;
         }
 
         .match-entry-header {
@@ -1678,9 +1570,7 @@
             gap: 6px;
         }
 
-        .match-entry-number i {
-            font-size: 14px;
-        }
+        .match-entry-number i { font-size: 14px; }
 
         .match-entry-remove {
             width: 28px;
@@ -1694,11 +1584,6 @@
             align-items: center;
             justify-content: center;
             font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        .match-entry-remove:active {
-            transform: scale(0.9);
         }
 
         .admin-add-match-btn {
@@ -1715,13 +1600,7 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            transition: all 0.3s;
             margin-bottom: 12px;
-        }
-
-        .admin-add-match-btn:active {
-            border-color: var(--primary-yellow);
-            color: var(--primary-yellow);
         }
 
         .admin-summary {
@@ -1739,24 +1618,11 @@
             border-bottom: 1px solid #2A2A3A;
         }
 
-        .admin-summary-row:last-child {
-            border-bottom: none;
-        }
+        .admin-summary-row:last-child { border-bottom: none; }
 
-        .admin-summary-label {
-            font-size: 13px;
-            color: var(--text-gray);
-        }
-
-        .admin-summary-value {
-            font-size: 16px;
-            font-weight: 700;
-        }
-
-        .admin-summary-value.gains {
-            color: var(--green);
-            font-size: 20px;
-        }
+        .admin-summary-label { font-size: 13px; color: var(--text-gray); }
+        .admin-summary-value { font-size: 16px; font-weight: 700; }
+        .admin-summary-value.gains { color: var(--green); font-size: 20px; }
 
         .admin-submit-btn {
             width: 100%;
@@ -1770,8 +1636,7 @@
             font-family: 'Montserrat', sans-serif;
             cursor: pointer;
             margin-top: 10px;
-            margin-bottom: 30px;
-            transition: all 0.3s;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1781,10 +1646,6 @@
         .admin-submit-btn:active {
             transform: scale(0.98);
             background: var(--dark-yellow);
-        }
-
-        .admin-submit-btn i {
-            font-size: 18px;
         }
 
         .admin-delete-btn {
@@ -1798,53 +1659,13 @@
             font-weight: 700;
             font-family: 'Montserrat', sans-serif;
             cursor: pointer;
-            margin-bottom: 40px;
-            transition: all 0.3s;
+            margin-bottom: calc(40px + var(--safe-bottom));
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
         }
 
-        .admin-delete-btn:active {
-            transform: scale(0.98);
-        }
-
-        /* Success Toast */
-        .toast {
-            position: fixed;
-            top: 60px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background: var(--green);
-            color: #000;
-            padding: 14px 24px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 700;
-            z-index: 99999;
-            transition: transform 0.4s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 10px 30px rgba(0, 200, 83, 0.3);
-        }
-
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-        }
-
-        .toast.error {
-            background: var(--red);
-            color: white;
-            box-shadow: 0 10px 30px rgba(255, 61, 61, 0.3);
-        }
-
-        .toast i {
-            font-size: 18px;
-        }
-
-        /* Stats Cards */
         .admin-stats {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -1860,95 +1681,50 @@
             border: 1px solid var(--border-color);
         }
 
-        .admin-stat-card i {
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
-
-        .admin-stat-card .stat-value {
-            font-size: 22px;
-            font-weight: 800;
-            display: block;
-        }
-
-        .admin-stat-card .stat-label {
-            font-size: 11px;
-            color: var(--text-gray);
-            margin-top: 4px;
-        }
-
+        .admin-stat-card i { font-size: 24px; margin-bottom: 8px; }
+        .admin-stat-card .stat-value { font-size: 22px; font-weight: 800; display: block; }
+        .admin-stat-card .stat-label { font-size: 11px; color: var(--text-gray); margin-top: 4px; }
         .admin-stat-card.yellow i { color: var(--primary-yellow); }
         .admin-stat-card.green i { color: var(--green); }
         .admin-stat-card.blue i { color: var(--blue); }
         .admin-stat-card.red i { color: var(--red); }
 
-        /* Admin History */
-        .admin-history-item {
-            background: var(--bg-card);
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: calc(20px + var(--safe-top));
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: var(--green);
+            color: #000;
+            padding: 14px 24px;
             border-radius: 12px;
-            padding: 14px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border: 1px solid var(--border-color);
-        }
-
-        .admin-history-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .admin-history-icon.win {
-            background: rgba(0, 200, 83, 0.15);
-            color: var(--green);
-        }
-
-        .admin-history-icon.loss {
-            background: rgba(255, 61, 61, 0.15);
-            color: var(--red);
-        }
-
-        .admin-history-icon.pending {
-            background: rgba(255, 215, 0, 0.15);
-            color: var(--primary-yellow);
-        }
-
-        .admin-history-info {
-            flex: 1;
-        }
-
-        .admin-history-title {
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .admin-history-date {
-            font-size: 11px;
-            color: var(--text-gray);
-        }
-
-        .admin-history-amount {
             font-size: 14px;
             font-weight: 700;
-            text-align: right;
+            z-index: 99999;
+            transition: transform 0.4s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 10px 30px rgba(0, 200, 83, 0.3);
+            max-width: calc(100% - 40px);
         }
 
-        .admin-history-amount.win { color: var(--green); }
-        .admin-history-amount.loss { color: var(--red); }
-        .admin-history-amount.pending { color: var(--primary-yellow); }
-
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 0px;
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
         }
 
-        /* Responsive */
+        .toast.error {
+            background: var(--red);
+            color: white;
+            box-shadow: 0 10px 30px rgba(255, 61, 61, 0.3);
+        }
+
+        .toast i { font-size: 18px; }
+
+        ::-webkit-scrollbar { width: 0; }
+
+        /* Desktop wrapper */
         @media (min-width: 500px) {
             body {
                 display: flex;
@@ -1962,37 +1738,25 @@
                 max-height: 900px;
                 border-radius: 30px;
                 overflow: hidden;
-                position: relative;
             }
 
-            #splash-screen {
-                border-radius: 30px;
-            }
-
-            #admin-page {
+            #admin-page.active {
                 position: fixed;
                 left: 50%;
                 top: 50%;
                 transform: translate(-50%, -50%);
+                max-width: 420px;
+                max-height: 900px;
+                border-radius: 30px;
             }
         }
 
-        /* Animations */
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .fade-in-up {
-            animation: fadeInUp 0.5s ease forwards;
-        }
-
+        .fade-in-up { animation: fadeInUp 0.5s ease forwards; }
         .delay-1 { animation-delay: 0.1s; opacity: 0; }
         .delay-2 { animation-delay: 0.2s; opacity: 0; }
         .delay-3 { animation-delay: 0.3s; opacity: 0; }
@@ -2002,7 +1766,7 @@
 </head>
 <body>
 
-<!-- ==================== SPLASH SCREEN ==================== -->
+<!-- SPLASH SCREEN -->
 <div id="splash-screen">
     <div class="splash-logo-container">
         <div class="splash-logo">
@@ -2012,14 +1776,12 @@
         <div class="splash-tagline">MAÎTRISER LES SCORES, C'EST NOTRE ART.</div>
         <div class="splash-subtitle">SCOREMASTER.FR</div>
         <div class="splash-loader">
-            <span></span>
-            <span></span>
-            <span></span>
+            <span></span><span></span><span></span>
         </div>
     </div>
 </div>
 
-<!-- ==================== LOGIN SCREEN ==================== -->
+<!-- LOGIN SCREEN -->
 <div id="login-screen">
     <div class="login-header">
         <div class="login-logo">
@@ -2035,16 +1797,12 @@
     <div class="login-form-container">
         <div class="login-form-title">Email / Identifiant</div>
         <input type="text" class="login-input" id="login-email" placeholder="Votre identifiant" value="Admin SM">
-        
         <div class="login-form-title">Mot de passe</div>
         <input type="password" class="login-input" id="login-password" placeholder="••••••••••••" value="admin123">
-        
         <button class="login-btn" onclick="handleLogin()">Connexion</button>
-        
         <div class="login-error" id="login-error">
             <i class="fas fa-exclamation-circle"></i> Identifiants incorrects
         </div>
-        
         <div class="login-options">
             <a href="#" class="forgot-password">Mot de passe oublié?</a>
             <div class="remember-me">
@@ -2052,7 +1810,6 @@
                 <span>Se souvenir de moi</span>
             </div>
         </div>
-
         <div class="api-badge-login">
             <i class="fas fa-plug"></i>
             <span>API Winamax connectée</span>
@@ -2061,28 +1818,16 @@
     </div>
 </div>
 
-<!-- ==================== TOAST ==================== -->
+<!-- TOAST -->
 <div class="toast" id="toast">
     <i class="fas fa-check-circle"></i>
     <span id="toast-message">Combiné publié avec succès !</span>
 </div>
 
-<!-- ==================== MAIN APP ==================== -->
+<!-- MAIN APP -->
 <div id="app">
-    <!-- Status Bar -->
-    <div class="status-bar">
-        <span id="current-time">00:17</span>
-        <div class="status-icons">
-            <i class="fas fa-signal"></i>
-            <i class="fas fa-wifi"></i>
-            <i class="fas fa-battery-full"></i>
-        </div>
-    </div>
-
-    <!-- Pages Container -->
     <div class="pages-container">
-        
-        <!-- ===== HOME PAGE ===== -->
+        <!-- HOME PAGE -->
         <div class="page active" id="page-home">
             <div class="home-header fade-in-up delay-1">
                 <div class="home-user">
@@ -2092,9 +1837,7 @@
                     </div>
                     <div>
                         <div class="home-greeting">Bienvenue !</div>
-                        <div class="home-username">
-                            Admin SM <i class="fas fa-chevron-down"></i>
-                        </div>
+                        <div class="home-username">Admin SM <i class="fas fa-chevron-down"></i></div>
                     </div>
                 </div>
                 <div class="home-notif" onclick="showToast('Pas de nouvelles notifications', true)">
@@ -2109,16 +1852,10 @@
                 <i class="fas fa-microphone mic-btn"></i>
             </div>
 
-            <!-- API Banner -->
             <div class="api-banner fade-in-up delay-2">
-                <div class="api-icon">
-                    <i class="fas fa-plug"></i>
-                </div>
+                <div class="api-icon"><i class="fas fa-plug"></i></div>
                 <div class="api-info">
-                    <div class="api-title">
-                        API Winamax connectée
-                        <div class="live-dot"></div>
-                    </div>
+                    <div class="api-title">API Winamax connectée <div class="live-dot"></div></div>
                     <div class="api-desc">Données en temps réel • Cotes actualisées</div>
                 </div>
                 <span class="winamax-logo">WINAMAX</span>
@@ -2137,9 +1874,7 @@
                     </div>
                     <div class="pack-card-info">
                         <div class="pack-card-name">SM S.E Journalier</div>
-                        <div class="pack-card-tag">
-                            <i class="fas fa-circle"></i> Livraison instantanée !
-                        </div>
+                        <div class="pack-card-tag"><i class="fas fa-circle"></i> Livraison instantanée !</div>
                         <div class="pack-card-btn">Découvrir !</div>
                     </div>
                     <i class="far fa-heart heart-icon" onclick="event.stopPropagation(); this.classList.toggle('liked'); this.classList.toggle('far'); this.classList.toggle('fas');"></i>
@@ -2148,24 +1883,19 @@
                 <div class="pack-card fade-in-up delay-4" onclick="navigateTo('packs')">
                     <div class="pack-card-icon red">
                         <span class="icon-crown">👑</span>
-                        <span class="icon-text">SM</span>
+                        <span class="icon-text" style="color:white">SM</span>
                     </div>
                     <div class="pack-card-info">
                         <div class="pack-card-name">SM VIP+ (à vie)</div>
-                        <div class="pack-card-tag">
-                            <i class="fas fa-circle"></i> Livraison instantanée !
-                        </div>
-                        <div class="pack-card-btn" style="background: var(--red); color: white;">Découvrir !</div>
+                        <div class="pack-card-tag"><i class="fas fa-circle"></i> Livraison instantanée !</div>
+                        <div class="pack-card-btn" style="background:var(--red);color:white;">Découvrir !</div>
                     </div>
                     <i class="far fa-heart heart-icon" onclick="event.stopPropagation(); this.classList.toggle('liked'); this.classList.toggle('far'); this.classList.toggle('fas');"></i>
                 </div>
             </div>
 
-            <!-- Latest Combined on Home -->
             <div class="home-vip-section fade-in-up delay-5">
-                <div class="home-vip-header">
-                    <h3>🔥 Dernier Combiné VIP+</h3>
-                </div>
+                <div class="home-vip-header"><h3>🔥 Dernier Combiné VIP+</h3></div>
                 <div id="home-combined-container">
                     <div class="no-combined-message">
                         <i class="fas fa-futbol"></i>
@@ -2175,44 +1905,32 @@
             </div>
 
             <div class="help-card fade-in-up delay-5">
-                <div class="help-card-icon">
-                    <i class="fas fa-comment-dots"></i>
-                </div>
+                <div class="help-card-icon"><i class="fas fa-comment-dots"></i></div>
                 <div class="help-card-info">
                     <div class="help-card-title">Un problème, ou besoin d'aide ?</div>
                     <div class="help-card-desc">Pas de panique ! Contactez nous ici !</div>
                 </div>
                 <i class="fas fa-chevron-right help-card-arrow"></i>
             </div>
-
-            <div style="height: 20px;"></div>
+            <div style="height:20px;"></div>
         </div>
 
-        <!-- ===== PACKS PAGE ===== -->
+        <!-- PACKS PAGE -->
         <div class="page" id="page-packs">
-            <div class="page-title-bar">
-                <h2>Nos Packs</h2>
-                <div class="vip-settings">
-                    <i class="fas fa-filter"></i>
-                </div>
-            </div>
-
+            <div class="page-title-bar"><h2>Nos Packs</h2></div>
             <div class="packs-page-list">
                 <div class="pack-detail-card">
                     <div class="pack-detail-top">
-                        <div class="pack-detail-icon yellow">
-                            <span class="icon-text">SM</span>
-                        </div>
+                        <div class="pack-detail-icon yellow"><span class="icon-text">SM</span></div>
                         <div>
                             <div class="pack-detail-name">SM Score Exact Journalier</div>
-                            <div class="pack-detail-desc">Recevez chaque jour notre meilleur pronostic en score exact avec un taux de réussite exceptionnel.</div>
+                            <div class="pack-detail-desc">Recevez chaque jour notre meilleur pronostic en score exact.</div>
                         </div>
                     </div>
                     <div class="pack-detail-features">
                         <div class="pack-feature"><i class="fas fa-check"></i> 1 pronostic / jour</div>
                         <div class="pack-feature"><i class="fas fa-check"></i> Score exact</div>
                         <div class="pack-feature"><i class="fas fa-check"></i> Support 7j/7</div>
-                        <div class="pack-feature"><i class="fas fa-check"></i> Notification push</div>
                     </div>
                     <div class="pack-detail-bottom">
                         <div class="pack-price">9,99€ <span>/ mois</span></div>
@@ -2222,41 +1940,34 @@
 
                 <div class="pack-detail-card">
                     <div class="pack-detail-top">
-                        <div class="pack-detail-icon red">
-                            <span class="icon-text" style="color: white;">SM</span>
-                        </div>
+                        <div class="pack-detail-icon red"><span class="icon-text" style="color:white">SM</span></div>
                         <div>
                             <div class="pack-detail-name">SM VIP+ (à vie)</div>
-                            <div class="pack-detail-desc">Accès illimité et à vie à tous nos pronostics, combinés exclusifs et analyses détaillées.</div>
+                            <div class="pack-detail-desc">Accès illimité à tous nos pronostics et combinés exclusifs.</div>
                         </div>
                     </div>
                     <div class="pack-detail-features">
                         <div class="pack-feature"><i class="fas fa-check"></i> Accès à vie</div>
                         <div class="pack-feature"><i class="fas fa-check"></i> Combinés exclusifs</div>
-                        <div class="pack-feature"><i class="fas fa-check"></i> Analyses détaillées</div>
                         <div class="pack-feature"><i class="fas fa-check"></i> Groupe privé</div>
-                        <div class="pack-feature"><i class="fas fa-check"></i> Priorité support</div>
                     </div>
                     <div class="pack-detail-bottom">
                         <div class="pack-price">49,99€ <span>unique</span></div>
-                        <button class="pack-subscribe-btn" style="background: var(--red); color: white;">S'abonner</button>
+                        <button class="pack-subscribe-btn" style="background:var(--red);color:white;">S'abonner</button>
                     </div>
                 </div>
 
                 <div class="pack-detail-card">
                     <div class="pack-detail-top">
-                        <div class="pack-detail-icon blue">
-                            <span class="icon-text" style="color: white;">SM</span>
-                        </div>
+                        <div class="pack-detail-icon blue"><span class="icon-text" style="color:white">SM</span></div>
                         <div>
                             <div class="pack-detail-name">SM Combiné Hebdo</div>
-                            <div class="pack-detail-desc">Un combiné score exact chaque semaine avec des cotes élevées et un suivi complet.</div>
+                            <div class="pack-detail-desc">Un combiné score exact chaque semaine.</div>
                         </div>
                     </div>
                     <div class="pack-detail-features">
                         <div class="pack-feature"><i class="fas fa-check"></i> 1 combiné / semaine</div>
                         <div class="pack-feature"><i class="fas fa-check"></i> Cotes élevées</div>
-                        <div class="pack-feature"><i class="fas fa-check"></i> Suivi en direct</div>
                     </div>
                     <div class="pack-detail-bottom">
                         <div class="pack-price">19,99€ <span>/ mois</span></div>
@@ -2264,127 +1975,61 @@
                     </div>
                 </div>
             </div>
-
-            <div style="height: 20px;"></div>
+            <div style="height:20px;"></div>
         </div>
 
-        <!-- ===== CONTACT PAGE ===== -->
+        <!-- CONTACT PAGE -->
         <div class="page" id="page-contact">
-            <div class="page-title-bar">
-                <h2>Contact</h2>
-            </div>
-
+            <div class="page-title-bar"><h2>Contact</h2></div>
             <div class="contact-page">
                 <div class="contact-card">
-                    <div class="contact-card-icon telegram">
-                        <i class="fab fa-telegram-plane"></i>
-                    </div>
-                    <div class="contact-card-info">
-                        <h4>Telegram</h4>
-                        <p>Rejoignez notre canal officiel</p>
-                    </div>
+                    <div class="contact-card-icon telegram"><i class="fab fa-telegram-plane"></i></div>
+                    <div class="contact-card-info"><h4>Telegram</h4><p>Rejoignez notre canal officiel</p></div>
                     <i class="fas fa-chevron-right contact-card-arrow"></i>
                 </div>
-
                 <div class="contact-card">
-                    <div class="contact-card-icon instagram">
-                        <i class="fab fa-instagram"></i>
-                    </div>
-                    <div class="contact-card-info">
-                        <h4>Instagram</h4>
-                        <p>@scoremaster.fr</p>
-                    </div>
+                    <div class="contact-card-icon instagram"><i class="fab fa-instagram"></i></div>
+                    <div class="contact-card-info"><h4>Instagram</h4><p>@scoremaster.fr</p></div>
                     <i class="fas fa-chevron-right contact-card-arrow"></i>
                 </div>
-
                 <div class="contact-card">
-                    <div class="contact-card-icon twitter">
-                        <i class="fab fa-x-twitter"></i>
-                    </div>
-                    <div class="contact-card-info">
-                        <h4>X (Twitter)</h4>
-                        <p>@ScoreMasterFR</p>
-                    </div>
+                    <div class="contact-card-icon twitter"><i class="fab fa-x-twitter"></i></div>
+                    <div class="contact-card-info"><h4>X (Twitter)</h4><p>@ScoreMasterFR</p></div>
                     <i class="fas fa-chevron-right contact-card-arrow"></i>
                 </div>
-
                 <div class="contact-card">
-                    <div class="contact-card-icon email">
-                        <i class="fas fa-envelope"></i>
-                    </div>
-                    <div class="contact-card-info">
-                        <h4>Email</h4>
-                        <p>contact@scoremaster.fr</p>
-                    </div>
+                    <div class="contact-card-icon email"><i class="fas fa-envelope"></i></div>
+                    <div class="contact-card-info"><h4>Email</h4><p>contact@scoremaster.fr</p></div>
                     <i class="fas fa-chevron-right contact-card-arrow"></i>
-                </div>
-
-                <div class="help-card" style="margin: 15px 0;">
-                    <div class="help-card-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <div class="help-card-info">
-                        <div class="help-card-title">FAQ & Aide</div>
-                        <div class="help-card-desc">Trouvez les réponses à vos questions</div>
-                    </div>
-                    <i class="fas fa-chevron-right help-card-arrow"></i>
                 </div>
             </div>
         </div>
 
-        <!-- ===== VIP PAGE (Followers view) ===== -->
+        <!-- VIP PAGE -->
         <div class="page" id="page-vip">
             <div class="vip-header">
                 <h2>Espace SM VIP+</h2>
-                <div class="vip-settings" onclick="openAdmin()">
-                    <i class="fas fa-cog"></i>
-                </div>
+                <div class="vip-settings" onclick="openAdmin()"><i class="fas fa-cog"></i></div>
             </div>
-
             <div class="vip-profile">
                 <div class="vip-avatar">
                     <span class="avatar-crown">👑</span>
                     <span class="avatar-text">SM</span>
                 </div>
-                <div class="vip-user-info">
-                    <h3>Admin SM</h3>
-                </div>
+                <div class="vip-user-info"><h3>Admin SM</h3></div>
                 <button class="vip-modify-btn" onclick="openAdmin()">Modifier</button>
             </div>
-
-            <!-- API Banner on VIP page -->
-            <div class="api-banner" style="margin: 0 20px 15px;">
-                <div class="api-icon">
-                    <i class="fas fa-plug"></i>
-                </div>
-                <div class="api-info">
-                    <div class="api-title">
-                        API Winamax connectée
-                        <div class="live-dot"></div>
-                    </div>
-                    <div class="api-desc">Données en temps réel • Cotes actualisées</div>
-                </div>
-                <span class="winamax-logo">WINAMAX</span>
-            </div>
-
-            <div class="vip-notice">
-                Le prochain combiné apparaîtra ci-dessous une fois disponible ! (activez vos notifs !)
-            </div>
-
+            <div class="vip-notice">Le prochain combiné apparaîtra ci-dessous une fois disponible ! (activez vos notifs !)</div>
             <div id="vip-combined-status-bar"></div>
-
             <div class="vip-combined-container" id="vip-combined-container">
                 <div class="no-combined-message">
                     <i class="fas fa-futbol"></i>
                     Aucun combiné disponible pour le moment.<br>
-                    <span style="font-size: 12px; color: var(--text-gray);">Revenez bientôt !</span>
+                    <span style="font-size:12px;color:var(--text-gray);">Revenez bientôt !</span>
                 </div>
             </div>
-
-            <div class="help-card" style="margin: 0 20px 20px;">
-                <div class="help-card-icon">
-                    <i class="fas fa-comment-dots"></i>
-                </div>
+            <div class="help-card" style="margin:0 20px 20px;">
+                <div class="help-card-icon"><i class="fas fa-comment-dots"></i></div>
                 <div class="help-card-info">
                     <div class="help-card-title">Un problème, ou besoin d'aide ?</div>
                     <div class="help-card-desc">Pas de panique ! Contactez nous ici !</div>
@@ -2397,34 +2042,27 @@
     <!-- Bottom Navigation -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="navigateTo('home')">
-            <i class="fas fa-home"></i>
-            <span>Accueil</span>
+            <i class="fas fa-home"></i><span>Accueil</span>
         </div>
         <div class="nav-item" onclick="navigateTo('packs')">
-            <i class="fas fa-clone"></i>
-            <span>Nos packs</span>
+            <i class="fas fa-clone"></i><span>Nos packs</span>
         </div>
         <div class="nav-item" onclick="navigateTo('contact')">
-            <i class="fas fa-envelope"></i>
-            <span>Contact</span>
+            <i class="fas fa-envelope"></i><span>Contact</span>
         </div>
         <div class="nav-item vip" onclick="navigateTo('vip')">
-            <i class="fas fa-user-shield"></i>
-            <span>Espace<br>SM VIP+</span>
+            <i class="fas fa-user-shield"></i><span>Espace<br>SM VIP+</span>
         </div>
     </div>
 </div>
 
-<!-- ==================== ADMIN PAGE ==================== -->
+<!-- ADMIN PAGE -->
 <div id="admin-page">
     <div class="admin-header">
         <h2><i class="fas fa-crown"></i> Panel Admin</h2>
-        <button class="admin-close" onclick="closeAdmin()">
-            <i class="fas fa-times"></i>
-        </button>
+        <button class="admin-close" onclick="closeAdmin()"><i class="fas fa-times"></i></button>
     </div>
 
-    <!-- Admin Stats -->
     <div class="admin-section">
         <div class="admin-stats">
             <div class="admin-stat-card yellow">
@@ -2450,12 +2088,8 @@
         </div>
     </div>
 
-    <!-- Create Combined -->
     <div class="admin-section">
-        <div class="admin-section-title">
-            <i class="fas fa-plus-circle"></i> Créer un combiné
-        </div>
-
+        <div class="admin-section-title"><i class="fas fa-plus-circle"></i> Créer un combiné</div>
         <div class="admin-card">
             <div class="admin-row">
                 <div class="admin-field">
@@ -2475,31 +2109,21 @@
     </div>
 
     <div class="admin-section">
-        <div class="admin-section-title">
-            <i class="fas fa-futbol"></i> Matchs du combiné
-        </div>
-
-        <div id="admin-matches">
-            <!-- Match entries will be added here -->
-        </div>
-
+        <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs du combiné</div>
+        <div id="admin-matches"></div>
         <button class="admin-add-match-btn" onclick="addMatchEntry()">
             <i class="fas fa-plus"></i> Ajouter un match
         </button>
     </div>
 
     <div class="admin-section">
-        <div class="admin-section-title">
-            <i class="fas fa-coins"></i> Mise & Résumé
-        </div>
-
+        <div class="admin-section-title"><i class="fas fa-coins"></i> Mise & Résumé</div>
         <div class="admin-card">
             <div class="admin-field">
                 <div class="admin-label"><i class="fas fa-money-bill"></i> Mise (€)</div>
                 <input type="number" class="admin-input" id="admin-mise" placeholder="100.00" oninput="calculateGains()">
             </div>
         </div>
-
         <div class="admin-summary">
             <div class="admin-summary-row">
                 <span class="admin-summary-label">Nombre de matchs</span>
@@ -2524,7 +2148,6 @@
         <button class="admin-submit-btn" onclick="publishCombined()">
             <i class="fas fa-paper-plane"></i> Publier le combiné
         </button>
-
         <button class="admin-delete-btn" onclick="deleteCombined()">
             <i class="fas fa-trash-alt"></i> Supprimer le combiné actuel
         </button>
@@ -2532,17 +2155,10 @@
 </div>
 
 <script>
-    // ==================== APP STATE ====================
     let currentCombined = null;
     let matchEntryCount = 0;
-    let appStats = {
-        total: 0,
-        wins: 0,
-        losses: 0,
-        pending: 0
-    };
+    let appStats = { total: 0, wins: 0, losses: 0, pending: 0 };
 
-    // Load from localStorage
     function loadState() {
         const saved = localStorage.getItem('scoreMasterData');
         if (saved) {
@@ -2559,21 +2175,13 @@
         }));
     }
 
-    // ==================== SPLASH & LOGIN ====================
     window.addEventListener('load', function() {
         loadState();
-        updateTime();
-        setInterval(updateTime, 1000);
-
-        // Set today's date
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('admin-date').value = today;
-
-        // Add initial match entries
         addMatchEntry();
         addMatchEntry();
 
-        // Splash screen timer
         setTimeout(() => {
             document.getElementById('splash-screen').classList.add('hidden');
             setTimeout(() => {
@@ -2582,17 +2190,9 @@
         }, 2500);
     });
 
-    function updateTime() {
-        const now = new Date();
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        document.getElementById('current-time').textContent = `${hours}:${minutes}`;
-    }
-
     function handleLogin() {
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
-
         if (email && password) {
             document.getElementById('login-screen').style.opacity = '0';
             setTimeout(() => {
@@ -2604,49 +2204,32 @@
             }, 400);
         } else {
             document.getElementById('login-error').classList.add('show');
-            setTimeout(() => {
-                document.getElementById('login-error').classList.remove('show');
-            }, 3000);
+            setTimeout(() => { document.getElementById('login-error').classList.remove('show'); }, 3000);
         }
     }
 
-    // Enter key on password
     document.getElementById('login-password').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') handleLogin();
     });
 
-    // ==================== NAVIGATION ====================
     function navigateTo(page) {
-        // Update pages
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(`page-${page}`).classList.add('active');
-
-        // Update nav
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         event.currentTarget.classList.add('active');
     }
 
-    // ==================== ADMIN ====================
     function openAdmin() {
         document.getElementById('admin-page').classList.add('active');
-        
-        // If there's a current combined, populate the form
         if (currentCombined) {
             document.getElementById('admin-date').value = currentCombined.date || '';
             document.getElementById('admin-status').value = currentCombined.status || 'en-cours';
             document.getElementById('admin-mise').value = currentCombined.mise || '';
-
-            // Clear and recreate match entries
             document.getElementById('admin-matches').innerHTML = '';
             matchEntryCount = 0;
-
-            currentCombined.matches.forEach(match => {
-                addMatchEntry(match);
-            });
-
+            currentCombined.matches.forEach(match => addMatchEntry(match));
             calculateGains();
         }
-
         updateStats();
     }
 
@@ -2659,19 +2242,13 @@
         const container = document.getElementById('admin-matches');
         const entry = document.createElement('div');
         entry.className = 'match-entry';
-        entry.id = `match-entry-${matchEntryCount}`;
-
         entry.innerHTML = `
             <div class="match-entry-header">
-                <span class="match-entry-number">
-                    <i class="fas fa-futbol"></i> Match ${matchEntryCount}
-                </span>
-                <button class="match-entry-remove" onclick="removeMatchEntry(this)">
-                    <i class="fas fa-trash"></i>
-                </button>
+                <span class="match-entry-number"><i class="fas fa-futbol"></i> Match ${matchEntryCount}</span>
+                <button class="match-entry-remove" onclick="removeMatchEntry(this)"><i class="fas fa-trash"></i></button>
             </div>
             <div class="admin-field">
-                <div class="admin-label"><i class="fas fa-users"></i> Équipes (ex: PSG - Marseille)</div>
+                <div class="admin-label"><i class="fas fa-users"></i> Équipes</div>
                 <input type="text" class="admin-input match-teams-input" placeholder="Équipe A - Équipe B" value="${data ? data.teams : ''}" oninput="calculateGains()">
             </div>
             <div class="admin-row">
@@ -2689,7 +2266,6 @@
                 <input type="text" class="admin-input match-time-input" placeholder="Dem. 21:00" value="${data ? data.time : ''}">
             </div>
         `;
-
         container.appendChild(entry);
         calculateGains();
     }
@@ -2699,20 +2275,14 @@
         entry.style.opacity = '0';
         entry.style.transform = 'scale(0.95)';
         entry.style.transition = 'all 0.3s';
-        setTimeout(() => {
-            entry.remove();
-            renumberMatches();
-            calculateGains();
-        }, 300);
+        setTimeout(() => { entry.remove(); renumberMatches(); calculateGains(); }, 300);
     }
 
     function renumberMatches() {
         const entries = document.querySelectorAll('.match-entry');
         matchEntryCount = entries.length;
-        entries.forEach((entry, index) => {
-            entry.querySelector('.match-entry-number').innerHTML = `
-                <i class="fas fa-futbol"></i> Match ${index + 1}
-            `;
+        entries.forEach((entry, i) => {
+            entry.querySelector('.match-entry-number').innerHTML = `<i class="fas fa-futbol"></i> Match ${i + 1}`;
         });
     }
 
@@ -2721,19 +2291,12 @@
         const mise = parseFloat(document.getElementById('admin-mise').value) || 0;
         let totalOdds = 1;
         let matchCount = 0;
-
         entries.forEach(entry => {
             const odds = parseFloat(entry.querySelector('.match-odds-input').value) || 0;
-            if (odds > 0) {
-                totalOdds *= odds;
-                matchCount++;
-            }
+            if (odds > 0) { totalOdds *= odds; matchCount++; }
         });
-
         if (matchCount === 0) totalOdds = 0;
-
         const gains = mise * totalOdds;
-
         document.getElementById('summary-matches').textContent = entries.length;
         document.getElementById('summary-odds').textContent = totalOdds.toFixed(2);
         document.getElementById('summary-mise').textContent = formatCurrency(mise);
@@ -2741,11 +2304,7 @@
     }
 
     function formatCurrency(value) {
-        return new Intl.NumberFormat('fr-FR', {
-            style: 'currency',
-            currency: 'EUR',
-            minimumFractionDigits: 2
-        }).format(value);
+        return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(value);
     }
 
     function publishCombined() {
@@ -2754,69 +2313,37 @@
         const status = document.getElementById('admin-status').value;
         const mise = parseFloat(document.getElementById('admin-mise').value) || 0;
 
-        if (entries.length === 0) {
-            showToast('Ajoutez au moins un match !', true);
-            return;
-        }
-
-        if (mise <= 0) {
-            showToast('Veuillez saisir une mise !', true);
-            return;
-        }
+        if (entries.length === 0) { showToast('Ajoutez au moins un match !', true); return; }
+        if (mise <= 0) { showToast('Veuillez saisir une mise !', true); return; }
 
         const matches = [];
         let valid = true;
-
         entries.forEach(entry => {
             const teams = entry.querySelector('.match-teams-input').value.trim();
             const score = entry.querySelector('.match-score-input').value.trim();
             const odds = parseFloat(entry.querySelector('.match-odds-input').value) || 0;
             const time = entry.querySelector('.match-time-input').value.trim();
-
-            if (!teams || !score || odds <= 0) {
-                valid = false;
-            }
-
+            if (!teams || !score || odds <= 0) valid = false;
             matches.push({ teams, score, odds, time });
         });
 
-        if (!valid) {
-            showToast('Remplissez tous les champs des matchs !', true);
-            return;
-        }
+        if (!valid) { showToast('Remplissez tous les champs !', true); return; }
 
         let totalOdds = 1;
         matches.forEach(m => totalOdds *= m.odds);
 
-        currentCombined = {
-            date,
-            status,
-            mise,
-            matches,
-            totalOdds,
-            gains: mise * totalOdds,
-            publishedAt: new Date().toISOString()
-        };
+        currentCombined = { date, status, mise, matches, totalOdds, gains: mise * totalOdds, publishedAt: new Date().toISOString() };
 
-        // Update stats
-        if (status === 'en-cours') {
-            appStats.pending++;
-        } else if (status === 'termine') {
-            appStats.wins++;
-        } else if (status === 'perdu') {
-            appStats.losses++;
-        }
+        if (status === 'en-cours') appStats.pending++;
+        else if (status === 'termine') appStats.wins++;
+        else if (status === 'perdu') appStats.losses++;
         appStats.total++;
 
         saveState();
         updateStats();
         renderCombined();
-
         showToast('Combiné publié avec succès ! 🎉');
-
-        setTimeout(() => {
-            closeAdmin();
-        }, 1000);
+        setTimeout(() => closeAdmin(), 1000);
     }
 
     function deleteCombined() {
@@ -2825,8 +2352,6 @@
             saveState();
             renderCombined();
             showToast('Combiné supprimé !', true);
-
-            // Reset form
             document.getElementById('admin-matches').innerHTML = '';
             matchEntryCount = 0;
             document.getElementById('admin-mise').value = '';
@@ -2843,20 +2368,13 @@
         document.getElementById('stat-losses').textContent = appStats.losses;
     }
 
-    // ==================== RENDER COMBINED ====================
     function renderCombined() {
         const vipContainer = document.getElementById('vip-combined-container');
         const homeContainer = document.getElementById('home-combined-container');
         const statusBar = document.getElementById('vip-combined-status-bar');
 
         if (!currentCombined) {
-            const emptyHTML = `
-                <div class="no-combined-message">
-                    <i class="fas fa-futbol"></i>
-                    Aucun combiné disponible pour le moment.<br>
-                    <span style="font-size: 12px; color: var(--text-gray);">Revenez bientôt !</span>
-                </div>
-            `;
+            const emptyHTML = `<div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible pour le moment.</div>`;
             vipContainer.innerHTML = emptyHTML;
             homeContainer.innerHTML = emptyHTML;
             statusBar.innerHTML = '';
@@ -2865,63 +2383,38 @@
 
         const dateFormatted = formatDate(currentCombined.date);
         const statusClass = currentCombined.status;
-        const statusLabels = {
-            'en-cours': 'En cours',
-            'termine': 'Terminé',
-            'perdu': 'Perdu'
-        };
-
+        const statusLabels = { 'en-cours': 'En cours', 'termine': 'Terminé', 'perdu': 'Perdu' };
         let progressWidth = '50%';
-        if (currentCombined.status === 'termine') progressWidth = '100%';
-        if (currentCombined.status === 'perdu') progressWidth = '100%';
+        if (statusClass === 'termine' || statusClass === 'perdu') progressWidth = '100%';
 
         const combinedHTML = buildCombinedCard(currentCombined, statusClass, statusLabels, progressWidth);
-
         vipContainer.innerHTML = combinedHTML;
         homeContainer.innerHTML = combinedHTML;
-
-        statusBar.innerHTML = `
-            <div class="vip-combined-status" style="margin: 0 20px 15px;">
-                Combiné du ${dateFormatted} <span class="disponible">DISPONIBLE !</span>
-            </div>
-        `;
+        statusBar.innerHTML = `<div class="vip-combined-status">Combiné du ${dateFormatted} <span class="disponible">DISPONIBLE !</span></div>`;
     }
 
     function buildCombinedCard(combined, statusClass, statusLabels, progressWidth) {
         let matchesHTML = '';
-        combined.matches.forEach((match, i) => {
+        combined.matches.forEach(match => {
             matchesHTML += `
                 <div class="match-row">
                     <div class="match-row-top">
-                        <div class="match-type">
-                            <i class="fas fa-futbol"></i>
-                            Score exact <span class="match-score">${match.score}</span>
-                        </div>
+                        <div class="match-type"><i class="fas fa-futbol"></i> Score exact <span class="match-score">${match.score}</span></div>
                         <div class="match-odds">${match.odds.toFixed(2)}</div>
                     </div>
                     <div class="match-row-bottom">
-                        <div class="match-teams">
-                            <i class="fas fa-shield-alt"></i>
-                            ${match.teams}
-                        </div>
+                        <div class="match-teams"><i class="fas fa-shield-alt"></i> ${match.teams}</div>
                         <div class="match-time">${match.time}</div>
                     </div>
-                </div>
-            `;
+                </div>`;
         });
 
         let matchIcons = '';
         combined.matches.forEach((_, i) => {
-            matchIcons += `<div class="match-icon-circle ${i === combined.matches.length - 1 ? 'highlight' : ''}">
-                <i class="fas fa-futbol" style="font-size: 14px; color: ${i === combined.matches.length - 1 ? 'white' : 'var(--text-gray)'}"></i>
-            </div>`;
+            matchIcons += `<div class="match-icon-circle ${i === combined.matches.length - 1 ? 'highlight' : ''}"><i class="fas fa-futbol" style="font-size:14px;color:${i === combined.matches.length - 1 ? 'white' : 'var(--text-gray)'}"></i></div>`;
         });
 
-        const progressColor = combined.status === 'perdu' 
-            ? 'background: linear-gradient(90deg, var(--red), #990000);' 
-            : combined.status === 'termine' 
-                ? 'background: linear-gradient(90deg, var(--green), #00E676);' 
-                : 'background: linear-gradient(90deg, var(--green), var(--blue));';
+        const progressColor = combined.status === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : combined.status === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
 
         return `
             <div class="combined-card">
@@ -2929,75 +2422,36 @@
                     <div class="combined-status">
                         <span class="status-badge ${statusClass}">${statusLabels[statusClass]}</span>
                         <span class="combined-label">Combiné</span>
-                        <div class="combined-count">
-                            <i class="fas fa-futbol"></i>
-                            ${combined.matches.length}
-                        </div>
+                        <div class="combined-count"><i class="fas fa-futbol"></i> ${combined.matches.length}</div>
                     </div>
                     <i class="fas fa-ellipsis-h combined-more"></i>
                 </div>
-
-                <div class="combined-progress">
-                    <div class="combined-progress-fill" style="width: ${progressWidth}; ${progressColor}"></div>
-                </div>
-
-                <div class="combined-matches-icons">
-                    ${matchIcons}
-                    <span style="font-size: 12px; color: var(--text-gray); margin-left: 4px;">${combined.matches.length}</span>
-                </div>
-
-                <div class="combined-body">
-                    ${matchesHTML}
-                </div>
-
+                <div class="combined-progress"><div class="combined-progress-fill" style="width:${progressWidth};${progressColor}"></div></div>
+                <div class="combined-matches-icons">${matchIcons}<span style="font-size:12px;color:var(--text-gray);margin-left:4px;">${combined.matches.length}</span></div>
+                <div class="combined-body">${matchesHTML}</div>
                 <div class="combined-footer">
                     <div class="watermark">SM</div>
-                    <div class="combined-footer-row">
-                        <span class="combined-footer-label">Cote totale</span>
-                        <span class="combined-footer-value">${combined.totalOdds.toFixed(2)}</span>
-                    </div>
-                    <div class="combined-footer-row">
-                        <span class="combined-footer-label">Mise</span>
-                        <span class="combined-footer-value">${formatCurrency(combined.mise)}</span>
-                    </div>
-                    <div class="combined-footer-row">
-                        <span class="combined-footer-label">Gains potentiels</span>
-                        <span class="combined-footer-value gains">${formatCurrency(combined.gains)}</span>
-                    </div>
+                    <div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span><span class="combined-footer-value">${combined.totalOdds.toFixed(2)}</span></div>
+                    <div class="combined-footer-row"><span class="combined-footer-label">Mise</span><span class="combined-footer-value">${formatCurrency(combined.mise)}</span></div>
+                    <div class="combined-footer-row"><span class="combined-footer-label">Gains potentiels</span><span class="combined-footer-value gains">${formatCurrency(combined.gains)}</span></div>
                 </div>
-
                 <button class="combined-complete-btn">Compléter</button>
-            </div>
-        `;
+            </div>`;
     }
 
     function formatDate(dateStr) {
         if (!dateStr) return '';
         const d = new Date(dateStr);
-        const day = String(d.getDate()).padStart(2, '0');
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        return `${day}/${month}`;
+        return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
     }
 
-    // ==================== TOAST ====================
     function showToast(message, isError = false) {
         const toast = document.getElementById('toast');
-        const toastMsg = document.getElementById('toast-message');
-        
-        toastMsg.textContent = message;
+        document.getElementById('toast-message').textContent = message;
         toast.querySelector('i').className = isError ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
-        
-        if (isError) {
-            toast.classList.add('error');
-        } else {
-            toast.classList.remove('error');
-        }
-        
+        toast.classList.toggle('error', isError);
         toast.classList.add('show');
-        
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 3000);
+        setTimeout(() => toast.classList.remove('show'), 3000);
     }
 </script>
 
