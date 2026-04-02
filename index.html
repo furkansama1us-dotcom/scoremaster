@@ -491,7 +491,12 @@ function buildCC(c,sc,sl,pw,isHome){
     var ctaBtn=isHome
         ?'<a href="'+TELEGRAM_LINK+'" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>'
         :'<button class="combined-complete-btn">Compléter</button>';
-    return '<div class="combined-card"><div class="combined-header"><div class="combined-status"><span class="status-badge '+sc+'">'+sl[sc]+'</span><span class="combined-label">Combiné</span><div class="combined-count"><i class="fas fa-futbol"></i> '+c.matches.length+'</div></div><i class="fas fa-ellipsis-h combined-more"></i></div><div class="combined-progress"><div class="combined-progress-fill" style="width:'+pw+';'+pc+'"></div></div><div class="combined-matches-icons">'+ic+'<span style="font-size:12px;color:var(--text-gray);margin-left:4px;">'+c.matches.length+'</span></div><div class="combined-body">'+mH+'</div><div class="combined-footer"><img src="'+LOGO_DARK+'" alt="SM" class="watermark-img"><div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span><span class="combined-footer-value">'+c.totalOdds.toFixed(2)+'</span></div><div class="combined-footer-row"><span class="combined-footer-label">Mise</span><span class="combined-footer-value">'+fmtC(c.mise)+'</span></div><div class="combined-footer-row"><span class="combined-footer-label">Gains potentiels</span>'+gainsHtml+'</div></div>'+ctaBtn+'</div>';
+    var totalOddsHtml = isHome
+    ? '<span class="combined-footer-value blurred-value">'+c.totalOdds.toFixed(2)+'</span>'
+    : '<span class="combined-footer-value">'+c.totalOdds.toFixed(2)+'</span>';
+
+    return '<div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span>'+totalOddsHtml+'</div>'
+;
 }
 
 function updateDateOnly(){
