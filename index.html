@@ -584,14 +584,17 @@
         </div>
     </div>
     <div class="admin-section">
-        <div class="admin-section-title"><i class="fas fa-plus-circle"></i> Créer un combiné</div>
-        <div class="admin-card">
-            <div class="admin-row">
-                <div class="admin-field"><div class="admin-label"><i class="fas fa-calendar"></i> Date</div><input type="date" class="admin-input" id="admin-date"></div>
-                <div class="admin-field"><div class="admin-label"><i class="fas fa-flag"></i> Statut</div><select class="admin-select" id="admin-status"><option value="en-cours">En cours</option><option value="termine">Terminé ✅</option><option value="perdu">Perdu ❌</option></select></div>
-            </div>
+    <div class="admin-section-title"><i class="fas fa-plus-circle"></i> Créer un combiné</div>
+    <div class="admin-card">
+        <div class="admin-row">
+            <div class="admin-field"><div class="admin-label"><i class="fas fa-calendar"></i> Date</div><input type="date" class="admin-input" id="admin-date"></div>
+            <div class="admin-field"><div class="admin-label"><i class="fas fa-flag"></i> Statut</div><select class="admin-select" id="admin-status"><option value="en-cours">En cours</option><option value="termine">Terminé ✅</option><option value="perdu">Perdu ❌</option></select></div>
         </div>
+        <button onclick="updateDateOnly()" style="width:100%;padding:12px;background:transparent;border:1px solid var(--primary-yellow);color:var(--primary-yellow);border-radius:10px;font-size:13px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .3s;">
+            <i class="fas fa-calendar-check"></i> Modifier la date / statut uniquement
+        </button>
     </div>
+</div>
     <div class="admin-section">
         <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs</div>
         <div id="admin-matches"></div>
@@ -727,7 +730,18 @@
         const pc=c.status==='perdu'?'background:linear-gradient(90deg,var(--red),#990000);':c.status==='termine'?'background:linear-gradient(90deg,var(--green),#00E676);':'background:linear-gradient(90deg,var(--green),var(--blue));';
         return `<div class="combined-card"><div class="combined-header"><div class="combined-status"><span class="status-badge ${sc}">${sl[sc]}</span><span class="combined-label">Combiné</span><div class="combined-count"><i class="fas fa-futbol"></i> ${c.matches.length}</div></div><i class="fas fa-ellipsis-h combined-more"></i></div><div class="combined-progress"><div class="combined-progress-fill" style="width:${pw};${pc}"></div></div><div class="combined-matches-icons">${ic}<span style="font-size:12px;color:var(--text-gray);margin-left:4px;">${c.matches.length}</span></div><div class="combined-body">${mH}</div><div class="combined-footer"><img src="${LOGO_DARK}" alt="SM" class="watermark-img"><div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span><span class="combined-footer-value">${c.totalOdds.toFixed(2)}</span></div><div class="combined-footer-row"><span class="combined-footer-label">Mise</span><span class="combined-footer-value">${fmtC(c.mise)}</span></div><div class="combined-footer-row"><span class="combined-footer-label">Gains potentiels</span><span class="combined-footer-value gains">${fmtC(c.gains)}</span></div></div><button class="combined-complete-btn">Compléter</button></div>`;
     }
-
+    
+function updateDateOnly(){
+    if(!currentCombined){showToast('Aucun combiné à modifier !',true);return;}
+    const newDate=document.getElementById('admin-date').value;
+    const newStatus=document.getElementById('admin-status').value;
+    if(!newDate){showToast('Sélectionnez une date !',true);return;}
+    currentCombined.date=newDate;
+    currentCombined.status=newStatus;
+    saveState();
+    renderCombined();
+    showToast('Date et statut mis à jour !');
+}
     function fmtD(d){if(!d)return'';const dt=new Date(d);return`${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}`;}
     function showToast(msg,err=false){const t=document.getElementById('toast');document.getElementById('toast-message').textContent=msg;t.querySelector('i').className=err?'fas fa-exclamation-circle':'fas fa-check-circle';t.classList.toggle('error',err);t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
 </script>
