@@ -440,38 +440,46 @@ async function handleLogin() {
         }, 400);
     }
 }
-   async function chargerDonnees() {
-    // 1. On récupère d'abord les infos publiques (que tout le monde a le droit de voir)
-    const { data: publicData, error: publicErr } = await supabaseClient
-        .from('combineds_public')
-        .select('*')
-        .limit(1)
-        .single(); // On prend le dernier combiné
-
-    if (!publicData) {
-        currentCombined = null; // Aucun combiné en ligne
-        renderCombined();
-        return;
-    }
-
-    if (window.isUserVip) {
-        // 2. L'utilisateur est VIP ! On demande la table secrète 🤫
-        const { data: vipData } = await supabaseClient
-            .from('combineds_vip')
+async function chargerDonnees() {
+    try {
+        // 1. On récupère d'abord les infos publiques
+        const { data: publicData, error: publicErr } = await supabaseClient
+            .from('combineds_public')
             .select('*')
-            .eq('id', publicData.id) // On cherche les scores de ce combiné précis
+            // Trie pour avoir le plus récent en premier
+            .order('id', { ascending: false }) 
+            .limit(1)
             .single();
 
-        if (vipData) {
-            // On fusionne les données publiques (date, statut) et VIP (scores, gains)
-            currentCombined = { ...publicData, ...vipData };
-        } else {
-            currentCombined = publicData; // Sécurité au cas où
+        if (publicErr || !publicData) {
+             // S'il n'y a VRAIMENT aucun combiné publié par l'admin
+             currentCombined = null; 
+             renderCombined();
+             return;
         }
-    } else {
-        // 3. L'utilisateur n'est pas VIP. 
-        // Supabase ne nous enverrait rien de toute façon à cause de la RLS.
-        currentCombined = publicData; 
+
+        if (window.isUserVip) {
+            // 2. L'utilisateur est VIP ! On demande la table secrète 🤫
+            const { data: vipData, error: vipErr } = await supabaseClient
+                .from('combineds_vip')
+                .select('*')
+                .eq('id', publicData.id)
+                .single();
+
+            if (vipData && !vipErr) {
+                // Succès total !
+                currentCombined = { ...publicData, ...vipData };
+            } else {
+                 // Erreur de récupération VIP (ex: RLS bloque), on se rabat sur le public
+                currentCombined = publicData;
+            }
+        } else {
+            // 3. L'utilisateur n'est pas VIP
+            currentCombined = publicData; 
+        }
+    } catch (e) {
+        console.error("Erreur lors du chargement des données :", e);
+        currentCombined = null; // En cas de gros crash, on n'affiche rien
     }
 
     // On lance l'affichage à l'écran
@@ -480,11 +488,32 @@ async function handleLogin() {
    
 document.getElementById('login-password').addEventListener('keypress',function(e){if(e.key==='Enter')handleLogin();});
 
-function navigateTo(page){
+function navigateTo(page) {
+    // INTERCEPTION POUR LA PAGE VIP
+    if (page === 'vip') {
+        // On vérifie le vrai statut stocké (et pas juste le visuel)
+        if (!window.isUserVip) {
+            // L'utilisateur n'est pas VIP : On affiche le popup et on arrête la fonction !
+            var popup = document.getElementById('vip-popup');
+            popup.style.display = 'flex';
+            // Petit délai pour l'animation d'opacité
+            setTimeout(function() { popup.style.opacity = '1'; }, 10); 
+            return; 
+        }
+    }
+
+    // Comportement normal si c'est une autre page OU si l'utilisateur est VIP
     document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
     document.getElementById('page-'+page).classList.add('active');
+    
+    // Pour mettre à jour les icônes du menu du bas (en gérant le cas où le clic vient d'ailleurs que la barre de navigation)
     document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
-    event.currentTarget.classList.add('active');
+    
+    // On cherche le bouton nav-item correspondant à la page pour le mettre en surbrillance
+    var navItemToActivate = Array.from(document.querySelectorAll('.nav-item')).find(item => item.getAttribute('onclick') === `navigateTo('${page}')`);
+    if(navItemToActivate) {
+         navItemToActivate.classList.add('active');
+    }
 }
 
 function openAdmin(){
@@ -698,6 +727,16 @@ function promptAdminCode(){
         showToast('Code incorrect !', true);
     }
 }
+   <!-- POPUP NON-VIP -->
+<div id="vip-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9500;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;">
+    <div style="background:var(--bg-card);padding:30px;border-radius:20px;text-align:center;width:80%;max-width:350px;border:1px solid var(--border-color);transform:scale(0.9);transition:transform 0.3s;animation: splashFadeIn 0.3s forwards;">
+        <i class="fas fa-lock" style="font-size:40px;color:var(--red);margin-bottom:15px;"></i>
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:10px;">Accès Réservé</h3>
+        <p style="font-size:13px;color:var(--text-gray);margin-bottom:20px;line-height:1.5;">Vous n'avez pas accès à l'espace SM VIP+ :( <br><br>Rejoignez-nous pour débloquer tous les scores exacts !</p>
+        <button onclick="document.getElementById('vip-popup').style.display='none'; navigateTo('packs');" style="width:100%;padding:14px;background:var(--red);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:10px;">Découvrir les packs</button>
+        <button onclick="document.getElementById('vip-popup').style.display='none'" style="width:100%;padding:12px;background:transparent;color:var(--text-gray);border:none;font-size:13px;cursor:pointer;">Fermer</button>
+    </div>
+</div>
 </script>
 </body>
 </html>
