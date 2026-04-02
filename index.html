@@ -290,7 +290,7 @@
         <div class="login-form-title">Email</div>
         <input type="email" class="login-input" id="login-email" placeholder="Votre email">
         
-        <!-- Nouveau champ Pseudo (Caché en mode connexion) -->
+       <!-- Nouveau champ Pseudo (Caché en mode connexion) -->
         <div class="login-form-title" id="title-username" style="display:none;">Pseudo</div>
         <input type="text" class="login-input" id="login-username" placeholder="Votre pseudo" style="display:none;">
         
@@ -306,7 +306,7 @@
         </div>
         
         <div class="api-badge-login"><i class="fas fa-plug"></i><span>API Betclic connectée</span><div class="api-status-dot"></div></div>
-    </div>
+    </div> <!-- Cette balise ferme proprement login-form-container -->
 
 <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toast-message"></span></div>
 
@@ -545,7 +545,9 @@ async function chargerDonnees() {
     renderCombined();
 }
    
-document.getElementById('login-password').addEventListener('keypress',function(e){if(e.key==='Enter')handleLogin();});
+document.getElementById('login-password').addEventListener('keypress', function(e) { 
+    if(e.key === 'Enter') handleAuth(); 
+});
 
 function navigateTo(page) {
     // INTERCEPTION POUR LA PAGE VIP
