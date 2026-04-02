@@ -387,7 +387,10 @@ function setLogos(){
 }
 
 var currentCombined=null,matchEntryCount=0,appStats={total:0,wins:0,losses:0,pending:0};
-function loadState(){var s=supabaseClient.getItem('scoreMasterData');if(s){var d=JSON.parse(s);currentCombined=d.combined||null;appStats=d.stats||{total:0,wins:0,losses:0,pending:0};}}
+function loadState(){
+    var s=localStorage.getItem('scoreMasterData');
+    if(s){var d=JSON.parse(s);currentCombined=d.combined||null;appStats=d.stats||{total:0,wins:0,losses:0,pending:0};}
+}
 function saveState(){supabaseClient.setItem('scoreMasterData',JSON.stringify({combined:currentCombined,stats:appStats}));}
 
 window.addEventListener('load',function(){
