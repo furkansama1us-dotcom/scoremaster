@@ -280,18 +280,6 @@
    const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-   function setLogos(){
-    document.getElementById('img-splash').src=LOGO_SPLASH;
-    document.getElementById('img-login').src=LOGO_LIGHT;
-    document.getElementById('img-admin').src=LOGO_DARK;
-    document.getElementById('avatar-home').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
-    document.getElementById('avatar-vip').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
-    document.getElementById('pack-icon-1').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
-    document.getElementById('pack-icon-2').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
-    document.getElementById('pack-detail-1').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
-    document.getElementById('pack-detail-2').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
-    document.getElementById('pack-detail-3').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
 }
 
 var currentCombined=null,matchEntryCount=0,appStats={total:0,wins:0,losses:0,pending:0};
