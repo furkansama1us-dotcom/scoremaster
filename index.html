@@ -484,20 +484,17 @@ function buildCC(c,sc,sl,pw,isHome){
         var oddsHtml=isHome?'<div class="match-odds blurred-value">'+m.odds.toFixed(2)+'</div>':'<div class="match-odds">'+m.odds.toFixed(2)+'</div>';
         mH+='<div class="match-row"><div class="match-row-top"><div class="match-type"><i class="fas fa-futbol"></i> Score exact '+scoreHtml+'</div>'+oddsHtml+'</div><div class="match-row-bottom"><div class="match-teams"><i class="fas fa-shield-alt"></i> '+m.teams+'</div><div class="match-time">'+m.time+'</div></div></div>';
     });
-    var ic='';
+   var ic='';
     c.matches.forEach(function(_,i){ic+='<div class="match-icon-circle '+(i===c.matches.length-1?'highlight':'')+'"><i class="fas fa-futbol" style="font-size:14px;color:'+(i===c.matches.length-1?'white':'var(--text-gray)')+'"></i></div>';});
     var pc=c.status==='perdu'?'background:linear-gradient(90deg,var(--red),#990000);':c.status==='termine'?'background:linear-gradient(90deg,var(--green),#00E676);':'background:linear-gradient(90deg,var(--green),var(--blue));';
     var gainsHtml=isHome?'<span class="combined-footer-value gains blurred-value">'+fmtC(c.gains)+'</span>':'<span class="combined-footer-value gains">'+fmtC(c.gains)+'</span>';
+    var totalOddsHtml=isHome?'<span class="combined-footer-value blurred-value">'+c.totalOdds.toFixed(2)+'</span>':'<span class="combined-footer-value">'+c.totalOdds.toFixed(2)+'</span>';
     var ctaBtn=isHome
         ?'<a href="'+TELEGRAM_LINK+'" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>'
         :'<button class="combined-complete-btn">Compléter</button>';
-    var totalOddsHtml = isHome
-    ? '<span class="combined-footer-value blurred-value">'+c.totalOdds.toFixed(2)+'</span>'
-    : '<span class="combined-footer-value">'+c.totalOdds.toFixed(2)+'</span>';
-
-    return '<div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span>'+totalOddsHtml+'</div>'
-;
+    return '<div class="combined-card"><div class="combined-header"><div class="combined-status"><span class="status-badge '+sc+'">'+sl[sc]+'</span><span class="combined-label">Combiné</span><div class="combined-count"><i class="fas fa-futbol"></i> '+c.matches.length+'</div></div><i class="fas fa-ellipsis-h combined-more"></i></div><div class="combined-progress"><div class="combined-progress-fill" style="width:'+pw+';'+pc+'"></div></div><div class="combined-matches-icons">'+ic+'<span style="font-size:12px;color:var(--text-gray);margin-left:4px;">'+c.matches.length+'</span></div><div class="combined-body">'+mH+'</div><div class="combined-footer"><img src="'+LOGO_DARK+'" alt="SM" class="watermark-img"><div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span>'+totalOddsHtml+'</div><div class="combined-footer-row"><span class="combined-footer-label">Mise</span><span class="combined-footer-value">'+fmtC(c.mise)+'</span></div><div class="combined-footer-row"><span class="combined-footer-label">Gains potentiels</span>'+gainsHtml+'</div></div>'+ctaBtn+'</div>';
 }
+
 
 function updateDateOnly(){
     if(!currentCombined){showToast('Aucun combiné à modifier !',true);return;}
