@@ -272,7 +272,7 @@
     </style>
 </head>
 <body>
-<script>
+  <script>
    const LOGO_DARK="logo-dark.png";
    const LOGO_LIGHT="logo-light.png";
    const LOGO_SPLASH="logo-splash.png";
@@ -280,6 +280,327 @@
    const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function setLogos(){
+    const splash = document.getElementById('img-splash');
+    const login = document.getElementById('img-login');
+    const admin = document.getElementById('img-admin');
+    if(splash) splash.src=LOGO_SPLASH;
+    if(login) login.src=LOGO_LIGHT;
+    if(admin) admin.src=LOGO_DARK;
+    
+    const avatars = ['avatar-home', 'avatar-vip', 'pack-icon-1', 'pack-icon-2', 'pack-detail-1', 'pack-detail-2', 'pack-detail-3'];
+    avatars.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
+    });
+}
+
+var currentCombined=null, matchEntryCount=0, appStats={total:0,wins:0,losses:0,pending:0};
+
+function loadState(){
+    var s=localStorage.getItem('scoreMasterData');
+    if(s){var d=JSON.parse(s);currentCombined=d.combined||null;appStats=d.stats||{total:0,wins:0,losses:0,pending:0};}
+}
+function saveState(){localStorage.setItem('scoreMasterData',JSON.stringify({combined:currentCombined,stats:appStats}));}
+
+// INITIALISATION AU CHARGEMENT
+window.addEventListener('load',function(){
+    setLogos();
+    loadState();
+    const dateInput = document.getElementById('admin-date');
+    if(dateInput) dateInput.value=new Date().toISOString().split('T')[0];
+    
+    addMatchEntry();
+    addMatchEntry();
+
+    // Gestion du Splash Screen
+    setTimeout(function(){
+        document.getElementById('splash-screen').classList.add('hidden');
+        setTimeout(function(){
+            document.getElementById('login-screen').classList.add('active');
+        }, 300);
+    }, 2500);
+});
+
+let isSignUpMode = false;
+
+function toggleAuthMode() {
+    isSignUpMode = !isSignUpMode;
+    document.getElementById('title-username').style.display = isSignUpMode ? 'block' : 'none';
+    document.getElementById('login-username').style.display = isSignUpMode ? 'block' : 'none';
+    document.getElementById('btn-action').textContent = isSignUpMode ? 'S\'inscrire' : 'Connexion';
+    document.getElementById('toggle-auth').textContent = isSignUpMode ? 'Déjà un compte ? Connexion' : 'Créer un compte';
+}
+
+// --- GESTION DE L'OEIL (UN SEUL ÉCOUTEUR ICI) ---
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'togglePassword') {
+        const passwordInput = document.getElementById('login-password');
+        if (passwordInput) {
+            const isPassword = passwordInput.getAttribute('type') === 'password';
+            passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+            e.target.classList.toggle('fa-eye');
+            e.target.classList.toggle('fa-eye-slash');
+        }
+    }
+});
+
+// --- AUTHENTIFICATION ---
+async function handleAuth() {
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const username = document.getElementById('login-username').value;
+
+    if (!email || !password || (isSignUpMode && !username)) {
+        showToast('Veuillez remplir tous les champs', true);
+        return;
+    }
+
+    try {
+        let result;
+        if (isSignUpMode) {
+            result = await supabaseClient.auth.signUp({ email, password });
+            if (result.error) throw result.error;
+            
+            await supabaseClient.from('profiles').insert([{
+                id: result.data.user.id,
+                email: email,
+                username: username,
+                is_vip: false,
+                is_admin: false
+            }]);
+            
+            showToast('Compte créé ! Connectez-vous.');
+            toggleAuthMode();
+            return;
+        } else {
+            result = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (result.error) throw result.error;
+        }
+
+        const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('is_vip, is_admin, username')
+            .eq('id', result.data.user.id)
+            .single();
+
+        window.isUserVip = profile ? profile.is_vip : false;
+        window.isAdmin = profile ? profile.is_admin : false;
+
+        // Mise à jour des textes de pseudo
+        let finalUsername = (profile && profile.username) ? profile.username : "Utilisateur";
+        const homeName = document.querySelector('.home-username');
+        if (homeName) homeName.innerHTML = finalUsername + ' <i class="fas fa-chevron-down"></i>';
+        
+        const vipName = document.querySelector('.vip-user-info h3');
+        if (vipName) vipName.textContent = finalUsername;
+
+        // TRANSITION VERS L'APP (POUR ÉVITER L'ÉCRAN NOIR)
+        const loginScreen = document.getElementById('login-screen');
+        const app = document.getElementById('app');
+        
+        loginScreen.style.opacity = '0';
+        setTimeout(() => { 
+            loginScreen.classList.remove('active');
+            app.classList.add('active'); // On force l'affichage de l'app
+            app.style.display = 'flex'; // Sécurité supplémentaire
+            chargerDonnees(); 
+        }, 400);
+
+    } catch (err) {
+        showToast(err.message || 'Erreur d\'authentification', true);
+    }
+}
+
+// Validation par la touche Entrée
+document.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        const loginActive = document.getElementById('login-screen').classList.contains('active');
+        if (loginActive) handleAuth();
+    }
+});
+
+async function chargerDonnees() {
+    try {
+        const { data: publicData, error: publicErr } = await supabaseClient
+            .from('combineds_public')
+            .select('*')
+            .order('id', { ascending: false }) 
+            .limit(1)
+            .single();
+
+        if (publicErr || !publicData) {
+             currentCombined = null; 
+             renderCombined();
+             return;
+        }
+
+        if (window.isUserVip) {
+            const { data: vipData, error: vipErr } = await supabaseClient
+                .from('combineds_vip')
+                .select('*')
+                .eq('id', publicData.id)
+                .single();
+
+            if (vipData && !vipErr) {
+                currentCombined = { ...publicData, ...vipData };
+            } else {
+                 currentCombined = publicData;
+            }
+        } else {
+            currentCombined = publicData; 
+        }
+    } catch (e) {
+        console.error("Erreur chargement :", e);
+        currentCombined = null;
+    }
+    renderCombined();
+}
+
+// LES AUTRES FONCTIONS (navigateTo, openAdmin, etc.) DOIVENT RESTER ICI
+function navigateTo(page) {
+    if (page === 'vip' && !window.isUserVip) {
+        var popup = document.getElementById('vip-popup');
+        popup.style.display = 'flex';
+        setTimeout(function() { popup.style.opacity = '1'; }, 10); 
+        return; 
+    }
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const targetPage = document.getElementById('page-' + page);
+    if(targetPage) targetPage.classList.add('active');
+    
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    const navItem = Array.from(document.querySelectorAll('.nav-item')).find(item => item.getAttribute('onclick').includes(page));
+    if(navItem) navItem.classList.add('active');
+}
+
+function openAdmin(){
+    document.getElementById('admin-page').classList.add('active');
+    if(currentCombined){
+        document.getElementById('admin-date').value=currentCombined.date||'';
+        document.getElementById('admin-status').value=currentCombined.status||'en-cours';
+        document.getElementById('admin-mise').value=currentCombined.mise||'';
+        document.getElementById('admin-matches').innerHTML='';
+        matchEntryCount=0;
+        if(currentCombined.matches) currentCombined.matches.forEach(m => addMatchEntry(m));
+        calculateGains();
+    }
+    updateStats();
+}
+
+function closeAdmin(){document.getElementById('admin-page').classList.remove('active');}
+
+function addMatchEntry(data){
+    data=data||null;
+    matchEntryCount++;
+    var c=document.getElementById('admin-matches');
+    var e=document.createElement('div');
+    e.className='match-entry';
+    e.innerHTML='<div class="match-entry-header"><span class="match-entry-number"><i class="fas fa-futbol"></i> Match '+matchEntryCount+'</span><button class="match-entry-remove" onclick="removeMatchEntry(this)"><i class="fas fa-trash"></i></button></div><div class="admin-field"><div class="admin-label"><i class="fas fa-users"></i> Équipes</div><input type="text" class="admin-input match-teams-input" placeholder="Équipe A - Équipe B" value="'+(data?data.teams:'')+'" oninput="calculateGains()"></div><div class="admin-row"><div class="admin-field"><div class="admin-label"><i class="fas fa-bullseye"></i> Score exact</div><input type="text" class="admin-input match-score-input" placeholder="2 - 1" value="'+(data?data.score:'')+'" oninput="calculateGains()"></div><div class="admin-field"><div class="admin-label"><i class="fas fa-chart-line"></i> Cote</div><input type="number" step="0.01" class="admin-input match-odds-input" placeholder="7.00" value="'+(data?data.odds:'')+'" oninput="calculateGains()"></div></div><div class="admin-field"><div class="admin-label"><i class="fas fa-clock"></i> Horaire</div><input type="text" class="admin-input match-time-input" placeholder="Dem. 21:00" value="'+(data?data.time:'')+'"></div>';
+    c.appendChild(e);
+    calculateGains();
+}
+
+function removeMatchEntry(btn){
+    var e=btn.closest('.match-entry');
+    e.remove();
+    renumberMatches();
+    calculateGains();
+}
+
+function renumberMatches(){
+    var entries=document.querySelectorAll('.match-entry');
+    matchEntryCount=entries.length;
+    entries.forEach((e,i) => {
+        e.querySelector('.match-entry-number').innerHTML='<i class="fas fa-futbol"></i> Match '+(i+1);
+    });
+}
+
+function calculateGains(){
+    var entries=document.querySelectorAll('.match-entry');
+    var mise=parseFloat(document.getElementById('admin-mise').value)||0;
+    var tot=1, cnt=0;
+    entries.forEach(e => {
+        var o=parseFloat(e.querySelector('.match-odds-input').value)||0;
+        if(o>0){tot*=o; cnt++;}
+    });
+    if(cnt===0) tot=0;
+    document.getElementById('summary-matches').textContent=entries.length;
+    document.getElementById('summary-odds').textContent=tot.toFixed(2);
+    document.getElementById('summary-mise').textContent=fmtC(mise);
+    document.getElementById('summary-gains').textContent=fmtC(mise*tot);
+}
+
+function fmtC(v){return new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR',minimumFractionDigits:2}).format(v);}
+
+async function publishCombined() {
+    var entries = document.querySelectorAll('.match-entry');
+    var date = document.getElementById('admin-date').value;
+    var status = document.getElementById('admin-status').value;
+    var mise = parseFloat(document.getElementById('admin-mise').value) || 0;
+
+    if (!entries.length) { showToast('Ajoutez au moins un match !', true); return; }
+    var matches = [];
+    entries.forEach(e => {
+        matches.push({
+            teams: e.querySelector('.match-teams-input').value,
+            score: e.querySelector('.match-score-input').value,
+            odds: parseFloat(e.querySelector('.match-odds-input').value),
+            time: e.querySelector('.match-time-input').value
+        });
+    });
+
+    const { data: publicData, error: publicErr } = await supabaseClient
+        .from('combineds_public')
+        .insert([{ date, status, nombre_matchs: matches.length }])
+        .select().single();
+
+    if (publicErr) { showToast('Erreur publication', true); return; }
+
+    const { error: vipErr } = await supabaseClient
+        .from('combineds_vip')
+        .insert([{ id: publicData.id, matches, mise, gains: mise * matches.reduce((a, b) => a * b.odds, 1), total_odds: matches.reduce((a, b) => a * b.odds, 1) }]);
+
+    if (vipErr) { showToast('Erreur VIP', true); return; }
+
+    showToast('Combiné publié !');
+    closeAdmin();
+    chargerDonnees();
+}
+
+function renderCombined(){
+    var vc=document.getElementById('vip-combined-container'), hc=document.getElementById('home-combined-container'), sb=document.getElementById('vip-combined-status-bar');
+    if(!currentCombined){
+        var empty='<div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div>';
+        vc.innerHTML=empty; hc.innerHTML=empty; sb.innerHTML='';
+        return;
+    }
+    var sc=currentCombined.status, sl={'en-cours':'En cours','termine':'Terminé','perdu':'Perdu'};
+    vc.innerHTML=buildCC(currentCombined, sc, sl, false);
+    hc.innerHTML=buildCC(currentCombined, sc, sl, true);
+    sb.innerHTML='<div class="vip-combined-status" style="margin:0 20px 15px;">Combiné disponible !</div>';
+}
+
+function buildCC(c, sc, sl, isHome) {
+    var isObscured = isHome || !c.matches; 
+    var matches = c.matches || Array(c.nombre_matchs || 2).fill({ teams: 'Match VIP', score: '?-?', odds: 0, time: '--:--' });
+    var mH = '';
+    matches.forEach(m => {
+        mH += '<div class="match-row"><div class="match-row-top"><span>Score exact '+(isObscured ? '?-?' : m.score)+'</span><span class="match-odds">'+(isObscured ? '***' : m.odds.toFixed(2))+'</span></div><div class="match-row-bottom"><span>'+m.teams+'</span><span>'+m.time+'</span></div></div>';
+    });
+    return '<div class="combined-card"><div class="combined-header"><span class="status-badge '+sc+'">'+sl[sc]+'</span></div><div class="combined-body">'+mH+'</div></div>';
+}
+
+function showToast(msg,err){
+    var t=document.getElementById('toast');
+    document.getElementById('toast-message').textContent=msg;
+    t.classList.toggle('error',err);
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function promptAdminCode(){ if(window.isAdmin) openAdmin(); else showToast('Accès refusé', true); }
 </script>
 
 <div id="splash-screen"><div class="splash-content"><img id="img-splash" alt="ScoreMaster" class="splash-logo-img"><div class="splash-loader"><span></span><span></span><span></span></div></div></div>
