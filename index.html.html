@@ -4,21 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ScoreMaster</title>
-
-    <!-- ===== PWA : Supprime la barre Safari ===== -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="ScoreMaster">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0D0D0D">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-
-    <!-- ===== Icône pour l'écran d'accueil ===== -->
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%23000' width='100' height='100' rx='20'/><text x='50' y='55' text-anchor='middle' dy='.1em' font-size='40' font-weight='900' fill='%23FFD700' font-family='Arial'>SM</text><text x='50' y='25' text-anchor='middle' font-size='20'>👑</text></svg>">
-
-    <!-- ===== Manifest PWA ===== -->
-    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlNjb3JlTWFzdGVyIiwKICAic2hvcnRfbmFtZSI6ICJTTSB2aXAiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBEMEQwRCIsCiAgInRoZW1lX2NvbG9yIjogIiMwRDBEMEQiLAogICJvcmllbnRhdGlvbiI6ICJwb3J0cmFpdCIsCiAgImljb25zIjogW3sKICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sLDxzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgMTAwIDEwMCc+PHJlY3QgZmlsbD0nJTIzMDAwJyB3aWR0aD0nMTAwJyBoZWlnaHQ9JzEwMCcgcng9JzIwJy8+PHRleHQgeD0nNTAnIHk9JzU1JyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyBkeT0nLjFlbScgZm9udC1zaXplPSc0MCcgZm9udC13ZWlnaHQ9JzkwMCcgZmlsbD0nJTIzRkZENzAwJyBmb250LWZhbWlseT0nQXJpYWwnPlNNPC90ZXh0Pjwvc3ZnPiIsCiAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogIH1dCn0=">
-
+    <link rel="apple-touch-icon" href="logo-light.png">
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlNjb3JlTWFzdGVyIiwKICAic2hvcnRfbmFtZSI6ICJTTSB2aXAiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBEMEQwRCIsCiAgInRoZW1lX2NvbG9yIjogIiMwRDBEMEQiLAogICJvcmllbnRhdGlvbiI6ICJwb3J0cmFpdCIKfQ==">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
@@ -37,7 +29,6 @@
             --dark-yellow: #E6C200;
             --bg-dark: #0D0D0D;
             --bg-card: #1A1A1A;
-            --bg-card-lighter: #222222;
             --bg-input: #2A2A2A;
             --text-white: #FFFFFF;
             --text-gray: #8A8A8A;
@@ -62,22 +53,11 @@
             left: 0;
         }
 
-        /* Safe area padding pour iPhone notch */
-        .safe-top {
-            padding-top: var(--safe-top);
-        }
-
-        .safe-bottom {
-            padding-bottom: var(--safe-bottom);
-        }
-
         /* ==================== SPLASH SCREEN ==================== */
         #splash-screen {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: #000000;
             display: flex;
             align-items: center;
@@ -91,59 +71,17 @@
             visibility: hidden;
         }
 
-        .splash-logo-container {
+        .splash-content {
             text-align: center;
             animation: splashFadeIn 1s ease-out;
         }
 
-        .splash-logo {
-            width: 180px;
-            height: 180px;
-            margin-bottom: 20px;
-            position: relative;
-            display: inline-block;
-        }
-
-        .splash-logo .crown {
-            font-size: 40px;
-            color: var(--primary-yellow);
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            animation: crownBounce 2s ease infinite;
-        }
-
-        .splash-logo .logo-text {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 900;
-            font-size: 80px;
-            color: var(--text-white);
-            line-height: 1;
-            margin-top: 30px;
-            text-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
-        }
-
-        .splash-tagline {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 700;
-            font-size: 14px;
-            color: var(--text-white);
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-top: 15px;
-            opacity: 0;
-            animation: taglineFadeIn 1s ease-out 0.5s forwards;
-        }
-
-        .splash-subtitle {
-            font-size: 10px;
-            color: var(--text-gray);
-            letter-spacing: 3px;
-            margin-top: 5px;
-            text-transform: uppercase;
-            opacity: 0;
-            animation: taglineFadeIn 1s ease-out 0.8s forwards;
+        .splash-logo-img {
+            width: 280px;
+            height: auto;
+            max-height: 320px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 40px rgba(255, 215, 0, 0.15));
         }
 
         .splash-loader {
@@ -165,18 +103,8 @@
         .splash-loader span:nth-child(3) { animation-delay: 0.4s; }
 
         @keyframes splashFadeIn {
-            from { opacity: 0; transform: scale(0.8); }
+            from { opacity: 0; transform: scale(0.85); }
             to { opacity: 1; transform: scale(1); }
-        }
-
-        @keyframes crownBounce {
-            0%, 100% { transform: translateX(-50%) translateY(0); }
-            50% { transform: translateX(-50%) translateY(-5px); }
-        }
-
-        @keyframes taglineFadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes loaderBounce {
@@ -184,13 +112,34 @@
             40% { transform: scale(1); opacity: 1; }
         }
 
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in-up { animation: fadeInUp 0.5s ease forwards; }
+        .delay-1 { animation-delay: 0.1s; opacity: 0; }
+        .delay-2 { animation-delay: 0.2s; opacity: 0; }
+        .delay-3 { animation-delay: 0.3s; opacity: 0; }
+        .delay-4 { animation-delay: 0.4s; opacity: 0; }
+        .delay-5 { animation-delay: 0.5s; opacity: 0; }
+
         /* ==================== LOGIN SCREEN ==================== */
         #login-screen {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: linear-gradient(180deg, var(--primary-yellow) 0%, var(--primary-yellow) 42%, var(--bg-dark) 42%);
             z-index: 9000;
             display: none;
@@ -198,58 +147,20 @@
             transition: opacity 0.4s ease;
         }
 
-        #login-screen.active {
-            display: flex;
-        }
+        #login-screen.active { display: flex; }
 
         .login-header {
             flex: 0 0 auto;
-            padding-top: calc(20px + var(--safe-top));
-            padding-left: 30px;
-            padding-right: 30px;
-            padding-bottom: 25px;
+            padding-top: calc(25px + var(--safe-top));
+            padding-bottom: 20px;
             text-align: center;
         }
 
-        .login-logo {
-            margin-bottom: 10px;
-        }
-
-        .login-logo .logo-icon {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 900;
-            font-size: 60px;
-            color: #000;
-            position: relative;
-            display: inline-block;
-        }
-
-        .login-logo .crown-small {
-            font-size: 24px;
-            color: var(--primary-yellow);
-            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .login-tagline-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 5px;
-        }
-
-        .login-tagline {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 800;
-            font-size: 11px;
-            color: #000;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            line-height: 1.4;
+        .login-logo-img {
+            width: 120px;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
         }
 
         .login-form-container {
@@ -281,13 +192,8 @@
             transition: border-color 0.3s;
         }
 
-        .login-input:focus {
-            border-color: var(--primary-yellow);
-        }
-
-        .login-input::placeholder {
-            color: var(--text-gray);
-        }
+        .login-input:focus { border-color: var(--primary-yellow); }
+        .login-input::placeholder { color: var(--text-gray); }
 
         .login-btn {
             width: 100%;
@@ -304,10 +210,7 @@
             transition: all 0.3s;
         }
 
-        .login-btn:active {
-            transform: scale(0.98);
-            background: var(--dark-yellow);
-        }
+        .login-btn:active { transform: scale(0.98); background: var(--dark-yellow); }
 
         .login-options {
             display: flex;
@@ -332,8 +235,7 @@
         }
 
         .toggle-switch {
-            width: 44px;
-            height: 24px;
+            width: 44px; height: 24px;
             background: var(--bg-input);
             border-radius: 12px;
             position: relative;
@@ -341,26 +243,20 @@
             transition: background 0.3s;
         }
 
-        .toggle-switch.active {
-            background: var(--primary-yellow);
-        }
+        .toggle-switch.active { background: var(--primary-yellow); }
 
         .toggle-switch::after {
             content: '';
-            width: 20px;
-            height: 20px;
+            width: 20px; height: 20px;
             background: white;
             border-radius: 50%;
             position: absolute;
-            top: 2px;
-            left: 2px;
+            top: 2px; left: 2px;
             transition: transform 0.3s;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
         }
 
-        .toggle-switch.active::after {
-            transform: translateX(20px);
-        }
+        .toggle-switch.active::after { transform: translateX(20px); }
 
         .login-error {
             color: var(--red);
@@ -371,15 +267,7 @@
             animation: shake 0.5s ease;
         }
 
-        .login-error.show {
-            display: block;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
+        .login-error.show { display: block; }
 
         .api-badge-login {
             display: flex;
@@ -393,28 +281,14 @@
             border-radius: 10px;
         }
 
-        .api-badge-login i {
-            color: var(--blue);
-            font-size: 14px;
-        }
-
-        .api-badge-login span {
-            font-size: 11px;
-            color: var(--text-light-gray);
-            font-weight: 500;
-        }
+        .api-badge-login i { color: var(--blue); font-size: 14px; }
+        .api-badge-login span { font-size: 11px; color: var(--text-light-gray); font-weight: 500; }
 
         .api-badge-login .api-status-dot {
-            width: 6px;
-            height: 6px;
+            width: 6px; height: 6px;
             background: var(--green);
             border-radius: 50%;
             animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.4; }
         }
 
         /* ==================== MAIN APP ==================== */
@@ -423,14 +297,10 @@
             height: 100%;
             width: 100%;
             flex-direction: column;
-            position: relative;
         }
 
-        #app.active {
-            display: flex;
-        }
+        #app.active { display: flex; }
 
-        /* Pages Container - NO status bar anymore */
         .pages-container {
             flex: 1;
             overflow: hidden;
@@ -440,10 +310,8 @@
 
         .page {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             overflow-y: auto;
             overflow-x: hidden;
             opacity: 0;
@@ -485,40 +353,12 @@
             transition: all 0.3s;
         }
 
-        .nav-item i {
-            font-size: 20px;
-            color: var(--text-gray);
-            transition: color 0.3s;
-        }
-
-        .nav-item span {
-            font-size: 10px;
-            color: var(--text-gray);
-            font-weight: 500;
-            transition: color 0.3s;
-            text-align: center;
-            line-height: 1.2;
-        }
-
-        .nav-item.active i {
-            color: var(--primary-yellow);
-        }
-
-        .nav-item.active span {
-            color: var(--primary-yellow);
-        }
-
-        .nav-item.vip i {
-            color: var(--text-gray);
-        }
-
-        .nav-item.vip.active i {
-            color: var(--red);
-        }
-
-        .nav-item.vip.active span {
-            color: var(--red);
-        }
+        .nav-item i { font-size: 20px; color: var(--text-gray); transition: color 0.3s; }
+        .nav-item span { font-size: 10px; color: var(--text-gray); font-weight: 500; transition: color 0.3s; text-align: center; line-height: 1.2; }
+        .nav-item.active i { color: var(--primary-yellow); }
+        .nav-item.active span { color: var(--primary-yellow); }
+        .nav-item.vip.active i { color: var(--red); }
+        .nav-item.vip.active span { color: var(--red); }
 
         /* ==================== HOME PAGE ==================== */
         .home-header {
@@ -535,36 +375,23 @@
         }
 
         .home-avatar {
-            width: 42px;
-            height: 42px;
-            background: var(--bg-card);
+            width: 44px; height: 44px;
             border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid var(--primary-yellow);
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
-            border: 2px solid var(--primary-yellow);
+            background: var(--bg-card);
+            flex-shrink: 0;
         }
 
-        .home-avatar .avatar-text {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 900;
-            font-size: 16px;
-            color: var(--text-white);
+        .home-avatar img {
+            width: 100%; height: 100%;
+            object-fit: cover;
         }
 
-        .home-avatar .avatar-crown {
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 14px;
-        }
-
-        .home-greeting {
-            font-size: 12px;
-            color: var(--text-gray);
-        }
+        .home-greeting { font-size: 12px; color: var(--text-gray); }
 
         .home-username {
             font-size: 16px;
@@ -574,14 +401,10 @@
             gap: 5px;
         }
 
-        .home-username i {
-            font-size: 12px;
-            color: var(--text-gray);
-        }
+        .home-username i { font-size: 12px; color: var(--text-gray); }
 
         .home-notif {
-            width: 40px;
-            height: 40px;
+            width: 40px; height: 40px;
             background: var(--bg-card);
             border-radius: 50%;
             display: flex;
@@ -591,19 +414,14 @@
             position: relative;
         }
 
-        .home-notif i {
-            color: var(--text-white);
-            font-size: 18px;
-        }
+        .home-notif i { color: var(--text-white); font-size: 18px; }
 
         .home-notif .notif-dot {
-            width: 8px;
-            height: 8px;
+            width: 8px; height: 8px;
             background: var(--red);
             border-radius: 50%;
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 10px; right: 10px;
         }
 
         .search-bar {
@@ -617,10 +435,7 @@
             border: 1px solid var(--border-color);
         }
 
-        .search-bar i {
-            color: var(--text-gray);
-            font-size: 16px;
-        }
+        .search-bar i { color: var(--text-gray); font-size: 16px; }
 
         .search-bar input {
             flex: 1;
@@ -632,14 +447,8 @@
             font-family: 'Inter', sans-serif;
         }
 
-        .search-bar input::placeholder {
-            color: var(--text-gray);
-        }
-
-        .search-bar .mic-btn {
-            color: var(--primary-yellow);
-            cursor: pointer;
-        }
+        .search-bar input::placeholder { color: var(--text-gray); }
+        .search-bar .mic-btn { color: var(--primary-yellow); cursor: pointer; }
 
         .api-banner {
             margin: 0 20px 15px;
@@ -653,8 +462,7 @@
         }
 
         .api-banner .api-icon {
-            width: 32px;
-            height: 32px;
+            width: 32px; height: 32px;
             background: rgba(74, 144, 217, 0.2);
             border-radius: 8px;
             display: flex;
@@ -662,18 +470,11 @@
             justify-content: center;
         }
 
-        .api-banner .api-icon i {
-            color: var(--blue);
-            font-size: 16px;
-        }
-
-        .api-banner .api-info {
-            flex: 1;
-        }
+        .api-banner .api-icon i { color: var(--blue); font-size: 16px; }
+        .api-banner .api-info { flex: 1; }
 
         .api-banner .api-title {
-            font-size: 12px;
-            font-weight: 600;
+            font-size: 12px; font-weight: 600;
             color: var(--text-white);
             display: flex;
             align-items: center;
@@ -681,22 +482,16 @@
         }
 
         .api-banner .api-title .live-dot {
-            width: 6px;
-            height: 6px;
+            width: 6px; height: 6px;
             background: var(--green);
             border-radius: 50%;
             animation: pulse 2s infinite;
         }
 
-        .api-banner .api-desc {
-            font-size: 10px;
-            color: var(--text-gray);
-            margin-top: 2px;
-        }
+        .api-banner .api-desc { font-size: 10px; color: var(--text-gray); margin-top: 2px; }
 
         .api-banner .winamax-logo {
-            font-weight: 800;
-            font-size: 11px;
+            font-weight: 800; font-size: 11px;
             color: var(--red);
             background: rgba(255, 61, 61, 0.1);
             padding: 4px 8px;
@@ -711,17 +506,8 @@
             margin-bottom: 15px;
         }
 
-        .section-title {
-            font-size: 17px;
-            font-weight: 700;
-        }
-
-        .section-more {
-            font-size: 13px;
-            color: var(--primary-yellow);
-            font-weight: 600;
-            cursor: pointer;
-        }
+        .section-title { font-size: 17px; font-weight: 700; }
+        .section-more { font-size: 13px; color: var(--primary-yellow); font-weight: 600; cursor: pointer; }
 
         .packs-scroll {
             padding: 0 20px;
@@ -743,54 +529,28 @@
             border: 1px solid var(--border-color);
         }
 
-        .pack-card:active {
-            transform: scale(0.98);
-            border-color: var(--primary-yellow);
-        }
+        .pack-card:active { transform: scale(0.98); border-color: var(--primary-yellow); }
 
         .pack-card-icon {
-            width: 55px;
-            height: 55px;
+            width: 55px; height: 55px;
             border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            position: relative;
+            overflow: hidden;
         }
 
-        .pack-card-icon.yellow {
-            background: linear-gradient(135deg, var(--primary-yellow), var(--dark-yellow));
+        .pack-card-icon.yellow { background: linear-gradient(135deg, var(--primary-yellow), var(--dark-yellow)); }
+        .pack-card-icon.red { background: linear-gradient(135deg, #FF3D3D, #CC0000); }
+
+        .pack-card-icon img {
+            width: 40px; height: 40px;
+            object-fit: contain;
         }
 
-        .pack-card-icon.red {
-            background: linear-gradient(135deg, #FF3D3D, #CC0000);
-        }
-
-        .pack-card-icon .icon-text {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 900;
-            font-size: 20px;
-            color: #000;
-        }
-
-        .pack-card-icon .icon-crown {
-            position: absolute;
-            top: -6px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 12px;
-        }
-
-        .pack-card-info {
-            flex: 1;
-        }
-
-        .pack-card-name {
-            font-size: 15px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
+        .pack-card-info { flex: 1; }
+        .pack-card-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
 
         .pack-card-tag {
             display: inline-flex;
@@ -804,9 +564,7 @@
             margin-bottom: 6px;
         }
 
-        .pack-card-tag i {
-            font-size: 8px;
-        }
+        .pack-card-tag i { font-size: 8px; }
 
         .pack-card-btn {
             display: inline-block;
@@ -825,13 +583,9 @@
             transition: color 0.3s;
         }
 
-        .pack-card .heart-icon.liked {
-            color: var(--red);
-        }
+        .pack-card .heart-icon.liked { color: var(--red); }
 
-        .home-vip-section {
-            margin: 0 20px 20px;
-        }
+        .home-vip-section { margin: 0 20px 20px; }
 
         .home-vip-header {
             display: flex;
@@ -840,10 +594,7 @@
             margin-bottom: 12px;
         }
 
-        .home-vip-header h3 {
-            font-size: 17px;
-            font-weight: 700;
-        }
+        .home-vip-header h3 { font-size: 17px; font-weight: 700; }
 
         /* ==================== COMBINED CARD ==================== */
         .combined-card {
@@ -861,11 +612,7 @@
             border-bottom: 1px solid #2A2A3A;
         }
 
-        .combined-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .combined-status { display: flex; align-items: center; gap: 8px; }
 
         .status-badge {
             padding: 4px 10px;
@@ -875,25 +622,11 @@
             text-transform: uppercase;
         }
 
-        .status-badge.en-cours {
-            background: rgba(0, 200, 83, 0.15);
-            color: var(--green);
-        }
+        .status-badge.en-cours { background: rgba(0, 200, 83, 0.15); color: var(--green); }
+        .status-badge.termine { background: rgba(74, 144, 217, 0.15); color: var(--blue); }
+        .status-badge.perdu { background: rgba(255, 61, 61, 0.15); color: var(--red); }
 
-        .status-badge.termine {
-            background: rgba(74, 144, 217, 0.15);
-            color: var(--blue);
-        }
-
-        .status-badge.perdu {
-            background: rgba(255, 61, 61, 0.15);
-            color: var(--red);
-        }
-
-        .combined-label {
-            font-size: 15px;
-            font-weight: 700;
-        }
+        .combined-label { font-size: 15px; font-weight: 700; }
 
         .combined-count {
             display: flex;
@@ -906,21 +639,10 @@
             color: var(--text-light-gray);
         }
 
-        .combined-count i {
-            font-size: 14px;
-            color: var(--blue);
-        }
+        .combined-count i { font-size: 14px; color: var(--blue); }
+        .combined-more { color: var(--text-gray); cursor: pointer; font-size: 18px; }
 
-        .combined-more {
-            color: var(--text-gray);
-            cursor: pointer;
-            font-size: 18px;
-        }
-
-        .combined-progress {
-            height: 3px;
-            background: #2A2A3A;
-        }
+        .combined-progress { height: 3px; background: #2A2A3A; }
 
         .combined-progress-fill {
             height: 100%;
@@ -937,33 +659,24 @@
         }
 
         .match-icon-circle {
-            width: 32px;
-            height: 32px;
+            width: 32px; height: 32px;
             border-radius: 50%;
             background: #2A2A3A;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 13px;
         }
 
-        .match-icon-circle.highlight {
-            background: var(--blue);
-            color: white;
-        }
+        .match-icon-circle.highlight { background: var(--blue); }
 
-        .combined-body {
-            padding: 0 16px;
-        }
+        .combined-body { padding: 0 16px; }
 
         .match-row {
             padding: 14px 0;
             border-bottom: 1px solid #2A2A3A;
         }
 
-        .match-row:last-child {
-            border-bottom: none;
-        }
+        .match-row:last-child { border-bottom: none; }
 
         .match-row-top {
             display: flex;
@@ -980,15 +693,8 @@
             font-weight: 600;
         }
 
-        .match-type i {
-            color: var(--blue);
-            font-size: 14px;
-        }
-
-        .match-score {
-            color: var(--green);
-            font-weight: 700;
-        }
+        .match-type i { color: var(--blue); font-size: 14px; }
+        .match-score { color: var(--green); font-weight: 700; }
 
         .match-odds {
             background: #2A2A3A;
@@ -1012,15 +718,8 @@
             color: var(--text-light-gray);
         }
 
-        .match-teams i {
-            font-size: 12px;
-            color: var(--text-gray);
-        }
-
-        .match-time {
-            font-size: 11px;
-            color: var(--text-gray);
-        }
+        .match-teams i { font-size: 12px; color: var(--text-gray); }
+        .match-time { font-size: 11px; color: var(--text-gray); }
 
         .combined-footer {
             padding: 14px 16px;
@@ -1035,34 +734,18 @@
             margin-bottom: 8px;
         }
 
-        .combined-footer-row:last-child {
-            margin-bottom: 0;
-        }
+        .combined-footer-row:last-child { margin-bottom: 0; }
+        .combined-footer-label { font-size: 13px; color: var(--text-gray); }
+        .combined-footer-value { font-size: 15px; font-weight: 700; }
+        .combined-footer-value.gains { color: var(--green); font-size: 18px; }
 
-        .combined-footer-label {
-            font-size: 13px;
-            color: var(--text-gray);
-        }
-
-        .combined-footer-value {
-            font-size: 15px;
-            font-weight: 700;
-        }
-
-        .combined-footer-value.gains {
-            color: var(--green);
-            font-size: 18px;
-        }
-
-        .combined-footer .watermark {
+        .combined-footer .watermark-img {
             position: absolute;
-            top: 50%;
-            left: 50%;
+            top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            opacity: 0.08;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 900;
-            font-size: 50px;
+            width: 80px;
+            height: auto;
+            opacity: 0.07;
             pointer-events: none;
         }
 
@@ -1096,8 +779,7 @@
         }
 
         .help-card-icon {
-            width: 40px;
-            height: 40px;
+            width: 40px; height: 40px;
             background: var(--bg-input);
             border-radius: 50%;
             display: flex;
@@ -1105,29 +787,11 @@
             justify-content: center;
         }
 
-        .help-card-icon i {
-            color: var(--text-gray);
-            font-size: 16px;
-        }
-
-        .help-card-info {
-            flex: 1;
-        }
-
-        .help-card-title {
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .help-card-desc {
-            font-size: 12px;
-            color: var(--text-gray);
-        }
-
-        .help-card-arrow {
-            color: var(--text-gray);
-            font-size: 16px;
-        }
+        .help-card-icon i { color: var(--text-gray); font-size: 16px; }
+        .help-card-info { flex: 1; }
+        .help-card-title { font-size: 14px; font-weight: 600; }
+        .help-card-desc { font-size: 12px; color: var(--text-gray); }
+        .help-card-arrow { color: var(--text-gray); font-size: 16px; }
 
         .no-combined-message {
             text-align: center;
@@ -1151,14 +815,9 @@
             justify-content: space-between;
         }
 
-        .page-title-bar h2 {
-            font-size: 22px;
-            font-weight: 800;
-        }
+        .page-title-bar h2 { font-size: 22px; font-weight: 800; }
 
-        .packs-page-list {
-            padding: 0 20px;
-        }
+        .packs-page-list { padding: 0 20px; }
 
         .pack-detail-card {
             background: var(--bg-card);
@@ -1176,37 +835,23 @@
         }
 
         .pack-detail-icon {
-            width: 60px;
-            height: 60px;
+            width: 60px; height: 60px;
             border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
+            overflow: hidden;
         }
 
         .pack-detail-icon.yellow { background: linear-gradient(135deg, var(--primary-yellow), var(--dark-yellow)); }
         .pack-detail-icon.red { background: linear-gradient(135deg, #FF3D3D, #CC0000); }
         .pack-detail-icon.blue { background: linear-gradient(135deg, #4A90D9, #2E6AAD); }
 
-        .pack-detail-icon .icon-text {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 900;
-            font-size: 22px;
-            color: #000;
-        }
+        .pack-detail-icon img { width: 44px; height: 44px; object-fit: contain; }
 
-        .pack-detail-name {
-            font-size: 17px;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .pack-detail-desc {
-            font-size: 12px;
-            color: var(--text-gray);
-            line-height: 1.4;
-        }
+        .pack-detail-name { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+        .pack-detail-desc { font-size: 12px; color: var(--text-gray); line-height: 1.4; }
 
         .pack-detail-features {
             display: flex;
@@ -1226,10 +871,7 @@
             border-radius: 8px;
         }
 
-        .pack-feature i {
-            color: var(--green);
-            font-size: 10px;
-        }
+        .pack-feature i { color: var(--green); font-size: 10px; }
 
         .pack-detail-bottom {
             display: flex;
@@ -1237,17 +879,8 @@
             justify-content: space-between;
         }
 
-        .pack-price {
-            font-size: 22px;
-            font-weight: 800;
-            color: var(--primary-yellow);
-        }
-
-        .pack-price span {
-            font-size: 13px;
-            color: var(--text-gray);
-            font-weight: 400;
-        }
+        .pack-price { font-size: 22px; font-weight: 800; color: var(--primary-yellow); }
+        .pack-price span { font-size: 13px; color: var(--text-gray); font-weight: 400; }
 
         .pack-subscribe-btn {
             padding: 10px 24px;
@@ -1261,9 +894,7 @@
         }
 
         /* ==================== CONTACT PAGE ==================== */
-        .contact-page {
-            padding: 0 20px;
-        }
+        .contact-page { padding: 0 20px; }
 
         .contact-card {
             background: var(--bg-card);
@@ -1277,8 +908,7 @@
         }
 
         .contact-card-icon {
-            width: 48px;
-            height: 48px;
+            width: 48px; height: 48px;
             border-radius: 14px;
             display: flex;
             align-items: center;
@@ -1294,7 +924,6 @@
         .contact-card-icon.email i { color: var(--primary-yellow); font-size: 22px; }
         .contact-card-icon.twitter { background: rgba(29, 161, 242, 0.15); }
         .contact-card-icon.twitter i { color: #1DA1F2; font-size: 22px; }
-
         .contact-card-info h4 { font-size: 15px; font-weight: 600; }
         .contact-card-info p { font-size: 12px; color: var(--text-gray); margin-top: 2px; }
         .contact-card-arrow { margin-left: auto; color: var(--text-gray); }
@@ -1307,14 +936,10 @@
             justify-content: space-between;
         }
 
-        .vip-header h2 {
-            font-size: 20px;
-            font-weight: 800;
-        }
+        .vip-header h2 { font-size: 20px; font-weight: 800; }
 
         .vip-settings {
-            width: 36px;
-            height: 36px;
+            width: 36px; height: 36px;
             background: var(--bg-card);
             border-radius: 50%;
             display: flex;
@@ -1334,31 +959,18 @@
         }
 
         .vip-avatar {
-            width: 60px;
-            height: 60px;
-            background: var(--bg-card);
+            width: 60px; height: 60px;
             border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid var(--primary-yellow);
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
-            border: 2px solid var(--primary-yellow);
+            background: var(--bg-card);
+            flex-shrink: 0;
         }
 
-        .vip-avatar .avatar-text {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 900;
-            font-size: 22px;
-        }
-
-        .vip-avatar .avatar-crown {
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 16px;
-        }
-
+        .vip-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .vip-user-info h3 { font-size: 18px; font-weight: 700; }
 
         .vip-modify-btn {
@@ -1395,33 +1007,22 @@
             color: #000;
         }
 
-        .vip-combined-status .disponible {
-            color: var(--green);
-            font-weight: 800;
-        }
-
-        .vip-combined-container {
-            padding: 0 20px;
-            margin-bottom: 15px;
-        }
+        .vip-combined-status .disponible { color: var(--green); font-weight: 800; }
+        .vip-combined-container { padding: 0 20px; margin-bottom: 15px; }
 
         /* ==================== ADMIN PAGE ==================== */
         #admin-page {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: var(--bg-dark);
             z-index: 8000;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
 
-        #admin-page.active {
-            display: block;
-        }
+        #admin-page.active { display: block; }
 
         .admin-header {
             padding: calc(15px + var(--safe-top)) 20px 15px;
@@ -1435,18 +1036,16 @@
         }
 
         .admin-header h2 {
-            font-size: 20px;
-            font-weight: 800;
+            font-size: 20px; font-weight: 800;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
-        .admin-header h2 i { color: var(--primary-yellow); }
+        .admin-header h2 img { width: 30px; height: 30px; object-fit: contain; }
 
         .admin-close {
-            width: 36px;
-            height: 36px;
+            width: 36px; height: 36px;
             background: var(--bg-card);
             border-radius: 50%;
             display: flex;
@@ -1458,14 +1057,10 @@
             font-size: 16px;
         }
 
-        .admin-section {
-            padding: 0 20px;
-            margin-bottom: 20px;
-        }
+        .admin-section { padding: 0 20px; margin-bottom: 20px; }
 
         .admin-section-title {
-            font-size: 14px;
-            font-weight: 700;
+            font-size: 14px; font-weight: 700;
             color: var(--primary-yellow);
             margin-bottom: 12px;
             text-transform: uppercase;
@@ -1485,10 +1080,7 @@
             margin-bottom: 12px;
         }
 
-        .admin-field {
-            margin-bottom: 16px;
-        }
-
+        .admin-field { margin-bottom: 16px; }
         .admin-field:last-child { margin-bottom: 0; }
 
         .admin-label {
@@ -1519,11 +1111,7 @@
         .admin-input:focus { border-color: var(--primary-yellow); }
         .admin-input::placeholder { color: #555; }
 
-        .admin-row {
-            display: flex;
-            gap: 10px;
-        }
-
+        .admin-row { display: flex; gap: 10px; }
         .admin-row .admin-field { flex: 1; }
 
         .admin-select {
@@ -1562,8 +1150,7 @@
         }
 
         .match-entry-number {
-            font-size: 13px;
-            font-weight: 700;
+            font-size: 13px; font-weight: 700;
             color: var(--primary-yellow);
             display: flex;
             align-items: center;
@@ -1573,8 +1160,7 @@
         .match-entry-number i { font-size: 14px; }
 
         .match-entry-remove {
-            width: 28px;
-            height: 28px;
+            width: 28px; height: 28px;
             background: rgba(255, 61, 61, 0.15);
             border: none;
             border-radius: 8px;
@@ -1619,7 +1205,6 @@
         }
 
         .admin-summary-row:last-child { border-bottom: none; }
-
         .admin-summary-label { font-size: 13px; color: var(--text-gray); }
         .admin-summary-value { font-size: 16px; font-weight: 700; }
         .admin-summary-value.gains { color: var(--green); font-size: 20px; }
@@ -1643,10 +1228,7 @@
             gap: 8px;
         }
 
-        .admin-submit-btn:active {
-            transform: scale(0.98);
-            background: var(--dark-yellow);
-        }
+        .admin-submit-btn:active { transform: scale(0.98); background: var(--dark-yellow); }
 
         .admin-delete-btn {
             width: 100%;
@@ -1689,7 +1271,6 @@
         .admin-stat-card.blue i { color: var(--blue); }
         .admin-stat-card.red i { color: var(--red); }
 
-        /* Toast */
         .toast {
             position: fixed;
             top: calc(20px + var(--safe-top));
@@ -1710,89 +1291,47 @@
             max-width: calc(100% - 40px);
         }
 
-        .toast.show {
-            transform: translateX(-50%) translateY(0);
-        }
-
-        .toast.error {
-            background: var(--red);
-            color: white;
-            box-shadow: 0 10px 30px rgba(255, 61, 61, 0.3);
-        }
-
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        .toast.error { background: var(--red); color: white; box-shadow: 0 10px 30px rgba(255, 61, 61, 0.3); }
         .toast i { font-size: 18px; }
 
         ::-webkit-scrollbar { width: 0; }
 
-        /* Desktop wrapper */
         @media (min-width: 500px) {
-            body {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                background: #000;
-            }
-
+            body { display: flex; align-items: center; justify-content: center; background: #000; }
             #splash-screen, #login-screen, #app, #admin-page {
                 max-width: 420px;
                 max-height: 900px;
                 border-radius: 30px;
                 overflow: hidden;
             }
-
             #admin-page.active {
                 position: fixed;
-                left: 50%;
-                top: 50%;
+                left: 50%; top: 50%;
                 transform: translate(-50%, -50%);
                 max-width: 420px;
                 max-height: 900px;
                 border-radius: 30px;
             }
         }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .fade-in-up { animation: fadeInUp 0.5s ease forwards; }
-        .delay-1 { animation-delay: 0.1s; opacity: 0; }
-        .delay-2 { animation-delay: 0.2s; opacity: 0; }
-        .delay-3 { animation-delay: 0.3s; opacity: 0; }
-        .delay-4 { animation-delay: 0.4s; opacity: 0; }
-        .delay-5 { animation-delay: 0.5s; opacity: 0; }
     </style>
 </head>
 <body>
 
-<!-- SPLASH SCREEN -->
+<!-- SPLASH SCREEN - Logo 3 (avec slogan) -->
 <div id="splash-screen">
-    <div class="splash-logo-container">
-        <div class="splash-logo">
-            <span class="crown">👑</span>
-            <div class="logo-text">SM</div>
-        </div>
-        <div class="splash-tagline">MAÎTRISER LES SCORES, C'EST NOTRE ART.</div>
-        <div class="splash-subtitle">SCOREMASTER.FR</div>
+    <div class="splash-content">
+        <img src="logo-splash.png" alt="ScoreMaster" class="splash-logo-img">
         <div class="splash-loader">
             <span></span><span></span><span></span>
         </div>
     </div>
 </div>
 
-<!-- LOGIN SCREEN -->
+<!-- LOGIN SCREEN - Logo 2 (fond clair) -->
 <div id="login-screen">
     <div class="login-header">
-        <div class="login-logo">
-            <div class="logo-icon">
-                <span class="crown-small">👑</span>
-                SM
-            </div>
-        </div>
-        <div class="login-tagline-container">
-            <div class="login-tagline">MAÎTRISER LES SCORES,<br>C'EST NOTRE ART.</div>
-        </div>
+        <img src="logo-light.png" alt="ScoreMaster" class="login-logo-img">
     </div>
     <div class="login-form-container">
         <div class="login-form-title">Email / Identifiant</div>
@@ -1800,9 +1339,7 @@
         <div class="login-form-title">Mot de passe</div>
         <input type="password" class="login-input" id="login-password" placeholder="••••••••••••" value="admin123">
         <button class="login-btn" onclick="handleLogin()">Connexion</button>
-        <div class="login-error" id="login-error">
-            <i class="fas fa-exclamation-circle"></i> Identifiants incorrects
-        </div>
+        <div class="login-error" id="login-error"><i class="fas fa-exclamation-circle"></i> Identifiants incorrects</div>
         <div class="login-options">
             <a href="#" class="forgot-password">Mot de passe oublié?</a>
             <div class="remember-me">
@@ -1827,13 +1364,13 @@
 <!-- MAIN APP -->
 <div id="app">
     <div class="pages-container">
+
         <!-- HOME PAGE -->
         <div class="page active" id="page-home">
             <div class="home-header fade-in-up delay-1">
                 <div class="home-user">
                     <div class="home-avatar">
-                        <span class="avatar-crown">👑</span>
-                        <span class="avatar-text">SM</span>
+                        <img src="logo-dark.png" alt="SM">
                     </div>
                     <div>
                         <div class="home-greeting">Bienvenue !</div>
@@ -1869,8 +1406,7 @@
             <div class="packs-scroll">
                 <div class="pack-card fade-in-up delay-3" onclick="navigateTo('packs')">
                     <div class="pack-card-icon yellow">
-                        <span class="icon-crown">👑</span>
-                        <span class="icon-text">SM</span>
+                        <img src="logo-light.png" alt="SM">
                     </div>
                     <div class="pack-card-info">
                         <div class="pack-card-name">SM S.E Journalier</div>
@@ -1882,8 +1418,7 @@
 
                 <div class="pack-card fade-in-up delay-4" onclick="navigateTo('packs')">
                     <div class="pack-card-icon red">
-                        <span class="icon-crown">👑</span>
-                        <span class="icon-text" style="color:white">SM</span>
+                        <img src="logo-dark.png" alt="SM">
                     </div>
                     <div class="pack-card-info">
                         <div class="pack-card-name">SM VIP+ (à vie)</div>
@@ -1898,8 +1433,7 @@
                 <div class="home-vip-header"><h3>🔥 Dernier Combiné VIP+</h3></div>
                 <div id="home-combined-container">
                     <div class="no-combined-message">
-                        <i class="fas fa-futbol"></i>
-                        Aucun combiné disponible pour le moment.
+                        <i class="fas fa-futbol"></i>Aucun combiné disponible pour le moment.
                     </div>
                 </div>
             </div>
@@ -1921,7 +1455,7 @@
             <div class="packs-page-list">
                 <div class="pack-detail-card">
                     <div class="pack-detail-top">
-                        <div class="pack-detail-icon yellow"><span class="icon-text">SM</span></div>
+                        <div class="pack-detail-icon yellow"><img src="logo-light.png" alt="SM"></div>
                         <div>
                             <div class="pack-detail-name">SM Score Exact Journalier</div>
                             <div class="pack-detail-desc">Recevez chaque jour notre meilleur pronostic en score exact.</div>
@@ -1937,10 +1471,9 @@
                         <button class="pack-subscribe-btn">S'abonner</button>
                     </div>
                 </div>
-
                 <div class="pack-detail-card">
                     <div class="pack-detail-top">
-                        <div class="pack-detail-icon red"><span class="icon-text" style="color:white">SM</span></div>
+                        <div class="pack-detail-icon red"><img src="logo-dark.png" alt="SM"></div>
                         <div>
                             <div class="pack-detail-name">SM VIP+ (à vie)</div>
                             <div class="pack-detail-desc">Accès illimité à tous nos pronostics et combinés exclusifs.</div>
@@ -1956,10 +1489,9 @@
                         <button class="pack-subscribe-btn" style="background:var(--red);color:white;">S'abonner</button>
                     </div>
                 </div>
-
                 <div class="pack-detail-card">
                     <div class="pack-detail-top">
-                        <div class="pack-detail-icon blue"><span class="icon-text" style="color:white">SM</span></div>
+                        <div class="pack-detail-icon blue"><img src="logo-dark.png" alt="SM"></div>
                         <div>
                             <div class="pack-detail-name">SM Combiné Hebdo</div>
                             <div class="pack-detail-desc">Un combiné score exact chaque semaine.</div>
@@ -2013,8 +1545,7 @@
             </div>
             <div class="vip-profile">
                 <div class="vip-avatar">
-                    <span class="avatar-crown">👑</span>
-                    <span class="avatar-text">SM</span>
+                    <img src="logo-dark.png" alt="SM">
                 </div>
                 <div class="vip-user-info"><h3>Admin SM</h3></div>
                 <button class="vip-modify-btn" onclick="openAdmin()">Modifier</button>
@@ -2023,8 +1554,7 @@
             <div id="vip-combined-status-bar"></div>
             <div class="vip-combined-container" id="vip-combined-container">
                 <div class="no-combined-message">
-                    <i class="fas fa-futbol"></i>
-                    Aucun combiné disponible pour le moment.<br>
+                    <i class="fas fa-futbol"></i>Aucun combiné disponible pour le moment.<br>
                     <span style="font-size:12px;color:var(--text-gray);">Revenez bientôt !</span>
                 </div>
             </div>
@@ -2041,53 +1571,27 @@
 
     <!-- Bottom Navigation -->
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="navigateTo('home')">
-            <i class="fas fa-home"></i><span>Accueil</span>
-        </div>
-        <div class="nav-item" onclick="navigateTo('packs')">
-            <i class="fas fa-clone"></i><span>Nos packs</span>
-        </div>
-        <div class="nav-item" onclick="navigateTo('contact')">
-            <i class="fas fa-envelope"></i><span>Contact</span>
-        </div>
-        <div class="nav-item vip" onclick="navigateTo('vip')">
-            <i class="fas fa-user-shield"></i><span>Espace<br>SM VIP+</span>
-        </div>
+        <div class="nav-item active" onclick="navigateTo('home')"><i class="fas fa-home"></i><span>Accueil</span></div>
+        <div class="nav-item" onclick="navigateTo('packs')"><i class="fas fa-clone"></i><span>Nos packs</span></div>
+        <div class="nav-item" onclick="navigateTo('contact')"><i class="fas fa-envelope"></i><span>Contact</span></div>
+        <div class="nav-item vip" onclick="navigateTo('vip')"><i class="fas fa-user-shield"></i><span>Espace<br>SM VIP+</span></div>
     </div>
 </div>
 
 <!-- ADMIN PAGE -->
 <div id="admin-page">
     <div class="admin-header">
-        <h2><i class="fas fa-crown"></i> Panel Admin</h2>
+        <h2><img src="logo-dark.png" alt="SM"> Panel Admin</h2>
         <button class="admin-close" onclick="closeAdmin()"><i class="fas fa-times"></i></button>
     </div>
-
     <div class="admin-section">
         <div class="admin-stats">
-            <div class="admin-stat-card yellow">
-                <i class="fas fa-futbol"></i>
-                <span class="stat-value" id="stat-total">0</span>
-                <div class="stat-label">Combinés publiés</div>
-            </div>
-            <div class="admin-stat-card green">
-                <i class="fas fa-check-circle"></i>
-                <span class="stat-value" id="stat-wins">0</span>
-                <div class="stat-label">Gagnés</div>
-            </div>
-            <div class="admin-stat-card blue">
-                <i class="fas fa-clock"></i>
-                <span class="stat-value" id="stat-pending">0</span>
-                <div class="stat-label">En cours</div>
-            </div>
-            <div class="admin-stat-card red">
-                <i class="fas fa-times-circle"></i>
-                <span class="stat-value" id="stat-losses">0</span>
-                <div class="stat-label">Perdus</div>
-            </div>
+            <div class="admin-stat-card yellow"><i class="fas fa-futbol"></i><span class="stat-value" id="stat-total">0</span><div class="stat-label">Combinés publiés</div></div>
+            <div class="admin-stat-card green"><i class="fas fa-check-circle"></i><span class="stat-value" id="stat-wins">0</span><div class="stat-label">Gagnés</div></div>
+            <div class="admin-stat-card blue"><i class="fas fa-clock"></i><span class="stat-value" id="stat-pending">0</span><div class="stat-label">En cours</div></div>
+            <div class="admin-stat-card red"><i class="fas fa-times-circle"></i><span class="stat-value" id="stat-losses">0</span><div class="stat-label">Perdus</div></div>
         </div>
     </div>
-
     <div class="admin-section">
         <div class="admin-section-title"><i class="fas fa-plus-circle"></i> Créer un combiné</div>
         <div class="admin-card">
@@ -2107,15 +1611,11 @@
             </div>
         </div>
     </div>
-
     <div class="admin-section">
         <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs du combiné</div>
         <div id="admin-matches"></div>
-        <button class="admin-add-match-btn" onclick="addMatchEntry()">
-            <i class="fas fa-plus"></i> Ajouter un match
-        </button>
+        <button class="admin-add-match-btn" onclick="addMatchEntry()"><i class="fas fa-plus"></i> Ajouter un match</button>
     </div>
-
     <div class="admin-section">
         <div class="admin-section-title"><i class="fas fa-coins"></i> Mise & Résumé</div>
         <div class="admin-card">
@@ -2125,32 +1625,15 @@
             </div>
         </div>
         <div class="admin-summary">
-            <div class="admin-summary-row">
-                <span class="admin-summary-label">Nombre de matchs</span>
-                <span class="admin-summary-value" id="summary-matches">0</span>
-            </div>
-            <div class="admin-summary-row">
-                <span class="admin-summary-label">Cote totale</span>
-                <span class="admin-summary-value" id="summary-odds">0.00</span>
-            </div>
-            <div class="admin-summary-row">
-                <span class="admin-summary-label">Mise</span>
-                <span class="admin-summary-value" id="summary-mise">0,00 €</span>
-            </div>
-            <div class="admin-summary-row">
-                <span class="admin-summary-label">Gains potentiels</span>
-                <span class="admin-summary-value gains" id="summary-gains">0,00 €</span>
-            </div>
+            <div class="admin-summary-row"><span class="admin-summary-label">Nombre de matchs</span><span class="admin-summary-value" id="summary-matches">0</span></div>
+            <div class="admin-summary-row"><span class="admin-summary-label">Cote totale</span><span class="admin-summary-value" id="summary-odds">0.00</span></div>
+            <div class="admin-summary-row"><span class="admin-summary-label">Mise</span><span class="admin-summary-value" id="summary-mise">0,00 €</span></div>
+            <div class="admin-summary-row"><span class="admin-summary-label">Gains potentiels</span><span class="admin-summary-value gains" id="summary-gains">0,00 €</span></div>
         </div>
     </div>
-
     <div class="admin-section">
-        <button class="admin-submit-btn" onclick="publishCombined()">
-            <i class="fas fa-paper-plane"></i> Publier le combiné
-        </button>
-        <button class="admin-delete-btn" onclick="deleteCombined()">
-            <i class="fas fa-trash-alt"></i> Supprimer le combiné actuel
-        </button>
+        <button class="admin-submit-btn" onclick="publishCombined()"><i class="fas fa-paper-plane"></i> Publier le combiné</button>
+        <button class="admin-delete-btn" onclick="deleteCombined()"><i class="fas fa-trash-alt"></i> Supprimer le combiné actuel</button>
     </div>
 </div>
 
@@ -2161,32 +1644,20 @@
 
     function loadState() {
         const saved = localStorage.getItem('scoreMasterData');
-        if (saved) {
-            const data = JSON.parse(saved);
-            currentCombined = data.combined || null;
-            appStats = data.stats || { total: 0, wins: 0, losses: 0, pending: 0 };
-        }
+        if (saved) { const data = JSON.parse(saved); currentCombined = data.combined || null; appStats = data.stats || { total: 0, wins: 0, losses: 0, pending: 0 }; }
     }
 
     function saveState() {
-        localStorage.setItem('scoreMasterData', JSON.stringify({
-            combined: currentCombined,
-            stats: appStats
-        }));
+        localStorage.setItem('scoreMasterData', JSON.stringify({ combined: currentCombined, stats: appStats }));
     }
 
     window.addEventListener('load', function() {
         loadState();
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('admin-date').value = today;
-        addMatchEntry();
-        addMatchEntry();
-
+        document.getElementById('admin-date').value = new Date().toISOString().split('T')[0];
+        addMatchEntry(); addMatchEntry();
         setTimeout(() => {
             document.getElementById('splash-screen').classList.add('hidden');
-            setTimeout(() => {
-                document.getElementById('login-screen').classList.add('active');
-            }, 300);
+            setTimeout(() => { document.getElementById('login-screen').classList.add('active'); }, 300);
         }, 2500);
     });
 
@@ -2199,8 +1670,7 @@
                 document.getElementById('login-screen').classList.remove('active');
                 document.getElementById('login-screen').style.opacity = '';
                 document.getElementById('app').classList.add('active');
-                renderCombined();
-                updateStats();
+                renderCombined(); updateStats();
             }, 400);
         } else {
             document.getElementById('login-error').classList.add('show');
@@ -2208,9 +1678,7 @@
         }
     }
 
-    document.getElementById('login-password').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') handleLogin();
-    });
+    document.getElementById('login-password').addEventListener('keypress', e => { if (e.key === 'Enter') handleLogin(); });
 
     function navigateTo(page) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -2233,9 +1701,7 @@
         updateStats();
     }
 
-    function closeAdmin() {
-        document.getElementById('admin-page').classList.remove('active');
-    }
+    function closeAdmin() { document.getElementById('admin-page').classList.remove('active'); }
 
     function addMatchEntry(data = null) {
         matchEntryCount++;
@@ -2247,77 +1713,50 @@
                 <span class="match-entry-number"><i class="fas fa-futbol"></i> Match ${matchEntryCount}</span>
                 <button class="match-entry-remove" onclick="removeMatchEntry(this)"><i class="fas fa-trash"></i></button>
             </div>
-            <div class="admin-field">
-                <div class="admin-label"><i class="fas fa-users"></i> Équipes</div>
-                <input type="text" class="admin-input match-teams-input" placeholder="Équipe A - Équipe B" value="${data ? data.teams : ''}" oninput="calculateGains()">
-            </div>
+            <div class="admin-field"><div class="admin-label"><i class="fas fa-users"></i> Équipes</div><input type="text" class="admin-input match-teams-input" placeholder="Équipe A - Équipe B" value="${data ? data.teams : ''}" oninput="calculateGains()"></div>
             <div class="admin-row">
-                <div class="admin-field">
-                    <div class="admin-label"><i class="fas fa-bullseye"></i> Score exact</div>
-                    <input type="text" class="admin-input match-score-input" placeholder="2 - 1" value="${data ? data.score : ''}" oninput="calculateGains()">
-                </div>
-                <div class="admin-field">
-                    <div class="admin-label"><i class="fas fa-chart-line"></i> Cote</div>
-                    <input type="number" step="0.01" class="admin-input match-odds-input" placeholder="7.00" value="${data ? data.odds : ''}" oninput="calculateGains()">
-                </div>
+                <div class="admin-field"><div class="admin-label"><i class="fas fa-bullseye"></i> Score exact</div><input type="text" class="admin-input match-score-input" placeholder="2 - 1" value="${data ? data.score : ''}" oninput="calculateGains()"></div>
+                <div class="admin-field"><div class="admin-label"><i class="fas fa-chart-line"></i> Cote</div><input type="number" step="0.01" class="admin-input match-odds-input" placeholder="7.00" value="${data ? data.odds : ''}" oninput="calculateGains()"></div>
             </div>
-            <div class="admin-field">
-                <div class="admin-label"><i class="fas fa-clock"></i> Horaire</div>
-                <input type="text" class="admin-input match-time-input" placeholder="Dem. 21:00" value="${data ? data.time : ''}">
-            </div>
-        `;
+            <div class="admin-field"><div class="admin-label"><i class="fas fa-clock"></i> Horaire</div><input type="text" class="admin-input match-time-input" placeholder="Dem. 21:00" value="${data ? data.time : ''}"></div>`;
         container.appendChild(entry);
         calculateGains();
     }
 
     function removeMatchEntry(btn) {
         const entry = btn.closest('.match-entry');
-        entry.style.opacity = '0';
-        entry.style.transform = 'scale(0.95)';
-        entry.style.transition = 'all 0.3s';
+        entry.style.opacity = '0'; entry.style.transform = 'scale(0.95)'; entry.style.transition = 'all 0.3s';
         setTimeout(() => { entry.remove(); renumberMatches(); calculateGains(); }, 300);
     }
 
     function renumberMatches() {
         const entries = document.querySelectorAll('.match-entry');
         matchEntryCount = entries.length;
-        entries.forEach((entry, i) => {
-            entry.querySelector('.match-entry-number').innerHTML = `<i class="fas fa-futbol"></i> Match ${i + 1}`;
-        });
+        entries.forEach((entry, i) => { entry.querySelector('.match-entry-number').innerHTML = `<i class="fas fa-futbol"></i> Match ${i + 1}`; });
     }
 
     function calculateGains() {
         const entries = document.querySelectorAll('.match-entry');
         const mise = parseFloat(document.getElementById('admin-mise').value) || 0;
-        let totalOdds = 1;
-        let matchCount = 0;
-        entries.forEach(entry => {
-            const odds = parseFloat(entry.querySelector('.match-odds-input').value) || 0;
-            if (odds > 0) { totalOdds *= odds; matchCount++; }
-        });
+        let totalOdds = 1, matchCount = 0;
+        entries.forEach(entry => { const odds = parseFloat(entry.querySelector('.match-odds-input').value) || 0; if (odds > 0) { totalOdds *= odds; matchCount++; } });
         if (matchCount === 0) totalOdds = 0;
-        const gains = mise * totalOdds;
         document.getElementById('summary-matches').textContent = entries.length;
         document.getElementById('summary-odds').textContent = totalOdds.toFixed(2);
         document.getElementById('summary-mise').textContent = formatCurrency(mise);
-        document.getElementById('summary-gains').textContent = formatCurrency(gains);
+        document.getElementById('summary-gains').textContent = formatCurrency(mise * totalOdds);
     }
 
-    function formatCurrency(value) {
-        return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(value);
-    }
+    function formatCurrency(value) { return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(value); }
 
     function publishCombined() {
         const entries = document.querySelectorAll('.match-entry');
         const date = document.getElementById('admin-date').value;
         const status = document.getElementById('admin-status').value;
         const mise = parseFloat(document.getElementById('admin-mise').value) || 0;
-
         if (entries.length === 0) { showToast('Ajoutez au moins un match !', true); return; }
         if (mise <= 0) { showToast('Veuillez saisir une mise !', true); return; }
-
-        const matches = [];
-        let valid = true;
+        const matches = []; let valid = true;
         entries.forEach(entry => {
             const teams = entry.querySelector('.match-teams-input').value.trim();
             const score = entry.querySelector('.match-score-input').value.trim();
@@ -2326,38 +1765,23 @@
             if (!teams || !score || odds <= 0) valid = false;
             matches.push({ teams, score, odds, time });
         });
-
         if (!valid) { showToast('Remplissez tous les champs !', true); return; }
-
-        let totalOdds = 1;
-        matches.forEach(m => totalOdds *= m.odds);
-
+        let totalOdds = 1; matches.forEach(m => totalOdds *= m.odds);
         currentCombined = { date, status, mise, matches, totalOdds, gains: mise * totalOdds, publishedAt: new Date().toISOString() };
-
-        if (status === 'en-cours') appStats.pending++;
-        else if (status === 'termine') appStats.wins++;
-        else if (status === 'perdu') appStats.losses++;
+        if (status === 'en-cours') appStats.pending++; else if (status === 'termine') appStats.wins++; else if (status === 'perdu') appStats.losses++;
         appStats.total++;
-
-        saveState();
-        updateStats();
-        renderCombined();
-        showToast('Combiné publié avec succès ! 🎉');
+        saveState(); updateStats(); renderCombined();
+        showToast('Combiné publié avec succès !');
         setTimeout(() => closeAdmin(), 1000);
     }
 
     function deleteCombined() {
         if (currentCombined) {
-            currentCombined = null;
-            saveState();
-            renderCombined();
+            currentCombined = null; saveState(); renderCombined();
             showToast('Combiné supprimé !', true);
             document.getElementById('admin-matches').innerHTML = '';
-            matchEntryCount = 0;
-            document.getElementById('admin-mise').value = '';
-            addMatchEntry();
-            addMatchEntry();
-            calculateGains();
+            matchEntryCount = 0; document.getElementById('admin-mise').value = '';
+            addMatchEntry(); addMatchEntry(); calculateGains();
         }
     }
 
@@ -2372,88 +1796,42 @@
         const vipContainer = document.getElementById('vip-combined-container');
         const homeContainer = document.getElementById('home-combined-container');
         const statusBar = document.getElementById('vip-combined-status-bar');
-
         if (!currentCombined) {
             const emptyHTML = `<div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible pour le moment.</div>`;
-            vipContainer.innerHTML = emptyHTML;
-            homeContainer.innerHTML = emptyHTML;
-            statusBar.innerHTML = '';
+            vipContainer.innerHTML = emptyHTML; homeContainer.innerHTML = emptyHTML; statusBar.innerHTML = '';
             return;
         }
-
         const dateFormatted = formatDate(currentCombined.date);
-        const statusClass = currentCombined.status;
-        const statusLabels = { 'en-cours': 'En cours', 'termine': 'Terminé', 'perdu': 'Perdu' };
-        let progressWidth = '50%';
-        if (statusClass === 'termine' || statusClass === 'perdu') progressWidth = '100%';
-
-        const combinedHTML = buildCombinedCard(currentCombined, statusClass, statusLabels, progressWidth);
-        vipContainer.innerHTML = combinedHTML;
-        homeContainer.innerHTML = combinedHTML;
-        statusBar.innerHTML = `<div class="vip-combined-status">Combiné du ${dateFormatted} <span class="disponible">DISPONIBLE !</span></div>`;
+        const sc = currentCombined.status;
+        const sl = { 'en-cours': 'En cours', 'termine': 'Terminé', 'perdu': 'Perdu' };
+        let pw = '50%'; if (sc === 'termine' || sc === 'perdu') pw = '100%';
+        const html = buildCombinedCard(currentCombined, sc, sl, pw);
+        vipContainer.innerHTML = html; homeContainer.innerHTML = html;
+        statusBar.innerHTML = `<div class="vip-combined-status" style="margin:0 20px 15px;">Combiné du ${dateFormatted} <span class="disponible">DISPONIBLE !</span></div>`;
     }
 
-    function buildCombinedCard(combined, statusClass, statusLabels, progressWidth) {
-        let matchesHTML = '';
-        combined.matches.forEach(match => {
-            matchesHTML += `
-                <div class="match-row">
-                    <div class="match-row-top">
-                        <div class="match-type"><i class="fas fa-futbol"></i> Score exact <span class="match-score">${match.score}</span></div>
-                        <div class="match-odds">${match.odds.toFixed(2)}</div>
-                    </div>
-                    <div class="match-row-bottom">
-                        <div class="match-teams"><i class="fas fa-shield-alt"></i> ${match.teams}</div>
-                        <div class="match-time">${match.time}</div>
-                    </div>
-                </div>`;
+    function buildCombinedCard(c, sc, sl, pw) {
+        let mHTML = '';
+        c.matches.forEach(m => {
+            mHTML += `<div class="match-row"><div class="match-row-top"><div class="match-type"><i class="fas fa-futbol"></i> Score exact <span class="match-score">${m.score}</span></div><div class="match-odds">${m.odds.toFixed(2)}</div></div><div class="match-row-bottom"><div class="match-teams"><i class="fas fa-shield-alt"></i> ${m.teams}</div><div class="match-time">${m.time}</div></div></div>`;
         });
-
-        let matchIcons = '';
-        combined.matches.forEach((_, i) => {
-            matchIcons += `<div class="match-icon-circle ${i === combined.matches.length - 1 ? 'highlight' : ''}"><i class="fas fa-futbol" style="font-size:14px;color:${i === combined.matches.length - 1 ? 'white' : 'var(--text-gray)'}"></i></div>`;
+        let icons = '';
+        c.matches.forEach((_, i) => {
+            icons += `<div class="match-icon-circle ${i === c.matches.length - 1 ? 'highlight' : ''}"><i class="fas fa-futbol" style="font-size:14px;color:${i === c.matches.length - 1 ? 'white' : 'var(--text-gray)'}"></i></div>`;
         });
-
-        const progressColor = combined.status === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : combined.status === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
-
-        return `
-            <div class="combined-card">
-                <div class="combined-header">
-                    <div class="combined-status">
-                        <span class="status-badge ${statusClass}">${statusLabels[statusClass]}</span>
-                        <span class="combined-label">Combiné</span>
-                        <div class="combined-count"><i class="fas fa-futbol"></i> ${combined.matches.length}</div>
-                    </div>
-                    <i class="fas fa-ellipsis-h combined-more"></i>
-                </div>
-                <div class="combined-progress"><div class="combined-progress-fill" style="width:${progressWidth};${progressColor}"></div></div>
-                <div class="combined-matches-icons">${matchIcons}<span style="font-size:12px;color:var(--text-gray);margin-left:4px;">${combined.matches.length}</span></div>
-                <div class="combined-body">${matchesHTML}</div>
-                <div class="combined-footer">
-                    <div class="watermark">SM</div>
-                    <div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span><span class="combined-footer-value">${combined.totalOdds.toFixed(2)}</span></div>
-                    <div class="combined-footer-row"><span class="combined-footer-label">Mise</span><span class="combined-footer-value">${formatCurrency(combined.mise)}</span></div>
-                    <div class="combined-footer-row"><span class="combined-footer-label">Gains potentiels</span><span class="combined-footer-value gains">${formatCurrency(combined.gains)}</span></div>
-                </div>
-                <button class="combined-complete-btn">Compléter</button>
-            </div>`;
+        const pc = c.status === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : c.status === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
+        return `<div class="combined-card"><div class="combined-header"><div class="combined-status"><span class="status-badge ${sc}">${sl[sc]}</span><span class="combined-label">Combiné</span><div class="combined-count"><i class="fas fa-futbol"></i> ${c.matches.length}</div></div><i class="fas fa-ellipsis-h combined-more"></i></div><div class="combined-progress"><div class="combined-progress-fill" style="width:${pw};${pc}"></div></div><div class="combined-matches-icons">${icons}<span style="font-size:12px;color:var(--text-gray);margin-left:4px;">${c.matches.length}</span></div><div class="combined-body">${mHTML}</div><div class="combined-footer"><img src="logo-dark.png" alt="SM" class="watermark-img"><div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span><span class="combined-footer-value">${c.totalOdds.toFixed(2)}</span></div><div class="combined-footer-row"><span class="combined-footer-label">Mise</span><span class="combined-footer-value">${formatCurrency(c.mise)}</span></div><div class="combined-footer-row"><span class="combined-footer-label">Gains potentiels</span><span class="combined-footer-value gains">${formatCurrency(c.gains)}</span></div></div><button class="combined-complete-btn">Compléter</button></div>`;
     }
 
-    function formatDate(dateStr) {
-        if (!dateStr) return '';
-        const d = new Date(dateStr);
-        return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
-    }
+    function formatDate(d) { if (!d) return ''; const dt = new Date(d); return `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}`; }
 
-    function showToast(message, isError = false) {
-        const toast = document.getElementById('toast');
-        document.getElementById('toast-message').textContent = message;
-        toast.querySelector('i').className = isError ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
-        toast.classList.toggle('error', isError);
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
+    function showToast(msg, err = false) {
+        const t = document.getElementById('toast');
+        document.getElementById('toast-message').textContent = msg;
+        t.querySelector('i').className = err ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
+        t.classList.toggle('error', err); t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
     }
 </script>
-
 </body>
 </html>
