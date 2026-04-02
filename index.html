@@ -287,26 +287,19 @@
 <div id="login-screen">
     <div class="login-header"><img id="img-login" alt="ScoreMaster" class="login-logo-img"></div>
     <div class="login-form-container">
-        <div class="login-form-title">Email</div>
-        <input type="email" class="login-input" id="login-email" placeholder="Votre email">
-        
-        <!-- Nouveau champ Pseudo (Caché en mode connexion) -->
-        <div class="login-form-title" id="title-username" style="display:none;">Pseudo</div>
-        <input type="text" class="login-input" id="login-username" placeholder="Votre pseudo" style="display:none;">
-        
+        <div class="login-form-title">Email / Identifiant</div>
+        <input type="text" class="login-input" id="login-email" placeholder="Votre identifiant" value="Admin SM">
         <div class="login-form-title">Mot de passe</div>
-        <input type="password" class="login-input" id="login-password" placeholder="••••••••••••">
-        
-        <button class="login-btn" id="btn-action" onclick="handleAuth()">Connexion</button>
+        <input type="password" class="login-input" id="login-password" placeholder="••••••••••••" value="admin123">
+        <button class="login-btn" onclick="handleLogin()">Connexion</button>
         <div class="login-error" id="login-error"><i class="fas fa-exclamation-circle"></i> Identifiants incorrects</div>
-        
         <div class="login-options">
-            <a href="#" class="forgot-password" id="toggle-auth" onclick="toggleAuthMode(); return false;">Créer un compte</a>
+            <a href="#" class="forgot-password">Mot de passe oublié?</a>
             <div class="remember-me"><div class="toggle-switch active" onclick="this.classList.toggle('active')"></div><span>Se souvenir de moi</span></div>
         </div>
-        
         <div class="api-badge-login"><i class="fas fa-plug"></i><span>API Betclic connectée</span><div class="api-status-dot"></div></div>
     </div>
+</div>
 
 <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toast-message"></span></div>
 
@@ -407,99 +400,49 @@ window.addEventListener('load',function(){
     setTimeout(function(){document.getElementById('splash-screen').classList.add('hidden');setTimeout(function(){document.getElementById('login-screen').classList.add('active');},300);},2500);
 });
 
-let isSignUpMode = false; // Variable pour savoir si on est sur Inscription ou Connexion
-
-function toggleAuthMode() {
-    isSignUpMode = !isSignUpMode;
-    // On affiche ou cache le champ Pseudo
-    document.getElementById('title-username').style.display = isSignUpMode ? 'block' : 'none';
-    document.getElementById('login-username').style.display = isSignUpMode ? 'block' : 'none';
-    // On change les textes des boutons
-    document.getElementById('btn-action').textContent = isSignUpMode ? 'S\'inscrire' : 'Connexion';
-    document.getElementById('toggle-auth').textContent = isSignUpMode ? 'Déjà un compte ? Connexion' : 'Créer un compte';
-}
-
-async function handleAuth() {
+async function handleLogin() {
     var email = document.getElementById('login-email').value;
     var password = document.getElementById('login-password').value;
-    var username = document.getElementById('login-username').value;
 
-    if (!email || !password || (isSignUpMode && !username)) {
-        showToast('Veuillez remplir tous les champs', true);
-        return;
-    }
-
-    if (isSignUpMode) {
-        // --- MODE INSCRIPTION ---
-        const { data, error } = await supabaseClient.auth.signUp({
-            email: email,
-            password: password
-        });
-
-        if (error) {
-            showToast(error.message, true);
-            return;
-        }
-
-        // On crée son profil avec les statuts de base (Ni VIP, Ni Admin)
-        await supabaseClient.from('profiles').insert([{
-            id: data.user.id,
-            email: email,
-            username: username,
-            is_vip: false,
-            is_admin: false
-        }]);
-
-        showToast('Compte créé avec succès ! Connectez-vous.');
-        toggleAuthMode(); // On le remet sur la page de connexion
-        document.getElementById('login-password').value = '';
-
-    } else {
-        // --- MODE CONNEXION ---
+    if(email && password) {
+        // 1. On demande à Supabase de connecter l'utilisateur
         const { data, error } = await supabaseClient.auth.signInWithPassword({
             email: email,
             password: password
         });
 
         if (error) {
+            // Mauvais mot de passe ou email
             document.getElementById('login-error').classList.add('show');
             setTimeout(function(){ document.getElementById('login-error').classList.remove('show'); }, 3000);
             return;
         }
 
-        // On récupère ses droits ET son pseudo
+        // 2. Connexion réussie ! On vérifie s'il est VIP
         const { data: profile } = await supabaseClient
             .from('profiles')
-            .select('is_vip, is_admin, username')
+            .select('is_vip')
             .eq('id', data.user.id)
             .single();
 
+        // On stocke l'info VIP pour l'affichage
         window.isUserVip = profile ? profile.is_vip : false;
-        window.isAdmin = profile ? profile.is_admin : false;
 
-        // 🌟 LA MAGIE EST ICI : On remplace "Admin SM" par le vrai pseudo !
-        let displayUsername = (profile && profile.username) ? profile.username : 'Utilisateur';
-        
-        // Sur la page d'accueil
-        document.querySelector('.home-username').innerHTML = displayUsername + ' <i class="fas fa-chevron-down"></i>';
-        // Dans l'espace VIP
-        document.querySelector('.vip-user-info h3').textContent = displayUsername;
-
-        // On affiche l'application
+        // 3. On affiche l'application
         document.getElementById('login-screen').style.opacity = '0';
         setTimeout(function(){ 
             document.getElementById('login-screen').classList.remove('active');
             document.getElementById('login-screen').style.opacity = '';
             document.getElementById('app').classList.add('active');
             
-            chargerDonnees(); 
+            // On charge les données maintenant qu'on est connecté (fonction à ajouter ensuite)
+            // chargerDonnees(); 
         }, 400);
     }
 }
-   
 async function chargerDonnees() {
     try {
-        // 1. Tentez d'abord de récupérer les infos PUBLIQUES
+        // 1. On récupère d'abord les infos publiques
         const { data: publicData, error: publicErr } = await supabaseClient
             .from('combineds_public')
             .select('*')
@@ -509,30 +452,29 @@ async function chargerDonnees() {
             .single();
 
         if (publicErr || !publicData) {
-             // S'il n'y a VRAIMENT aucun combiné publié dans la table publique
+             // S'il n'y a VRAIMENT aucun combiné publié par l'admin
              currentCombined = null; 
              renderCombined();
              return;
         }
 
         if (window.isUserVip) {
-            // 2. L'utilisateur est VIP ! Tentez d'ouvrir le coffre-fort 🤫
+            // 2. L'utilisateur est VIP ! On demande la table secrète 🤫
             const { data: vipData, error: vipErr } = await supabaseClient
                 .from('combineds_vip')
                 .select('*')
-                .eq('id', publicData.id) // On cherche les scores secrets de ce combiné précis
+                .eq('id', publicData.id)
                 .single();
 
             if (vipData && !vipErr) {
-                // Succès total ! On fusionne les infos publiques et VIP
+                // Succès total !
                 currentCombined = { ...publicData, ...vipData };
             } else {
                  // Erreur de récupération VIP (ex: RLS bloque), on se rabat sur le public
-                 console.warn("Accès VIP refusé (RLS)");
-                 currentCombined = publicData;
+                currentCombined = publicData;
             }
         } else {
-            // 3. L'utilisateur n'est pas VIP. On utilise uniquement les infos publiques.
+            // 3. L'utilisateur n'est pas VIP
             currentCombined = publicData; 
         }
     } catch (e) {
@@ -540,8 +482,7 @@ async function chargerDonnees() {
         currentCombined = null; // En cas de gros crash, on n'affiche rien
     }
 
-    // On lance l'affichage à l'écran. 
-    // Rappel: Votre fonction buildCC() doit utiliser "?-?" et "***" si currentCombined.matches n'existe pas.
+    // On lance l'affichage à l'écran
     renderCombined();
 }
    
@@ -779,32 +720,23 @@ function updateDateOnly(){
 function fmtD(d){if(!d)return'';var dt=new Date(d);return String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0');}
 function showToast(msg,err){err=err||false;var t=document.getElementById('toast');document.getElementById('toast-message').textContent=msg;t.querySelector('i').className=err?'fas fa-exclamation-circle':'fas fa-check-circle';t.classList.toggle('error',err);t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
 function promptAdminCode(){
-    if(window.isAdmin === true){
+    var code = prompt('Code administrateur :');
+    if(code === '808080'){
         openAdmin();
-    } else {
-        showToast('Accès refusé. Vous n\'êtes pas administrateur.', true);
+    } else if(code !== null){
+        showToast('Code incorrect !', true);
     }
 }
-</script>
-
-<!-- POPUP NON-VIP -->
-<div id="vip-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
-    <div style="background:var(--bg-card);padding:40px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow: 0 10px 40px rgba(0,0,0,0.4);">
-        
-        <div style="position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:120px;height:120px;background:var(--red);border-radius:50%;filter:blur(40px);opacity:0.6;z-index:-1;"></div>
-
-        <div style="width:70px;height:70px;background:rgba(239,83,80,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 25px auto;">
-            <i class="fas fa-lock" style="font-size:35px;color:var(--red);"></i>
-        </div>
-
-        <h3 style="font-size:22px;font-weight:700;margin-bottom:12px;color:#fff;font-family:'Montserrat',sans-serif;">Accès Réservé</h3>
-        <p style="font-size:14px;color:var(--text-gray);margin-bottom:30px;line-height:1.6;font-family:'Montserrat',sans-serif;">Vous n'avez pas accès à l'espace SM VIP+ :( <br><br>Passez au niveau supérieur pour débloquer tous les scores exacts, les cotes exclusives et décupler vos gains !</p>
-        
-        <button onclick="document.getElementById('vip-popup').style.display='none'; navigateTo('packs');" style="width:100%;padding:16px;background:linear-gradient(135deg, var(--red) 0%, #B71C1C 100%);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:12px;box-shadow: 0 4px 15px rgba(239,83,80,0.3);border:1px solid rgba(255,255,255,0.1);">🔥 Découvrir les packs VIP+</button>
-        
-        <button onclick="document.getElementById('vip-popup').style.display='none'" style="width:100%;padding:12px;background:transparent;color:var(--text-gray);border:none;font-size:13px;font-family:'Montserrat',sans-serif;cursor:pointer;font-weight:500;">Plus tard</button>
+   <!-- POPUP NON-VIP -->
+<div id="vip-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9500;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;">
+    <div style="background:var(--bg-card);padding:30px;border-radius:20px;text-align:center;width:80%;max-width:350px;border:1px solid var(--border-color);transform:scale(0.9);transition:transform 0.3s;animation: splashFadeIn 0.3s forwards;">
+        <i class="fas fa-lock" style="font-size:40px;color:var(--red);margin-bottom:15px;"></i>
+        <h3 style="font-size:18px;font-weight:700;margin-bottom:10px;">Accès Réservé</h3>
+        <p style="font-size:13px;color:var(--text-gray);margin-bottom:20px;line-height:1.5;">Vous n'avez pas accès à l'espace SM VIP+ :( <br><br>Rejoignez-nous pour débloquer tous les scores exacts !</p>
+        <button onclick="document.getElementById('vip-popup').style.display='none'; navigateTo('packs');" style="width:100%;padding:14px;background:var(--red);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:10px;">Découvrir les packs</button>
+        <button onclick="document.getElementById('vip-popup').style.display='none'" style="width:100%;padding:12px;background:transparent;color:var(--text-gray);border:none;font-size:13px;cursor:pointer;">Fermer</button>
     </div>
 </div>
-
+</script>
 </body>
 </html>
