@@ -422,84 +422,86 @@ function toggleAuthMode() {
     document.getElementById('toggle-auth').textContent = isSignUpMode ? 'Déjà un compte ? Connexion' : 'Créer un compte';
 }
 
+// 1. Script pour faire fonctionner l'œil (Afficher/Cacher le MDP)
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'togglePassword') {
+        const passwordInput = document.getElementById('login-password');
+        const isPassword = passwordInput.getAttribute('type') === 'password';
+        
+        // On change le type : de password à text pour voir, et inversement
+        passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+        
+        // On change l'icône (œil ouvert / œil barré)
+        e.target.classList.toggle('fa-eye');
+        e.target.classList.toggle('fa-eye-slash');
+    }
+});
+
+// 2. Ta nouvelle fonction handleAuth (Gestion de l'Inscription, Connexion et Pseudo)
 async function handleAuth() {
-    var email = document.getElementById('login-email').value;
-    var password = document.getElementById('login-password').value;
-    var username = document.getElementById('login-username').value;
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    const username = document.getElementById('login-username').value;
 
     if (!email || !password || (isSignUpMode && !username)) {
         showToast('Veuillez remplir tous les champs', true);
         return;
     }
 
-    if (isSignUpMode) {
-        // --- MODE INSCRIPTION ---
-        const { data, error } = await supabaseClient.auth.signUp({
-            email: email,
-            password: password
-        });
-
-        if (error) {
-            showToast(error.message, true);
+    try {
+        let result;
+        if (isSignUpMode) {
+            // --- INSCRIPTION ---
+            result = await supabaseClient.auth.signUp({ email, password });
+            if (result.error) throw result.error;
+            
+            // On crée le profil dans la table avec le pseudo choisi
+            await supabaseClient.from('profiles').insert([{
+                id: result.data.user.id,
+                email: email,
+                username: username,
+                is_vip: false,
+                is_admin: false
+            }]);
+            
+            showToast('Compte créé ! Connectez-vous.');
+            toggleAuthMode();
             return;
+        } else {
+            // --- CONNEXION ---
+            result = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (result.error) throw result.error;
         }
 
-        // On crée son profil avec les statuts de base (Ni VIP, Ni Admin)
-        await supabaseClient.from('profiles').insert([{
-            id: data.user.id,
-            email: email,
-            username: username,
-            is_vip: false,
-            is_admin: false
-        }]);
-
-        showToast('Compte créé avec succès ! Connectez-vous.');
-        toggleAuthMode(); // On le remet sur la page de connexion
-        document.getElementById('login-password').value = '';
-
-    } else {
-        // --- MODE CONNEXION ---
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
-            email: email,
-            password: password
-        });
-
-        if (error) {
-            document.getElementById('login-error').classList.add('show');
-            setTimeout(function(){ document.getElementById('login-error').classList.remove('show'); }, 3000);
-            return;
-        }
-
-        // On récupère ses droits ET son pseudo
+        // Récupération des droits et du Pseudo de l'utilisateur
         const { data: profile } = await supabaseClient
             .from('profiles')
             .select('is_vip, is_admin, username')
-            .eq('id', data.user.id)
+            .eq('id', result.data.user.id)
             .single();
 
         window.isUserVip = profile ? profile.is_vip : false;
         window.isAdmin = profile ? profile.is_admin : false;
 
-       // ... (après la récupération du profil)
-        window.isUserVip = profile ? profile.is_vip : false;
-        window.isAdmin = profile ? profile.is_admin : false;
-
-        let displayUsername = (profile && profile.username) ? profile.username : 'Utilisateur';
+        // MISE À JOUR DU PSEUDO : On remplace "Admin SM" par le pseudo réel
+        let finalUsername = (profile && profile.username) ? profile.username : "Utilisateur";
         
-        // On met à jour les pseudos seulement si les éléments existent
-        const homeUser = document.querySelector('.home-username');
-        if(homeUser) homeUser.innerHTML = displayUsername + ' <i class="fas fa-chevron-down"></i>';
+        const homeNameEl = document.querySelector('.home-username');
+        if (homeNameEl) homeNameEl.innerHTML = finalUsername + ' <i class="fas fa-chevron-down"></i>';
         
-        const vipUser = document.querySelector('.vip-user-info h3');
-        if(vipUser) vipUser.textContent = displayUsername;
+        const vipNameEl = document.querySelector('.vip-user-info h3');
+        if (vipNameEl) vipNameEl.textContent = finalUsername;
 
-        // Transition vers l'app
+        // Transition vers l'application
         document.getElementById('login-screen').style.opacity = '0';
-        setTimeout(function(){ 
+        setTimeout(() => { 
             document.getElementById('login-screen').classList.remove('active');
-            document.getElementById('app').classList.add('active'); // Vérifie que l'ID est bien "app"
+            document.getElementById('app').classList.add('active');
             chargerDonnees(); 
         }, 400);
+
+    } catch (err) {
+        showToast(err.message || 'Erreur d\'authentification', true);
     }
 }
    
