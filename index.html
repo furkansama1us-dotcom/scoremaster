@@ -332,34 +332,6 @@
             50% { transform: translateX(-3px); }
         }
 
-        .pricing-toggle {
-            display: flex;
-            gap: 4px;
-            margin: 0 20px 20px;
-            background: var(--bg-card);
-            border-radius: 14px;
-            padding: 4px;
-            border: 1px solid var(--border-color);
-        }
-        .toggle-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s;
-            background: transparent;
-            color: var(--text-gray);
-            font-family: 'Inter', sans-serif;
-        }
-        .toggle-btn.active {
-            background: var(--primary-yellow);
-            color: #000;
-            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
-        }
-
         .pack-popular {
             border-color: rgba(255, 215, 0, 0.4) !important;
             background: linear-gradient(145deg, rgba(255, 215, 0, 0.08) 0%, var(--bg-card) 100%) !important;
@@ -861,12 +833,6 @@
                 </div>
             </div>
 
-            <!-- TOGGLE MENSUEL / UNIQUE -->
-            <div class="pricing-toggle">
-                <button class="toggle-btn active" onclick="switchPricing('unique')">💎 Paiement unique</button>
-                <button class="toggle-btn" onclick="switchPricing('mensuel')">📅 Mensuel</button>
-            </div>
-
             <div class="packs-page-list">
 
                 <!-- ===== PACK 1 : JOURNALIER ===== -->
@@ -883,13 +849,13 @@
                                     <i class="fas fa-info" style="color:var(--text-gray); font-size:14px;"></i>
                                 </div>
                             </div>
-                            <div class="pack-detail-desc">Recevez chaque jour notre meilleur pronostic en score exact avec une analyse détaillée.</div>
+                            <div class="pack-detail-desc">Recevez votre pronostic en score exact unique avec une analyse détaillée.</div>
                             <div class="delivery-badge"><i class="fas fa-bolt" style="margin-right:4px;"></i>Livraison instantanée</div>
                         </div>
                     </div>
 
                     <div class="pack-detail-features">
-                        <div class="pack-feature"><i class="fas fa-check"></i> 1 score exact / jour</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> 1 score exact seulement</div>
                         <div class="pack-feature"><i class="fas fa-check"></i> Analyse détaillée</div>
                         <div class="pack-feature"><i class="fas fa-check"></i> Support 7j/7</div>
                         <div class="pack-feature"><i class="fas fa-check"></i> Notification push</div>
@@ -1115,9 +1081,9 @@
                     </div>
                     <div class="comp-row">
                         <div class="comp-cell">Durée</div>
-                        <div class="comp-cell">30 jours</div>
+                        <div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div>
                         <div class="comp-cell" style="color:#FFD700; font-weight:700;">À VIE</div>
-                        <div class="comp-cell">30 jours</div>
+                        <div class="comp-cell">7 jours</div>
                     </div>
                     <div class="comp-row">
                         <div class="comp-cell">Accès fondateurs</div>
@@ -1211,7 +1177,7 @@
                         <i class="fas fa-chevron-down faq-icon"></i>
                     </div>
                     <div class="faq-answer">
-                        Nos combinés affichent un taux de réussite moyen de 68% sur les scores exacts. Nos analystes travaillent avec des données d'API sportifs en temps réel pour maximiser les chances.
+                        Nos combinés affichent un taux de réussite moyen de 87% sur les scores exacts. Nos analystes travaillent avec des données d'API sportifs en temps réel pour maximiser les chances.
                     </div>
                 </div>
             </div>
@@ -2218,16 +2184,6 @@
     // ===== FAQ TOGGLE =====
     function toggleFaq(el) {
         el.classList.toggle('open');
-    }
-
-    // ===== PRICING TOGGLE =====
-    function switchPricing(type) {
-        document.querySelectorAll('.toggle-btn').forEach(function (b) { b.classList.remove('active'); });
-        event.currentTarget.classList.add('active');
-        
-        if (type === 'mensuel') {
-            showToast('Les prix mensuels arrivent bientôt !', true);
-        }
     }
 
     // ===== CHECKOUT (À PERSONNALISER AVEC TON SYSTÈME DE PAIEMENT) =====
