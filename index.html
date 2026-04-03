@@ -19,7 +19,7 @@
         .combined-card { display: flex; flex-direction: column; }
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
         
-        /* THEME SOMBRE (Base conservée intacte) */
+        /* THEME SOMBRE */
         :root{--primary-yellow:#FFD700;--dark-yellow:#E6C200;--bg-dark:#0D0D0D;--bg-card:#1A1A1A;--bg-input:#2A2A2A;--text-white:#FFFFFF;--text-gray:#8A8A8A;--text-light-gray:#B0B0B0;--green:#00C853;--red:#FF3D3D;--blue:#4A90D9;--border-color:#333333;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
         html,body{font-family:'Inter','Montserrat',sans-serif;background:var(--bg-dark);color:var(--text-white);overflow:hidden;height:100%;width:100%;position:fixed;top:0;left:0}
         
@@ -42,7 +42,7 @@
         .fade-in-up{animation:fadeInUp .5s ease forwards}
         .delay-1{animation-delay:.1s;opacity:0}.delay-2{animation-delay:.2s;opacity:0}.delay-3{animation-delay:.3s;opacity:0}.delay-4{animation-delay:.4s;opacity:0}.delay-5{animation-delay:.5s;opacity:0}
         
-        /* LOGIN ECRAN : EXCLUSIVEMENT CLAIR ET JAUNE */
+        /* LOGIN CLAIR ET JAUNE */
         #login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,var(--primary-yellow) 0%,var(--primary-yellow) 35%,#FFFFFF 35%);z-index:9000;display:none;flex-direction:column;transition:opacity .4s}
         #login-screen.active{display:flex}
         .login-header{flex:0 0 auto;padding-top:calc(30px + var(--safe-top));padding-bottom:20px;text-align:center}
@@ -294,7 +294,6 @@
         ::-webkit-scrollbar{width:0}
         @media(min-width:500px){body{display:flex;align-items:center;justify-content:center;background:#000}#splash-screen,#login-screen,#app,#admin-page{max-width:420px;max-height:900px;border-radius:30px;overflow:hidden}#admin-page.active{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);max-width:420px;max-height:900px;border-radius:30px}}
         
-        /* STYLE HISTORIQUE ET ADMIN */
         .history-card { background:var(--bg-card); border:1px solid var(--border-color); border-radius:16px; padding:16px; margin-bottom:14px; display:flex; flex-direction:column; align-items:stretch; transition: all 0.3s; }
         .history-card.termine { border-color: rgba(0, 200, 83, 0.4); background: linear-gradient(145deg, rgba(0,200,83,0.08) 0%, var(--bg-card) 100%); }
         .history-card.perdu { border-color: rgba(255, 61, 61, 0.3); background: linear-gradient(145deg, rgba(255,61,61,0.05) 0%, var(--bg-card) 100%); }
@@ -310,6 +309,7 @@
 <body>
 
 <script>
+    // --- VARIABLES GLOBALES ET CONNEXION SUPABASE ---
     const LOGO_DARK = "logo-dark.png";
     const LOGO_LIGHT = "logo-light.png";
     const LOGO_SPLASH = "logo-splash.png";
@@ -317,11 +317,15 @@
     const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
     
+    // --- AJOUT DE TA CLE SPORTMONKS ICI ---
+    // Remplace le texte ci-dessous par ta vraie clé Sportmonks
+    const SPORTMONKS_API_KEY = 'Tu21daPcYDJc75TOju5H1rpJes5wOtJkCnW67KG6OCIfU4cvIHVhTELEZtbY';
+    
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     function setLogos() {
         document.getElementById('img-splash').src = LOGO_SPLASH;
-        document.getElementById('img-login').src = LOGO_DARK; // Logo sombre sur fond clair
+        document.getElementById('img-login').src = LOGO_DARK;
         document.getElementById('img-admin').src = LOGO_DARK;
         document.getElementById('avatar-home').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
         document.getElementById('avatar-vip').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
@@ -341,7 +345,7 @@
     </div>
 </div>
 
-<!-- LOGIN -->
+<!-- LOGIN CLAIR & JAUNE -->
 <div id="login-screen">
     <div class="login-header">
         <img id="img-login" alt="ScoreMaster" class="login-logo-img">
@@ -446,7 +450,6 @@
                 <div id="home-combined-container"><div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div></div>
             </div>
             
-            <!-- HISTORIQUE PUBLIC -->
             <div class="section-header fade-in-up delay-5" style="margin-top: 10px;">
                 <span class="section-title">Nos derniers combinés</span>
             </div>
@@ -465,11 +468,10 @@
             <div style="height:20px;"></div>
         </div>
 
-        <!-- PACKS PAGE PERSONNALISÉE -->
+        <!-- PACKS PAGE -->
         <div class="page" id="page-packs">
             <div class="page-title-bar"><h2>Nos Packs</h2></div>
             <div class="packs-page-list">
-                <!-- PACK 1 -->
                 <div class="pack-detail-card">
                     <div class="pack-detail-top">
                         <div class="logo-pack-detail green" id="pack-detail-1"></div>
@@ -500,7 +502,6 @@
                     </div>
                 </div>
 
-                <!-- PACK 2 -->
                 <div class="pack-detail-card">
                     <div class="pack-detail-top">
                         <div class="logo-pack-detail red" id="pack-detail-2"></div>
@@ -532,7 +533,6 @@
                     </div>
                 </div>
 
-                <!-- PACK 3 -->
                 <div class="pack-detail-card">
                     <div class="pack-detail-top">
                         <div class="logo-pack-detail blue" id="pack-detail-3"></div>
@@ -548,7 +548,7 @@
                         </div>
                     </div>
                     <div class="pack-detail-features">
-                        <div class="pack-feature"><i class="fas fa-check"></i> 5 combiné S.E / semaine</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> 5 combinés S.E / semaine</div>
                         <div class="pack-feature"><i class="fas fa-check"></i> Cotes élevées</div>
                         <div class="pack-feature"><i class="fas fa-check"></i> Suivi en direct</div>
                         <div class="pack-feature"><i class="fas fa-check"></i> Récap hebdomadaire</div>
@@ -643,7 +643,7 @@
     </div>
 </div>
 
-<!-- ADMIN -->
+<!-- ADMIN PANEL -->
 <div id="admin-page">
     <div class="admin-header">
         <h2><img id="img-admin" alt="SM" class="admin-header-logo"> Panel Admin</h2>
@@ -689,8 +689,15 @@
 
     <div class="admin-section">
         <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs</div>
+        
+        <!-- NOUVEAU BOUTON API SPORTMONKS -->
+        <button id="btn-fetch-api" onclick="fetchMatchesFromAPI()" style="width:100%; padding:10px; background:rgba(74, 144, 217, 0.15); color:var(--blue); border:1px solid rgba(74, 144, 217, 0.3); border-radius:8px; cursor:pointer; margin-bottom:10px; font-weight:600;">
+            <i class="fas fa-plug"></i> Charger les matchs du jour
+        </button>
+        <div id="api-matches-container"></div>
+        
         <div id="admin-matches"></div>
-        <button class="admin-add-match-btn" onclick="addMatchEntry()"><i class="fas fa-plus"></i> Ajouter un match</button>
+        <button class="admin-add-match-btn" onclick="addMatchEntry()"><i class="fas fa-plus"></i> Ajouter un match (manuel)</button>
     </div>
 
     <div class="admin-section">
@@ -754,9 +761,7 @@
         <div id="info-popup-icon" style="width:65px;height:65px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px auto;font-size:26px;"></div>
         <h3 id="info-popup-title" style="font-size:20px;font-weight:800;margin-bottom:12px;color:#fff;font-family:'Montserrat',sans-serif;">Titre</h3>
         <p id="info-popup-desc" style="font-size:14px;color:var(--text-gray);margin-bottom:20px;line-height:1.6;">Description détaillée...</p>
-        <div id="info-popup-extra" style="background:var(--bg-input); padding:18px; border-radius:12px; font-size:13px; color:var(--text-white); font-weight:600; margin-bottom:20px; border:1px solid var(--border-color);">
-            <!-- Liste générée en JS -->
-        </div>
+        <div id="info-popup-extra" style="background:var(--bg-input); padding:18px; border-radius:12px; font-size:13px; color:var(--text-white); font-weight:600; margin-bottom:20px; border:1px solid var(--border-color);"></div>
         <button onclick="closeInfoPopup()" style="width:100%;padding:14px;background:var(--primary-yellow);color:#000;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;">D'accord !</button>
     </div>
 </div>
@@ -781,7 +786,7 @@
         localStorage.setItem('scoreMasterData', JSON.stringify({ stats: appStats, platform: userPlatform })); 
     }
 
-    /* GESTION POPUP PROFIL & PLATEFORME */
+    // GESTION POPUP PROFIL
     function openProfileSettings() {
         document.getElementById('user-platform-select').value = userPlatform;
         var popup = document.getElementById('profile-popup');
@@ -820,7 +825,7 @@
         });
     }
 
-    /* GESTION POPUP INFO DES PACKS */
+    // GESTION POPUP INFO
     function showPackInfo(packType) {
         var popup = document.getElementById('info-popup');
         var title = document.getElementById('info-popup-title');
@@ -847,7 +852,7 @@
             icon.style.background = 'rgba(74, 144, 217, 0.15)';
             icon.style.color = 'var(--blue)';
             title.textContent = 'SM Combiné Hebdo';
-            desc.textContent = 'Le coup de maître du week-end. Un combiné explosif soigneusement étudié pour maximiser le potentiel de gains sur 2 ou 3 matchs.';
+            desc.textContent = 'Le coup de maître du week-end. Un combiné explosif soigneusement étudié pour maximiser le potentiel de gains sur plusieurs matchs.';
             extra.innerHTML = '<ul style="text-align:left; padding-left:20px; color:var(--text-light-gray);"><li style="margin-bottom:8px">Cotes très élevées <span style="color:var(--blue)">(+ de 50.00)</span></li><li style="margin-bottom:8px">Le rendez-vous du vendredi</li><li>Pour les amateurs de sensations fortes</li></ul>';
         }
 
@@ -862,8 +867,66 @@
         setTimeout(function () { popup.style.display = 'none'; }, 300);
     }
 
+    // NOUVEAU: CONNEXION A SPORTMONKS API
+    async function fetchMatchesFromAPI() {
+        if (SPORTMONKS_API_KEY === 'COLLE_TA_CLE_ICI') {
+            showToast('Met ta clé API Sportmonks dans le code !', true);
+            return;
+        }
+
+        var date = document.getElementById('admin-date').value;
+        if (!date) {
+            showToast('Choisis une date d\'abord', true);
+            return;
+        }
+
+        var btn = document.getElementById('btn-fetch-api');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement...';
+
+        try {
+            var url = `https://api.sportmonks.com/v3/football/fixtures/date/${date}?api_token=${SPORTMONKS_API_KEY}&include=participants`;
+            var response = await fetch(url);
+            var data = await response.json();
+
+            if (data.data && data.data.length > 0) {
+                var matchesHtml = '<div style="background:#2A2A2A; padding:10px; border-radius:8px; margin-bottom:10px; max-height:200px; overflow-y:auto;">';
+                matchesHtml += '<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px;">Matchs trouvés (' + data.data.length + ') :</div>';
+
+                var limit = Math.min(data.data.length, 15); // On prend les 15 premiers pour tester
+                for(var i=0; i<limit; i++) {
+                    var match = data.data[i];
+                    var team1 = match.participants && match.participants[0] ? match.participants[0].name : 'Equipe A';
+                    var team2 = match.participants && match.participants[1] ? match.participants[1].name : 'Equipe B';
+                    var time = match.starting_at ? match.starting_at.substring(11, 16) : '00:00';
+
+                    var safeMatchString = `${team1} - ${team2}`.replace(/'/g, "\\'");
+
+                    matchesHtml += `<button onclick="addMatchFromAPI('${safeMatchString}', '${time}')" style="display:block; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:8px; border-radius:6px; margin-bottom:6px; color:#fff; font-size:12px; cursor:pointer;">
+                        <span style="color:var(--primary-yellow)">${time}</span> | ${team1} - ${team2}
+                    </button>`;
+                }
+                matchesHtml += '</div>';
+
+                document.getElementById('api-matches-container').innerHTML = matchesHtml;
+                showToast('Matchs chargés !');
+            } else {
+                showToast('Aucun match trouvé à cette date.', true);
+            }
+        } catch (error) {
+            console.error(error);
+            showToast('Erreur API Sportmonks', true);
+        }
+
+        btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs du jour';
+    }
+
+    function addMatchFromAPI(teams, time) {
+        addMatchEntry({ teams: teams, score: '', odds: '', time: time });
+        showToast('Match ajouté !');
+    }
+
+    // INITIALISATION
     window.addEventListener('load', function () {
-        setLogos();
         loadState();
         updatePlatformDisplay(); 
         
@@ -1010,6 +1073,7 @@
         document.getElementById('admin-status').value = 'en-cours';
         document.getElementById('admin-mise').value = '100';
         document.getElementById('admin-matches').innerHTML = '';
+        document.getElementById('api-matches-container').innerHTML = ''; // Vide l'API
         matchEntryCount = 0;
         addMatchEntry(); addMatchEntry();
         calculateGains();
@@ -1025,6 +1089,7 @@
         document.getElementById('admin-status').value = c.status || 'en-cours';
         document.getElementById('admin-mise').value = c.mise || '';
         document.getElementById('admin-matches').innerHTML = '';
+        document.getElementById('api-matches-container').innerHTML = '';
         matchEntryCount = 0;
         if(c.matches) c.matches.forEach(function(m) { addMatchEntry(m); });
         calculateGains();
