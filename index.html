@@ -840,7 +840,7 @@
 
     function fmtC(v) { return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(v); }
 
-    async function publishCombined() {
+   async function publishCombined() {
         var entries = document.querySelectorAll('.match-entry');
         var date = document.getElementById('admin-date').value;
         var status = document.getElementById('admin-status').value;
@@ -849,14 +849,19 @@
         if (!entries.length) { showToast('Ajoutez au moins un match !', true); return; }
         if (mise <= 0) { showToast('Saisissez une mise !', true); return; }
 
-        var matches = [], valid = true;
+        var matches = [], publicMatches = [], valid = true;
         entries.forEach(function (e) {
             var t = e.querySelector('.match-teams-input').value.trim();
             var s = e.querySelector('.match-score-input').value.trim();
             var o = parseFloat(e.querySelector('.match-odds-input').value) || 0;
             var ti = e.querySelector('.match-time-input').value.trim();
             if (!t || !s || o <= 0) valid = false;
+            
+            // Les vraies données (Pour la table VIP)
             matches.push({ teams: t, score: s, odds: o, time: ti });
+            
+            // Les données masquées (Pour la table Publique) : On garde les équipes et l'heure !
+            publicMatches.push({ teams: t, time: ti, score: '?-?', odds: 0 });
         });
 
         if (!valid) { showToast('Remplissez tous les champs !', true); return; }
@@ -865,9 +870,17 @@
         matches.forEach(function (m) { tot *= m.odds; });
         var gains = mise * tot;
 
-        var pubRes = await supabaseClient.from('combineds_public').insert([{ date: date, status: status, nombre_matchs: matches.length }]).select().single();
+        // 1. Envoi public avec la version "censurée" des matchs
+        var pubRes = await supabaseClient.from('combineds_public').insert([{ 
+            date: date, 
+            status: status, 
+            nombre_matchs: matches.length,
+            matches: publicMatches // <--- LA NOUVEAUTÉ EST ICI
+        }]).select().single();
+        
         if (pubRes.error) { showToast('Erreur de publication publique', true); console.error(pubRes.error); return; }
 
+        // 2. Envoi VIP avec les vrais scores
         var vipRes = await supabaseClient.from('combineds_vip').insert([{ id: pubRes.data.id, matches: matches, mise: mise, gains: gains, total_odds: tot }]);
         if (vipRes.error) { showToast('Erreur de publication VIP', true); console.error(vipRes.error); return; }
 
@@ -883,7 +896,6 @@
         showToast('Combiné publié avec succès !');
         setTimeout(function () { closeAdmin(); }, 1000);
     }
-
     async function deleteCombined() {
         if (currentCombined && currentCombined.id) {
             await supabaseClient.from('combineds_vip').delete().eq('id', currentCombined.id);
