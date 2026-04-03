@@ -832,18 +832,23 @@
     }
 
     function loadIntoEditor(id) {
-        var c = allCombineds.find(function(x) { return x.id === id; });
+        // Le double égal (==) est important ici !
+        var c = allCombineds.find(function(x) { return x.id == id; }); 
         if(!c) return;
+        
         editingId = c.id; // On mémorise qu'on est en train de modifier cet ID !
         document.getElementById('admin-date').value = c.date || '';
         document.getElementById('admin-status').value = c.status || 'en-cours';
         document.getElementById('admin-mise').value = c.mise || '';
+        
         document.getElementById('admin-matches').innerHTML = '';
         matchEntryCount = 0;
         if(c.matches) c.matches.forEach(function(m) { addMatchEntry(m); });
         calculateGains();
+        
         document.getElementById('btn-publish-text').innerHTML = '<i class="fas fa-save"></i> Mettre à jour';
         document.getElementById('editor-title').innerHTML = '<i class="fas fa-edit"></i> Modification en cours...';
+        
         // Scroll automatique vers l'éditeur
         document.getElementById('admin-date').scrollIntoView({behavior: 'smooth', block: 'center'});
     }
@@ -1045,7 +1050,7 @@
             var sl = { 'en-cours': 'En cours', 'termine': 'Terminé ✅', 'perdu': 'Perdu ❌' };
             html += `<div class="admin-history-item">
                 <span>Le ${fmtD(c.date)} - ${sl[c.status]}</span>
-                <button onclick="loadIntoEditor(${c.id})">Éditer</button>
+                <button onclick="loadIntoEditor('${c.id}')">Éditer</button>
             </div>`;
         });
         container.innerHTML = html;
