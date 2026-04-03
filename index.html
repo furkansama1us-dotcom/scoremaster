@@ -122,30 +122,62 @@
         .api-badge-login span { font-size:11px; color:#A0A0A0; font-weight:600; text-transform: uppercase; letter-spacing: 0.5px;}
         .api-badge-login .api-status-dot { width:6px; height:6px; background:var(--green); border-radius:50%; animation:pulse 2s infinite; box-shadow: 0 0 5px var(--green); }
 
-        /* CORRECTION STRUCTURE APP ET MENU FIGÉ */
-        /* On utilise 100% plutôt que 100vh pour éviter les sauts de hauteur sur iOS */
-        #app { display:none; height:100%; width:100%; flex-direction:column; position:absolute; top:0; left:0; overflow:hidden; }
-        #app.active { display:flex; }
-        
-        .pages-container { flex:1; position:relative; overflow:hidden; width:100%; }
-        
-        .page { 
-            position:absolute; top:0; left:0; width:100%; height:100%; 
-            overflow-y:auto; overflow-x:hidden; 
-            opacity:0; visibility:hidden; transition:opacity .3s, transform .3s; transform:translateY(10px); 
-            -webkit-overflow-scrolling:touch; 
-            /* On ajoute un padding bottom très large pour que le dernier élément de la page ne soit pas caché par le menu */
-            padding-top:var(--safe-top); padding-bottom: 120px; 
+        /* STRUCTURE APP - MÉTHODE FLEXBOX STRICTE (Infaillible sur iOS) */
+        /* Le body est bloqué, il ne peut pas défiler */
+        html, body {
+            height: 100%; 
+            width: 100%; 
+            overflow: hidden; 
+            position: fixed; 
+            top: 0; left: 0;
+            background: #000; /* Force le fond noir pour masquer les débordements iOS */
         }
-        .page.active { opacity:1; visibility:visible; transform:translateY(0); }
+
+        #app { 
+            display: none; 
+            width: 100vw; 
+            /* Utilisation de svh (small viewport height) qui gère parfaitement iOS */
+            height: 100svh; 
+            flex-direction: column; 
+            background: var(--bg-dark);
+            position: relative; /* App devient le référentiel */
+        }
+        #app.active { display: flex; }
         
+        /* Conteneur des pages qui prend tout l'espace RESTANT */
+        .pages-container { 
+            flex: 1; /* Prend toute la place au-dessus du menu */
+            position: relative; 
+            width: 100%;
+            height: 100%; /* S'assure de ne pas dépasser */
+            overflow: hidden; /* Empêche le conteneur lui-même de défiler */
+        }
+        
+        /* La page elle-même gère son propre défilement interne */
+        .page { 
+            position: absolute; top: 0; left: 0; 
+            width: 100%; height: 100%; 
+            overflow-y: auto; /* Défilement vertical activé ICI */
+            overflow-x: hidden; 
+            opacity: 0; visibility: hidden; 
+            transition: opacity .3s, transform .3s; 
+            transform: translateY(10px); 
+            -webkit-overflow-scrolling: touch; /* Défilement fluide iOS */
+            padding-top: var(--safe-top); 
+            padding-bottom: 20px; /* Padding normal, pas besoin de compenser le menu */
+        }
+        .page.active { opacity: 1; visibility: visible; transform: translateY(0); }
+        
+        /* Le menu n'est plus en absolute, il est simplement le dernier bloc du flexbox #app */
         .bottom-nav { 
-            /* On force la position absolue en bas, et on gère la zone de sécurité (encoche du bas) */
-            position: absolute; bottom: 0; left: 0; width: 100%;
-            height:calc(65px + env(safe-area-inset-bottom, 0px)); 
-            background:#111; border-top:1px solid var(--border-color); 
-            display:flex; align-items:flex-start; justify-content:space-around; 
-            padding-top:8px; padding-bottom:env(safe-area-inset-bottom, 0px);
+            width: 100%;
+            height: calc(65px + env(safe-area-inset-bottom, 0px)); 
+            background: #111; 
+            border-top: 1px solid var(--border-color); 
+            display: flex; align-items: flex-start; justify-content: space-around; 
+            padding-top: 8px; 
+            padding-bottom: env(safe-area-inset-bottom, 0px);
+            flex-shrink: 0; /* Empêche le menu d'être écrasé */
             z-index: 1000; 
         }
         .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 12px;border-radius:12px;transition:all .3s}
