@@ -770,7 +770,7 @@
     async function chargerDonnees() {
         try {
             // NOUVEAU : On récupère les 10 derniers combinés !
-            var publicRes = await supabaseClient.from('combineds_public').select('*').order('id', { ascending: false }).limit(10);
+            var publicRes = await supabaseClient.from('combineds_public').select('*').order('date', { ascending: false }).order('id', { ascending: false }).limit(10);
             var publicData = publicRes.data;
 
             if (publicRes.error || !publicData || publicData.length === 0) {
