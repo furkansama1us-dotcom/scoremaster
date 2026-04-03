@@ -41,12 +41,19 @@
         .fade-in-up{animation:fadeInUp .5s ease forwards}
         .delay-1{animation-delay:.1s;opacity:0}.delay-2{animation-delay:.2s;opacity:0}.delay-3{animation-delay:.3s;opacity:0}.delay-4{animation-delay:.4s;opacity:0}.delay-5{animation-delay:.5s;opacity:0}
         
-        /* LOGIN CLAIR ET JAUNE */
-        #login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,var(--primary-yellow) 0%,var(--primary-yellow) 35%,#FFFFFF 35%);z-index:9000;display:none;flex-direction:column;transition:opacity .4s}
+/* LOGIN GOLD & NOIR */
+        #login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,#0D0D0D 0%,#0D0D0D 35%,#FFFFFF 35%);z-index:9000;display:none;flex-direction:column;transition:opacity .4s}
         #login-screen.active{display:flex}
-        .login-header{flex:0 0 auto;padding-top:calc(30px + var(--safe-top));padding-bottom:20px;text-align:center}
-        .login-logo-img{width:110px;height:auto;object-fit:contain;filter:drop-shadow(0 4px 15px rgba(0,0,0,0.1));border-radius:24px;}
-        .login-form-container{flex:1;background:#FFFFFF;border-radius:30px 30px 0 0;padding:35px 25px;padding-bottom:calc(30px + var(--safe-bottom));box-shadow: 0 -10px 30px rgba(0,0,0,0.05);}
+        
+        /* Hexagones limités à la partie noire en haut */
+        .hex-grid-login { position: absolute; top: 0; left: 0; width: 100%; height: 35%; opacity: 0.15; pointer-events: none; overflow: hidden; z-index: 0; }
+        .hex-grid-login svg { width: 100%; height: 100%; }
+
+        .login-header{flex:0 0 auto;padding-top:calc(30px + var(--safe-top));padding-bottom:20px;text-align:center; position:relative; z-index:1;}
+        /* Halo lumineux autour du logo pour ressortir sur le noir */
+        .login-logo-img{width:110px;height:auto;object-fit:contain;filter:drop-shadow(0 0 25px rgba(255,215,0,0.25));border-radius:24px;}
+        
+        .login-form-container{flex:1;background:#FFFFFF;border-radius:30px 30px 0 0;padding:35px 25px;padding-bottom:calc(30px + var(--safe-bottom));box-shadow: 0 -10px 30px rgba(0,0,0,0.15); position:relative; z-index:2;}
         .login-form-title{font-size:13px;color:#6C757D;margin-bottom:8px;font-weight:500}
         .login-input{width:100%;padding:16px 16px;background:#F8F9FA;border:1px solid #E0E0E0;border-radius:12px;color:#1A1A1A;font-size:15px;font-family:'Inter',sans-serif;margin-bottom:20px;outline:none;transition:border-color .3s}
         .login-input:focus{border-color:var(--primary-yellow); background:#FFFFFF;}
@@ -694,9 +701,23 @@
     </div>
 </div>
 
-<!-- LOGIN CLAIR & JAUNE -->
-<!-- LOGIN CLAIR & JAUNE -->
+<!-- LOGIN GOLD & NOIR -->
 <div id="login-screen">
+    
+    <!-- NOUVEAU FOND HEXAGONAL OR & NOIR -->
+    <div class="hex-grid-login">
+        <svg viewBox="0 0 800 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <pattern id="hex-login" x="0" y="0" width="60" height="104" patternUnits="userSpaceOnUse">
+                    <polygon points="30,2 58,17 58,47 30,62 2,47 2,17" fill="none" stroke="#FFD700" stroke-width="1"/>
+                    <polygon points="30,54 58,69 58,99 30,114 2,99 2,69" fill="none" stroke="#FFD700" stroke-width="1"/>
+                    <polygon points="60,28 88,43 88,73 60,88 32,73 32,43" fill="none" stroke="#FFD700" stroke-width="1"/>
+                </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#hex-login)"/>
+        </svg>
+    </div>
+
     <div class="login-header">
         <img id="img-login" alt="ScoreMaster" class="login-logo-img">
     </div>
