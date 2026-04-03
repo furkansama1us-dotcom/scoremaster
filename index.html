@@ -680,7 +680,7 @@
 
     var allCombineds = [];
     var currentCombined = null; 
-    var editingId = null; // IMPORTANT : Pour savoir si on modifie ou si on crée
+    var editingId = null; 
     var matchEntryCount = 0, appStats = { total: 0, wins: 0, losses: 0, pending: 0 };
 
     function loadState() {
@@ -769,7 +769,7 @@
 
     async function chargerDonnees() {
         try {
-            // NOUVEAU : On récupère les 10 derniers combinés !
+            // On trie bien par date décroissante
             var publicRes = await supabaseClient.from('combineds_public').select('*').order('date', { ascending: false }).order('id', { ascending: false }).limit(10);
             var publicData = publicRes.data;
 
@@ -793,7 +793,7 @@
             }
             
             allCombineds = publicData;
-            currentCombined = allCombineds[0]; // Le plus récent en 1er
+            currentCombined = allCombineds[0]; 
 
         } catch (e) {
             console.error('Erreur lors du chargement des données :', e);
@@ -834,30 +834,24 @@
     }
 
     function loadIntoEditor(id) {
-        // Le double égal (==) est important ici !
-        var c = allCombineds.find(function(x) { return x.id == id; }); 
+        var c = allCombineds.find(function(x) { return x.id == id; });
         if(!c) return;
-        
-        editingId = c.id; // On mémorise qu'on est en train de modifier cet ID !
+        editingId = c.id; 
         document.getElementById('admin-date').value = c.date || '';
         document.getElementById('admin-status').value = c.status || 'en-cours';
         document.getElementById('admin-mise').value = c.mise || '';
-        
         document.getElementById('admin-matches').innerHTML = '';
         matchEntryCount = 0;
         if(c.matches) c.matches.forEach(function(m) { addMatchEntry(m); });
         calculateGains();
-        
         document.getElementById('btn-publish-text').innerHTML = '<i class="fas fa-save"></i> Mettre à jour';
         document.getElementById('editor-title').innerHTML = '<i class="fas fa-edit"></i> Modification en cours...';
-        
-        // Scroll automatique vers l'éditeur
         document.getElementById('admin-date').scrollIntoView({behavior: 'smooth', block: 'center'});
     }
 
     function openAdmin() {
         document.getElementById('admin-page').classList.add('active');
-        resetEditor(); // On ouvre toujours sur un formulaire vierge par défaut
+        resetEditor(); 
         renderAdminHistory();
         updateStats();
     }
@@ -905,7 +899,7 @@
 
     function fmtC(v) { return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(v); }
 
-   async function publishCombined() {
+    async function publishCombined() {
         var entries = document.querySelectorAll('.match-entry');
         var date = document.getElementById('admin-date').value;
         var status = document.getElementById('admin-status').value;
@@ -915,9 +909,6 @@
         if (mise <= 0) { showToast('Saisissez une mise !', true); return; }
 
         var matches = [], publicMatches = [], valid = true;
-        var earliestTime = '23:59'; 
-        
-        // On vérifie si le combiné est fini pour dévoiler les scores au public !
         var isFinished = (status === 'termine' || status === 'perdu');
         
         entries.forEach(function (e) {
@@ -928,12 +919,7 @@
             if (!t || !s || o <= 0) valid = false;
             
             matches.push({ teams: t, score: s, odds: o, time: ti });
-            
-            // Si Gagné/Perdu, on rend le vrai score public. Sinon, on laisse "?-?"
             publicMatches.push({ teams: t, time: ti, score: isFinished ? s : '?-?', odds: isFinished ? o : 0 });
-            
-            var extracted = ti.match(/\d{2}:\d{2}/);
-            if (extracted && extracted[0] < earliestTime) { earliestTime = extracted[0]; }
         });
 
         if (!valid) { showToast('Remplissez tous les champs !', true); return; }
@@ -943,13 +929,13 @@
         var gains = mise * tot;
 
         if (editingId) {
-            var updatePub = await supabaseClient.from('combineds_public').update({ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }).eq('id', editingId);
+            var updatePub = await supabaseClient.from('combineds_public').update({ date: date, status: status, nombre_matchs: matches.length, matches: publicMatches }).eq('id', editingId);
             if (updatePub.error) { showToast('Erreur Update', true); return; }
             var updateVip = await supabaseClient.from('combineds_vip').update({ matches: matches, mise: mise, gains: gains, total_odds: tot }).eq('id', editingId);
             if (updateVip.error) { showToast('Erreur Update VIP', true); return; }
             showToast('Combiné mis à jour !');
         } else {
-            var pubRes = await supabaseClient.from('combineds_public').insert([{ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }]).select().single();
+            var pubRes = await supabaseClient.from('combineds_public').insert([{ date: date, status: status, nombre_matchs: matches.length, matches: publicMatches }]).select().single();
             if (pubRes.error) { showToast('Erreur Création', true); return; }
             var vipRes = await supabaseClient.from('combineds_vip').insert([{ id: pubRes.data.id, matches: matches, mise: mise, gains: gains, total_odds: tot }]);
             if (vipRes.error) { showToast('Erreur Création VIP', true); return; }
@@ -963,6 +949,36 @@
         }
         await chargerDonnees();
         closeAdmin();
+    }
+    
+    // NOUVELLE FONCTION de suppression directe via l'ID
+    async function deleteSpecificCombined(id) {
+        if(confirm("Es-tu sûr de vouloir supprimer ce combiné définitivement ?")) {
+            await supabaseClient.from('combineds_vip').delete().eq('id', id);
+            await supabaseClient.from('combineds_public').delete().eq('id', id);
+            if (editingId == id) {
+                resetEditor();
+            }
+            showToast('Combiné supprimé !', true);
+            await chargerDonnees();
+            renderAdminHistory();
+        }
+    }
+
+    function deleteCombined() {
+        if (editingId) {
+            deleteSpecificCombined(editingId);
+        } else {
+            showToast("Brouillon effacé.", true);
+            resetEditor();
+        }
+    }
+
+    function updateStats() {
+        document.getElementById('stat-total').textContent = appStats.total;
+        document.getElementById('stat-wins').textContent = appStats.wins;
+        document.getElementById('stat-pending').textContent = appStats.pending;
+        document.getElementById('stat-losses').textContent = appStats.losses;
     }
 
     function renderCombined() {
@@ -999,7 +1015,6 @@
             var statusColor = sc === 'termine' ? 'var(--green)' : (sc === 'perdu' ? 'var(--red)' : 'var(--primary-yellow)');
             var odds = c.total_odds ? c.total_odds.toFixed(2) : (window.isUserVip ? '?' : '***');
             
-            // Génération des petits blocs de matchs à l'intérieur de la carte
             var matchesHtml = '';
             if(c.matches && c.matches.length > 0) {
                 matchesHtml = '<div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.1);">';
@@ -1042,7 +1057,10 @@
             var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
             html += `<div class="admin-history-item">
                 <span>Le ${fmtD(c.date)} - ${sl[c.status]}</span>
-                <button onclick="loadIntoEditor('${c.id}')">Éditer</button>
+                <div style="display:flex; gap:8px;">
+                    <button onclick="loadIntoEditor('${c.id}')"><i class="fas fa-edit"></i> Éditer</button>
+                    <button onclick="deleteSpecificCombined('${c.id}')" style="background:var(--red); color:#fff;"><i class="fas fa-trash"></i></button>
+                </div>
             </div>`;
         });
         container.innerHTML = html;
@@ -1073,14 +1091,24 @@
         let isLocked = false;
         let timeMessage = '';
 
-        if (sc === 'en-cours' && c.date && c.time) {
-            const matchDateTime = new Date(`${c.date}T${c.time}:00`);
+        if (sc === 'en-cours' && c.date) {
+            // Lecture dynamique et intelligente de l'heure
+            let earliest = '23:59';
+            if (c.matches) {
+                c.matches.forEach(function(m) {
+                    var ex = m.time ? m.time.match(/([0-1]?[0-9]|2[0-3]):[0-5][0-9]/) : null;
+                    if (ex && ex[0] < earliest) earliest = ex[0];
+                });
+            }
+            if (earliest === '23:59') earliest = '21:00'; 
+
+            const matchDateTime = new Date(`${c.date}T${earliest}:00`);
             const lockoutDateTime = new Date(matchDateTime.getTime() - 15 * 60000);
             const now = new Date();
 
             if (now >= lockoutDateTime) {
                 isLocked = true;
-                timeMessage = `<div style="color: var(--red); font-size: 12px; font-weight: 700; margin-top: 12px; text-align: center;"><i class="fas fa-lock"></i> Les paris sont fermés (Match imminent)</div>`;
+                timeMessage = `<div style="color: var(--red); font-size: 12px; font-weight: 700; margin-top: 12px; text-align: center; background: rgba(255,61,61,0.1); padding: 8px; border-radius: 8px;"><i class="fas fa-lock"></i> Les paris sont fermés (Match imminent)</div>`;
             } else {
                 const hrs = String(lockoutDateTime.getHours()).padStart(2, '0');
                 const mins = String(lockoutDateTime.getMinutes()).padStart(2, '0');
