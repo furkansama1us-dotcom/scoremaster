@@ -41,38 +41,84 @@
         .fade-in-up{animation:fadeInUp .5s ease forwards}
         .delay-1{animation-delay:.1s;opacity:0}.delay-2{animation-delay:.2s;opacity:0}.delay-3{animation-delay:.3s;opacity:0}.delay-4{animation-delay:.4s;opacity:0}.delay-5{animation-delay:.5s;opacity:0}
         
-/* LOGIN GOLD & NOIR */
-        #login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,#0D0D0D 0%,#0D0D0D 35%,#FFFFFF 35%);z-index:9000;display:none;flex-direction:column;transition:opacity .4s}
-        #login-screen.active{display:flex}
+/* LOGIN GOLD & NOIR - TOTAL DARK PREMIUM */
+        #login-screen {
+            position:fixed; top:0; left:0; width:100%; height:100%;
+            background:#000000; /* Fond global noir absolu */
+            z-index:9000; display:none; flex-direction:column; transition:opacity .4s;
+        }
+        #login-screen.active { display:flex; }
         
-        /* Hexagones limités à la partie noire en haut */
+        /* Hexagones limités à la partie haute */
         .hex-grid-login { position: absolute; top: 0; left: 0; width: 100%; height: 35%; opacity: 0.15; pointer-events: none; overflow: hidden; z-index: 0; }
         .hex-grid-login svg { width: 100%; height: 100%; }
 
-        .login-header{flex:0 0 auto;padding-top:calc(30px + var(--safe-top));padding-bottom:20px;text-align:center; position:relative; z-index:1;}
-        /* Halo lumineux autour du logo pour ressortir sur le noir */
-        .login-logo-img{width:110px;height:auto;object-fit:contain;filter:drop-shadow(0 0 25px rgba(255,215,0,0.25));border-radius:24px;}
+        .login-header { flex:0 0 auto; padding-top:calc(30px + var(--safe-top)); padding-bottom:20px; text-align:center; position:relative; z-index:1; }
+        .login-logo-img { width:110px; height:auto; object-fit:contain; filter:drop-shadow(0 0 25px rgba(255,215,0,0.25)); border-radius:24px; }
         
-        .login-form-container{flex:1;background:#FFFFFF;border-radius:30px 30px 0 0;padding:35px 25px;padding-bottom:calc(30px + var(--safe-bottom));box-shadow: 0 -10px 30px rgba(0,0,0,0.15); position:relative; z-index:2;}
-        .login-form-title{font-size:13px;color:#6C757D;margin-bottom:8px;font-weight:500}
-        .login-input{width:100%;padding:16px 16px;background:#F8F9FA;border:1px solid #E0E0E0;border-radius:12px;color:#1A1A1A;font-size:15px;font-family:'Inter',sans-serif;margin-bottom:20px;outline:none;transition:border-color .3s}
-        .login-input:focus{border-color:var(--primary-yellow); background:#FFFFFF;}
-        .login-input::placeholder{color:#ADB5BD}
-        .login-btn{width:100%;padding:16px;background:var(--primary-yellow);color:#000;border:none;border-radius:12px;font-size:16px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:10px;transition:all .3s;box-shadow: 0 4px 12px rgba(255,215,0,0.3);}
-        .login-btn:active{transform:scale(.98);background:var(--dark-yellow)}
-        .login-options{display:flex;justify-content:space-between;align-items:center;margin-top:20px}
-        .forgot-password{color:#1A1A1A;font-size:13px;text-decoration:none;font-weight:700}
-        .remember-me{display:flex;align-items:center;gap:8px;font-size:13px;color:#6C757D}
-        .toggle-switch{width:44px;height:24px;background:#E0E0E0;border-radius:12px;position:relative;cursor:pointer;transition:background .3s}
-        .toggle-switch.active{background:var(--primary-yellow)}
-        .toggle-switch::after{content:'';width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .3s;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
-        .toggle-switch.active::after{transform:translateX(20px)}
-        .login-error{color:var(--red);font-size:13px;text-align:center;margin-top:12px;display:none;animation:shake .5s ease}
-        .login-error.show{display:block}
-        .api-badge-login{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:40px;padding:12px 16px;background:#F8F9FA;border:1px solid #E0E0E0;border-radius:12px}
-        .api-badge-login i{color:#ADB5BD;font-size:14px}
-        .api-badge-login span{font-size:11px;color:#6C757D;font-weight:500}
-        .api-badge-login .api-status-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
+        /* LE NOUVEAU CONTENEUR DU FORMULAIRE : NOIR & OR */
+        .login-form-container {
+            flex:1;
+            background: #111111; /* Gris extrêmement foncé pour le contraste */
+            border-top: 1px solid rgba(255, 215, 0, 0.2); /* Ligne dorée subtile en haut */
+            border-radius: 30px 30px 0 0;
+            padding: 35px 25px; padding-bottom: calc(30px + var(--safe-bottom));
+            box-shadow: 0 -10px 40px rgba(255, 215, 0, 0.05); /* Ombre dorée légère */
+            position: relative; z-index: 2; overflow: hidden;
+        }
+        
+        /* Le motif de fond du formulaire */
+        .pattern-bg-form { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.04; pointer-events: none; z-index: 0; }
+        .pattern-bg-form svg { width: 100%; height: 100%; }
+
+        /* Styles des textes pour le fond sombre */
+        .login-form-title { font-size:13px; color:#A0A0A0; margin-bottom:8px; font-weight:600; position: relative; z-index: 1; }
+        
+        /* Champs de saisie adaptés au dark mode */
+        .login-input {
+            width:100%; padding:16px 16px;
+            background: rgba(255, 255, 255, 0.05); /* Légère transparence blanche */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px; color: var(--text-white);
+            font-size: 15px; font-family: 'Inter', sans-serif;
+            margin-bottom: 20px; outline: none; transition: border-color 0.3s;
+            position: relative; z-index: 1;
+        }
+        .login-input:focus { border-color: var(--primary-yellow); background: rgba(255, 215, 0, 0.05); }
+        .login-input::placeholder { color: #666666; }
+        
+        /* Icône de l'œil pour le mot de passe */
+        #togglePassword { color: #888888 !important; }
+        #togglePassword:hover { color: var(--primary-yellow) !important; }
+
+        .login-btn {
+            width:100%; padding:16px; background:var(--primary-yellow); color:#000;
+            border:none; border-radius:12px; font-size:16px; font-weight:800; font-family:'Montserrat',sans-serif;
+            cursor:pointer; margin-top:10px; transition:all .3s;
+            box-shadow: 0 4px 15px rgba(255,215,0,0.25); position: relative; z-index: 1;
+        }
+        .login-btn:active { transform:scale(.98); background:var(--dark-yellow); }
+        
+        .login-options { display:flex; justify-content:space-between; align-items:center; margin-top:20px; position: relative; z-index: 1; }
+        .forgot-password { color:var(--primary-yellow); font-size:13px; text-decoration:none; font-weight:700; }
+        .remember-me { display:flex; align-items:center; gap:8px; font-size:13px; color:#A0A0A0; font-weight: 500; }
+        
+        .toggle-switch { width:44px; height:24px; background:rgba(255,255,255,0.1); border-radius:12px; position:relative; cursor:pointer; transition:background .3s; }
+        .toggle-switch.active { background:var(--primary-yellow); }
+        .toggle-switch::after { content:''; width:20px; height:20px; background:#fff; border-radius:50%; position:absolute; top:2px; left:2px; transition:transform .3s; box-shadow:0 2px 4px rgba(0,0,0,0.2); }
+        .toggle-switch.active::after { transform:translateX(20px); }
+        
+        .login-error { color:var(--red); font-size:13px; text-align:center; margin-top:12px; display:none; animation:shake .5s ease; position: relative; z-index: 1; }
+        .login-error.show { display:block; }
+        
+        .api-badge-login {
+            display:flex; align-items:center; justify-content:center; gap:6px; margin-top:40px; padding:12px 16px;
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius:12px;
+            position: relative; z-index: 1;
+        }
+        .api-badge-login i { color: var(--primary-yellow); font-size:14px; }
+        .api-badge-login span { font-size:11px; color:#A0A0A0; font-weight:600; text-transform: uppercase; letter-spacing: 0.5px;}
+        .api-badge-login .api-status-dot { width:6px; height:6px; background:var(--green); border-radius:50%; animation:pulse 2s infinite; box-shadow: 0 0 5px var(--green); }
         
         #app{display:none;height:100%;width:100%;flex-direction:column}
         #app.active{display:flex}
@@ -722,37 +768,19 @@
         <img id="img-login" alt="ScoreMaster" class="login-logo-img">
     </div>
     <div class="login-form-container">
-        <div class="login-form-title" style="color: #6C757D;">Email</div>
-        <input type="email" class="login-input" id="login-email" placeholder="Votre email" style="background:#F8F9FA; border-color:#E0E0E0; color:#1A1A1A;">
-
-        <div class="login-form-title" id="title-username" style="display:none; color: #6C757D;">Pseudo</div>
-        <input type="text" class="login-input" id="login-username" placeholder="Votre pseudo" style="display:none; background:#F8F9FA; border-color:#E0E0E0; color:#1A1A1A;">
-
-        <div class="login-form-title" style="color: #6C757D;">Mot de passe</div>
-        <div style="position:relative;width:100%;">
-            <input type="password" class="login-input" id="login-password" placeholder="••••••••••••" style="padding-right:45px;margin-bottom:20px;width:100%; background:#F8F9FA; border-color:#E0E0E0; color:#1A1A1A;">
-            <i class="fas fa-eye" id="togglePassword" style="position:absolute;right:15px;top:15px;color:#ADB5BD;cursor:pointer;font-size:16px;z-index:10;"></i>
+        <!-- NOUVEAU FOND GEOMETRIQUE OR & NOIR POUR LE FORMULAIRE -->
+        <div class="pattern-bg-form">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <pattern id="diamonds" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <path d="M20,0 L40,20 L20,40 L0,20 Z" fill="none" stroke="#FFD700" stroke-width="0.5"/>
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#diamonds)"/>
+            </svg>
         </div>
-
-        <button class="login-btn" id="btn-action" onclick="handleAuth()">Connexion</button>
-        <div class="login-error" id="login-error"><i class="fas fa-exclamation-circle"></i> Identifiants incorrects</div>
-
-        <div class="login-options">
-            <a href="#" class="forgot-password" id="toggle-auth" onclick="toggleAuthMode(); return false;" style="color:#1A1A1A; font-weight:700;">Créer un compte</a>
-            <div class="remember-me" style="color:#6C757D;">
-                <div class="toggle-switch active" onclick="this.classList.toggle('active')" style="background:var(--primary-yellow);"></div>
-                <span>Se souvenir de moi</span>
-            </div>
-        </div>
-
-        <div class="api-badge-login" style="background:#F8F9FA; border-color:#E0E0E0;">
-            <i class="fas fa-plug" style="color:#ADB5BD;"></i>
-            <span style="color:#6C757D;">API sportifs connectés</span>
-            <div class="api-status-dot"></div>
-        </div>
-    </div>
 </div>
-
+    
 <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toast-message"></span></div>
 
 <!-- APP -->
