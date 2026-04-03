@@ -18,6 +18,8 @@
     <style>
         .combined-card { display: flex; flex-direction: column; }
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+        
+        /* THEME SOMBRE (Base conservée intacte) */
         :root{--primary-yellow:#FFD700;--dark-yellow:#E6C200;--bg-dark:#0D0D0D;--bg-card:#1A1A1A;--bg-input:#2A2A2A;--text-white:#FFFFFF;--text-gray:#8A8A8A;--text-light-gray:#B0B0B0;--green:#00C853;--red:#FF3D3D;--blue:#4A90D9;--border-color:#333333;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
         html,body{font-family:'Inter','Montserrat',sans-serif;background:var(--bg-dark);color:var(--text-white);overflow:hidden;height:100%;width:100%;position:fixed;top:0;left:0}
         
@@ -40,6 +42,7 @@
         .fade-in-up{animation:fadeInUp .5s ease forwards}
         .delay-1{animation-delay:.1s;opacity:0}.delay-2{animation-delay:.2s;opacity:0}.delay-3{animation-delay:.3s;opacity:0}.delay-4{animation-delay:.4s;opacity:0}.delay-5{animation-delay:.5s;opacity:0}
         
+        /* LOGIN ECRAN : EXCLUSIVEMENT CLAIR ET JAUNE */
         #login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,var(--primary-yellow) 0%,var(--primary-yellow) 35%,#FFFFFF 35%);z-index:9000;display:none;flex-direction:column;transition:opacity .4s}
         #login-screen.active{display:flex}
         .login-header{flex:0 0 auto;padding-top:calc(30px + var(--safe-top));padding-bottom:20px;text-align:center}
@@ -291,6 +294,7 @@
         ::-webkit-scrollbar{width:0}
         @media(min-width:500px){body{display:flex;align-items:center;justify-content:center;background:#000}#splash-screen,#login-screen,#app,#admin-page{max-width:420px;max-height:900px;border-radius:30px;overflow:hidden}#admin-page.active{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);max-width:420px;max-height:900px;border-radius:30px}}
         
+        /* STYLE HISTORIQUE ET ADMIN */
         .history-card { background:var(--bg-card); border:1px solid var(--border-color); border-radius:16px; padding:16px; margin-bottom:14px; display:flex; flex-direction:column; align-items:stretch; transition: all 0.3s; }
         .history-card.termine { border-color: rgba(0, 200, 83, 0.4); background: linear-gradient(145deg, rgba(0,200,83,0.08) 0%, var(--bg-card) 100%); }
         .history-card.perdu { border-color: rgba(255, 61, 61, 0.3); background: linear-gradient(145deg, rgba(255,61,61,0.05) 0%, var(--bg-card) 100%); }
@@ -314,6 +318,19 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
     
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function setLogos() {
+        document.getElementById('img-splash').src = LOGO_SPLASH;
+        document.getElementById('img-login').src = LOGO_DARK; // Logo sombre sur fond clair
+        document.getElementById('img-admin').src = LOGO_DARK;
+        document.getElementById('avatar-home').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('avatar-vip').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-icon-1').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-icon-2').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-detail-1').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-detail-2').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-detail-3').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+    }
 </script>
 
 <!-- SPLASH -->
@@ -429,6 +446,7 @@
                 <div id="home-combined-container"><div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div></div>
             </div>
             
+            <!-- HISTORIQUE PUBLIC -->
             <div class="section-header fade-in-up delay-5" style="margin-top: 10px;">
                 <span class="section-title">Nos derniers combinés</span>
             </div>
@@ -744,28 +762,6 @@
 </div>
 
 <script>
-    const LOGO_DARK = "logo-dark.png";
-    const LOGO_LIGHT = "logo-light.png";
-    const LOGO_SPLASH = "logo-splash.png";
-    const TELEGRAM_LINK = "https://t.me/scoremasteroff";
-    const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
-    
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    function setLogos() {
-        document.getElementById('img-splash').src = LOGO_SPLASH;
-        document.getElementById('img-login').src = LOGO_DARK;
-        document.getElementById('img-admin').src = LOGO_DARK;
-        document.getElementById('avatar-home').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
-        document.getElementById('avatar-vip').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
-        document.getElementById('pack-icon-1').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
-        document.getElementById('pack-icon-2').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
-        document.getElementById('pack-detail-1').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
-        document.getElementById('pack-detail-2').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
-        document.getElementById('pack-detail-3').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
-    }
-
     var allCombineds = [];
     var currentCombined = null; 
     var editingId = null; 
@@ -824,7 +820,7 @@
         });
     }
 
-    /* GESTION POPUP INFO DES PACKS (Copywriting persuasif) */
+    /* GESTION POPUP INFO DES PACKS */
     function showPackInfo(packType) {
         var popup = document.getElementById('info-popup');
         var title = document.getElementById('info-popup-title');
