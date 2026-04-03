@@ -303,7 +303,7 @@
         .admin-history-item span { font-size:13px; color:#fff; }
         .admin-history-item button { background:var(--primary-yellow); color:#000; border:none; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer; }
         
-        /* --- NOUVEAU : STYLE DES ONGLETS ADMIN --- */
+        /* STYLE DES ONGLETS ADMIN */
         .admin-tabs { display: flex; gap: 10px; padding: 0 20px; margin-bottom: 20px; }
         .admin-tab-btn { flex: 1; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-gray); border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .admin-tab-btn.active { background: rgba(255, 215, 0, 0.15); border-color: var(--primary-yellow); color: var(--primary-yellow); }
@@ -316,7 +316,6 @@
 <body>
 
 <script>
-    // --- VOS LOGOS PERSONNELS ---
     const LOGO_DARK = "logo-dark.png";
     const LOGO_LIGHT = "logo-light.png";
     const LOGO_SPLASH = "logo-splash.png";
@@ -325,7 +324,6 @@
     const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
     
-    // --- CLE API-SPORTS.IO ---
     const FOOTBALL_DATA_API_KEY = '2620f835eb08886d508258550a5254a4'; 
     
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -678,8 +676,13 @@
         </div>
         
         <div class="admin-section">
-            <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-history" style="color:var(--primary-yellow);"></i> Gérer les combinés</div>
-            <div id="admin-history-list" style="max-height: 250px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color);"></div>
+            <!-- Combinés en cours -->
+            <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-clock" style="color:var(--primary-yellow);"></i> Combinés En Cours</div>
+            <div id="admin-history-active" style="max-height: 200px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color); margin-bottom:20px;"></div>
+            
+            <!-- Historique (Terminés) -->
+            <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-history" style="color:var(--primary-yellow);"></i> Déjà Terminés</div>
+            <div id="admin-history-past" style="max-height: 200px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color);"></div>
             
             <button class="btn-create-new" onclick="resetEditor()">
                 <i class="fas fa-plus-circle"></i> Créer un NOUVEAU combiné
@@ -723,7 +726,8 @@
             <div class="admin-section-title"><i class="fas fa-coins"></i> Mise & Gain</div>
             <div class="admin-card" style="margin-bottom:10px;">
                 <div class="admin-field" style="margin-bottom:0;">
-                    <input type="number" class="admin-input" id="admin-mise" placeholder="Mise en € (ex: 100)" oninput="calculateGains()">
+                    <!-- Remplacement par un inputmode decimal pour contrer le bug de la virgule sur certains navigateurs -->
+                    <input type="text" inputmode="decimal" class="admin-input" id="admin-mise" placeholder="Mise en € (ex: 100)" oninput="calculateGains()">
                 </div>
             </div>
             <div class="admin-summary">
@@ -918,25 +922,19 @@
 
             if (data.response && data.response.length > 0) {
                 
-                // 1. Filtrer: Uniquement les matchs non commencés (NS ou TBD) ET à partir de 18h00
                 var filteredMatches = data.response.filter(function(match) {
                     if (match.fixture.status.short !== 'NS' && match.fixture.status.short !== 'TBD') return false;
-                    
                     var matchDate = new Date(match.fixture.date);
                     if (matchDate.getHours() < 18) return false;
-                    
                     return true;
                 });
 
-                // 2. Trier: Compétitions majeures en premier, puis par heure
                 var topLeagues = [2, 3, 848, 39, 61, 140, 135, 78]; 
-                
                 filteredMatches.sort(function(a, b) {
                     var aTop = topLeagues.includes(a.league.id) ? 1 : 0;
                     var bTop = topLeagues.includes(b.league.id) ? 1 : 0;
-                    
-                    if (aTop !== bTop) return bTop - aTop; // Les top ligues remontent
-                    return new Date(a.fixture.date) - new Date(b.fixture.date); // Puis tri chrono
+                    if (aTop !== bTop) return bTop - aTop; 
+                    return new Date(a.fixture.date) - new Date(b.fixture.date); 
                 });
 
                 if (filteredMatches.length === 0) {
@@ -953,7 +951,6 @@
                 </div>`;
 
                 var limit = Math.min(filteredMatches.length, 50); 
-                
                 var today = new Date();
                 var tomorrow = new Date();
                 tomorrow.setDate(today.getDate() + 1);
@@ -978,7 +975,8 @@
                     var flagUrl = match.league.flag || match.league.logo || '';
                     var safeMatchString = `${teamHome} - ${teamAway}`.replace(/'/g, "\\'");
 
-                    matchesHtml += `<button type="button" onclick="addMatchFromAPI('${safeMatchString}', '${displayTime}')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer; transition:border-color 0.2s;">
+                    // On envoie aussi le flagUrl (le logo de la compétition) dans la fonction !
+                    matchesHtml += `<button type="button" onclick="addMatchFromAPI('${safeMatchString}', '${displayTime}', '${flagUrl}')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer; transition:border-color 0.2s;">
                         <div style="font-size:10px; color:var(--text-gray); margin-bottom:4px; display:flex; align-items:center; gap:6px;">
                             ${flagUrl ? `<img src="${flagUrl}" style="width:14px; height:10px; object-fit:cover; border-radius:2px;">` : ''}
                             ${leagueName}
@@ -1005,8 +1003,9 @@
         btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs du jour (API)';
     }
 
-    function addMatchFromAPI(teams, time) {
-        addMatchEntry({ teams: teams, score: '2 - 1', odds: '7.00', time: time });
+    // Réception du paramètre logo (flagUrl) en plus !
+    function addMatchFromAPI(teams, time, logo) {
+        addMatchEntry({ teams: teams, score: '2 - 1', odds: '7.00', time: time, logo: logo });
         showToast('Match ajouté !');
     }
 
@@ -1201,10 +1200,12 @@
         var c = document.getElementById('admin-matches');
         var e = document.createElement('div');
         e.className = 'match-entry';
+        // Ajout d'un input caché pour sauvegarder l'URL du logo du match !
         e.innerHTML = '<div class="match-entry-header"><span class="match-entry-number"><i class="fas fa-futbol"></i> Match ' + matchEntryCount + '</span><button type="button" class="match-entry-remove" onclick="removeMatchEntry(this)"><i class="fas fa-trash"></i></button></div>'
+            + '<input type="hidden" class="match-logo-input" value="' + (data && data.logo ? data.logo : '') + '">'
             + '<div class="admin-field"><div class="admin-label"><i class="fas fa-users"></i> Équipes</div><input type="text" class="admin-input match-teams-input" placeholder="Équipe A - Équipe B" value="' + (data ? data.teams : '') + '" oninput="calculateGains()"></div>'
             + '<div class="admin-row"><div class="admin-field"><div class="admin-label"><i class="fas fa-bullseye"></i> Score exact</div><input type="text" class="admin-input match-score-input" placeholder="2 - 1" value="' + (data ? data.score : '') + '" oninput="calculateGains()"></div>'
-            + '<div class="admin-field"><div class="admin-label"><i class="fas fa-chart-line"></i> Cote</div><input type="number" step="0.01" class="admin-input match-odds-input" placeholder="7.00" value="' + (data ? data.odds : '') + '" oninput="calculateGains()"></div></div>'
+            + '<div class="admin-field"><div class="admin-label"><i class="fas fa-chart-line"></i> Cote</div><input type="text" inputmode="decimal" class="admin-input match-odds-input" placeholder="7.00" value="' + (data ? data.odds : '') + '" oninput="calculateGains()"></div></div>'
             + '<div class="admin-field"><div class="admin-label"><i class="fas fa-clock"></i> Horaire</div><input type="text" class="admin-input match-time-input" placeholder="Dem. 21:00" value="' + (data ? data.time : '') + '"></div>';
         c.appendChild(e);
         calculateGains();
@@ -1224,9 +1225,15 @@
 
     function calculateGains() {
         var entries = document.querySelectorAll('.match-entry');
-        var mise = parseFloat(document.getElementById('admin-mise').value) || 0;
+        // Remplacement des virgules par des points pour contrer le bug des navigateurs
+        var miseVal = document.getElementById('admin-mise').value.replace(',', '.');
+        var mise = parseFloat(miseVal) || 0;
         var tot = 1, cnt = 0;
-        entries.forEach(function (e) { var o = parseFloat(e.querySelector('.match-odds-input').value) || 0; if (o > 0) { tot *= o; cnt++; } });
+        entries.forEach(function (e) { 
+            var oVal = e.querySelector('.match-odds-input').value.replace(',', '.');
+            var o = parseFloat(oVal) || 0; 
+            if (o > 0) { tot *= o; cnt++; } 
+        });
         if (cnt === 0) tot = 0;
         document.getElementById('summary-matches').textContent = entries.length;
         document.getElementById('summary-odds').textContent = tot.toFixed(2);
@@ -1240,7 +1247,8 @@
         var entries = document.querySelectorAll('.match-entry');
         var date = document.getElementById('admin-date').value;
         var status = document.getElementById('admin-status').value;
-        var mise = parseFloat(document.getElementById('admin-mise').value) || 0;
+        var miseVal = document.getElementById('admin-mise').value.replace(',', '.');
+        var mise = parseFloat(miseVal) || 0;
 
         if (!entries.length) { showToast('Ajoutez au moins un match !', true); return; }
         if (mise <= 0) { showToast('Saisissez une mise !', true); return; }
@@ -1252,18 +1260,21 @@
         entries.forEach(function (e) {
             var t = e.querySelector('.match-teams-input').value.trim();
             var s = e.querySelector('.match-score-input').value.trim();
-            var o = parseFloat(e.querySelector('.match-odds-input').value) || 0;
+            var oVal = e.querySelector('.match-odds-input').value.replace(',', '.');
+            var o = parseFloat(oVal) || 0;
             var ti = e.querySelector('.match-time-input').value.trim();
+            var l = e.querySelector('.match-logo-input').value; // Récupère le logo
+            
             if (!t || !s || o <= 0) valid = false;
             
-            matches.push({ teams: t, score: s, odds: o, time: ti });
-            publicMatches.push({ teams: t, time: ti, score: isFinished ? s : '?-?', odds: isFinished ? o : 0 });
+            matches.push({ teams: t, score: s, odds: o, time: ti, logo: l });
+            publicMatches.push({ teams: t, time: ti, score: isFinished ? s : '?-?', odds: isFinished ? o : 0, logo: l });
             
             var extracted = ti.match(/\d{2}:\d{2}/);
             if (extracted && extracted[0] < earliestTime) { earliestTime = extracted[0]; }
         });
 
-        if (!valid) { showToast('Remplissez tous les champs !', true); return; }
+        if (!valid) { showToast('Remplissez tous les champs (Cote/Score manquants) !', true); return; }
 
         var tot = 1;
         matches.forEach(function (m) { tot *= m.odds; });
@@ -1370,8 +1381,12 @@
                 matchesHtml = '<div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.1);">';
                 c.matches.forEach(function(m) {
                     var scoreColor = sc === 'termine' ? 'var(--green)' : 'var(--text-white)';
+                    
+                    // NOUVEAU: Affichage du logo du championnat si existant
+                    var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:12px;height:12px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<i class="fas fa-shield-alt" style="font-size:10px; margin-right:6px; color:var(--text-gray);"></i>`;
+                    
                     matchesHtml += `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; align-items:center;">
-                        <span style="color:var(--text-light-gray);"><i class="fas fa-futbol" style="font-size:10px; margin-right:6px; color:var(--text-gray);"></i> ${m.teams || 'Équipes'}</span>
+                        <span style="color:var(--text-light-gray);">${logoDisplay}${m.teams || 'Équipes'}</span>
                         <span style="font-weight:700; color:${scoreColor}; background:rgba(255,255,255,0.05); padding:3px 8px; border-radius:6px;">${m.score}</span>
                     </div>`;
                 });
@@ -1395,25 +1410,35 @@
         hc.innerHTML = html;
     }
     
+    // NOUVEAU: SEPARATION DES HISTORIQUES DANS L'ADMIN
     function renderAdminHistory() {
-        var container = document.getElementById('admin-history-list');
-        if(!container) return;
-        if(allCombineds.length === 0) {
-            container.innerHTML = '<span style="color:var(--text-gray); font-size:12px;">Aucun historique</span>';
-            return;
-        }
-        var html = '';
+        var containerActive = document.getElementById('admin-history-active');
+        var containerPast = document.getElementById('admin-history-past');
+        if(!containerActive || !containerPast) return;
+        
+        var htmlActive = '';
+        var htmlPast = '';
+        
+        var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
+        
         allCombineds.forEach(function(c) {
-            var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
-            html += `<div class="admin-history-item">
+            var itemHtml = `<div class="admin-history-item">
                 <span>Le ${fmtD(c.date)} - ${sl[c.status]}</span>
                 <div style="display:flex; gap:8px;">
                     <button onclick="loadIntoEditor('${c.id}')"><i class="fas fa-edit"></i></button>
                     <button onclick="deleteSpecificCombined('${c.id}')" style="background:var(--red); color:#fff;"><i class="fas fa-trash"></i></button>
                 </div>
             </div>`;
+            
+            if (c.status === 'en-cours') {
+                htmlActive += itemHtml;
+            } else {
+                htmlPast += itemHtml;
+            }
         });
-        container.innerHTML = html;
+        
+        containerActive.innerHTML = htmlActive || '<span style="color:var(--text-gray); font-size:12px;">Aucun combiné en cours</span>';
+        containerPast.innerHTML = htmlPast || '<span style="color:var(--text-gray); font-size:12px;">Aucun historique précédent</span>';
     }
 
     function buildCC(c, sc, sl, pw, isHome) {
@@ -1426,7 +1451,11 @@
             var displayOdds = isObscured ? '***' : m.odds.toFixed(2);
             var scoreHtml = isObscured ? '<span class="match-score blurred-value">' + displayScore + '</span>' : '<span class="match-score">' + displayScore + '</span>';
             var oddsHtml = isObscured ? '<div class="match-odds blurred-value">' + displayOdds + '</div>' : '<div class="match-odds">' + displayOdds + '</div>';
-            mH += '<div class="match-row"><div class="match-row-top"><div class="match-type"><i class="fas fa-futbol"></i> Score exact ' + scoreHtml + '</div>' + oddsHtml + '</div><div class="match-row-bottom"><div class="match-teams"><i class="fas fa-shield-alt"></i> ' + (m.teams || 'Équipes') + '</div><div class="match-time">' + (m.time || '') + '</div></div></div>';
+            
+            // NOUVEAU: Affichage du logo du championnat si existant (dans la carte principale)
+            var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<i class="fas fa-shield-alt"></i> `;
+            
+            mH += '<div class="match-row"><div class="match-row-top"><div class="match-type"><i class="fas fa-futbol"></i> Score exact ' + scoreHtml + '</div>' + oddsHtml + '</div><div class="match-row-bottom"><div class="match-teams">' + logoDisplay + (m.teams || 'Équipes') + '</div><div class="match-time">' + (m.time || '') + '</div></div></div>';
         });
 
         var ic = '';
