@@ -576,10 +576,6 @@
                     <div class="admin-label"><i class="fas fa-calendar"></i> Date</div>
                     <input type="date" class="admin-input" id="admin-date">
                 </div>
-                <div class="admin-field">
-                    <div class="admin-label"><i class="fas fa-clock"></i> Heure</div>
-                    <input type="time" class="admin-input" id="admin-time" value="21:00">
-                </div>
             </div>
             
             <!-- Ligne 2 : Statut -->
@@ -798,7 +794,7 @@
         document.getElementById('admin-page').classList.add('active');
         if (currentCombined) {
             document.getElementById('admin-date').value = currentCombined.date || new Date().toISOString().split('T')[0];
-            document.getElementById('admin-time').value = currentCombined.time || '21:00';
+            // Ligne admin-time supprimée ici !
             document.getElementById('admin-status').value = currentCombined.status || 'en-cours';
             document.getElementById('admin-mise').value = currentCombined.mise || '';
             document.getElementById('admin-matches').innerHTML = '';
@@ -852,10 +848,9 @@
 
     function fmtC(v) { return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(v); }
 
-    async function publishCombined() {
+async function publishCombined() {
         var entries = document.querySelectorAll('.match-entry');
         var date = document.getElementById('admin-date').value;
-        var time = document.getElementById('admin-time').value;
         var status = document.getElementById('admin-status').value;
         var mise = parseFloat(document.getElementById('admin-mise').value) || 0;
 
@@ -863,6 +858,10 @@
         if (mise <= 0) { showToast('Saisissez une mise !', true); return; }
 
         var matches = [], publicMatches = [], valid = true;
+        
+        // --- LE CERVEAU DE L'AUTOMATISATION ---
+        var earliestTime = '23:59'; // On part de minuit
+
         entries.forEach(function (e) {
             var t = e.querySelector('.match-teams-input').value.trim();
             var s = e.querySelector('.match-score-input').value.trim();
@@ -871,7 +870,13 @@
             if (!t || !s || o <= 0) valid = false;
             
             matches.push({ teams: t, score: s, odds: o, time: ti });
-            publicMatches.push({ teams: t, time: ti, score: '?-?', odds: 0 });
+            publicMatches.push({ teams: t, time: ti, score: '?-?', odds: 0 }); 
+
+            // L'IA lit ton texte (ex: "Dem. 13:00") et extrait juste "13:00"
+            var extracted = ti.match(/\d{2}:\d{2}/);
+            if (extracted && extracted[0] < earliestTime) {
+                earliestTime = extracted[0]; // Mémorise l'heure la plus petite !
+            }
         });
 
         if (!valid) { showToast('Remplissez tous les champs !', true); return; }
@@ -880,9 +885,10 @@
         matches.forEach(function (m) { tot *= m.odds; });
         var gains = mise * tot;
 
+        // Envoi public avec l'heure calculée TOUTE SEULE !
         var pubRes = await supabaseClient.from('combineds_public').insert([{ 
             date: date, 
-            time: time,
+            time: earliestTime, // <-- Magie !
             status: status, 
             nombre_matchs: matches.length,
             matches: publicMatches
