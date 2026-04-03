@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <!-- Le vrai lien officiel Supabase qui corrige l'erreur 404 ! -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ScoreMaster</title>
@@ -13,16 +11,10 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0D0D0D">
     <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlNjb3JlTWFzdGVyIiwKICAic2hvcnRfbmFtZSI6ICJTTSB2aXAiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBEMEQwRCIsCiAgInRoZW1lX2NvbG9yIjogIiMwRDBEMEQiLAogICJvcmllbnRhdGlvbiI6ICJwb3J0cmFpdCIKfQ==">
-    
-    <!-- Correction des liens d'importation des polices et des icônes -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    
     <style>
-        .combined-card {
-    display: flex;
-    flex-direction: column;
-}
+        .combined-card { display: flex; flex-direction: column; }
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
         :root{--primary-yellow:#FFD700;--dark-yellow:#E6C200;--bg-dark:#0D0D0D;--bg-card:#1A1A1A;--bg-input:#2A2A2A;--text-white:#FFFFFF;--text-gray:#8A8A8A;--text-light-gray:#B0B0B0;--green:#00C853;--red:#FF3D3D;--blue:#4A90D9;--border-color:#333333;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
         html,body{font-family:'Inter','Montserrat',sans-serif;background:var(--bg-dark);color:var(--text-white);overflow:hidden;height:100%;width:100%;position:fixed;top:0;left:0}
@@ -565,6 +557,7 @@
         <h2><img id="img-admin" alt="SM" class="admin-header-logo"> Panel Admin</h2>
         <button class="admin-close" onclick="closeAdmin()"><i class="fas fa-times"></i></button>
     </div>
+    
     <div class="admin-section">
         <div class="admin-stats">
             <div class="admin-stat-card yellow"><i class="fas fa-futbol"></i><span class="stat-value" id="stat-total">0</span><div class="stat-label">Combinés publiés</div></div>
@@ -573,42 +566,44 @@
             <div class="admin-stat-card red"><i class="fas fa-times-circle"></i><span class="stat-value" id="stat-losses">0</span><div class="stat-label">Perdus</div></div>
         </div>
     </div>
-<div class="admin-section">
-    <div class="admin-section-title"><i class="fas fa-plus-circle"></i> Créer un combiné</div>
-    <div class="admin-card">
-        <!-- Ligne 1 : Date et Heure -->
-        <div class="admin-row" style="margin-bottom: 16px;">
-            <div class="admin-field">
-                <div class="admin-label"><i class="fas fa-calendar"></i> Date</div>
-                <input type="date" class="admin-input" id="admin-date">
-            </div>
-            <div class="admin-field">
-                <div class="admin-label"><i class="fas fa-clock"></i> Heure</div>
-                <input type="time" class="admin-input" id="admin-time" value="21:00">
-            </div>
-        </div>
-        
+
+    <div class="admin-section">
+        <div class="admin-section-title"><i class="fas fa-plus-circle"></i> Créer un combiné</div>
+        <div class="admin-card">
+            <!-- Ligne 1 : Date et Heure -->
+            <div class="admin-row" style="margin-bottom: 16px;">
+                <div class="admin-field">
+                    <div class="admin-label"><i class="fas fa-calendar"></i> Date</div>
                     <input type="date" class="admin-input" id="admin-date">
                 </div>
                 <div class="admin-field">
-                    <div class="admin-label"><i class="fas fa-flag"></i> Statut</div>
-                    <select class="admin-select" id="admin-status">
-                        <option value="en-cours">En cours</option>
-                        <option value="termine">Terminé ✅</option>
-                        <option value="perdu">Perdu ❌</option>
-                    </select>
+                    <div class="admin-label"><i class="fas fa-clock"></i> Heure</div>
+                    <input type="time" class="admin-input" id="admin-time" value="21:00">
                 </div>
             </div>
+            
+            <!-- Ligne 2 : Statut -->
+            <div class="admin-field">
+                <div class="admin-label"><i class="fas fa-flag"></i> Statut</div>
+                <select class="admin-select" id="admin-status">
+                    <option value="en-cours">En cours</option>
+                    <option value="termine">Terminé ✅</option>
+                    <option value="perdu">Perdu ❌</option>
+                </select>
+            </div>
+            
             <button onclick="updateDateOnly()" style="width:100%;padding:12px;background:transparent;border:1px solid var(--primary-yellow);color:var(--primary-yellow);border-radius:10px;font-size:13px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;">
-                <i class="fas fa-calendar-check"></i> Modifier la date / statut uniquement
+                <i class="fas fa-calendar-check"></i> Modifier date/statut
             </button>
         </div>
     </div>
+
     <div class="admin-section">
         <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs</div>
         <div id="admin-matches"></div>
         <button class="admin-add-match-btn" onclick="addMatchEntry()"><i class="fas fa-plus"></i> Ajouter un match</button>
     </div>
+
     <div class="admin-section">
         <div class="admin-section-title"><i class="fas fa-coins"></i> Mise & Résumé</div>
         <div class="admin-card">
@@ -624,6 +619,7 @@
             <div class="admin-summary-row"><span class="admin-summary-label">Gains potentiels</span><span class="admin-summary-value gains" id="summary-gains">0,00 €</span></div>
         </div>
     </div>
+
     <div class="admin-section">
         <button class="admin-submit-btn" onclick="publishCombined()"><i class="fas fa-paper-plane"></i> Publier le combiné</button>
         <button class="admin-delete-btn" onclick="deleteCombined()"><i class="fas fa-trash-alt"></i> Supprimer le combiné</button>
@@ -798,11 +794,11 @@
         if (target) target.classList.add('active');
     }
     
-function openAdmin() {
+    function openAdmin() {
         document.getElementById('admin-page').classList.add('active');
         if (currentCombined) {
             document.getElementById('admin-date').value = currentCombined.date || new Date().toISOString().split('T')[0];
-            document.getElementById('admin-time').value = currentCombined.time || '21:00'; // <-- NOUVEAU
+            document.getElementById('admin-time').value = currentCombined.time || '21:00';
             document.getElementById('admin-status').value = currentCombined.status || 'en-cours';
             document.getElementById('admin-mise').value = currentCombined.mise || '';
             document.getElementById('admin-matches').innerHTML = '';
@@ -812,6 +808,7 @@ function openAdmin() {
         }
         updateStats();
     }
+    
     function closeAdmin() { document.getElementById('admin-page').classList.remove('active'); }
 
     function addMatchEntry(data) {
@@ -834,6 +831,7 @@ function openAdmin() {
         e.style.opacity = '0'; e.style.transform = 'scale(0.95)'; e.style.transition = 'all .3s';
         setTimeout(function () { e.remove(); renumberMatches(); calculateGains(); }, 300);
     }
+    
     function renumberMatches() {
         var entries = document.querySelectorAll('.match-entry');
         matchEntryCount = entries.length;
@@ -854,10 +852,10 @@ function openAdmin() {
 
     function fmtC(v) { return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(v); }
 
-  async function publishCombined() {
+    async function publishCombined() {
         var entries = document.querySelectorAll('.match-entry');
         var date = document.getElementById('admin-date').value;
-        var time = document.getElementById('admin-time').value; // <-- NOUVEAU
+        var time = document.getElementById('admin-time').value;
         var status = document.getElementById('admin-status').value;
         var mise = parseFloat(document.getElementById('admin-mise').value) || 0;
 
@@ -873,7 +871,7 @@ function openAdmin() {
             if (!t || !s || o <= 0) valid = false;
             
             matches.push({ teams: t, score: s, odds: o, time: ti });
-            publicMatches.push({ teams: t, time: ti, score: '?-?', odds: 0 }); // On garde les équipes publiques !
+            publicMatches.push({ teams: t, time: ti, score: '?-?', odds: 0 });
         });
 
         if (!valid) { showToast('Remplissez tous les champs !', true); return; }
@@ -882,10 +880,9 @@ function openAdmin() {
         matches.forEach(function (m) { tot *= m.odds; });
         var gains = mise * tot;
 
-        // Envoi public AVEC l'heure !
         var pubRes = await supabaseClient.from('combineds_public').insert([{ 
             date: date, 
-            time: time, // <-- NOUVEAU
+            time: time,
             status: status, 
             nombre_matchs: matches.length,
             matches: publicMatches
@@ -905,6 +902,7 @@ function openAdmin() {
         saveState(); updateStats(); renderCombined();
         showToast('Combiné publié !'); closeAdmin();
     }
+    
     async function deleteCombined() {
         if (currentCombined && currentCombined.id) {
             await supabaseClient.from('combineds_vip').delete().eq('id', currentCombined.id);
@@ -949,7 +947,7 @@ function openAdmin() {
         sb.innerHTML = '<div class="vip-combined-status" style="margin:0 20px 15px;">Combiné du ' + df + ' <span class="disponible">DISPONIBLE !</span></div>';
     }
 
-function buildCC(c, sc, sl, pw, isHome) {
+    function buildCC(c, sc, sl, pw, isHome) {
         var mH = '';
         var matchesToDisplay = c.matches ? c.matches : Array(c.nombre_matchs || 2).fill({ teams: 'Match en attente', time: '--:--', odds: 0 });
         var isObscured = isHome || !c.matches;
@@ -971,18 +969,16 @@ function buildCC(c, sc, sl, pw, isHome) {
         var displayTotalOdds = isObscured ? '***.**' : (c.total_odds || c.totalOdds || 0).toFixed(2);
         var displayMise = isObscured ? '***,** €' : fmtC(c.mise || 0);
 
-        // --- NOUVEAU : LOGIQUE DU COMPTE À REBOURS (-15 MIN) ---
         let isLocked = false;
         let timeMessage = '';
 
         if (sc === 'en-cours' && c.date && c.time) {
-            // On crée une vraie date en combinant la date et l'heure du match
             const matchDateTime = new Date(`${c.date}T${c.time}:00`);
-            const lockoutDateTime = new Date(matchDateTime.getTime() - 15 * 60000); // On retire 15 minutes
+            const lockoutDateTime = new Date(matchDateTime.getTime() - 15 * 60000);
             const now = new Date();
 
             if (now >= lockoutDateTime) {
-                isLocked = true; // Trop tard !
+                isLocked = true;
                 timeMessage = `<div style="color: var(--red); font-size: 12px; font-weight: 700; margin-top: 12px; text-align: center;"><i class="fas fa-lock"></i> Les paris sont fermés (Match imminent)</div>`;
             } else {
                 const hrs = String(lockoutDateTime.getHours()).padStart(2, '0');
@@ -991,7 +987,6 @@ function buildCC(c, sc, sl, pw, isHome) {
             }
         }
 
-        // --- GESTION DU BOUTON SELON LE VERROUILLAGE ---
         var ctaBtn = '';
         if (isHome) {
             if (isLocked && sc === 'en-cours') {
@@ -1002,10 +997,8 @@ function buildCC(c, sc, sl, pw, isHome) {
         }
 
         return '<div class="combined-card"><div class="combined-header"><div class="combined-status"><span class="status-badge ' + sc + '">' + sl[sc] + '</span><span class="combined-label">Combiné</span><div class="combined-count"><i class="fas fa-futbol"></i> ' + matchesToDisplay.length + '</div></div><i class="fas fa-ellipsis-h combined-more"></i></div><div class="combined-progress"><div class="combined-progress-fill" style="width:' + pw + ';' + pc + '"></div></div><div class="combined-matches-icons">' + ic + '<span style="font-size:12px;color:var(--text-gray);margin-left:4px;">' + matchesToDisplay.length + '</span></div><div class="combined-body">' + mH + '</div><div class="combined-footer"><div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span><span class="combined-footer-value '+(isObscured?'blurred-value':'')+'">' + displayTotalOdds + '</span></div><div class="combined-footer-row"><span class="combined-footer-label">Mise</span><span class="combined-footer-value">' + displayMise + '</span></div><div class="combined-footer-row"><span class="combined-footer-label">Gains potentiels</span><span class="combined-footer-value gains '+(isObscured?'blurred-value':'')+'">' + displayGains + '</span></div></div>' + ctaBtn + timeMessage + '</div>';
-        return '<div class="combined-card">...</div>' + ctaBtn + timeMessage + '</div>';
-    } // <--- AJOUTE CETTE ACCOLADE ICI !
+    }
 
-    function updateDateOnly() {
     function updateDateOnly() {
         if (!currentCombined) { showToast('Aucun combiné à modifier !', true); return; }
         var newDate = document.getElementById('admin-date').value;
