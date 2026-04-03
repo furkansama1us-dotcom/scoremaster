@@ -4,13 +4,20 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ScoreMaster</title>
+    
+    <title>Score Master</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="ScoreMaster">
+    <meta name="apple-mobile-web-app-title" content="Score Master">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0D0D0D">
-    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlNjb3JlTWFzdGVyIiwKICAic2hvcnRfbmFtZSI6ICJTTSB2aXAiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBEMEQwRCIsCiAgInRoZW1lX2NvbG9yIjogIiMwRDBEMEQiLAogICJvcmllbnRhdGlvbiI6ICJwb3J0cmFpdCIKfQ==">
+    
+    <!-- Icônes pour l'écran d'accueil (iOS et Android) -->
+    <link rel="apple-touch-icon" href="logo-dark.png">
+    <link rel="icon" type="image/png" href="logo-dark.png">
+    
+    <!-- Manifest encodé (Nom : Score Master + Icone) -->
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiU2NvcmUgTWFzdGVyIiwic2hvcnRfbmFtZSI6IlNjb3JlIE1hc3RlciIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3ciOiIjMEQwRDBEIiwidGhlbWVfY29sb3IiOiIjMEQwRDBEIiwib3JpZW50YXRpb24iOiJwb3J0cmFpdCIsImljb25zIjpbeyJzcmMiOiJsb2dvLWRhcmsucG5nIiwic2l6ZXMiOiIxOTJ4MTkyIDUxMng1MTIiLCJ0eXBlIjoiaW1hZ2UvcG5nIiwicHVycG9zZSI6ImFueSBtYXNrYWJsZSJ9XX0=">
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -49,7 +56,6 @@
         }
         #login-screen.active { display:flex; }
         
-        /* Hexagones limités à la partie haute */
         .hex-grid-login { position: absolute; top: 0; left: 0; width: 100%; height: 35%; opacity: 0.15; pointer-events: none; overflow: hidden; z-index: 0; }
         .hex-grid-login svg { width: 100%; height: 100%; }
 
@@ -58,7 +64,7 @@
         
         /* LE NOUVEAU CONTENEUR DU FORMULAIRE : NOIR & OR */
         .login-form-container {
-            flex:1;
+            flex:1; width: 100%;
             background: #111111; /* Gris extrêmement foncé pour le contraste */
             border-top: 1px solid rgba(255, 215, 0, 0.2); /* Ligne dorée subtile en haut */
             border-radius: 30px 30px 0 0;
@@ -67,17 +73,14 @@
             position: relative; z-index: 2; overflow: hidden;
         }
         
-        /* Le motif de fond du formulaire */
         .pattern-bg-form { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.04; pointer-events: none; z-index: 0; }
         .pattern-bg-form svg { width: 100%; height: 100%; }
 
-        /* Styles des textes pour le fond sombre */
         .login-form-title { font-size:13px; color:#A0A0A0; margin-bottom:8px; font-weight:600; position: relative; z-index: 1; }
         
-        /* Champs de saisie adaptés au dark mode */
         .login-input {
             width:100%; padding:16px 16px;
-            background: rgba(255, 255, 255, 0.05); /* Légère transparence blanche */
+            background: rgba(255, 255, 255, 0.05); 
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px; color: var(--text-white);
             font-size: 15px; font-family: 'Inter', sans-serif;
@@ -87,7 +90,6 @@
         .login-input:focus { border-color: var(--primary-yellow); background: rgba(255, 215, 0, 0.05); }
         .login-input::placeholder { color: #666666; }
         
-        /* Icône de l'œil pour le mot de passe */
         #togglePassword { color: #888888 !important; }
         #togglePassword:hover { color: var(--primary-yellow) !important; }
 
@@ -332,12 +334,27 @@
         .admin-stat-card.green i{color:var(--green)}
         .admin-stat-card.blue i{color:var(--blue)}
         .admin-stat-card.red i{color:var(--red)}
-        .toast{position:fixed;top:calc(20px + var(--safe-top));left:50%;transform:translateX(-50%) translateY(-100px);background:var(--green);color:#000;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:700;z-index:99999;transition:transform .4s;display:flex;align-items:center;gap:8px;box-shadow:0 10px 30px rgba(0,200,83,.3);max-width:calc(100% - 40px)}
-        .toast.show{transform:translateX(-50%) translateY(0)}
+
+        /* NOTIFICATION TOAST CORRIGÉE (Hors de l'écran par défaut) */
+        .toast{position:fixed;top:-150px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:700;z-index:99999;transition:top .4s;display:flex;align-items:center;gap:8px;box-shadow:0 10px 30px rgba(0,200,83,.3);max-width:calc(100% - 40px)}
+        .toast.show{top:calc(20px + var(--safe-top))}
         .toast.error{background:var(--red);color:#fff;box-shadow:0 10px 30px rgba(255,61,61,.3)}
         .toast i{font-size:18px}
         ::-webkit-scrollbar{width:0}
-        @media(min-width:500px){body{display:flex;align-items:center;justify-content:center;background:#000}#splash-screen,#login-screen,#app,#admin-page{max-width:420px;max-height:900px;border-radius:30px;overflow:hidden}#admin-page.active{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);max-width:420px;max-height:900px;border-radius:30px}}
+        
+        /* Sécurité pour que le formulaire prenne bien toute la largeur sur mobile */
+        .login-form-container { width: 100%; }
+        
+        /* Correction de l'affichage pour les tablettes/PC (Centrage parfait) */
+        @media(min-width:768px){
+            body { display:flex; align-items:center; justify-content:center; background:#000; }
+            #splash-screen, #login-screen, #app, #admin-page {
+                position:fixed !important; left:50% !important; top:50% !important; transform:translate(-50%,-50%) !important;
+                width:100vw !important; height:100vh !important; max-width:420px !important; max-height:900px !important;
+                border-radius:30px !important; overflow:hidden !important;
+            }
+            #app.active { display:flex !important; }
+        }
         
         .history-card { background:var(--bg-card); border:1px solid var(--border-color); border-radius:16px; padding:16px; margin-bottom:14px; display:flex; flex-direction:column; align-items:stretch; transition: all 0.3s; }
         .history-card.termine { border-color: rgba(0, 200, 83, 0.4); background: linear-gradient(145deg, rgba(0,200,83,0.08) 0%, var(--bg-card) 100%); }
@@ -765,6 +782,8 @@
 
     function setLogos() {
         document.getElementById('img-splash').src = LOGO_SPLASH;
+        
+        // On utilise LOGO_DARK partout (c'est le logo qui contient le noir/or pour s'afficher sur fond clair/sombre)
         document.getElementById('img-login').src = LOGO_DARK;
         document.getElementById('img-admin').src = LOGO_DARK;
         document.getElementById('avatar-home').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
