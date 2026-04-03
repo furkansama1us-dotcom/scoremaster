@@ -1317,12 +1317,13 @@
                 <div class="logo-avatar medium" id="avatar-vip"></div>
                 <div class="vip-user-info">
                     <h3 style="display:flex; align-items:center; gap:6px;">
-                        <span class="vip-username-text">Admin SM</span>
+                        <span class="vip-username-text">Utilisateur</span>
                         <i class="fas fa-cog" onclick="openProfileSettings()" style="color:var(--text-gray); font-size:14px; cursor:pointer;"></i>
                     </h3>
                     <div id="role-vip" style="font-size: 12px; font-weight: 700; margin-top: 4px;"></div>
                 </div>
-                <button class="vip-modify-btn" onclick="promptAdminCode()" style="border-color:transparent;color:transparent;">Modifier</button>
+                <!-- Le bouton Admin est caché par défaut -->
+                <button id="admin-panel-btn" class="vip-modify-btn" onclick="promptAdminCode()" style="display: none; border: 1px solid var(--primary-yellow); color: var(--primary-yellow);">Panel Admin</button>
             </div>
             <div class="vip-notice">Le prochain combiné apparaîtra ci-dessous une fois disponible ! (activez vos notifs !)</div>
             <div class="api-banner" style="margin:0 20px 15px;">
@@ -1790,11 +1791,24 @@
             var vipName = document.querySelector('.vip-username-text');
             if (vipName) vipName.textContent = finalUsername;
             
-            var roleText = window.isUserVip ? 'SM VIP+' : 'Visiteur';
-            var roleColor = window.isUserVip ? 'var(--red)' : 'var(--blue)';
+           // Si l'utilisateur est admin, il est automatiquement VIP aussi pour voir la page
+            if (window.isAdmin) {
+                window.isUserVip = true; 
+            }
+
+            // Définition de l'affichage du grade
+            var roleText = window.isAdmin ? 'Administrateur' : (window.isUserVip ? 'SM VIP+' : 'Visiteur');
+            var roleColor = window.isAdmin ? 'var(--primary-yellow)' : (window.isUserVip ? 'var(--red)' : 'var(--blue)');
             var roleHtml = `<span style="color:${roleColor};">${roleText}</span>`;
+            
             document.getElementById('role-home').innerHTML = roleHtml;
             document.getElementById('role-vip').innerHTML = roleHtml;
+
+            // Afficher le bouton Panel Admin UNIQUEMENT pour les administrateurs
+            var adminBtn = document.getElementById('admin-panel-btn');
+            if (adminBtn) {
+                adminBtn.style.display = window.isAdmin ? 'block' : 'none';
+            }
 
             document.getElementById('login-screen').style.opacity = '0';
             setTimeout(function () {
