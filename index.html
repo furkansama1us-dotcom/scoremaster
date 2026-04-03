@@ -1,9 +1,11 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<title>Score Master</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <title>Score Master</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Score Master">
@@ -14,8 +16,11 @@
     <link rel="apple-touch-icon" href="logo-dark.png">
     <link rel="icon" type="image/png" href="logo-dark.png">
     
-    <!-- Nouveau Manifest encodé (Nom : Score Master + Icone) -->
+    <!-- Manifest encodé (Nom : Score Master + Icone) -->
     <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiU2NvcmUgTWFzdGVyIiwic2hvcnRfbmFtZSI6IlNjb3JlIE1hc3RlciIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3ciOiIjMEQwRDBEIiwidGhlbWVfY29sb3IiOiIjMEQwRDBEIiwib3JpZW50YXRpb24iOiJwb3J0cmFpdCIsImljb25zIjpbeyJzcmMiOiJsb2dvLWRhcmsucG5nIiwic2l6ZXMiOiIxOTJ4MTkyIDUxMng1MTIiLCJ0eXBlIjoiaW1hZ2UvcG5nIiwicHVycG9zZSI6ImFueSBtYXNrYWJsZSJ9XX0=">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
     <style>
         .combined-card { display: flex; flex-direction: column; }
@@ -60,7 +65,7 @@
         
         /* LE NOUVEAU CONTENEUR DU FORMULAIRE : NOIR & OR */
         .login-form-container {
-            flex:1;
+            flex:1; width: 100%;
             background: #111111; /* Gris extrêmement foncé pour le contraste */
             border-top: 1px solid rgba(255, 215, 0, 0.2); /* Ligne dorée subtile en haut */
             border-radius: 30px 30px 0 0;
@@ -339,8 +344,6 @@
         .toast.error{background:var(--red);color:#fff;box-shadow:0 10px 30px rgba(255,61,61,.3)}
         .toast i{font-size:18px}
         ::-webkit-scrollbar{width:0}
-        /* Sécurité pour que le formulaire prenne bien toute la largeur sur mobile */
-        .login-form-container { width: 100%; }
         
         /* Correction de l'affichage pour les tablettes/PC (Centrage parfait) */
         @media(min-width:768px){
@@ -778,19 +781,18 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     function setLogos() {
-    document.getElementById('img-splash').src = LOGO_SPLASH;
+        document.getElementById('img-splash').src = LOGO_SPLASH;
         
-    // On utilise LOGO_LIGHT pour forcer l'affichage du SM Noir avec la couronne jaune
-    document.getElementById('img-login').src = LOGO_LIGHT;
-    document.getElementById('img-admin').src = LOGO_LIGHT;
-    document.getElementById('avatar-home').innerHTML = '<img src="' + LOGO_LIGHT + '" alt="SM">';
-    document.getElementById('avatar-vip').innerHTML = '<img src="' + LOGO_LIGHT + '" alt="SM">';
-    document.getElementById('pack-icon-1').innerHTML = '<img src="' + LOGO_LIGHT + '" alt="SM">';
-    document.getElementById('pack-icon-2').innerHTML = '<img src="' + LOGO_LIGHT + '" alt="SM">';
-    document.getElementById('pack-detail-1').innerHTML = '<img src="' + LOGO_LIGHT + '" alt="SM">';
-    document.getElementById('pack-detail-2').innerHTML = '<img src="' + LOGO_LIGHT + '" alt="SM">';
-    document.getElementById('pack-detail-3').innerHTML = '<img src="' + LOGO_LIGHT + '" alt="SM">';
-    }
+        // On utilise LOGO_DARK partout (c'est le logo qui contient le noir/or pour s'afficher sur fond clair/sombre)
+        document.getElementById('img-login').src = LOGO_DARK;
+        document.getElementById('img-admin').src = LOGO_DARK;
+        document.getElementById('avatar-home').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('avatar-vip').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-icon-1').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-icon-2').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-detail-1').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-detail-2').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-detail-3').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
     }
 </script>
 
@@ -1359,7 +1361,7 @@
                 </div>
                 <div class="contact-card">
                     <div class="contact-card-icon email"><i class="fas fa-envelope"></i></div>
-                    <div class="contact-card-info"><h4>Email</h4><p><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c4a7abaab0a5a7b084b7a7abb6a1a9a5b7b0a1b6eaa2b6">[email&#160;protected]</a></p></div>
+                    <div class="contact-card-info"><h4>Email</h4><p>contact@scoremaster.fr</p></div>
                     <i class="fas fa-chevron-right contact-card-arrow"></i>
                 </div>
             </div>
@@ -1603,7 +1605,7 @@
     </div>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
     var allCombineds = [];
     var currentCombined = null; 
     var editingId = null; 
@@ -2102,7 +2104,7 @@
             if (extracted && extracted[0] < earliestTime) { earliestTime = extracted[0]; }
         });
 
-        if (!valid) { showToast('Remplissez tous champs (Cote/Score manquants) !', true); return; }
+        if (!valid) { showToast('Remplissez tous les champs (Cote/Score manquants) !', true); return; }
 
         var tot = 1;
         matches.forEach(function (m) { tot *= m.odds; });
@@ -2482,26 +2484,3 @@
             var msg = contactMethod === 'whatsapp' ? 'Le numéro de téléphone est obligatoire.' : 'Le pseudo Instagram est obligatoire.';
             showToast(msg, true);
             return;
-        }
-
-        /* 
-         * ICI : Envoyer la demande à Supabase.
-         * contactMethod ('whatsapp' ou 'instagram')
-         * contactInfo (le numéro ou le pseudo)
-         * message (le message optionnel)
-         * packType (le pack choisi)
-         */
-        
-        // Ferme le formulaire
-        closeSubscribePopup();
-        
-        // Ouvre le popup de confirmation après un petit délai fluide
-        setTimeout(function() {
-            var successPopup = document.getElementById('success-popup');
-            successPopup.style.display = 'flex';
-            setTimeout(function () { successPopup.style.opacity = '1'; successPopup.firstElementChild.style.transform = 'scale(1)'; }, 10);
-        }, 300);
-    }
-
-    function closeSuccessPopup() {
-        var popup = document.getEl
