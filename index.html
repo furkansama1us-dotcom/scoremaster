@@ -747,7 +747,7 @@
     </div>
 </div>
 
-<!-- LOGIN GOLD & NOIR -->
+<!-- LOGIN GOLD & NOIR - TOTAL DARK PREMIUM -->
 <div id="login-screen">
     
     <!-- FOND HAUT : HEXAGONES OR & NOIR -->
@@ -769,7 +769,7 @@
     </div>
     
     <div class="login-form-container">
-        <!-- FOND BAS : LOSANGES OR & NOIR -->
+        <!-- FOND BAS : NOUVEAU MOTIF GEOMETRIQUE OR & NOIR -->
         <div class="pattern-bg-form">
             <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
                 <defs>
@@ -1492,6 +1492,49 @@
         <p id="info-popup-desc" style="font-size:14px;color:var(--text-gray);margin-bottom:20px;line-height:1.6;">Description détaillée...</p>
         <div id="info-popup-extra" style="background:var(--bg-input); padding:18px; border-radius:12px; font-size:13px; color:var(--text-white); font-weight:600; margin-bottom:20px; border:1px solid var(--border-color);"></div>
         <button onclick="closeInfoPopup()" style="width:100%;padding:14px;background:var(--primary-yellow);color:#000;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;">D'accord !</button>
+    </div>
+</div>
+
+<!-- POPUP SOUSCRIPTION (FORMULAIRE) -->
+<div id="subscribe-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+    <div style="background:var(--bg-card);padding:30px;border-radius:24px;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);position:relative;">
+        <i class="fas fa-times" onclick="closeSubscribePopup()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
+        
+        <h3 style="font-size:18px;font-weight:800;margin-bottom:8px;color:#fff;font-family:'Montserrat',sans-serif;" id="subscribe-pack-title">Souscrire au pack</h3>
+        <p style="font-size:13px;color:var(--text-gray);margin-bottom:20px;line-height:1.5;font-family:'Inter',sans-serif;">Laissez-nous vos coordonnées. Un membre de l'équipe vous contactera dans les 5 minutes pour finaliser l'accès ! ⚡</p>
+        
+        <input type="hidden" id="subscribe-pack-type">
+        
+        <div class="admin-field" style="margin-bottom:12px; text-align:left;">
+            <div class="admin-label" style="color:var(--text-gray); margin-bottom:6px; font-family:'Inter',sans-serif;"><i class="fas fa-phone" style="color:var(--primary-yellow)"></i> Téléphone *</div>
+            <input type="tel" id="sub-phone" class="admin-input" placeholder="06 12 34 56 78" style="background:var(--bg-input); border:1px solid var(--border-color); color:#fff;" required>
+        </div>
+        
+        <div class="admin-field" style="margin-bottom:12px; text-align:left;">
+            <div class="admin-label" style="color:var(--text-gray); margin-bottom:6px; font-family:'Inter',sans-serif;"><i class="fab fa-instagram" style="color:var(--primary-yellow)"></i> Instagram (Optionnel)</div>
+            <input type="text" id="sub-insta" class="admin-input" placeholder="@votre_pseudo" style="background:var(--bg-input); border:1px solid var(--border-color); color:#fff;">
+        </div>
+        
+        <div class="admin-field" style="margin-bottom:20px; text-align:left;">
+            <div class="admin-label" style="color:var(--text-gray); margin-bottom:6px; font-family:'Inter',sans-serif;"><i class="fas fa-comment-dots" style="color:var(--primary-yellow)"></i> Message (Optionnel)</div>
+            <textarea id="sub-message" class="admin-input" rows="3" placeholder="Une précision ou une question ?" style="background:var(--bg-input); border:1px solid var(--border-color); color:#fff; resize:none; font-family:'Inter',sans-serif; padding:12px 14px; border-radius:10px; width:100%; outline:none; transition:border-color .3s;"></textarea>
+        </div>
+        
+        <button onclick="submitSubscription()" style="width:100%;padding:14px;background:var(--primary-yellow);color:#000;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer; display:flex; justify-content:center; align-items:center; gap:8px; box-shadow:0 4px 15px rgba(255,215,0,0.25);">
+            <i class="fas fa-paper-plane"></i> Souscrire
+        </button>
+    </div>
+</div>
+
+<!-- POPUP CONFIRMATION (SUCCÈS) -->
+<div id="success-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+    <div style="background:var(--bg-card);padding:40px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);">
+        <div style="width:80px;height:80px;background:rgba(0, 200, 83, 0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px auto; box-shadow: 0 0 20px rgba(0,200,83,0.2);">
+            <i class="fas fa-check" style="font-size:40px;color:var(--green);"></i>
+        </div>
+        <h3 style="font-size:22px;font-weight:800;margin-bottom:12px;color:#fff;font-family:'Montserrat',sans-serif;">Demande envoyée !</h3>
+        <p style="font-size:14px;color:var(--text-gray);margin-bottom:30px;line-height:1.6;font-family:'Inter',sans-serif;">Votre demande a bien été enregistrée. Restez attentif, notre équipe va vous recontacter d'ici quelques minutes.</p>
+        <button onclick="closeSuccessPopup()" style="width:100%;padding:14px;background:var(--bg-input);color:#fff;border:1px solid var(--border-color);border-radius:12px;font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;">Fermer</button>
     </div>
 </div>
 
@@ -2282,12 +2325,70 @@
         el.classList.toggle('open');
     }
 
-    // ===== CHECKOUT (À PERSONNALISER AVEC TON SYSTÈME DE PAIEMENT) =====
-    function openCheckout(pack, price) {
-        showToast('Redirection vers le paiement...');
+    // ===== GESTION DE LA SOUSCRIPTION =====
+    function openCheckout(packType, price) {
+        var packNames = {
+            'journalier': 'SM Score Exact Journalier',
+            'vip': 'SM VIP+ (à vie)',
+            'hebdo': 'SM Combiné Hebdo'
+        };
+        var packName = packNames[packType] || 'Pack ScoreMaster';
+        
+        // Mettre à jour le titre du popup
+        document.getElementById('subscribe-pack-title').textContent = 'Souscrire au ' + packName;
+        document.getElementById('subscribe-pack-type').value = packType;
+        
+        // Réinitialiser les champs
+        document.getElementById('sub-phone').value = '';
+        document.getElementById('sub-insta').value = '';
+        document.getElementById('sub-message').value = '';
+        
+        // Afficher le popup
+        var popup = document.getElementById('subscribe-popup');
+        popup.style.display = 'flex';
+        setTimeout(function () { popup.style.opacity = '1'; popup.firstElementChild.style.transform = 'scale(1)'; }, 10);
+    }
+
+    function closeSubscribePopup() {
+        var popup = document.getElementById('subscribe-popup');
+        popup.style.opacity = '0';
+        popup.firstElementChild.style.transform = 'scale(0.9)';
+        setTimeout(function () { popup.style.display = 'none'; }, 300);
+    }
+
+    function submitSubscription() {
+        var phone = document.getElementById('sub-phone').value.trim();
+        var insta = document.getElementById('sub-insta').value.trim();
+        var message = document.getElementById('sub-message').value.trim();
+        var packType = document.getElementById('subscribe-pack-type').value;
+        
+        // Vérification obligatoire du téléphone
+        if (!phone) {
+            showToast('Le numéro de téléphone est obligatoire.', true);
+            return;
+        }
+
+        /* 
+         * ICI : Tu pourras ajouter plus tard la ligne Supabase pour envoyer la demande dans ta base de données.
+         * L'email et l'ID de l'utilisateur sont déjà connectés via la session Supabase active.
+         */
+        
+        // Ferme le formulaire
+        closeSubscribePopup();
+        
+        // Ouvre le popup de confirmation après un petit délai fluide
         setTimeout(function() {
-            window.open(TELEGRAM_LINK, '_blank');
-        }, 1000);
+            var successPopup = document.getElementById('success-popup');
+            successPopup.style.display = 'flex';
+            setTimeout(function () { successPopup.style.opacity = '1'; successPopup.firstElementChild.style.transform = 'scale(1)'; }, 10);
+        }, 300);
+    }
+
+    function closeSuccessPopup() {
+        var popup = document.getElementById('success-popup');
+        popup.style.opacity = '0';
+        popup.firstElementChild.style.transform = 'scale(0.9)';
+        setTimeout(function () { popup.style.display = 'none'; }, 300);
     }
 
 </script>
