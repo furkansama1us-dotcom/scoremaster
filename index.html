@@ -750,7 +750,7 @@
 <!-- LOGIN GOLD & NOIR -->
 <div id="login-screen">
     
-    <!-- NOUVEAU FOND HEXAGONAL OR & NOIR -->
+    <!-- FOND HAUT : HEXAGONES OR & NOIR -->
     <div class="hex-grid-login">
         <svg viewBox="0 0 800 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -767,8 +767,9 @@
     <div class="login-header">
         <img id="img-login" alt="ScoreMaster" class="login-logo-img">
     </div>
+    
     <div class="login-form-container">
-        <!-- NOUVEAU FOND GEOMETRIQUE OR & NOIR POUR LE FORMULAIRE -->
+        <!-- FOND BAS : LOSANGES OR & NOIR -->
         <div class="pattern-bg-form">
             <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
                 <defs>
@@ -779,6 +780,37 @@
                 <rect width="100%" height="100%" fill="url(#diamonds)"/>
             </svg>
         </div>
+
+        <!-- CHAMPS DU FORMULAIRE -->
+        <div class="login-form-title">Email</div>
+        <input type="email" class="login-input" id="login-email" placeholder="Votre email">
+
+        <div class="login-form-title" id="title-username" style="display:none;">Pseudo</div>
+        <input type="text" class="login-input" id="login-username" placeholder="Votre pseudo" style="display:none;">
+
+        <div class="login-form-title">Mot de passe</div>
+        <div style="position:relative;width:100%;">
+            <input type="password" class="login-input" id="login-password" placeholder="••••••••••••">
+            <i class="fas fa-eye" id="togglePassword" style="position:absolute;right:15px;top:15px;cursor:pointer;font-size:16px;z-index:10;"></i>
+        </div>
+
+        <button class="login-btn" id="btn-action" onclick="handleAuth()">Connexion</button>
+        <div class="login-error" id="login-error"><i class="fas fa-exclamation-circle"></i> Identifiants incorrects</div>
+
+        <div class="login-options">
+            <a href="#" class="forgot-password" id="toggle-auth" onclick="toggleAuthMode(); return false;">Créer un compte</a>
+            <div class="remember-me">
+                <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                <span>Se souvenir de moi</span>
+            </div>
+        </div>
+
+        <div class="api-badge-login">
+            <i class="fas fa-plug"></i>
+            <span>API sportifs connectés</span>
+            <div class="api-status-dot"></div>
+        </div>
+    </div>
 </div>
     
 <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toast-message"></span></div>
