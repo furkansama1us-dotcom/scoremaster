@@ -9,53 +9,20 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="ScoreMaster">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#FFFFFF">
-    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlNjb3JlTWFzdGVyIiwKICAic2hvcnRfbmFtZSI6ICJTTSB2aXAiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiI0ZGRkZGRiIsCiAgInRoZW1lX2Nsb3IiOiAiI0ZGRkZGRiIsCiAgInRoZW1lX2Nsb3IiOiAiIzBEMEQwRCIsCiAgInRoZW1lX2Nsb3IiOiAiI0ZGRkZGRiIsCiAgIm9yaWVudGF0aW9uIjogInBvcnRyYWl0Igp9">
+    <meta name="theme-color" content="#0D0D0D">
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlNjb3JlTWFzdGVyIiwKICAic2hvcnRfbmFtZSI6ICJTTSB2aXAiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBEMEQwRCIsCiAgInRoZW1lX2NvbG9yIjogIiMwRDBEMEQiLAogICJvcmllbnRhdGlvbiI6ICJwb3J0cmFpdCIKfQ==">
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
     <style>
-        /* Variables globales mises à jour pour le thème clair */
-        :root{
-            --primary-yellow:#FFD700;
-            --dark-yellow:#E6C200;
-            --bg-dark:#FFFFFF; /* Fond de page en blanc */
-            --bg-page-light: #F8F9FA; /* Fond de page secondaire légèrement grisé */
-            --bg-card:#FFFFFF; /* Cartes en blanc */
-            --bg-input:#F1F3F5; /* Inputs en gris très clair */
-            --text-main:#1A1A1A; /* Texte principal en noir/gris foncé */
-            --text-white:#FFFFFF; /* Gardé pour les éléments sur fond sombre */
-            --text-gray:#6C757D;
-            --text-light-gray:#ADB5BD;
-            --green:#00C853;
-            --red:#FF3D3D;
-            --blue:#4A90D9;
-            --border-color:#E0E0E0; /* Bordures claires */
-            
-            /* Variables spécifiques pour les combinés (style premium sombre) */
-            --combined-bg: #111111;
-            --combined-border: #2A2A3A;
-            
-            --safe-top:env(safe-area-inset-top,0px);
-            --safe-bottom:env(safe-area-inset-bottom,0px)
-        }
-        
+        .combined-card { display: flex; flex-direction: column; }
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
-        html,body{font-family:'Inter','Montserrat',sans-serif;background:var(--bg-dark);color:var(--text-main);overflow:hidden;height:100%;width:100%;position:fixed;top:0;left:0}
         
-        /* Animations */
-        @keyframes splashFadeIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
-        @keyframes loaderBounce{0%,80%,100%{transform:scale(.6);opacity:.3}40%{transform:scale(1);opacity:1}}
-        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-        @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-        @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes glowPass{0%,100%{box-shadow: 0 0 5px rgba(0,200,83,0.3);} 50%{box-shadow: 0 0 15px rgba(0,200,83,0.6);}}
-
-        .fade-in-up{animation:fadeInUp .5s ease forwards}
-        .delay-1{animation-delay:.1s;opacity:0}.delay-2{animation-delay:.2s;opacity:0}.delay-3{animation-delay:.3s;opacity:0}.delay-4{animation-delay:.4s;opacity:0}.delay-5{animation-delay:.5s;opacity:0}
+        /* THEME SOMBRE (Base conservée intacte) */
+        :root{--primary-yellow:#FFD700;--dark-yellow:#E6C200;--bg-dark:#0D0D0D;--bg-card:#1A1A1A;--bg-input:#2A2A2A;--text-white:#FFFFFF;--text-gray:#8A8A8A;--text-light-gray:#B0B0B0;--green:#00C853;--red:#FF3D3D;--blue:#4A90D9;--border-color:#333333;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+        html,body{font-family:'Inter','Montserrat',sans-serif;background:var(--bg-dark);color:var(--text-white);overflow:hidden;height:100%;width:100%;position:fixed;top:0;left:0}
         
-        /* SPLASH (Gardé sombre pour le contraste) */
         #splash-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;z-index:10000;transition:opacity .6s,visibility .6s}
         #splash-screen.hidden{opacity:0;visibility:hidden}
         .splash-content{text-align:center;animation:splashFadeIn 1s ease-out}
@@ -65,122 +32,135 @@
         .splash-loader span:nth-child(2){animation-delay:.2s}
         .splash-loader span:nth-child(3){animation-delay:.4s}
         
-        /* LOGIN (Style clair moderne) */
-        #login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,#F1F3F5 0%,#F1F3F5 42%,var(--bg-dark) 42%);z-index:9000;display:none;flex-direction:column;transition:opacity .4s}
+        @keyframes splashFadeIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+        @keyframes loaderBounce{0%,80%,100%{transform:scale(.6);opacity:.3}40%{transform:scale(1);opacity:1}}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+        @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+        @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes glowPass{0%,100%{box-shadow: 0 0 5px rgba(0,200,83,0.3);} 50%{box-shadow: 0 0 15px rgba(0,200,83,0.7);}}
+
+        .fade-in-up{animation:fadeInUp .5s ease forwards}
+        .delay-1{animation-delay:.1s;opacity:0}.delay-2{animation-delay:.2s;opacity:0}.delay-3{animation-delay:.3s;opacity:0}.delay-4{animation-delay:.4s;opacity:0}.delay-5{animation-delay:.5s;opacity:0}
+        
+        #login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,var(--primary-yellow) 0%,var(--primary-yellow) 42%,var(--bg-dark) 42%);z-index:9000;display:none;flex-direction:column;transition:opacity .4s}
         #login-screen.active{display:flex}
         .login-header{flex:0 0 auto;padding-top:calc(30px + var(--safe-top));padding-bottom:20px;text-align:center}
-        .login-logo-img{width:130px;height:auto;object-fit:contain;filter:drop-shadow(0 4px 15px rgba(0,0,0,0.1))}
-        .login-form-container{flex:1;background:var(--bg-dark);border-radius:30px 30px 0 0;padding:35px 25px;padding-bottom:calc(30px + var(--safe-bottom));box-shadow: 0 -10px 30px rgba(0,0,0,0.03);}
+        .login-logo-img{width:130px;height:auto;object-fit:contain;filter:drop-shadow(0 4px 15px rgba(0,0,0,.25))}
+        .login-form-container{flex:1;background:var(--bg-dark);border-radius:30px 30px 0 0;padding:35px 25px;padding-bottom:calc(30px + var(--safe-bottom))}
         .login-form-title{font-size:13px;color:var(--text-gray);margin-bottom:8px;font-weight:500}
-        .login-input{width:100%;padding:16px 16px;background:var(--bg-input);border:1px solid rgba(0,0,0,0.05);border-radius:12px;color:var(--text-main);font-size:15px;font-family:'Inter',sans-serif;margin-bottom:20px;outline:none;transition:border-color .3s}
-        .login-input:focus{border-color:var(--primary-yellow);background:#FFF;}
-        .login-input::placeholder{color:var(--text-light-gray)}
-        .login-btn{width:100%;padding:16px;background:var(--primary-yellow);color:#000;border:none;border-radius:12px;font-size:16px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:10px;transition:all .3s;box-shadow: 0 4px 12px rgba(255,215,0,0.3);}
+        .login-input{width:100%;padding:14px 16px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:12px;color:var(--text-white);font-size:15px;font-family:'Inter',sans-serif;margin-bottom:20px;outline:none;transition:border-color .3s}
+        .login-input:focus{border-color:var(--primary-yellow)}
+        .login-input::placeholder{color:var(--text-gray)}
+        .login-btn{width:100%;padding:15px;background:var(--primary-yellow);color:#000;border:none;border-radius:12px;font-size:16px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:10px;transition:all .3s}
         .login-btn:active{transform:scale(.98);background:var(--dark-yellow)}
-        .login-options{display:flex;justify-content:space-between;align-items:center;margin-top:20px}
-        .forgot-password{color:var(--text-main);font-size:13px;text-decoration:none;font-weight:500}
-        .remember-me{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-gray)}
+        .login-options{display:flex;justify-content:space-between;align-items:center;margin-top:18px}
+        .forgot-password{color:var(--primary-yellow);font-size:13px;text-decoration:none;font-weight:500}
+        .remember-me{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-light-gray)}
         .toggle-switch{width:44px;height:24px;background:var(--bg-input);border-radius:12px;position:relative;cursor:pointer;transition:background .3s}
-        .toggle-switch.active{background:var(--green)}
-        .toggle-switch::after{content:'';width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .3s;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+        .toggle-switch.active{background:var(--primary-yellow)}
+        .toggle-switch::after{content:'';width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .3s;box-shadow:0 2px 4px rgba(0,0,0,.3)}
         .toggle-switch.active::after{transform:translateX(20px)}
         .login-error{color:var(--red);font-size:13px;text-align:center;margin-top:12px;display:none;animation:shake .5s ease}
         .login-error.show{display:block}
-        .api-badge-login{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:40px;padding:12px 16px;background:#F8F9FA;border:1px solid #E0E0E0;border-radius:12px}
-        .api-badge-login i{color:var(--text-light-gray);font-size:14px}
-        .api-badge-login span{font-size:11px;color:var(--text-gray);font-weight:500}
+        .api-badge-login{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:30px;padding:10px 16px;background:rgba(74,144,217,.1);border:1px solid rgba(74,144,217,.2);border-radius:10px}
+        .api-badge-login i{color:var(--blue);font-size:14px}
+        .api-badge-login span{font-size:11px;color:var(--text-light-gray);font-weight:500}
         .api-badge-login .api-status-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
         
-        /* TOAST */
-        .toast{position:fixed;top:calc(20px + var(--safe-top));left:50%;transform:translateX(-50%) translateY(-100px);background:var(--green);color:#fff;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:700;z-index:99999;transition:transform .4s;display:flex;align-items:center;gap:8px;box-shadow:0 10px 30px rgba(0,200,83,0.3);max-width:calc(100% - 40px)}
-        .toast.show{transform:translateX(-50%) translateY(0)}
-        .toast.error{background:var(--red);box-shadow:0 10px 30px rgba(255,61,61,0.3)}
-        
-        /* MAIN APP */
+        /* SURCHARGE : THEME BLANC POUR LE LOGIN UNIQUEMENT */
+        #login-screen { background: linear-gradient(180deg, var(--primary-yellow) 0%, var(--primary-yellow) 35%, #FFFFFF 35%) !important; }
+        #login-screen .login-form-container { background: #FFFFFF !important; box-shadow: 0 -10px 30px rgba(0,0,0,0.05); }
+        #login-screen .login-form-title { color: #6C757D !important; }
+        #login-screen .login-input { background: #F8F9FA !important; border: 1px solid #E0E0E0 !important; color: #1A1A1A !important; }
+        #login-screen .login-input:focus { border-color: var(--primary-yellow) !important; background: #FFFFFF !important; }
+        #login-screen .login-input::placeholder { color: #ADB5BD !important; }
+        #login-screen .forgot-password { color: #1A1A1A !important; font-weight: 700 !important; }
+        #login-screen .remember-me { color: #6C757D !important; }
+        #login-screen .api-badge-login { background: #F8F9FA !important; border: 1px solid #E0E0E0 !important; }
+        #login-screen .api-badge-login i { color: #ADB5BD !important; }
+        #login-screen .api-badge-login span { color: #6C757D !important; }
+        #togglePassword { color: #ADB5BD !important; }
+
+        /* APP MAIN (Sombre) */
         #app{display:none;height:100%;width:100%;flex-direction:column}
         #app.active{display:flex}
         .pages-container{flex:1;overflow:hidden;position:relative;padding-top:var(--safe-top)}
         .page{position:absolute;top:0;left:0;width:100%;height:100%;overflow-y:auto;overflow-x:hidden;opacity:0;visibility:hidden;transition:opacity .3s,transform .3s;transform:translateY(10px);-webkit-overflow-scrolling:touch;padding-top:var(--safe-top);padding-bottom:20px}
         .page.active{opacity:1;visibility:visible;transform:translateY(0)}
-        
-        /* BOTTOM NAV (Style clair) */
-        .bottom-nav{height:calc(65px + var(--safe-bottom));background:#FFFFFF;border-top:1px solid var(--border-color);display:flex;align-items:flex-start;justify-content:space-around;flex-shrink:0;padding-top:8px;padding-bottom:var(--safe-bottom);box-shadow: 0 -4px 15px rgba(0,0,0,0.03);}
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 12px;border-radius:12px;transition:all 0.2s}
-        .nav-item i{font-size:20px;color:var(--text-light-gray);transition:color 0.2s}
-        .nav-item span{font-size:10px;color:var(--text-light-gray);font-weight:600;text-align:center;line-height:1.2;transition:color 0.2s;font-family:'Montserrat',sans-serif;}
+        .bottom-nav{height:calc(65px + var(--safe-bottom));background:#111;border-top:1px solid var(--border-color);display:flex;align-items:flex-start;justify-content:space-around;flex-shrink:0;padding-top:8px;padding-bottom:var(--safe-bottom)}
+        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 12px;border-radius:12px;transition:all .3s}
+        .nav-item i{font-size:20px;color:var(--text-gray);transition:color .3s}
+        .nav-item span{font-size:10px;color:var(--text-gray);font-weight:500;text-align:center;line-height:1.2;transition:color .3s}
         .nav-item.active i{color:var(--primary-yellow)}
-        .nav-item.active span{color:var(--text-main)}
+        .nav-item.active span{color:var(--primary-yellow)}
         .nav-item.vip.active i{color:var(--red)}
         .nav-item.vip.active span{color:var(--red)}
         
-        /* LOGOS & AVATARS */
-        .logo-avatar{border-radius:50%;overflow:hidden;border:2px solid var(--primary-yellow);display:flex;align-items:center;justify-content:center;background:#FFFFFF;flex-shrink:0}
+        .logo-avatar{border-radius:50%;overflow:hidden;border:2px solid var(--primary-yellow);display:flex;align-items:center;justify-content:center;background:#000;flex-shrink:0}
         .logo-avatar img{width:75%;height:75%;object-fit:contain}
         .logo-avatar.small{width:44px;height:44px}
         .logo-avatar.medium{width:60px;height:60px}
         .logo-pack-icon{width:55px;height:55px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;padding:8px}
         .logo-pack-icon img{width:100%;height:100%;object-fit:contain}
-        .logo-pack-icon.yellow{background:linear-gradient(135deg,var(--primary-yellow),#FFEC80)}
-        .logo-pack-icon.red{background:linear-gradient(135deg,#FF3D3D,#FF8080)}
-        .logo-pack-icon.green{background:linear-gradient(135deg,#00C853,#80FFB7)}
-        .logo-pack-icon.blue{background:linear-gradient(135deg,#4A90D9,#A0CFFF)}
+        .logo-pack-icon.yellow{background:linear-gradient(135deg,var(--primary-yellow),var(--dark-yellow))}
+        .logo-pack-icon.red{background:linear-gradient(135deg,#FF3D3D,#CC0000)}
+        .logo-pack-icon.green{background:linear-gradient(135deg,#00C853,#009624)}
+        .logo-pack-icon.blue{background:linear-gradient(135deg,#4A90D9,#2E6AAD)}
         .logo-pack-detail{width:60px;height:60px;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;padding:10px}
         .logo-pack-detail img{width:100%;height:100%;object-fit:contain}
-        .logo-pack-detail.yellow{background:linear-gradient(135deg,var(--primary-yellow),#FFEC80)}
+        .logo-pack-detail.yellow{background:linear-gradient(135deg,var(--primary-yellow),var(--dark-yellow))}
+        .logo-pack-detail.red{background:linear-gradient(135deg,#FF3D3D,#CC0000)}
+        .logo-pack-detail.green{background:linear-gradient(135deg,#00C853,#009624)}
+        .logo-pack-detail.blue{background:linear-gradient(135deg,#4A90D9,#2E6AAD)}
         
-        /* HOME PAGE VISUALS */
-        #page-home { background-color: var(--bg-dark); position: relative; }
-        /* Petits éléments visuels décoratifs en fond */
-        #page-home::after { content:'\f1e3'; font-family:'Font Awesome 6 Free'; font-weight:900; position:absolute; bottom:15%; right:5%; color:rgba(255,215,0,0.03); font-size:10rem; transform:rotate(-15deg); z-index:-1;}
-        #page-home::before { content:'\f091'; font-family:'Font Awesome 6 Free'; font-weight:900; position:absolute; top:15%; left:5%; color:rgba(255,215,0,0.03); font-size:8rem; transform:rotate(15deg); z-index:-1;}
-
-        .home-header{padding:15px 20px;display:flex;align-items:center;justify-content:space-between; margin-bottom: 5px;}
+        .home-header{padding:15px 20px;display:flex;align-items:center;justify-content:space-between}
         .home-user{display:flex;align-items:center;gap:12px}
         .home-greeting{font-size:12px;color:var(--text-gray)}
-        .home-username{font-size:16px;font-weight:700;display:flex;align-items:center;gap:5px; color:var(--text-main)}
-        .home-username i{font-size:12px;color:var(--text-light-gray)}
-        .home-notif{width:40px;height:40px;background:#F1F3F5;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
-        .home-notif i{color:var(--text-main);font-size:18px}
+        .home-username{font-size:16px;font-weight:700;display:flex;align-items:center;gap:5px}
+        .home-username i{font-size:12px;color:var(--text-gray)}
+        .home-notif{width:40px;height:40px;background:var(--bg-card);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
+        .home-notif i{color:var(--text-white);font-size:18px}
         .home-notif .notif-dot{width:8px;height:8px;background:var(--red);border-radius:50%;position:absolute;top:10px;right:10px}
         
-        .search-bar{margin:5px 20px 20px;display:flex;align-items:center;background:#FFFFFF;border-radius:14px;padding:12px 16px;gap:10px;border:1px solid #E0E0E0; box-shadow: 0 4px 12px rgba(0,0,0,0.03);}
-        .search-bar i{color:var(--text-light-gray);font-size:16px}
-        .search-bar input{flex:1;background:none;border:none;color:var(--text-main);font-size:14px;outline:none;font-family:'Inter',sans-serif}
-        .search-bar input::placeholder{color:var(--text-light-gray)}
+        .search-bar{margin:5px 20px 15px;display:flex;align-items:center;background:var(--bg-card);border-radius:14px;padding:12px 16px;gap:10px;border:1px solid var(--border-color)}
+        .search-bar i{color:var(--text-gray);font-size:16px}
+        .search-bar input{flex:1;background:none;border:none;color:var(--text-white);font-size:14px;outline:none;font-family:'Inter',sans-serif}
+        .search-bar input::placeholder{color:var(--text-gray)}
         .search-bar .mic-btn{color:var(--primary-yellow);cursor:pointer}
         
-        .api-banner{margin:0 20px 20px;padding:12px 16px;background:#F8F9FA;border:1px solid var(--border-color);border-radius:12px;display:flex;align-items:center;gap:10px; box-shadow: 0 4px 12px rgba(0,0,0,0.02);}
-        .api-banner .api-icon{width:36px;height:36px;background:#FFFFFF;border-radius:8px;display:flex;align-items:center;justify-content:center; border:1px solid #E0E0E0;}
-        .api-banner .api-icon i{color:var(--text-light-gray);font-size:16px}
+        .api-banner{margin:0 20px 15px;padding:10px 16px;background:linear-gradient(135deg,rgba(74,144,217,.15),rgba(74,144,217,.05));border:1px solid rgba(74,144,217,.25);border-radius:12px;display:flex;align-items:center;gap:10px}
+        .api-banner .api-icon{width:32px;height:32px;background:rgba(74,144,217,.2);border-radius:8px;display:flex;align-items:center;justify-content:center}
+        .api-banner .api-icon i{color:var(--blue);font-size:16px}
         .api-banner .api-info{flex:1}
-        .api-banner .api-title{font-size:12px;font-weight:600;color:var(--text-main);display:flex;align-items:center;gap:6px}
+        .api-banner .api-title{font-size:12px;font-weight:600;color:var(--text-white);display:flex;align-items:center;gap:6px}
         .api-banner .api-title .live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
         .api-banner .api-desc{font-size:10px;color:var(--text-gray);margin-top:2px}
-        .betclic-badge{font-weight:800;font-size:11px;color:var(--red);background:rgba(255,61,61,0.08);padding:5px 10px;border-radius:6px;letter-spacing:.5px}
+        .betclic-badge{font-weight:800;font-size:12px;color:var(--red);background:rgba(255,61,61,.15);padding:5px 10px;border-radius:6px;letter-spacing:.5px}
         
         .section-header{display:flex;justify-content:space-between;align-items:center;padding:0 20px;margin-bottom:15px}
-        .section-title{font-size:17px;font-weight:700; color:var(--text-main)}
+        .section-title{font-size:17px;font-weight:700}
         .section-more{font-size:13px;color:var(--primary-yellow);font-weight:600;cursor:pointer}
-        
-        .packs-scroll{padding:0 20px 10px;display:flex;flex-direction:column;gap:14px;margin-bottom:15px}
-        .pack-card{background:#FFFFFF;border-radius:16px;padding:18px;display:flex;align-items:center;gap:15px;cursor:pointer;transition:all .3s;border:1px solid #E0E0E0; box-shadow: 0 5px 15px rgba(0,0,0,0.03);}
+        .packs-scroll{padding:0 20px;display:flex;flex-direction:column;gap:14px;margin-bottom:20px}
+        .pack-card{background:var(--bg-card);border-radius:16px;padding:18px;display:flex;align-items:center;gap:15px;cursor:pointer;transition:all .3s;border:1px solid var(--border-color)}
         .pack-card:active{transform:scale(.98);border-color:var(--primary-yellow)}
         .pack-card-info{flex:1}
-        .pack-card-name{font-size:15px;font-weight:700;margin-bottom:4px; color:var(--text-main)}
-        .pack-card-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--green);background:rgba(0,200,83,0.08);padding:4px 8px;border-radius:6px;margin-bottom:6px; font-weight:500;}
-        .pack-card-btn{display:inline-block;padding:7px 16px;border-radius:8px;font-size:12px;font-weight:700; font-family:'Montserrat',sans-serif; text-transform:uppercase; letter-spacing:0.5px;}
-        .pack-card .heart-icon{color:var(--text-light-gray);font-size:18px;cursor:pointer; transition:color 0.2s;}
+        .pack-card-name{font-size:15px;font-weight:700;margin-bottom:4px}
+        .pack-card-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--green);background:rgba(0,200,83,.1);padding:3px 8px;border-radius:6px;margin-bottom:6px}
+        .pack-card-tag i{font-size:8px}
+        .pack-card-btn{display:inline-block;padding:6px 16px;border-radius:8px;font-size:12px;font-weight:700}
+        .pack-card .heart-icon{color:var(--text-gray);font-size:18px;cursor:pointer}
         .pack-card .heart-icon.liked{color:var(--red)}
         
-        .combined-card{background:var(--combined-bg);border-radius:16px;overflow:hidden;border:1px solid var(--combined-border); color:var(--text-white); box-shadow: 0 10px 30px rgba(0,0,0,0.3);}
-        /* Reste du style combined-card inchangé car il doit rester sombre et premium */
-        .combined-header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--combined-border)}
+        .home-vip-section{margin:0 20px 20px}
+        .home-vip-section h3{font-size:17px;font-weight:700;margin-bottom:12px}
+        .combined-card{background:#1E1E2E;border-radius:16px;overflow:hidden;border:1px solid #2A2A3A}
+        .combined-header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2A2A3A}
         .combined-status{display:flex;align-items:center;gap:8px}
-        .status-badge{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase; font-family:'Montserrat',sans-serif;}
-        .status-badge.en-cours{background:rgba(0,200,83,0.15);color:var(--green)}
-        .status-badge.termine{background:rgba(255,215,0,0.15);color:var(--primary-yellow)}
-        .status-badge.perdu{background:rgba(255,61,61,0.15);color:var(--red)}
-        .combined-label{font-size:15px;font-weight:700; font-family:'Montserrat',sans-serif;}
+        .status-badge{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase}
+        .status-badge.en-cours{background:rgba(0,200,83,.15);color:var(--green)}
+        .status-badge.termine{background:rgba(0,200,83,.15);color:var(--green)}
+        .status-badge.perdu{background:rgba(255,61,61,.15);color:var(--red)}
+        .combined-label{font-size:15px;font-weight:700}
         .combined-count{display:flex;align-items:center;gap:4px;background:#2A2A3A;padding:4px 10px;border-radius:12px;font-size:12px;color:var(--text-light-gray)}
         .combined-count i{font-size:14px;color:var(--blue)}
         .combined-more{color:var(--text-gray);font-size:18px}
@@ -190,7 +170,7 @@
         .match-icon-circle{width:32px;height:32px;border-radius:50%;background:#2A2A3A;display:flex;align-items:center;justify-content:center}
         .match-icon-circle.highlight{background:var(--blue)}
         .combined-body{padding:0 16px}
-        .match-row{padding:14px 0;border-bottom:1px solid var(--combined-border)}
+        .match-row{padding:14px 0;border-bottom:1px solid #2A2A3A}
         .match-row:last-child{border-bottom:none}
         .match-row-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
         .match-type{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600}
@@ -201,64 +181,135 @@
         .match-teams{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-light-gray)}
         .match-teams i{font-size:12px;color:var(--text-gray)}
         .match-time{font-size:11px;color:var(--text-gray)}
-        .combined-footer{padding:14px 16px;border-top:1px solid var(--combined-border);position:relative}
+        .combined-footer{padding:14px 16px;border-top:1px solid #2A2A3A;position:relative}
         .combined-footer-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+        .combined-footer-row:last-child{margin-bottom:0}
         .combined-footer-label{font-size:13px;color:var(--text-gray)}
         .combined-footer-value{font-size:15px;font-weight:700}
         .combined-footer-value.gains{color:var(--green);font-size:18px}
         .watermark-img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80px;opacity:.07;pointer-events:none}
         .blurred-value{filter:blur(6px);user-select:none;-webkit-user-select:none;pointer-events:none}
-        .combined-cta-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:calc(100% - 32px);margin:0 16px 16px;padding:16px;background:linear-gradient(135deg,#0088cc,#006faa);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;text-decoration:none;text-align:center;box-shadow:0 6px 20px rgba(0,136,204,0.35);transition:all .3s;position:relative;overflow:hidden; text-transform:uppercase; letter-spacing:0.5px;}
+        .combined-cta-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:calc(100% - 32px);margin:0 16px 16px;padding:15px;background:linear-gradient(135deg,#0088cc,#006faa);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;text-decoration:none;text-align:center;box-shadow:0 6px 20px rgba(0,136,204,.35);transition:all .3s;position:relative;overflow:hidden}
+        .combined-cta-btn i.tg-icon{font-size:20px}
         .combined-cta-btn .cta-lock{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.7}
+        .combined-cta-btn:active{transform:scale(.97);box-shadow:0 3px 10px rgba(0,136,204,.3)}
+        .combined-complete-btn{display:block;width:calc(100% - 32px);margin:0 16px 16px;padding:13px;background:var(--text-white);color:#000;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;text-align:center}
         
-        .help-card{margin:5px 20px 20px;padding:16px;background:#FFFFFF;border-radius:14px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1px solid #E0E0E0; box-shadow: 0 5px 15px rgba(0,0,0,0.03);}
-        .help-card-icon{width:40px;height:40px;background:#F1F3F5;border-radius:50%;display:flex;align-items:center;justify-content:center}
-        .help-card-icon i{color:var(--text-main);font-size:16px}
+        .help-card{margin:15px 20px;padding:16px;background:var(--bg-card);border-radius:14px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1px solid var(--border-color)}
+        .help-card-icon{width:40px;height:40px;background:var(--bg-input);border-radius:50%;display:flex;align-items:center;justify-content:center}
+        .help-card-icon i{color:var(--text-gray);font-size:16px}
         .help-card-info{flex:1}
-        .help-card-title{font-size:14px;font-weight:600; color:var(--text-main)}
+        .help-card-title{font-size:14px;font-weight:600}
         .help-card-desc{font-size:12px;color:var(--text-gray)}
-        .help-card-arrow{color:var(--text-light-gray);font-size:16px}
-        
-        /* PAGES TITLES (Montserrat 800) */
-        .page-title-bar{padding:15px 20px 10px;display:flex;align-items:center;justify-content:space-between}
-        .page-title-bar h2{font-size:24px;font-weight:800; color:var(--text-main); font-family:'Montserrat',sans-serif;}
-        
-        /* VIP PAGE */
-        #page-vip { background-color: var(--bg-page-light); }
+        .help-card-arrow{color:var(--text-gray);font-size:16px}
+        .no-combined-message{text-align:center;padding:40px 20px;color:var(--text-gray);font-size:14px}
+        .no-combined-message i{font-size:40px;margin-bottom:15px;color:var(--border-color);display:block}
+        .page-title-bar{padding:15px 20px;display:flex;align-items:center;justify-content:space-between}
+        .page-title-bar h2{font-size:22px;font-weight:800}
+        .packs-page-list{padding:0 20px}
+        .pack-detail-card{background:var(--bg-card);border-radius:16px;padding:20px;margin-bottom:14px;border:1px solid var(--border-color)}
+        .pack-detail-top{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+        .pack-detail-name{font-size:17px;font-weight:700;margin-bottom:4px}
+        .pack-detail-desc{font-size:12px;color:var(--text-gray);line-height:1.4}
+        .pack-detail-features{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+        .pack-feature{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-light-gray);background:var(--bg-input);padding:5px 10px;border-radius:8px}
+        .pack-feature i{color:var(--green);font-size:10px}
+        .pack-detail-bottom{display:flex;align-items:center;justify-content:space-between}
+        .pack-price-container{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+        .price-old{font-size:14px;color:var(--red);text-decoration:line-through;font-weight:600}
+        .price-new{font-size:24px;font-weight:800}
+        .price-label{font-size:13px;color:var(--text-gray);font-weight:400}
+        .pack-subscribe-btn{padding:10px 24px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:all .3s}
+        .pack-subscribe-btn:active{transform:scale(.95)}
+        .contact-page{padding:0 20px}
+        .contact-card{background:var(--bg-card);border-radius:16px;padding:20px;margin-bottom:14px;border:1px solid var(--border-color);display:flex;align-items:center;gap:14px;transition:all .3s}
+        .contact-card:active{border-color:var(--primary-yellow)}
+        .contact-link{text-decoration:none;color:inherit;display:block}
+        .contact-card-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+        .contact-card-icon.telegram{background:rgba(0,136,204,.15)}
+        .contact-card-icon.telegram i{color:#0088cc;font-size:22px}
+        .contact-card-icon.instagram{background:rgba(225,48,108,.15)}
+        .contact-card-icon.instagram i{color:#E1306C;font-size:22px}
+        .contact-card-icon.email{background:rgba(255,215,0,.15)}
+        .contact-card-icon.email i{color:var(--primary-yellow);font-size:22px}
+        .contact-card-icon.twitter{background:rgba(29,161,242,.15)}
+        .contact-card-icon.twitter i{color:#1DA1F2;font-size:22px}
+        .contact-card-info h4{font-size:15px;font-weight:600}
+        .contact-card-info p{font-size:12px;color:var(--text-gray);margin-top:2px}
+        .contact-card-arrow{margin-left:auto;color:var(--text-gray)}
         .vip-header{padding:15px 20px;display:flex;align-items:center;justify-content:space-between}
-        .vip-header h2{font-size:22px;font-weight:800; color:var(--text-main); font-family:'Montserrat',sans-serif;}
+        .vip-header h2{font-size:20px;font-weight:800}
+        .vip-settings{width:36px;height:36px;background:var(--bg-card);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
+        .vip-settings i{color:var(--text-white);font-size:16px}
+        .vip-profile{padding:0 20px;display:flex;align-items:center;gap:14px;margin-bottom:20px}
+        .vip-user-info h3{font-size:18px;font-weight:700}
+        .vip-modify-btn{padding:5px 14px;background:transparent;border:1px solid var(--red);color:var(--red);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;margin-left:auto}
+        .vip-notice{margin:0 20px 15px;padding:14px 16px;background:var(--bg-card);border-radius:12px;font-size:13px;color:var(--text-light-gray);line-height:1.5;text-align:center}
         
-        /* LA BANDE VERTE / BARRE DE STATUT (Correction) */
-        .vip-combined-status{
-            padding:14px;
-            background:linear-gradient(90deg, #00C853, #b2ff59);
-            border-radius:12px;
-            text-align:center;
-            font-size:14px;
-            font-weight:700;
-            color:#000;
-            font-family:'Montserrat',sans-serif;
-            box-shadow: 0 4px 15px rgba(0,200,83,0.3);
-            animation: glowPass 3s infinite;
-            margin: 0 20px 20px;
-        }
-        .vip-combined-status .disponible{color:#FFFFFF;font-weight:900; text-transform:uppercase; letter-spacing:1px;}
+        .vip-combined-container{padding:0 20px;margin-bottom:15px}
+        #admin-page{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg-dark);z-index:8000;overflow-y:auto;-webkit-overflow-scrolling:touch}
+        #admin-page.active{display:block}
+        .admin-header{padding:calc(15px + var(--safe-top)) 20px 15px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg-dark);z-index:10}
+        .admin-header h2{font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px}
+        .admin-header-logo{width:30px;height:30px;object-fit:contain}
+        .admin-close{width:36px;height:36px;background:var(--bg-card);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;color:var(--text-white);font-size:16px}
+        .admin-section{padding:0 20px;margin-bottom:20px}
+        .admin-section-title{font-size:14px;font-weight:700;color:var(--primary-yellow);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:8px}
+        .admin-section-title i{font-size:14px}
+        .admin-card{background:var(--bg-card);border-radius:16px;padding:20px;border:1px solid var(--border-color);margin-bottom:12px}
+        .admin-field{margin-bottom:16px}
+        .admin-field:last-child{margin-bottom:0}
+        .admin-label{font-size:12px;color:var(--text-gray);margin-bottom:6px;font-weight:500;display:flex;align-items:center;gap:5px}
+        .admin-label i{font-size:11px;color:var(--primary-yellow)}
+        .admin-input{width:100%;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;color:var(--text-white);font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color .3s}
+        .admin-input:focus{border-color:var(--primary-yellow)}
+        .admin-input::placeholder{color:#555}
+        .admin-row{display:flex;gap:10px}
+        .admin-row .admin-field{flex:1}
+        .admin-select{width:100%;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;color:var(--text-white);font-size:14px;font-family:'Inter',sans-serif;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238A8A8A'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:24px}
+        .admin-select:focus{border-color:var(--primary-yellow)}
+        .match-entry{background:var(--bg-card);border-radius:14px;padding:16px;border:1px solid var(--border-color);margin-bottom:12px}
+        .match-entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+        .match-entry-number{font-size:13px;font-weight:700;color:var(--primary-yellow);display:flex;align-items:center;gap:6px}
+        .match-entry-number i{font-size:14px}
+        .match-entry-remove{width:28px;height:28px;background:rgba(255,61,61,.15);border:none;border-radius:8px;color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
+        .admin-add-match-btn{width:100%;padding:12px;background:transparent;border:2px dashed var(--border-color);border-radius:12px;color:var(--text-gray);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px}
+        .admin-summary{background:linear-gradient(135deg,#1E1E2E,#252540);border-radius:16px;padding:18px;border:1px solid #2A2A3A}
+        .admin-summary-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #2A2A3A}
+        .admin-summary-row:last-child{border-bottom:none}
+        .admin-summary-label{font-size:13px;color:var(--text-gray)}
+        .admin-summary-value{font-size:16px;font-weight:700}
+        .admin-summary-value.gains{color:var(--green);font-size:20px}
+        .admin-submit-btn{width:100%;padding:16px;background:var(--primary-yellow);color:#000;border:none;border-radius:14px;font-size:16px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:10px;margin-bottom:15px;display:flex;align-items:center;justify-content:center;gap:8px}
+        .admin-submit-btn:active{transform:scale(.98);background:var(--dark-yellow)}
+        .admin-delete-btn{width:100%;padding:14px;background:rgba(255,61,61,.1);color:var(--red);border:1px solid rgba(255,61,61,.3);border-radius:14px;font-size:14px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:calc(40px + var(--safe-bottom));display:flex;align-items:center;justify-content:center;gap:8px}
+        .admin-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+        .admin-stat-card{background:var(--bg-card);border-radius:14px;padding:16px;text-align:center;border:1px solid var(--border-color)}
+        .admin-stat-card i{font-size:24px;margin-bottom:8px}
+        .admin-stat-card .stat-value{font-size:22px;font-weight:800;display:block}
+        .admin-stat-card .stat-label{font-size:11px;color:var(--text-gray);margin-top:4px}
+        .admin-stat-card.yellow i{color:var(--primary-yellow)}
+        .admin-stat-card.green i{color:var(--green)}
+        .admin-stat-card.blue i{color:var(--blue)}
+        .admin-stat-card.red i{color:var(--red)}
+        .toast{position:fixed;top:calc(20px + var(--safe-top));left:50%;transform:translateX(-50%) translateY(-100px);background:var(--green);color:#000;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:700;z-index:99999;transition:transform .4s;display:flex;align-items:center;gap:8px;box-shadow:0 10px 30px rgba(0,200,83,.3);max-width:calc(100% - 40px)}
+        .toast.show{transform:translateX(-50%) translateY(0)}
+        .toast.error{background:var(--red);color:#fff;box-shadow:0 10px 30px rgba(255,61,61,.3)}
+        .toast i{font-size:18px}
+        ::-webkit-scrollbar{width:0}
+        @media(min-width:500px){body{display:flex;align-items:center;justify-content:center;background:#000}#splash-screen,#login-screen,#app,#admin-page{max-width:420px;max-height:900px;border-radius:30px;overflow:hidden}#admin-page.active{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);max-width:420px;max-height:900px;border-radius:30px}}
         
-        /* HISTORIQUE PUBLIC (Style clair) */
-        .history-card { background:#FFFFFF; border:1px solid #E0E0E0; border-radius:16px; padding:18px; margin-bottom:14px; display:flex; flex-direction:column; align-items:stretch; transition: all 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.03); }
-        .history-card.termine { border-color: rgba(0, 200, 83, 0.3); background: linear-gradient(145deg, rgba(0,200,83,0.03) 0%, #FFFFFF 100%); }
-        .history-card.perdu { border-color: rgba(255, 61, 61, 0.2); background: linear-gradient(145deg, rgba(255,61,61,0.02) 0%, #FFFFFF 100%); }
-        .history-card .date { font-size:11px; color:var(--text-gray); margin-bottom:4px; font-weight:500; text-transform:uppercase; letter-spacing:0.5px;}
-        .history-card .status { font-weight:800; font-size:15px; text-transform:uppercase; letter-spacing:0.5px; font-family:'Montserrat',sans-serif;}
-        .history-card .status.en-cours { color:var(--text-main); }
+        /* STYLE HISTORIQUE ET ADMIN (Thème sombre) */
+        .history-card { background:var(--bg-card); border:1px solid var(--border-color); border-radius:16px; padding:16px; margin-bottom:14px; display:flex; flex-direction:column; align-items:stretch; transition: all 0.3s; }
+        .history-card.termine { border-color: rgba(0, 200, 83, 0.4); background: linear-gradient(145deg, rgba(0,200,83,0.08) 0%, var(--bg-card) 100%); }
+        .history-card.perdu { border-color: rgba(255, 61, 61, 0.3); background: linear-gradient(145deg, rgba(255,61,61,0.05) 0%, var(--bg-card) 100%); }
+        .history-card .date { font-size:12px; color:var(--text-gray); margin-bottom:4px; font-weight:500; }
+        .history-card .status { font-weight:800; font-size:15px; text-transform:uppercase; letter-spacing:0.5px;}
         .history-card .status.termine { color:var(--green); }
         .history-card .status.perdu { color:var(--red); }
-        
-        /* ADMIN HISTORY ITEM */
-        .admin-history-item { background:var(--bg-input); padding:12px 16px; margin-bottom:10px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; border:1px solid rgba(0,0,0,0.03);}
-        .admin-history-item span { font-size:13px; color:var(--text-main); font-weight:500;}
-        .admin-history-item button { background:var(--primary-yellow); color:#000; border:none; padding:8px 14px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; font-family:'Montserrat',sans-serif; transition: background 0.2s;}
-        .admin-history-item button:active { background: var(--dark-yellow); }
+        .admin-history-item { background:#2A2A2A; padding:12px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; }
+        .admin-history-item span { font-size:13px; color:#fff; }
+        .admin-history-item button { background:var(--primary-yellow); color:#000; border:none; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer; }
     </style>
 </head>
 <body>
@@ -274,6 +325,7 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 </script>
 
+<!-- SPLASH -->
 <div id="splash-screen">
     <div class="splash-content">
         <img id="img-splash" alt="ScoreMaster" class="splash-logo-img">
@@ -281,6 +333,7 @@
     </div>
 </div>
 
+<!-- LOGIN -->
 <div id="login-screen">
     <div class="login-header">
         <img id="img-login" alt="ScoreMaster" class="login-logo-img">
@@ -295,7 +348,7 @@
         <div class="login-form-title">Mot de passe</div>
         <div style="position:relative;width:100%;">
             <input type="password" class="login-input" id="login-password" placeholder="••••••••••••" style="padding-right:45px;margin-bottom:20px;width:100%;">
-            <i class="fas fa-eye" id="togglePassword" style="position:absolute;right:15px;top:15px;color:var(--text-light-gray);cursor:pointer;font-size:16px;z-index:10;"></i>
+            <i class="fas fa-eye" id="togglePassword" style="position:absolute;right:15px;top:15px;color:var(--text-gray);cursor:pointer;font-size:16px;z-index:10;"></i>
         </div>
 
         <button class="login-btn" id="btn-action" onclick="handleAuth()">Connexion</button>
@@ -317,11 +370,14 @@
     </div>
 </div>
 
+<!-- TOAST -->
 <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toast-message"></span></div>
 
+<!-- APP -->
 <div id="app">
     <div class="pages-container">
 
+        <!-- HOME -->
         <div class="page active" id="page-home">
             <div class="home-header fade-in-up delay-1">
                 <div class="home-user">
@@ -357,8 +413,8 @@
                 <div class="pack-card fade-in-up delay-3" onclick="navigateTo('packs')">
                     <div class="logo-pack-icon green" id="pack-icon-1"></div>
                     <div class="pack-card-info">
-                        <div class="pack-card-name">SM Score Exact</div>
-                        <div class="pack-card-tag"><i class="fas fa-bolt"></i> Livraison instantanée</div>
+                        <div class="pack-card-name">SM S.E Journalier</div>
+                        <div class="pack-card-tag"><i class="fas fa-circle"></i> Livraison instantanée !</div>
                         <div class="pack-card-btn" style="background:var(--green);color:#fff;">Découvrir !</div>
                     </div>
                     <i class="far fa-heart heart-icon" onclick="event.stopPropagation();this.classList.toggle('liked');this.classList.toggle('far');this.classList.toggle('fas');"></i>
@@ -367,7 +423,7 @@
                     <div class="logo-pack-icon red" id="pack-icon-2"></div>
                     <div class="pack-card-info">
                         <div class="pack-card-name">SM VIP+ (à vie)</div>
-                        <div class="pack-card-tag"><i class="fas fa-crown"></i> Accès illimité</div>
+                        <div class="pack-card-tag"><i class="fas fa-circle"></i> Livraison instantanée !</div>
                         <div class="pack-card-btn" style="background:var(--red);color:#fff;">Découvrir !</div>
                     </div>
                     <i class="far fa-heart heart-icon" onclick="event.stopPropagation();this.classList.toggle('liked');this.classList.toggle('far');this.classList.toggle('fas');"></i>
@@ -379,6 +435,7 @@
                 <div id="home-combined-container"><div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div></div>
             </div>
             
+            <!-- HISTORIQUE PUBLIC -->
             <div class="section-header fade-in-up delay-5" style="margin-top: 10px;">
                 <span class="section-title">Nos derniers combinés</span>
             </div>
@@ -389,14 +446,15 @@
             <div class="help-card fade-in-up delay-5">
                 <div class="help-card-icon"><i class="fas fa-comment-dots"></i></div>
                 <div class="help-card-info">
-                    <div class="help-card-title">Besoin d'aide ?</div>
-                    <div class="help-card-desc">Contactez le support ScoreMaster</div>
+                    <div class="help-card-title">Un problème, ou besoin d'aide ?</div>
+                    <div class="help-card-desc">Pas de panique ! Contactez nous ici !</div>
                 </div>
                 <i class="fas fa-chevron-right help-card-arrow"></i>
             </div>
             <div style="height:20px;"></div>
         </div>
 
+        <!-- PACKS -->
         <div class="page" id="page-packs">
             <div class="page-title-bar"><h2>Nos Packs</h2></div>
             <div class="packs-page-list">
@@ -404,14 +462,21 @@
                     <div class="pack-detail-top">
                         <div class="logo-pack-detail green" id="pack-detail-1"></div>
                         <div>
-                            <div class="pack-detail-name">SM Score Exact</div>
-                            <div class="pack-detail-desc">Pronostics quotidiens en score exact.</div>
+                            <div class="pack-detail-name">SM Score Exact Journalier</div>
+                            <div class="pack-detail-desc">Recevez chaque jour notre meilleur pronostic en score exact avec une analyse détaillée.</div>
                         </div>
+                    </div>
+                    <div class="pack-detail-features">
+                        <div class="pack-feature"><i class="fas fa-check"></i> 1 score exact / jour</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Analyse détaillée</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Support 7j/7</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Notification push</div>
                     </div>
                     <div class="pack-detail-bottom">
                         <div class="pack-price-container">
                             <span class="price-old">89,99€</span>
                             <span class="price-new" style="color:var(--green);">50€</span>
+                            <span class="price-label">unique</span>
                         </div>
                         <button class="pack-subscribe-btn" style="background:var(--green);color:#fff;">S'abonner</button>
                     </div>
@@ -421,71 +486,124 @@
                         <div class="logo-pack-detail red" id="pack-detail-2"></div>
                         <div>
                             <div class="pack-detail-name">SM VIP+ (à vie)</div>
-                            <div class="pack-detail-desc">Accès illimité à vie.</div>
+                            <div class="pack-detail-desc">Accès illimité et à vie à tous nos pronostics, combinés exclusifs et espace membre VIP+.</div>
                         </div>
+                    </div>
+                    <div class="pack-detail-features">
+                        <div class="pack-feature"><i class="fas fa-check"></i> Accès à vie</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> 4 à 5 combinés S.E / semaine</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Espace membre VIP+</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Canal Telegram VIP</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Priorité support</div>
                     </div>
                     <div class="pack-detail-bottom">
                         <div class="pack-price-container">
                             <span class="price-old">179,99€</span>
                             <span class="price-new" style="color:var(--primary-yellow);">99,99€</span>
+                            <span class="price-label">unique</span>
                         </div>
                         <button class="pack-subscribe-btn" style="background:var(--red);color:#fff;">S'abonner</button>
                     </div>
                 </div>
+                <div class="pack-detail-card">
+                    <div class="pack-detail-top">
+                        <div class="logo-pack-detail blue" id="pack-detail-3"></div>
+                        <div>
+                            <div class="pack-detail-name">SM Combiné Hebdo</div>
+                            <div class="pack-detail-desc">Chaque semaine, recevez un combiné score exact soigneusement sélectionné avec des cotes élevées.</div>
+                        </div>
+                    </div>
+                    <div class="pack-detail-features">
+                        <div class="pack-feature"><i class="fas fa-check"></i> 1 combiné S.E / semaine</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Cotes élevées</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Suivi en direct</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Récap hebdomadaire</div>
+                    </div>
+                    <div class="pack-detail-bottom">
+                        <div class="pack-price-container">
+                            <span class="price-old">129,99€</span>
+                            <span class="price-new" style="color:var(--blue);">69,99€</span>
+                            <span class="price-label">unique</span>
+                        </div>
+                        <button class="pack-subscribe-btn" style="background:var(--blue);color:#fff;">S'abonner</button>
+                    </div>
+                </div>
             </div>
+            <div style="height:20px;"></div>
         </div>
 
+        <!-- CONTACT -->
         <div class="page" id="page-contact">
             <div class="page-title-bar"><h2>Contact</h2></div>
             <div class="contact-page">
                 <a href="https://t.me/scoremasteroff" target="_blank" rel="noopener" class="contact-link">
                     <div class="contact-card">
                         <div class="contact-card-icon telegram"><i class="fab fa-telegram-plane"></i></div>
-                        <div class="contact-card-info"><h4>Telegram</h4><p>Canal officiel</p></div>
+                        <div class="contact-card-info"><h4>Telegram</h4><p>Rejoignez notre canal officiel</p></div>
                         <i class="fas fa-chevron-right contact-card-arrow"></i>
                     </div>
                 </a>
+                <div class="contact-card">
+                    <div class="contact-card-icon instagram"><i class="fab fa-instagram"></i></div>
+                    <div class="contact-card-info"><h4>Instagram</h4><p>@scoremaster.fr</p></div>
+                    <i class="fas fa-chevron-right contact-card-arrow"></i>
+                </div>
+                <div class="contact-card">
+                    <div class="contact-card-icon twitter"><i class="fab fa-x-twitter"></i></div>
+                    <div class="contact-card-info"><h4>X (Twitter)</h4><p>@ScoreMasterFR</p></div>
+                    <i class="fas fa-chevron-right contact-card-arrow"></i>
+                </div>
+                <div class="contact-card">
+                    <div class="contact-card-icon email"><i class="fas fa-envelope"></i></div>
+                    <div class="contact-card-info"><h4>Email</h4><p>contact@scoremaster.fr</p></div>
+                    <i class="fas fa-chevron-right contact-card-arrow"></i>
+                </div>
             </div>
         </div>
 
+        <!-- VIP -->
         <div class="page" id="page-vip">
-            <div class="vip-header"><h2>Combiné à venir ! 🔥</h2></div>
-            
+            <div class="vip-header"><h2>Espace SM VIP+</h2></div>
             <div class="vip-profile">
                 <div class="logo-avatar medium" id="avatar-vip"></div>
                 <div class="vip-user-info"><h3>Admin SM</h3></div>
                 <button class="vip-modify-btn" onclick="promptAdminCode()" style="border-color:transparent;color:transparent;">Modifier</button>
             </div>
-            
-            <div class="vip-notice">Le prochain combiné apparaîtra ci-dessous dès qu'il sera disponible.</div>
-            
-            <div class="api-banner" style="margin:0 20px 20px;">
+            <div class="vip-notice">Le prochain combiné apparaîtra ci-dessous une fois disponible ! (activez vos notifs !)</div>
+            <div class="api-banner" style="margin:0 20px 15px;">
                 <div class="api-icon"><i class="fas fa-plug"></i></div>
                 <div class="api-info">
                     <div class="api-title">API sportifs connectés <div class="live-dot"></div></div>
-                    <div class="api-desc">Données en temps réel</div>
+                    <div class="api-desc">Données en temps réel • Cotes actualisées</div>
                 </div>
                 <span class="betclic-badge">LIVE</span>
             </div>
-            
             <div id="vip-combined-status-bar"></div>
-            
             <div class="vip-combined-container" id="vip-combined-container">
-                <div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div>
+                <div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.<br><span style="font-size:12px;color:var(--text-gray);">Revenez bientôt !</span></div>
             </div>
-            <div style="height:20px;"></div>
+            <div class="help-card" style="margin:0 20px 20px;">
+                <div class="help-card-icon"><i class="fas fa-comment-dots"></i></div>
+                <div class="help-card-info">
+                    <div class="help-card-title">Un problème, ou besoin d'aide ?</div>
+                    <div class="help-card-desc">Pas de panique ! Contactez nous ici !</div>
+                </div>
+                <i class="fas fa-chevron-right help-card-arrow"></i>
+            </div>
         </div>
 
     </div>
 
+    <!-- BOTTOM NAV -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="navigateTo('home')"><i class="fas fa-home"></i><span>Accueil</span></div>
-        <div class="nav-item" onclick="navigateTo('packs')"><i class="fas fa-clone"></i><span>Packs</span></div>
+        <div class="nav-item" onclick="navigateTo('packs')"><i class="fas fa-clone"></i><span>Nos packs</span></div>
         <div class="nav-item" onclick="navigateTo('contact')"><i class="fas fa-envelope"></i><span>Contact</span></div>
-        <div class="nav-item vip" onclick="navigateTo('vip')"><i class="fas fa-crown"></i><span>VIP+</span></div>
+        <div class="nav-item vip" onclick="navigateTo('vip')"><i class="fas fa-user-shield"></i><span>Espace<br>SM VIP+</span></div>
     </div>
 </div>
 
+<!-- ADMIN -->
 <div id="admin-page">
     <div class="admin-header">
         <h2><img id="img-admin" alt="SM" class="admin-header-logo"> Panel Admin</h2>
@@ -494,23 +612,26 @@
     
     <div class="admin-section">
         <div class="admin-stats">
-            <div class="admin-stat-card yellow"><i class="fas fa-futbol"></i><span class="stat-value" id="stat-total">0</span><div class="stat-label">Total</div></div>
+            <div class="admin-stat-card yellow"><i class="fas fa-futbol"></i><span class="stat-value" id="stat-total">0</span><div class="stat-label">Combinés publiés</div></div>
             <div class="admin-stat-card green"><i class="fas fa-check-circle"></i><span class="stat-value" id="stat-wins">0</span><div class="stat-label">Gagnés</div></div>
+            <div class="admin-stat-card blue"><i class="fas fa-clock"></i><span class="stat-value" id="stat-pending">0</span><div class="stat-label">En cours</div></div>
             <div class="admin-stat-card red"><i class="fas fa-times-circle"></i><span class="stat-value" id="stat-losses">0</span><div class="stat-label">Perdus</div></div>
         </div>
     </div>
     
-    <div class="admin-section">
-        <div class="admin-section-title"><i class="fas fa-history"></i> Gestion Historique</div>
+    <!-- HISTORIQUE ADMIN -->
+    <div class="admin-section" style="margin-top: 15px;">
+        <div class="admin-section-title"><i class="fas fa-history"></i> Modifier un ancien combiné</div>
         <div id="admin-history-list" style="max-height: 150px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color);">
+            <!-- Liste générée en JS -->
         </div>
-        <button onclick="resetEditor()" style="width:100%; padding:12px; margin-top:10px; background:transparent; border:1px dashed var(--text-gray); color:var(--text-gray); border-radius:8px; cursor:pointer; font-weight:600;">
-            <i class="fas fa-plus"></i> Créer Nouveau (Vider l'éditeur)
+        <button onclick="resetEditor()" style="width:100%; padding:10px; margin-top:10px; background:transparent; border:1px dashed var(--text-gray); color:var(--text-gray); border-radius:8px; cursor:pointer;">
+            <i class="fas fa-plus"></i> Créer un NOUVEAU combiné (Vider l'éditeur)
         </button>
     </div>
 
-    <div class="admin-section">
-        <div class="admin-section-title" id="editor-title"><i class="fas fa-edit"></i> Éditeur</div>
+    <div class="admin-section" style="margin-top: 20px;">
+        <div class="admin-section-title" id="editor-title"><i class="fas fa-edit"></i> Éditeur de combiné</div>
         <div class="admin-card">
             <div class="admin-row" style="margin-bottom: 16px;">
                 <div class="admin-field">
@@ -536,23 +657,44 @@
     </div>
 
     <div class="admin-section">
-        <div class="admin-section-title"><i class="fas fa-coins"></i> Mise</div>
+        <div class="admin-section-title"><i class="fas fa-coins"></i> Mise & Résumé</div>
         <div class="admin-card">
             <div class="admin-field">
-                <input type="number" class="admin-input" id="admin-mise" placeholder="Mise (€)" value="100" oninput="calculateGains()">
+                <div class="admin-label"><i class="fas fa-money-bill"></i> Mise (€)</div>
+                <input type="number" class="admin-input" id="admin-mise" placeholder="100.00" oninput="calculateGains()">
             </div>
+        </div>
+        <div class="admin-summary">
+            <div class="admin-summary-row"><span class="admin-summary-label">Matchs</span><span class="admin-summary-value" id="summary-matches">0</span></div>
+            <div class="admin-summary-row"><span class="admin-summary-label">Cote totale</span><span class="admin-summary-value" id="summary-odds">0.00</span></div>
+            <div class="admin-summary-row"><span class="admin-summary-label">Mise</span><span class="admin-summary-value" id="summary-mise">0,00 €</span></div>
+            <div class="admin-summary-row"><span class="admin-summary-label">Gains potentiels</span><span class="admin-summary-value gains" id="summary-gains">0,00 €</span></div>
         </div>
     </div>
 
     <div class="admin-section">
-        <button class="admin-submit-btn" id="btn-publish" onclick="publishCombined()"><span id="btn-publish-text"><i class="fas fa-paper-plane"></i> Publier</span></button>
+        <button class="admin-submit-btn" id="btn-publish" onclick="publishCombined()"><span id="btn-publish-text"><i class="fas fa-paper-plane"></i> Publier le combiné</span></button>
+    </div>
+</div>
+
+<!-- POPUP NON-VIP -->
+<div id="vip-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+    <div style="background:var(--bg-card);padding:40px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);">
+        <div style="position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:120px;height:120px;background:var(--red);border-radius:50%;filter:blur(40px);opacity:0.6;z-index:-1;"></div>
+        <div style="width:70px;height:70px;background:rgba(239,83,80,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 25px auto;">
+            <i class="fas fa-lock" style="font-size:35px;color:var(--red);"></i>
+        </div>
+        <h3 style="font-size:22px;font-weight:700;margin-bottom:12px;color:#fff;font-family:'Montserrat',sans-serif;">Accès Réservé</h3>
+        <p style="font-size:14px;color:var(--text-gray);margin-bottom:30px;line-height:1.6;font-family:'Montserrat',sans-serif;">Vous n'avez pas accès à l'espace SM VIP+ :( <br><br>Passez au niveau supérieur pour débloquer tous les scores exacts, les cotes exclusives et décupler vos gains !</p>
+        <button onclick="document.getElementById('vip-popup').style.display='none'; navigateTo('packs');" style="width:100%;padding:16px;background:linear-gradient(135deg,var(--red) 0%,#B71C1C 100%);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:12px;box-shadow:0 4px 15px rgba(239,83,80,0.3);border:1px solid rgba(255,255,255,0.1);">🔥 Découvrir les packs VIP+</button>
+        <button onclick="document.getElementById('vip-popup').style.display='none'" style="width:100%;padding:12px;background:transparent;color:var(--text-gray);border:none;font-size:13px;font-family:'Montserrat',sans-serif;cursor:pointer;font-weight:500;">Plus tard</button>
     </div>
 </div>
 
 <script>
     function setLogos() {
-        document.getElementById('img-splash').src = LOGO_DARK;
-        document.getElementById('img-login').src = LOGO_DARK; // Utilisé logo dark sur fond clair
+        document.getElementById('img-splash').src = LOGO_SPLASH;
+        document.getElementById('img-login').src = LOGO_DARK; /* Le logo sombre pour le fond clair du login */
         document.getElementById('img-admin').src = LOGO_DARK;
         document.getElementById('avatar-home').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
         document.getElementById('avatar-vip').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
@@ -560,6 +702,7 @@
         document.getElementById('pack-icon-2').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
         document.getElementById('pack-detail-1').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
         document.getElementById('pack-detail-2').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-detail-3').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
     }
 
     var allCombineds = [];
@@ -595,7 +738,7 @@
         document.getElementById('title-username').style.display = isSignUpMode ? 'block' : 'none';
         document.getElementById('login-username').style.display = isSignUpMode ? 'block' : 'none';
         document.getElementById('btn-action').textContent = isSignUpMode ? "S'inscrire" : 'Connexion';
-        document.getElementById('toggle-auth').textContent = isSignUpMode ? 'Déjà un compte ?' : 'Créer un compte';
+        document.getElementById('toggle-auth').textContent = isSignUpMode ? 'Déjà un compte ? Connexion' : 'Créer un compte';
     }
 
     document.getElementById('login-password').addEventListener('keypress', function (e) {
@@ -618,7 +761,7 @@
                 result = await supabaseClient.auth.signUp({ email, password });
                 if (result.error) throw result.error;
                 await supabaseClient.from('profiles').insert([{ id: result.data.user.id, email: email, username: username, is_vip: false, is_admin: false }]);
-                showToast('Compte créé !');
+                showToast('Compte créé ! Connectez-vous.');
                 toggleAuthMode();
                 return;
             } else {
@@ -653,7 +796,6 @@
 
     async function chargerDonnees() {
         try {
-            // Tri par date décroissante
             var publicRes = await supabaseClient.from('combineds_public').select('*').order('date', { ascending: false }).order('id', { ascending: false }).limit(10);
             var publicData = publicRes.data;
 
@@ -677,13 +819,10 @@
             }
             
             allCombineds = publicData;
-            
-            // Cherche le premier combiné "en-cours" pour l'afficher en haut.
-            // S'il n'y en a pas, prend le plus récent.
-            currentCombined = allCombineds.find(function(c) { return c.status === 'en-cours'; }) || allCombineds[0];
+            currentCombined = allCombineds[0]; 
 
         } catch (e) {
-            console.error('Erreur :', e);
+            console.error('Erreur lors du chargement des données :', e);
             allCombineds = [];
             currentCombined = null;
         }
@@ -691,6 +830,22 @@
         renderHistory();
     }
 
+    function navigateTo(page) {
+        if (page === 'vip' && !window.isUserVip) {
+            var popup = document.getElementById('vip-popup');
+            popup.style.display = 'flex';
+            setTimeout(function () { popup.style.opacity = '1'; }, 10);
+            return;
+        }
+        document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); });
+        document.getElementById('page-' + page).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(function (n) { n.classList.remove('active'); });
+        var target = Array.from(document.querySelectorAll('.nav-item')).find(function (item) {
+            return item.getAttribute('onclick') === "navigateTo('" + page + "')";
+        });
+        if (target) target.classList.add('active');
+    }
+    
     function resetEditor() {
         editingId = null;
         document.getElementById('admin-date').value = new Date().toISOString().split('T')[0];
@@ -699,8 +854,9 @@
         document.getElementById('admin-matches').innerHTML = '';
         matchEntryCount = 0;
         addMatchEntry(); addMatchEntry();
-        document.getElementById('btn-publish-text').innerHTML = '<i class="fas fa-paper-plane"></i> Publier';
-        document.getElementById('editor-title').innerHTML = '<i class="fas fa-plus-circle"></i> Créer Nouveau';
+        calculateGains();
+        document.getElementById('btn-publish-text').innerHTML = '<i class="fas fa-paper-plane"></i> Publier le combiné';
+        document.getElementById('editor-title').innerHTML = '<i class="fas fa-plus-circle"></i> Créer un combiné';
     }
 
     function loadIntoEditor(id) {
@@ -715,7 +871,7 @@
         if(c.matches) c.matches.forEach(function(m) { addMatchEntry(m); });
         calculateGains();
         document.getElementById('btn-publish-text').innerHTML = '<i class="fas fa-save"></i> Mettre à jour';
-        document.getElementById('editor-title').innerHTML = '<i class="fas fa-edit"></i> Modification';
+        document.getElementById('editor-title').innerHTML = '<i class="fas fa-edit"></i> Modification en cours...';
         document.getElementById('admin-date').scrollIntoView({behavior: 'smooth', block: 'center'});
     }
 
@@ -735,17 +891,18 @@
         var e = document.createElement('div');
         e.className = 'match-entry';
         e.innerHTML = '<div class="match-entry-header"><span class="match-entry-number"><i class="fas fa-futbol"></i> Match ' + matchEntryCount + '</span><button class="match-entry-remove" onclick="removeMatchEntry(this)"><i class="fas fa-trash"></i></button></div>'
-            + '<div class="admin-field"><input type="text" class="admin-input match-teams-input" placeholder="Équipes" value="' + (data ? data.teams : '') + '"></div>'
-            + '<div class="admin-row"><div class="admin-field"><input type="text" class="admin-input match-score-input" placeholder="Score (ex: 2 - 1)" value="' + (data ? data.score : '') + '"></div>'
-            + '<div class="admin-field"><input type="number" step="0.01" class="admin-input match-odds-input" placeholder="Cote" value="' + (data ? data.odds : '') + '" oninput="calculateGains()"></div></div>'
-            + '<div class="admin-field"><input type="text" class="admin-input match-time-input" placeholder="Horaire (ex: 21:00)" value="' + (data ? data.time : '') + '"></div>';
+            + '<div class="admin-field"><div class="admin-label"><i class="fas fa-users"></i> Équipes</div><input type="text" class="admin-input match-teams-input" placeholder="Équipe A - Équipe B" value="' + (data ? data.teams : '') + '" oninput="calculateGains()"></div>'
+            + '<div class="admin-row"><div class="admin-field"><div class="admin-label"><i class="fas fa-bullseye"></i> Score exact</div><input type="text" class="admin-input match-score-input" placeholder="2 - 1" value="' + (data ? data.score : '') + '" oninput="calculateGains()"></div>'
+            + '<div class="admin-field"><div class="admin-label"><i class="fas fa-chart-line"></i> Cote</div><input type="number" step="0.01" class="admin-input match-odds-input" placeholder="7.00" value="' + (data ? data.odds : '') + '" oninput="calculateGains()"></div></div>'
+            + '<div class="admin-field"><div class="admin-label"><i class="fas fa-clock"></i> Horaire</div><input type="text" class="admin-input match-time-input" placeholder="Dem. 21:00" value="' + (data ? data.time : '') + '"></div>';
         c.appendChild(e);
         calculateGains();
     }
 
     function removeMatchEntry(btn) {
         var e = btn.closest('.match-entry');
-        setTimeout(function () { e.remove(); renumberMatches(); calculateGains(); }, 100);
+        e.style.opacity = '0'; e.style.transform = 'scale(0.95)'; e.style.transition = 'all .3s';
+        setTimeout(function () { e.remove(); renumberMatches(); calculateGains(); }, 300);
     }
     
     function renumberMatches() {
@@ -766,17 +923,19 @@
         document.getElementById('summary-gains').textContent = fmtC(mise * tot);
     }
 
-    function fmtC(v) { return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(v); }
+    function fmtC(v) { return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(v); }
 
     async function publishCombined() {
         var entries = document.querySelectorAll('.match-entry');
         var date = document.getElementById('admin-date').value;
         var status = document.getElementById('admin-status').value;
-        var mise = parseFloat(document.getElementById('admin-mise').value) || 100;
+        var mise = parseFloat(document.getElementById('admin-mise').value) || 0;
 
-        if (!entries.length) { showToast('Ajoutez au moins un match', true); return; }
+        if (!entries.length) { showToast('Ajoutez au moins un match !', true); return; }
+        if (mise <= 0) { showToast('Saisissez une mise !', true); return; }
 
         var matches = [], publicMatches = [], valid = true;
+        var earliestTime = '23:59'; 
         var isFinished = (status === 'termine' || status === 'perdu');
         
         entries.forEach(function (e) {
@@ -788,112 +947,112 @@
             
             matches.push({ teams: t, score: s, odds: o, time: ti });
             publicMatches.push({ teams: t, time: ti, score: isFinished ? s : '?-?', odds: isFinished ? o : 0 });
+            
+            var extracted = ti.match(/\d{2}:\d{2}/);
+            if (extracted && extracted[0] < earliestTime) { earliestTime = extracted[0]; }
         });
 
-        if (!valid) { showToast('Remplissez tous les champs', true); return; }
+        if (!valid) { showToast('Remplissez tous les champs !', true); return; }
 
         var tot = 1;
         matches.forEach(function (m) { tot *= m.odds; });
         var gains = mise * tot;
 
         if (editingId) {
-            await supabaseClient.from('combineds_public').update({ date: date, status: status, nombre_matchs: matches.length, matches: publicMatches }).eq('id', editingId);
-            await supabaseClient.from('combineds_vip').update({ matches: matches, mise: mise, gains: gains, total_odds: tot }).eq('id', editingId);
-            showToast('Mis à jour !');
+            var updatePub = await supabaseClient.from('combineds_public').update({ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }).eq('id', editingId);
+            if (updatePub.error) { showToast('Erreur Update', true); return; }
+            
+            var updateVip = await supabaseClient.from('combineds_vip').update({ matches: matches, mise: mise, gains: gains, total_odds: tot }).eq('id', editingId);
+            if (updateVip.error) { showToast('Erreur Update VIP', true); return; }
+            
+            showToast('Combiné mis à jour !');
         } else {
-            var pubRes = await supabaseClient.from('combineds_public').insert([{ date: date, status: status, nombre_matchs: matches.length, matches: publicMatches }]).select().single();
-            await supabaseClient.from('combineds_vip').insert([{ id: pubRes.data.id, matches: matches, mise: mise, gains: gains, total_odds: tot }]);
+            var pubRes = await supabaseClient.from('combineds_public').insert([{ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }]).select().single();
+            if (pubRes.error) { showToast('Erreur Création', true); return; }
+    
+            var vipRes = await supabaseClient.from('combineds_vip').insert([{ id: pubRes.data.id, matches: matches, mise: mise, gains: gains, total_odds: tot }]);
+            if (vipRes.error) { showToast('Erreur Création VIP', true); return; }
+            
+            if (status === 'en-cours') appStats.pending++;
+            else if (status === 'termine') appStats.wins++;
+            else appStats.losses++;
             appStats.total++;
             saveState();
-            showToast('Publié !');
+            
+            showToast('Combiné créé avec succès !');
         }
+
         await chargerDonnees();
         closeAdmin();
     }
     
     async function deleteSpecificCombined(id) {
-        if(confirm("Confirmer la suppression définitive ?")) {
+        if(confirm("Es-tu sûr de vouloir supprimer ce combiné définitivement ?")) {
             await supabaseClient.from('combineds_vip').delete().eq('id', id);
             await supabaseClient.from('combineds_public').delete().eq('id', id);
-            showToast('Supprimé', true);
+            if (editingId == id) {
+                resetEditor();
+            }
+            showToast('Combiné supprimé !', true);
             await chargerDonnees();
             renderAdminHistory();
         }
     }
 
-    function deleteCombined() {
-        if (editingId) deleteSpecificCombined(editingId);
-        else resetEditor();
-    }
-
     function updateStats() {
-        var wins = allCombineds.filter(function(c) { return c.status === 'termine'; }).length;
-        var losses = allCombineds.filter(function(c) { return c.status === 'perdu'; }).length;
-        document.getElementById('stat-total').textContent = allCombineds.length;
-        document.getElementById('stat-wins').textContent = wins;
-        document.getElementById('stat-losses').textContent = losses;
+        document.getElementById('stat-total').textContent = appStats.total;
+        document.getElementById('stat-wins').textContent = appStats.wins;
+        document.getElementById('stat-pending').textContent = appStats.pending;
+        document.getElementById('stat-losses').textContent = appStats.losses;
     }
 
     function renderCombined() {
         var vc = document.getElementById('vip-combined-container');
         var hc = document.getElementById('home-combined-container');
         var sb = document.getElementById('vip-combined-status-bar');
-        
         if (!currentCombined) {
-            var empty = '<div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div>';
-            if(vc) vc.innerHTML = empty; 
-            if(hc) hc.innerHTML = empty; 
-            if(sb) sb.innerHTML = '';
+            var empty = '<div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné en cours.</div>';
+            vc.innerHTML = empty; hc.innerHTML = empty; sb.innerHTML = '';
             return;
         }
-        
-        var sc = currentCombined.status;
-        var slVip = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
-        var slHome = { 'en-cours': 'Combiné VIP', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
-        
+        var df = fmtD(currentCombined.date), sc = currentCombined.status;
+        var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
         var pw = '50%';
         if (sc === 'termine' || sc === 'perdu') pw = '100%';
+        vc.innerHTML = buildCC(currentCombined, sc, sl, pw, false);
+        hc.innerHTML = buildCC(currentCombined, sc, sl, pw, true);
         
-        if(vc) vc.innerHTML = buildCC(currentCombined, sc, slVip, pw, false);
-        if(hc) hc.innerHTML = buildCC(currentCombined, sc, slHome, pw, true);
-        
-        // REPOPULATE LA BANDE VERTE (VIP PAGE)
-        if(sb) {
-            if (sc === 'en-cours') {
-                sb.innerHTML = '<div class="vip-combined-status">Combiné <span class="disponible">DISPONIBLE !</span></div>';
-            } else {
-                sb.innerHTML = ''; // Cache si terminé ou perdu
-            }
+        if (sc === 'en-cours') {
+            sb.innerHTML = '<div style="background:var(--primary-yellow); color:#000; padding:14px; border-radius:12px; text-align:center; font-weight:800; font-size:15px; margin:0 20px 15px;">Combiné à venir ! 🔥</div>';
+        } else {
+            sb.innerHTML = '';
         }
     }
-
+    
     function renderHistory() {
-        var container = document.getElementById('history-container');
-        if (!container) return;
-        
-        // Filtre pour ne garder que les terminés ou perdus
-        var historyData = allCombineds.filter(function(c) { return c.status !== 'en-cours'; });
-        
-        if (historyData.length === 0) {
-            container.innerHTML = '<div class="no-combined-message"><i class="fas fa-history"></i>Aucun historique.</div>';
+        var hc = document.getElementById('history-container');
+        if (!hc) return;
+        if (allCombineds.length <= 1) {
+            hc.innerHTML = '<div class="no-combined-message"><i class="fas fa-history"></i>Aucun historique pour le moment.</div>';
             return;
         }
-        
         var html = '';
-        var sl = { 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
+        var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
         
-        historyData.forEach(function(c) {
+        for(var i = 1; i < allCombineds.length; i++) {
+            var c = allCombineds[i];
             var sc = c.status;
-            var statusColor = sc === 'termine' ? 'var(--green)' : 'var(--red)';
-            var odds = (window.isUserVip && c.total_odds) ? c.total_odds.toFixed(2) : (c.total_odds ? c.total_odds.toFixed(2) : '***');
+            var statusColor = sc === 'termine' ? 'var(--green)' : (sc === 'perdu' ? 'var(--red)' : 'var(--primary-yellow)');
+            var odds = c.total_odds ? c.total_odds.toFixed(2) : (window.isUserVip ? '?' : '***');
             
             var matchesHtml = '';
-            if(c.matches) {
-                matchesHtml = '<div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(0,0,0,0.05);">';
+            if(c.matches && c.matches.length > 0) {
+                matchesHtml = '<div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.1);">';
                 c.matches.forEach(function(m) {
+                    var scoreColor = sc === 'termine' ? 'var(--green)' : 'var(--text-white)';
                     matchesHtml += `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; align-items:center;">
-                        <span style="color:var(--text-gray); font-weight:500;">${m.teams}</span>
-                        <span style="font-weight:700; color:var(--text-main); background:#F1F3F5; padding:3px 8px; border-radius:6px;">${m.score}</span>
+                        <span style="color:var(--text-light-gray);"><i class="fas fa-futbol" style="font-size:10px; margin-right:6px; color:var(--text-gray);"></i> ${m.teams || 'Équipes'}</span>
+                        <span style="font-weight:700; color:${scoreColor}; background:rgba(255,255,255,0.05); padding:3px 8px; border-radius:6px;">${m.score}</span>
                     </div>`;
                 });
                 matchesHtml += '</div>';
@@ -902,27 +1061,30 @@
             html += `<div class="history-card ${sc}">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div>
-                        <div class="date">Combiné du ${fmtD(c.date)}</div>
-                        <div class="status ${sc}">${sl[sc]}</div>
+                        <div class="date"><i class="fas fa-calendar-alt"></i> Combiné du ${fmtD(c.date)}</div>
+                        <div class="status ${sc}" style="color:${statusColor};">${sl[sc] || sc}</div>
                     </div>
-                    <div style="text-align:right;">
-                        <div style="font-size:11px; color:var(--text-light-gray);">Cote</div>
-                        <div style="font-weight:800; font-size:16px; color:var(--text-main);">${odds}</div>
+                    <div style="text-align:right; background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:10px;">
+                        <div style="font-size:11px; color:var(--text-gray); margin-bottom:2px;">Cote</div>
+                        <div style="font-weight:800; font-size:16px; color:var(--text-white);">${odds}</div>
                     </div>
                 </div>
                 ${matchesHtml}
             </div>`;
-        });
-        container.innerHTML = html;
+        }
+        hc.innerHTML = html;
     }
-
+    
     function renderAdminHistory() {
         var container = document.getElementById('admin-history-list');
         if(!container) return;
+        if(allCombineds.length === 0) {
+            container.innerHTML = '<span style="color:var(--text-gray); font-size:12px;">Aucun historique</span>';
+            return;
+        }
         var html = '';
-        var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
-        
         allCombineds.forEach(function(c) {
+            var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
             html += `<div class="admin-history-item">
                 <span>Le ${fmtD(c.date)} - ${sl[c.status]}</span>
                 <div style="display:flex; gap:8px;">
@@ -936,40 +1098,54 @@
 
     function buildCC(c, sc, sl, pw, isHome) {
         var mH = '';
-        var matchesToDisplay = c.matches ? c.matches : Array(c.nombre_matchs || 2).fill({ teams: 'Match VIP', time: '--:--', odds: 0 });
-        var isObscured = isHome && sc === 'en-cours'; // N'obscurcit QUE sur l'accueil ET si en cours
+        var matchesToDisplay = c.matches ? c.matches : Array(c.nombre_matchs || 2).fill({ teams: 'Match en attente', time: '--:--', odds: 0 });
+        var isObscured = isHome && sc === 'en-cours';
 
         matchesToDisplay.forEach(function (m) {
-            var displayTeams = isObscured ? 'Match masqué 🔐' : (m.teams || 'Équipes');
-            var displayScore = isObscured ? '?-?' : (m.score || '?-?');
-            var displayOdds = isObscured ? '***' : (m.odds ? m.odds.toFixed(2) : '***');
-            
-            var teamsHtml = `<span style="${isObscured ? 'filter:blur(3px); opacity:0.7;' : ''}">${displayTeams}</span>`;
-            var scoreHtml = `<span class="match-score ${isObscured ? 'blurred-value' : ''}">${displayScore}</span>`;
-            var oddsHtml = `<div class="match-odds ${isObscured ? 'blurred-value' : ''}">${displayOdds}</div>`;
-            
-            mH += '<div class="match-row"><div class="match-row-top"><div class="match-type"><i class="fas fa-futbol"></i> Score exact ' + scoreHtml + '</div>' + oddsHtml + '</div><div class="match-row-bottom"><div class="match-teams"><i class="fas fa-shield-alt"></i> ' + teamsHtml + '</div><div class="match-time">' + (m.time || '') + '</div></div></div>';
+            var displayScore = isObscured ? '?-?' : m.score;
+            var displayOdds = isObscured ? '***' : m.odds.toFixed(2);
+            var scoreHtml = isObscured ? '<span class="match-score blurred-value">' + displayScore + '</span>' : '<span class="match-score">' + displayScore + '</span>';
+            var oddsHtml = isObscured ? '<div class="match-odds blurred-value">' + displayOdds + '</div>' : '<div class="match-odds">' + displayOdds + '</div>';
+            mH += '<div class="match-row"><div class="match-row-top"><div class="match-type"><i class="fas fa-futbol"></i> Score exact ' + scoreHtml + '</div>' + oddsHtml + '</div><div class="match-row-bottom"><div class="match-teams"><i class="fas fa-shield-alt"></i> ' + (m.teams || 'Équipes') + '</div><div class="match-time">' + (m.time || '') + '</div></div></div>';
         });
 
         var ic = '';
         matchesToDisplay.forEach(function (m, i) { ic += '<div class="match-icon-circle ' + (i === matchesToDisplay.length - 1 ? 'highlight' : '') + '"><i class="fas fa-futbol" style="font-size:14px;color:' + (i === matchesToDisplay.length - 1 ? 'white' : 'var(--text-gray)') + '"></i></div>'; });
 
-        var pc = sc === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : sc === 'termine' ? 'background:linear-gradient(90deg,var(--primary-yellow),var(--dark-yellow));' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
+        var pc = sc === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : sc === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
 
         var displayGains = isObscured ? '***,** €' : fmtC(c.gains || 0);
-        var displayTotalOdds = isObscured ? '***.**' : (c.total_odds || 0).toFixed(2);
-        var displayMise = isObscured ? '***,** €' : fmtC(c.mise || 100);
+        var displayTotalOdds = isObscured ? '***.**' : (c.total_odds || c.totalOdds || 0).toFixed(2);
+        var displayMise = isObscured ? '***,** €' : fmtC(c.mise || 0);
 
-        var ctaBtn = '';
-        if (isHome) {
-            if (sc === 'en-cours') {
-                ctaBtn = `<a href="${TELEGRAM_LINK}" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> Débloquer scores VIP <i class="fas fa-lock cta-lock"></i></a>`;
+        let isLocked = false;
+        let timeMessage = '';
+
+        if (sc === 'en-cours' && c.date && c.time) {
+            const matchDateTime = new Date(`${c.date}T${c.time}:00`);
+            const lockoutDateTime = new Date(matchDateTime.getTime() - 15 * 60000); 
+            const now = new Date();
+
+            if (now >= lockoutDateTime) {
+                isLocked = true; 
+                timeMessage = `<div style="color: var(--red); font-size: 13px; font-weight: 800; margin: 12px 16px; text-align: center; background: rgba(255,61,61,0.1); padding: 10px; border-radius: 8px;"><i class="fas fa-lock"></i> Les paris sont fermés (Match imminent)</div>`;
             } else {
-                ctaBtn = `<div style="text-align:center; padding:15px; color:var(--text-light-gray); font-size:12px; font-weight:600;"><i class="fas fa-check-circle"></i> Combiné terminé</div>`;
+                const hrs = String(lockoutDateTime.getHours()).padStart(2, '0');
+                const mins = String(lockoutDateTime.getMinutes()).padStart(2, '0');
+                timeMessage = `<div style="color: #fff; font-size: 13px; font-weight: 800; margin: 12px 16px; text-align: center; background: linear-gradient(90deg, #00C853, #009624); padding: 10px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,200,83,0.3); animation: glowPass 2s infinite;"><i class="fas fa-stopwatch"></i> Disponible jusqu'à ${hrs}:${mins}</div>`;
             }
         }
 
-        return '<div class="combined-card"><div class="combined-header"><div class="combined-status"><span class="status-badge ' + sc + '">' + sl[sc] + '</span><span class="combined-label">Combiné</span><div class="combined-count"><i class="fas fa-futbol"></i> ' + matchesToDisplay.length + '</div></div><i class="fas fa-ellipsis-h combined-more"></i></div><div class="combined-progress"><div class="combined-progress-fill" style="width:' + pw + ';' + pc + '"></div></div><div class="combined-matches-icons">' + ic + '</div><div class="combined-body">' + mH + '</div><div class="combined-footer"><div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span><span class="combined-footer-value '+(isObscured?'blurred-value':'')+'">' + displayTotalOdds + '</span></div><div class="combined-footer-row"><span class="combined-footer-label">Mise</span><span class="combined-footer-value '+(isObscured?'blurred-value':'')+'">' + displayMise + '</span></div><div class="combined-footer-row"><span class="combined-footer-label">Gains potentiels</span><span class="combined-footer-value gains '+(isObscured?'blurred-value':'')+'">' + displayGains + '</span></div></div>' + ctaBtn + '</div>';
+        var ctaBtn = '';
+        if (isHome) {
+            if (isLocked && sc === 'en-cours') {
+                ctaBtn = `<button class="combined-cta-btn" style="background: var(--bg-input); color: var(--text-gray); box-shadow: none; cursor: not-allowed;"><i class="fas fa-lock"></i> Trop tard, match commencé !</button>`;
+            } else if (sc === 'en-cours') {
+                ctaBtn = `<a href="${TELEGRAM_LINK}" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>`;
+            }
+        }
+
+        return '<div class="combined-card"><div class="combined-header"><div class="combined-status"><span class="status-badge ' + sc + '">' + sl[sc] + '</span><span class="combined-label">Combiné</span><div class="combined-count"><i class="fas fa-futbol"></i> ' + matchesToDisplay.length + '</div></div><i class="fas fa-ellipsis-h combined-more"></i></div><div class="combined-progress"><div class="combined-progress-fill" style="width:' + pw + ';' + pc + '"></div></div><div class="combined-matches-icons">' + ic + '<span style="font-size:12px;color:var(--text-gray);margin-left:4px;">' + matchesToDisplay.length + '</span></div><div class="combined-body">' + mH + '</div><div class="combined-footer"><div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span><span class="combined-footer-value '+(isObscured?'blurred-value':'')+'">' + displayTotalOdds + '</span></div><div class="combined-footer-row"><span class="combined-footer-label">Mise</span><span class="combined-footer-value">' + displayMise + '</span></div><div class="combined-footer-row"><span class="combined-footer-label">Gains potentiels</span><span class="combined-footer-value gains '+(isObscured?'blurred-value':'')+'">' + displayGains + '</span></div></div>' + ctaBtn + timeMessage + '</div>';
     }
 
     function fmtD(d) {
@@ -989,8 +1165,11 @@
     }
 
     function promptAdminCode() {
-        if (window.isAdmin === true) { openAdmin(); }
-        else { showToast("Accès refusé", true); }
+        if (window.isAdmin === true) {
+            openAdmin();
+        } else {
+            showToast("Accès refusé. Vous n'êtes pas administrateur.", true);
+        }
     }
 </script>
 
