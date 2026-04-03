@@ -308,7 +308,6 @@
 <body>
 
 <script>
-    // --- VOS LOGOS PERSONNELS ---
     const LOGO_DARK = "logo-dark.png";
     const LOGO_LIGHT = "logo-light.png";
     const LOGO_SPLASH = "logo-splash.png";
@@ -317,8 +316,8 @@
     const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
     
-    // --- NOUVELLE CLE API FOOTBALL-DATA.ORG ---
-    const FOOTBALL_DATA_API_KEY = '188ee1f452d24a99b59f174dcaee710d'; 
+    // --- CLE API-SPORTS.IO ---
+    const FOOTBALL_DATA_API_KEY = '2620f835eb08886d508258550a5254a4'; 
     
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -467,7 +466,7 @@
             <div style="height:20px;"></div>
         </div>
 
-        <!-- PACKS PAGE PERSONNALISÉE -->
+        <!-- PACKS PAGE -->
         <div class="page" id="page-packs">
             <div class="page-title-bar"><h2>Nos Packs</h2></div>
             <div class="packs-page-list">
@@ -636,6 +635,7 @@
 
     </div>
 
+    <!-- BOTTOM NAV -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="navigateTo('home')"><i class="fas fa-home"></i><span>Accueil</span></div>
         <div class="nav-item" onclick="navigateTo('packs')"><i class="fas fa-clone"></i><span>Nos packs</span></div>
@@ -691,7 +691,7 @@
     <div class="admin-section">
         <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs</div>
         
-        <!-- BOUTON API FOOTBALL-DATA.ORG -->
+        <!-- BOUTON API FOOTBALL -->
         <button id="btn-fetch-api" onclick="fetchMatchesFromAPI()" style="width:100%; padding:10px; background:rgba(74, 144, 217, 0.15); color:var(--blue); border:1px solid rgba(74, 144, 217, 0.3); border-radius:8px; cursor:pointer; margin-bottom:10px; font-weight:600;">
             <i class="fas fa-plug"></i> Charger les matchs du jour
         </button>
@@ -866,7 +866,7 @@
         setTimeout(function () { popup.style.display = 'none'; }, 300);
     }
 
-   // --- REQUÊTE API-SPORTS.IO (NOUVEAU MOTEUR) ---
+    // --- REQUÊTE API-SPORTS.IO (AVEC FILTRES AVANCÉS) ---
     async function fetchMatchesFromAPI() {
         var date = document.getElementById('admin-date').value;
         if (!date) {
@@ -874,14 +874,12 @@
             return;
         }
 
-        // Ta nouvelle clé issue de api-sports.io
         const API_KEY = '2620f835eb08886d508258550a5254a4';
 
         var btn = document.getElementById('btn-fetch-api');
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche des matchs...';
 
         try {
-            // Requête vers l'API-Football (v3)
             var response = await fetch(`https://v3.football.api-sports.io/fixtures?date=${date}`, {
                 method: 'GET',
                 headers: {
@@ -889,48 +887,82 @@
                 }
             });
             
-            if (!response.ok) {
-                throw new Error(`Erreur réseau: HTTP ${response.status}`);
-            }
-
+            if (!response.ok) throw new Error(`Erreur réseau: HTTP ${response.status}`);
             var data = await response.json();
+            if (data.errors && Object.keys(data.errors).length > 0) throw new Error(Object.values(data.errors)[0]); 
 
-            if (data.errors && Object.keys(data.errors).length > 0) {
-                throw new Error(Object.values(data.errors)[0]); 
-            }
-
-            // data.response contient tous les matchs
             if (data.response && data.response.length > 0) {
                 
-                // On trie les matchs par heure de début
-                var sortedMatches = data.response.sort((a, b) => new Date(a.fixture.date) - new Date(b.fixture.date));
+                // 1. Filtrer: Uniquement les matchs non commencés (NS ou TBD) ET à partir de 18h00
+                var filteredMatches = data.response.filter(function(match) {
+                    if (match.fixture.status.short !== 'NS' && match.fixture.status.short !== 'TBD') return false;
+                    
+                    var matchDate = new Date(match.fixture.date);
+                    if (matchDate.getHours() < 18) return false;
+                    
+                    return true;
+                });
 
-                var matchesHtml = '<div style="background:#2A2A2A; padding:10px; border-radius:8px; margin-bottom:10px; max-height:250px; overflow-y:auto;">';
+                // 2. Trier: Compétitions majeures en premier, puis par heure
+                // LDC(2), Europa(3), Conference(848), PL(39), L1(61), Liga(140), Serie A(135), Buli(78)
+                var topLeagues = [2, 3, 848, 39, 61, 140, 135, 78]; 
+                
+                filteredMatches.sort(function(a, b) {
+                    var aTop = topLeagues.includes(a.league.id) ? 1 : 0;
+                    var bTop = topLeagues.includes(b.league.id) ? 1 : 0;
+                    
+                    if (aTop !== bTop) return bTop - aTop; // Les top ligues remontent
+                    return new Date(a.fixture.date) - new Date(b.fixture.date); // Puis tri chrono
+                });
+
+                if (filteredMatches.length === 0) {
+                    showToast('Aucun match majeur à venir après 18h.', true);
+                    document.getElementById('api-matches-container').innerHTML = '';
+                    btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs du jour';
+                    return;
+                }
+
+                var matchesHtml = '<div style="background:#2A2A2A; padding:10px; border-radius:8px; margin-bottom:10px; max-height:300px; overflow-y:auto;">';
                 matchesHtml += `<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px; display:flex; justify-content:space-between;">
-                    <span>Matchs trouvés (${data.response.length})</span>
+                    <span>Matchs trouvés (${filteredMatches.length})</span>
                     <span style="color:var(--primary-yellow); cursor:pointer;" onclick="document.getElementById('api-matches-container').innerHTML=''">Fermer <i class="fas fa-times"></i></span>
                 </div>`;
 
-                // On affiche les 50 premiers matchs pour ne pas surcharger
-                var limit = Math.min(sortedMatches.length, 50); 
+                var limit = Math.min(filteredMatches.length, 50); 
+                
+                // Préparation pour le calcul Auj. / Dem.
+                var today = new Date();
+                var tomorrow = new Date();
+                tomorrow.setDate(today.getDate() + 1);
+
                 for(var i=0; i<limit; i++) {
-                    var match = sortedMatches[i];
+                    var match = filteredMatches[i];
+                    var matchDate = new Date(match.fixture.date);
                     
                     var teamHome = match.teams.home.name || 'Dom.';
                     var teamAway = match.teams.away.name || 'Ext.';
-                    var time = new Date(match.fixture.date).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+                    var timeStr = matchDate.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+                    
+                    // Prefix Auj. ou Dem.
+                    var prefix = "";
+                    if (matchDate.toDateString() === today.toDateString()) {
+                        prefix = "Auj. ";
+                    } else if (matchDate.toDateString() === tomorrow.toDateString()) {
+                        prefix = "Dem. ";
+                    }
+                    var displayTime = prefix + timeStr;
+
                     var leagueName = match.league.name || '';
                     var flagUrl = match.league.flag || match.league.logo || '';
-                    
                     var safeMatchString = `${teamHome} - ${teamAway}`.replace(/'/g, "\\'");
 
-                    matchesHtml += `<button onclick="addMatchFromAPI('${safeMatchString}', '${time}')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer; transition:border-color 0.2s;">
+                    matchesHtml += `<button type="button" onclick="addMatchFromAPI('${safeMatchString}', '${displayTime}')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer; transition:border-color 0.2s;">
                         <div style="font-size:10px; color:var(--text-gray); margin-bottom:4px; display:flex; align-items:center; gap:6px;">
                             ${flagUrl ? `<img src="${flagUrl}" style="width:14px; height:10px; object-fit:cover; border-radius:2px;">` : ''}
                             ${leagueName}
                         </div>
                         <div style="font-size:13px; font-weight:600; display:flex; align-items:center;">
-                            <span style="color:var(--primary-yellow); margin-right:8px; width:45px;"><i class="fas fa-clock" style="font-size:11px;"></i> ${time}</span> 
+                            <span style="color:var(--primary-yellow); margin-right:8px; width:75px;"><i class="fas fa-clock" style="font-size:11px;"></i> ${displayTime}</span> 
                             <span>${safeMatchString}</span>
                         </div>
                     </button>`;
@@ -938,7 +970,7 @@
                 matchesHtml += '</div>';
 
                 document.getElementById('api-matches-container').innerHTML = matchesHtml;
-                showToast('Matchs chargés !');
+                showToast('Matchs chargés avec succès !');
             } else {
                 showToast('Aucun match programmé à cette date.', true);
                 document.getElementById('api-matches-container').innerHTML = '';
@@ -950,8 +982,11 @@
 
         btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs du jour';
     }
+
+    // Auto-remplissage
     function addMatchFromAPI(teams, time) {
-        addMatchEntry({ teams: teams, score: '', odds: '', time: time });
+        // Pré-remplissage avec Score 2-1 et Cote 7.00
+        addMatchEntry({ teams: teams, score: '2 - 1', odds: '7.00', time: time });
         showToast('Match ajouté !');
     }
 
@@ -1143,7 +1178,7 @@
         var c = document.getElementById('admin-matches');
         var e = document.createElement('div');
         e.className = 'match-entry';
-        e.innerHTML = '<div class="match-entry-header"><span class="match-entry-number"><i class="fas fa-futbol"></i> Match ' + matchEntryCount + '</span><button class="match-entry-remove" onclick="removeMatchEntry(this)"><i class="fas fa-trash"></i></button></div>'
+        e.innerHTML = '<div class="match-entry-header"><span class="match-entry-number"><i class="fas fa-futbol"></i> Match ' + matchEntryCount + '</span><button type="button" class="match-entry-remove" onclick="removeMatchEntry(this)"><i class="fas fa-trash"></i></button></div>'
             + '<div class="admin-field"><div class="admin-label"><i class="fas fa-users"></i> Équipes</div><input type="text" class="admin-input match-teams-input" placeholder="Équipe A - Équipe B" value="' + (data ? data.teams : '') + '" oninput="calculateGains()"></div>'
             + '<div class="admin-row"><div class="admin-field"><div class="admin-label"><i class="fas fa-bullseye"></i> Score exact</div><input type="text" class="admin-input match-score-input" placeholder="2 - 1" value="' + (data ? data.score : '') + '" oninput="calculateGains()"></div>'
             + '<div class="admin-field"><div class="admin-label"><i class="fas fa-chart-line"></i> Cote</div><input type="number" step="0.01" class="admin-input match-odds-input" placeholder="7.00" value="' + (data ? data.odds : '') + '" oninput="calculateGains()"></div></div>'
