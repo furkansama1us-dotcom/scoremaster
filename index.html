@@ -40,7 +40,6 @@
         .fade-in-up{animation:fadeInUp .5s ease forwards}
         .delay-1{animation-delay:.1s;opacity:0}.delay-2{animation-delay:.2s;opacity:0}.delay-3{animation-delay:.3s;opacity:0}.delay-4{animation-delay:.4s;opacity:0}.delay-5{animation-delay:.5s;opacity:0}
         
-        /* LOGIN ECRAN : EXCLUSIVEMENT CLAIR ET JAUNE */
         #login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,var(--primary-yellow) 0%,var(--primary-yellow) 35%,#FFFFFF 35%);z-index:9000;display:none;flex-direction:column;transition:opacity .4s}
         #login-screen.active{display:flex}
         .login-header{flex:0 0 auto;padding-top:calc(30px + var(--safe-top));padding-bottom:20px;text-align:center}
@@ -187,12 +186,15 @@
         .help-card-arrow{color:var(--text-gray);font-size:16px}
         .no-combined-message{text-align:center;padding:40px 20px;color:var(--text-gray);font-size:14px}
         .no-combined-message i{font-size:40px;margin-bottom:15px;color:var(--border-color);display:block}
+        
         .page-title-bar{padding:15px 20px;display:flex;align-items:center;justify-content:space-between}
         .page-title-bar h2{font-size:22px;font-weight:800}
+        
+        /* STYLE PACKS AMÉLIORÉ */
         .packs-page-list{padding:0 20px}
         .pack-detail-card{background:var(--bg-card);border-radius:16px;padding:20px;margin-bottom:14px;border:1px solid var(--border-color)}
-        .pack-detail-top{display:flex;align-items:center;gap:14px;margin-bottom:14px}
-        .pack-detail-name{font-size:17px;font-weight:700;margin-bottom:4px}
+        .pack-detail-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
+        .pack-detail-name{font-size:17px;font-weight:800;margin-bottom:4px; color:#fff;}
         .pack-detail-desc{font-size:12px;color:var(--text-gray);line-height:1.4}
         .pack-detail-features{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
         .pack-feature{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-light-gray);background:var(--bg-input);padding:5px 10px;border-radius:8px}
@@ -200,10 +202,16 @@
         .pack-detail-bottom{display:flex;align-items:center;justify-content:space-between}
         .pack-price-container{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
         .price-old{font-size:14px;color:var(--red);text-decoration:line-through;font-weight:600}
-        .price-new{font-size:24px;font-weight:800}
+        .price-new{font-size:24px;font-weight:900}
         .price-label{font-size:13px;color:var(--text-gray);font-weight:400}
-        .pack-subscribe-btn{padding:10px 24px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:all .3s}
+        .pack-subscribe-btn{padding:10px 24px;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;transition:all .3s; box-shadow: 0 4px 10px rgba(0,0,0,0.2);}
         .pack-subscribe-btn:active{transform:scale(.95)}
+        
+        .pack-info-btn {background:var(--bg-input); width:32px; height:32px; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; border: 1px solid var(--border-color); flex-shrink:0; transition:all 0.2s;}
+        .pack-info-btn:active {background:var(--border-color);}
+        
+        .delivery-badge {color:#FF9800; font-weight:800; font-style:italic; font-size:12px; margin-top:8px; letter-spacing:0.5px;}
+        
         .contact-page{padding:0 20px}
         .contact-card{background:var(--bg-card);border-radius:16px;padding:20px;margin-bottom:14px;border:1px solid var(--border-color);display:flex;align-items:center;gap:14px;transition:all .3s}
         .contact-card:active{border-color:var(--primary-yellow)}
@@ -220,6 +228,7 @@
         .contact-card-info h4{font-size:15px;font-weight:600}
         .contact-card-info p{font-size:12px;color:var(--text-gray);margin-top:2px}
         .contact-card-arrow{margin-left:auto;color:var(--text-gray)}
+        
         .vip-header{padding:15px 20px;display:flex;align-items:center;justify-content:space-between}
         .vip-header h2{font-size:20px;font-weight:800}
         .vip-settings{width:36px;height:36px;background:var(--bg-card);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
@@ -282,7 +291,6 @@
         ::-webkit-scrollbar{width:0}
         @media(min-width:500px){body{display:flex;align-items:center;justify-content:center;background:#000}#splash-screen,#login-screen,#app,#admin-page{max-width:420px;max-height:900px;border-radius:30px;overflow:hidden}#admin-page.active{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);max-width:420px;max-height:900px;border-radius:30px}}
         
-        /* STYLE HISTORIQUE */
         .history-card { background:var(--bg-card); border:1px solid var(--border-color); border-radius:16px; padding:16px; margin-bottom:14px; display:flex; flex-direction:column; align-items:stretch; transition: all 0.3s; }
         .history-card.termine { border-color: rgba(0, 200, 83, 0.4); background: linear-gradient(145deg, rgba(0,200,83,0.08) 0%, var(--bg-card) 100%); }
         .history-card.perdu { border-color: rgba(255, 61, 61, 0.3); background: linear-gradient(145deg, rgba(255,61,61,0.05) 0%, var(--bg-card) 100%); }
@@ -316,7 +324,7 @@
     </div>
 </div>
 
-<!-- LOGIN CLAIR & JAUNE -->
+<!-- LOGIN -->
 <div id="login-screen">
     <div class="login-header">
         <img id="img-login" alt="ScoreMaster" class="login-logo-img">
@@ -353,7 +361,6 @@
     </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toast-message"></span></div>
 
 <!-- APP -->
@@ -400,7 +407,7 @@
                 <div class="pack-card fade-in-up delay-3" onclick="navigateTo('packs')">
                     <div class="logo-pack-icon green" id="pack-icon-1"></div>
                     <div class="pack-card-info">
-                        <div class="pack-card-name">SM S.E Journalier</div>
+                        <div class="pack-card-name">SM Score Exact Journalier</div>
                         <div class="pack-card-tag"><i class="fas fa-circle"></i> Livraison instantanée !</div>
                         <div class="pack-card-btn" style="background:var(--green);color:#fff;">Découvrir !</div>
                     </div>
@@ -422,7 +429,6 @@
                 <div id="home-combined-container"><div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div></div>
             </div>
             
-            <!-- HISTORIQUE PUBLIC -->
             <div class="section-header fade-in-up delay-5" style="margin-top: 10px;">
                 <span class="section-title">Nos derniers combinés</span>
             </div>
@@ -441,16 +447,23 @@
             <div style="height:20px;"></div>
         </div>
 
-        <!-- PACKS -->
+        <!-- PACKS PAGE PERSONNALISÉE -->
         <div class="page" id="page-packs">
             <div class="page-title-bar"><h2>Nos Packs</h2></div>
             <div class="packs-page-list">
+                <!-- PACK 1 -->
                 <div class="pack-detail-card">
                     <div class="pack-detail-top">
                         <div class="logo-pack-detail green" id="pack-detail-1"></div>
-                        <div>
-                            <div class="pack-detail-name">SM Score Exact Journalier</div>
+                        <div style="flex:1;">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                                <div class="pack-detail-name">SM Score Exact Journalier</div>
+                                <div class="pack-info-btn" onclick="showPackInfo('journalier')">
+                                    <i class="fas fa-info" style="color:var(--text-gray); font-size:14px;"></i>
+                                </div>
+                            </div>
                             <div class="pack-detail-desc">Recevez chaque jour notre meilleur pronostic en score exact avec une analyse détaillée.</div>
+                            <div class="delivery-badge"><i class="fas fa-bolt" style="margin-right:4px;"></i>Livraison instantanée</div>
                         </div>
                     </div>
                     <div class="pack-detail-features">
@@ -468,17 +481,25 @@
                         <button class="pack-subscribe-btn" style="background:var(--green);color:#fff;">S'abonner</button>
                     </div>
                 </div>
+
+                <!-- PACK 2 -->
                 <div class="pack-detail-card">
                     <div class="pack-detail-top">
                         <div class="logo-pack-detail red" id="pack-detail-2"></div>
-                        <div>
-                            <div class="pack-detail-name">SM VIP+ (à vie)</div>
+                        <div style="flex:1;">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                                <div class="pack-detail-name">SM VIP+ (à vie)</div>
+                                <div class="pack-info-btn" onclick="showPackInfo('vip')">
+                                    <i class="fas fa-info" style="color:var(--text-gray); font-size:14px;"></i>
+                                </div>
+                            </div>
                             <div class="pack-detail-desc">Accès illimité et à vie à tous nos pronostics, combinés exclusifs et espace membre VIP+.</div>
+                            <div class="delivery-badge"><i class="fas fa-bolt" style="margin-right:4px;"></i>Livraison instantanée</div>
                         </div>
                     </div>
                     <div class="pack-detail-features">
                         <div class="pack-feature"><i class="fas fa-check"></i> Accès à vie</div>
-                        <div class="pack-feature"><i class="fas fa-check"></i> 4 à 5 combinés S.E / semaine</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> 4 à 5 combinés S.E / sem.</div>
                         <div class="pack-feature"><i class="fas fa-check"></i> Espace membre VIP+</div>
                         <div class="pack-feature"><i class="fas fa-check"></i> Canal Telegram VIP</div>
                         <div class="pack-feature"><i class="fas fa-check"></i> Priorité support</div>
@@ -492,12 +513,20 @@
                         <button class="pack-subscribe-btn" style="background:var(--red);color:#fff;">S'abonner</button>
                     </div>
                 </div>
+
+                <!-- PACK 3 -->
                 <div class="pack-detail-card">
                     <div class="pack-detail-top">
                         <div class="logo-pack-detail blue" id="pack-detail-3"></div>
-                        <div>
-                            <div class="pack-detail-name">SM Combiné Hebdo</div>
+                        <div style="flex:1;">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                                <div class="pack-detail-name">SM Combiné Hebdo</div>
+                                <div class="pack-info-btn" onclick="showPackInfo('hebdo')">
+                                    <i class="fas fa-info" style="color:var(--text-gray); font-size:14px;"></i>
+                                </div>
+                            </div>
                             <div class="pack-detail-desc">Chaque semaine, recevez un combiné score exact soigneusement sélectionné avec des cotes élevées.</div>
+                            <div class="delivery-badge"><i class="fas fa-bolt" style="margin-right:4px;"></i>Livraison instantanée</div>
                         </div>
                     </div>
                     <div class="pack-detail-features">
@@ -612,12 +641,9 @@
         </div>
     </div>
     
-    <!-- HISTORIQUE ADMIN -->
     <div class="admin-section" style="margin-top: 15px;">
         <div class="admin-section-title"><i class="fas fa-history"></i> Modifier un ancien combiné</div>
-        <div id="admin-history-list" style="max-height: 150px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color);">
-            <!-- Liste générée en JS -->
-        </div>
+        <div id="admin-history-list" style="max-height: 150px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color);"></div>
         <button onclick="resetEditor()" style="width:100%; padding:10px; margin-top:10px; background:transparent; border:1px dashed var(--text-gray); color:var(--text-gray); border-radius:8px; cursor:pointer;">
             <i class="fas fa-plus"></i> Créer un NOUVEAU combiné (Vider l'éditeur)
         </button>
@@ -684,7 +710,7 @@
     </div>
 </div>
 
-<!-- NOUVEAU POPUP PARAMETRES PROFIL -->
+<!-- POPUP PARAMETRES PROFIL -->
 <div id="profile-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
     <div style="background:var(--bg-card);padding:30px;border-radius:24px;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -703,6 +729,20 @@
     </div>
 </div>
 
+<!-- POPUP INFO DES PACKS -->
+<div id="info-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+    <div style="background:var(--bg-card);padding:30px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);position:relative;">
+        <i class="fas fa-times" onclick="closeInfoPopup()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
+        <div id="info-popup-icon" style="width:65px;height:65px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px auto;font-size:26px;"></div>
+        <h3 id="info-popup-title" style="font-size:20px;font-weight:800;margin-bottom:12px;color:#fff;font-family:'Montserrat',sans-serif;">Titre</h3>
+        <p id="info-popup-desc" style="font-size:14px;color:var(--text-gray);margin-bottom:20px;line-height:1.6;">Description détaillée...</p>
+        <div id="info-popup-extra" style="background:var(--bg-input); padding:18px; border-radius:12px; font-size:13px; color:var(--text-white); font-weight:600; margin-bottom:20px; border:1px solid var(--border-color);">
+            <!-- Liste générée en JS -->
+        </div>
+        <button onclick="closeInfoPopup()" style="width:100%;padding:14px;background:var(--primary-yellow);color:#000;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;">D'accord !</button>
+    </div>
+</div>
+
 <script>
     const LOGO_DARK = "logo-dark.png";
     const LOGO_LIGHT = "logo-light.png";
@@ -712,12 +752,10 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
     
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-</script>
 
-<script>
     function setLogos() {
         document.getElementById('img-splash').src = LOGO_SPLASH;
-        document.getElementById('img-login').src = LOGO_DARK; // Logo noir pour l'écran clair
+        document.getElementById('img-login').src = LOGO_DARK;
         document.getElementById('img-admin').src = LOGO_DARK;
         document.getElementById('avatar-home').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
         document.getElementById('avatar-vip').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
@@ -732,7 +770,7 @@
     var currentCombined = null; 
     var editingId = null; 
     var matchEntryCount = 0, appStats = { total: 0, wins: 0, losses: 0, pending: 0 };
-    var userPlatform = 'BETCLIC'; // Plateforme par défaut
+    var userPlatform = 'BETCLIC'; 
 
     function loadState() {
         var s = localStorage.getItem('scoreMasterData');
@@ -747,7 +785,7 @@
         localStorage.setItem('scoreMasterData', JSON.stringify({ stats: appStats, platform: userPlatform })); 
     }
 
-    // Gestion du popup Profil
+    /* GESTION POPUP PROFIL & PLATEFORME */
     function openProfileSettings() {
         document.getElementById('user-platform-select').value = userPlatform;
         var popup = document.getElementById('profile-popup');
@@ -786,12 +824,53 @@
         });
     }
 
+    /* GESTION POPUP INFO DES PACKS (Copywriting persuasif) */
+    function showPackInfo(packType) {
+        var popup = document.getElementById('info-popup');
+        var title = document.getElementById('info-popup-title');
+        var desc = document.getElementById('info-popup-desc');
+        var icon = document.getElementById('info-popup-icon');
+        var extra = document.getElementById('info-popup-extra');
+
+        if (packType === 'journalier') {
+            icon.innerHTML = '<i class="fas fa-calendar-check"></i>';
+            icon.style.background = 'rgba(0, 200, 83, 0.15)';
+            icon.style.color = 'var(--green)';
+            title.textContent = 'SM Score Exact Journalier';
+            desc.textContent = 'Notre algorithme et nos experts analysent quotidiennement des dizaines de paramètres pour dénicher LE match le plus fiable de la journée.';
+            extra.innerHTML = '<ul style="text-align:left; padding-left:20px; color:var(--text-light-gray);"><li style="margin-bottom:8px">Cotes moyennes : <span style="color:var(--green)">7.00 à 15.00</span></li><li style="margin-bottom:8px">Publié chaque jour avant 12h</li><li>Parfait pour faire monter sa bankroll</li></ul>';
+        } else if (packType === 'vip') {
+            icon.innerHTML = '<i class="fas fa-crown"></i>';
+            icon.style.background = 'rgba(255, 61, 61, 0.15)';
+            icon.style.color = 'var(--red)';
+            title.textContent = 'SM VIP+ (à vie)';
+            desc.textContent = 'Le Saint Graal du parieur. Rejoignez l\'élite et accédez à l\'intégralité de nos services pour toujours, sans aucun abonnement caché.';
+            extra.innerHTML = '<ul style="text-align:left; padding-left:20px; color:var(--text-light-gray);"><li style="margin-bottom:8px">Accès direct aux <span style="color:var(--red)">fondateurs</span></li><li style="margin-bottom:8px">Canal Telegram Secret inclus</li><li>Une seule transaction, à vie</li></ul>';
+        } else if (packType === 'hebdo') {
+            icon.innerHTML = '<i class="fas fa-rocket"></i>';
+            icon.style.background = 'rgba(74, 144, 217, 0.15)';
+            icon.style.color = 'var(--blue)';
+            title.textContent = 'SM Combiné Hebdo';
+            desc.textContent = 'Le coup de maître du week-end. Un combiné explosif soigneusement étudié pour maximiser le potentiel de gains sur 2 ou 3 matchs.';
+            extra.innerHTML = '<ul style="text-align:left; padding-left:20px; color:var(--text-light-gray);"><li style="margin-bottom:8px">Cotes très élevées <span style="color:var(--blue)">(+ de 50.00)</span></li><li style="margin-bottom:8px">Le rendez-vous du vendredi</li><li>Pour les amateurs de sensations fortes</li></ul>';
+        }
+
+        popup.style.display = 'flex';
+        setTimeout(function () { popup.style.opacity = '1'; popup.firstElementChild.style.transform = 'scale(1)'; }, 10);
+    }
+
+    function closeInfoPopup() {
+        var popup = document.getElementById('info-popup');
+        popup.style.opacity = '0';
+        popup.firstElementChild.style.transform = 'scale(0.9)';
+        setTimeout(function () { popup.style.display = 'none'; }, 300);
+    }
+
     window.addEventListener('load', function () {
         setLogos();
         loadState();
-        updatePlatformDisplay(); // Appliquer le design au chargement
+        updatePlatformDisplay(); 
         
-        // Rôle par défaut si non connecté
         document.getElementById('role-home').innerHTML = '<span style="color:var(--blue);">Visiteur</span>';
         document.getElementById('role-vip').innerHTML = '<span style="color:var(--blue);">Visiteur</span>';
         
@@ -854,13 +933,11 @@
 
             var finalUsername = (profile && profile.username) ? profile.username : 'Utilisateur';
             
-            // Mise à jour des Noms
             var homeName = document.querySelector('.home-username-text');
             if (homeName) homeName.textContent = finalUsername;
             var vipName = document.querySelector('.vip-username-text');
             if (vipName) vipName.textContent = finalUsername;
             
-            // Mise à jour du Rôle !
             var roleText = window.isUserVip ? 'SM VIP+' : 'Visiteur';
             var roleColor = window.isUserVip ? 'var(--red)' : 'var(--blue)';
             var roleHtml = `<span style="color:${roleColor};">${roleText}</span>`;
@@ -1122,8 +1199,7 @@
         var hc = document.getElementById('history-container');
         if (!hc) return;
         
-        // Exclure le combiné affiché dans le bloc principal
-        var historyData = allCombineds.filter(function(c) { return c.id !== currentCombined.id; });
+        var historyData = allCombineds.filter(function(c) { return currentCombined ? c.id !== currentCombined.id : true; });
         
         if (historyData.length === 0) {
             hc.innerHTML = '<div class="no-combined-message"><i class="fas fa-history"></i>Aucun historique pour le moment.</div>';
