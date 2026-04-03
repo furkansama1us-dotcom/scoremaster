@@ -867,15 +867,11 @@
     }
 
     // --- REQUÊTE API SPORTMONKS (Gestion des erreurs avancée) ---
+    // --- REQUÊTE API SPORTMONKS (Avec Proxy CORS) ---
     async function fetchMatchesFromAPI() {
         var date = document.getElementById('admin-date').value;
         if (!date) {
             showToast('Choisis une date d\'abord', true);
-            return;
-        }
-        
-        if (SPORTMONKS_API_KEY === 'COLLE_TA_CLE_ICI' || !SPORTMONKS_API_KEY) {
-            showToast('Clé API manquante dans le code', true);
             return;
         }
 
@@ -883,21 +879,23 @@
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement...';
 
         try {
-            var url = `https://api.sportmonks.com/v3/football/fixtures/date/${date}?api_token=${SPORTMONKS_API_KEY}&include=participants`;
+            // 1. On prépare l'URL de Sportmonks (ta vraie demande)
+            var targetUrl = encodeURIComponent(`https://api.sportmonks.com/v3/football/fixtures/date/${date}?api_token=${SPORTMONKS_API_KEY}`);
             
-            var response = await fetch(url);
+            // 2. On passe par "AllOrigins", un proxy gratuit qui contourne le blocage CORS
+            var proxyUrl = `https://api.allorigins.win/get?url=${targetUrl}`;
             
-            // Si le serveur répond avec une erreur (401, 403, 404, etc.)
-            if (!response.ok) {
-                throw new Error(`Erreur réseau: HTTP ${response.status}`);
-            }
-            
-            var data = await response.json();
+            var response = await fetch(proxyUrl);
+            if (!response.ok) throw new Error("Le proxy ne répond pas");
 
-            // Gestion d'erreur spécifique de Sportmonks
-            if (data.message) {
-                throw new Error(data.message); 
-            }
+            // 3. On extrait les données du proxy
+            var proxyData = await response.json();
+            
+            // 4. AllOrigins met la réponse de Sportmonks dans une case "contents" sous forme de texte. On la transforme en vrai JSON.
+            var data = JSON.parse(proxyData.contents);
+
+            // Si Sportmonks renvoie une erreur (ex: limite atteinte, clé fausse)
+            if (data.message) throw new Error(data.message); 
 
             if (data.data && data.data.length > 0) {
                 var matchesHtml = '<div style="background:#2A2A2A; padding:10px; border-radius:8px; margin-bottom:10px; max-height:200px; overflow-y:auto;">';
@@ -906,10 +904,8 @@
                 var limit = Math.min(data.data.length, 30); 
                 for(var i=0; i<limit; i++) {
                     var match = data.data[i];
-                    
                     var teamNameStr = match.name || 'Équipe A - Équipe B';
                     var time = match.starting_at ? match.starting_at.substring(11, 16) : '00:00';
-
                     var safeMatchString = teamNameStr.replace(' vs ', ' - ').replace(/'/g, "\\'");
 
                     matchesHtml += `<button onclick="addMatchFromAPI('${safeMatchString}', '${time}')" style="display:block; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; font-size:13px; font-weight:600; cursor:pointer;">
@@ -924,13 +920,13 @@
                 showToast('Aucun match trouvé à cette date.', true);
             }
         } catch (error) {
-            console.error("Détail de l'erreur:", error);
+            console.error("Détail de l'erreur :", error);
             showToast('Erreur: ' + error.message, true);
         }
 
         btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs du jour';
     }
-
+    
     function addMatchFromAPI(teams, time) {
         addMatchEntry({ teams: teams, score: '', odds: '', time: time });
         showToast('Match ajouté !');
