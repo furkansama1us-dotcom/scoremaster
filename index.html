@@ -41,7 +41,7 @@
         .fade-in-up{animation:fadeInUp .5s ease forwards}
         .delay-1{animation-delay:.1s;opacity:0}.delay-2{animation-delay:.2s;opacity:0}.delay-3{animation-delay:.3s;opacity:0}.delay-4{animation-delay:.4s;opacity:0}.delay-5{animation-delay:.5s;opacity:0}
         
-/* LOGIN GOLD & NOIR - TOTAL DARK PREMIUM */
+        /* LOGIN GOLD & NOIR - TOTAL DARK PREMIUM */
         #login-screen {
             position:fixed; top:0; left:0; width:100%; height:100%;
             background:#000000; /* Fond global noir absolu */
@@ -707,6 +707,44 @@
             height: 200%;
             background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%);
             animation: btnShine 3s ease infinite;
+        }
+
+        /* Styles pour les boutons radio de contact dans le popup */
+        .contact-pref-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        
+        .contact-pref-label {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-gray);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .contact-pref-label input[type="radio"] {
+            display: none;
+        }
+        
+        .contact-pref-label.selected {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: var(--primary-yellow);
+            color: var(--primary-yellow);
+        }
+        
+        .contact-pref-label i {
+            font-size: 16px;
         }
     </style>
 </head>
@@ -1505,14 +1543,24 @@
         
         <input type="hidden" id="subscribe-pack-type">
         
-        <div class="admin-field" style="margin-bottom:12px; text-align:left;">
-            <div class="admin-label" style="color:var(--text-gray); margin-bottom:6px; font-family:'Inter',sans-serif;"><i class="fas fa-phone" style="color:var(--primary-yellow)"></i> Téléphone *</div>
-            <input type="tel" id="sub-phone" class="admin-input" placeholder="06 12 34 56 78" style="background:var(--bg-input); border:1px solid var(--border-color); color:#fff;" required>
+        <!-- Sélection du mode de contact -->
+        <div class="admin-field" style="margin-bottom:16px;">
+            <div class="admin-label" style="color:var(--text-gray); margin-bottom:8px; font-family:'Inter',sans-serif;"><i class="fas fa-headset" style="color:var(--primary-yellow)"></i> Mode de contact souhaité</div>
+            <div class="contact-pref-container">
+                <label class="contact-pref-label selected" id="label-whatsapp" onclick="selectContactPref('whatsapp')">
+                    <input type="radio" name="contact-pref" value="whatsapp" checked>
+                    <i class="fab fa-whatsapp"></i> WhatsApp
+                </label>
+                <label class="contact-pref-label" id="label-instagram" onclick="selectContactPref('instagram')">
+                    <input type="radio" name="contact-pref" value="instagram">
+                    <i class="fab fa-instagram"></i> Instagram
+                </label>
+            </div>
         </div>
-        
+
         <div class="admin-field" style="margin-bottom:12px; text-align:left;">
-            <div class="admin-label" style="color:var(--text-gray); margin-bottom:6px; font-family:'Inter',sans-serif;"><i class="fab fa-instagram" style="color:var(--primary-yellow)"></i> Instagram (Optionnel)</div>
-            <input type="text" id="sub-insta" class="admin-input" placeholder="@votre_pseudo" style="background:var(--bg-input); border:1px solid var(--border-color); color:#fff;">
+            <div class="admin-label" id="contact-input-label" style="color:var(--text-gray); margin-bottom:6px; font-family:'Inter',sans-serif;"><i class="fas fa-phone" style="color:var(--primary-yellow)"></i> Numéro WhatsApp *</div>
+            <input type="text" id="sub-contact-info" class="admin-input" placeholder="06 12 34 56 78" style="background:var(--bg-input); border:1px solid var(--border-color); color:#fff;" required>
         </div>
         
         <div class="admin-field" style="margin-bottom:20px; text-align:left;">
@@ -2037,7 +2085,7 @@
             if (extracted && extracted[0] < earliestTime) { earliestTime = extracted[0]; }
         });
 
-        if (!valid) { showToast('Remplissez tous les champs (Cote/Score manquants) !', true); return; }
+        if (!valid) { showToast('Remplissez tous champs (Cote/Score manquants) !', true); return; }
 
         var tot = 1;
         matches.forEach(function (m) { tot *= m.odds; });
@@ -2315,14 +2363,60 @@
         if (!el) return;
         
         setInterval(function () {
-            var base = 115 + Math.floor(Math.random() * 35);
-            el.textContent = base + ' personnes en ligne';
-        }, 8000);
+            // Logique de trafic basée sur l'heure de la journée (Paris - CEST)
+            var now = new Date();
+            var hour = now.getHours();
+            var minOnline, maxOnline;
+
+            if (hour >= 19 && hour <= 23) {
+                // Heure de pointe (19h - 00h) : monte jusqu'à ~500
+                minOnline = 380;
+                maxOnline = 500;
+            } else if (hour >= 0 && hour < 11) {
+                // Heure creuse (00h - 11h) : autour de 70
+                minOnline = 50;
+                maxOnline = 90;
+            } else if (hour >= 11 && hour < 17) {
+                // Journée (11h - 17h) : entre 150 et 250
+                minOnline = 150;
+                maxOnline = 250;
+            } else {
+                // Fin d'aprèm (17h - 19h) : entre 350 et 410
+                minOnline = 350;
+                maxOnline = 410;
+            }
+
+            var range = maxOnline - minOnline + 1;
+            var currentOnline = minOnline + Math.floor(Math.random() * range);
+            
+            el.textContent = currentOnline + ' personnes en ligne';
+        }, 8000); // Mise à jour toutes les 8 secondes
     }
 
     // ===== FAQ TOGGLE =====
     function toggleFaq(el) {
         el.classList.toggle('open');
+    }
+
+    // ===== GESTION DES PREFERENCES DE CONTACT =====
+    function selectContactPref(type) {
+        // Enlever la classe 'selected' de tous les labels
+        document.querySelectorAll('.contact-pref-label').forEach(function(label) {
+            label.classList.remove('selected');
+        });
+        
+        // Ajouter la classe 'selected' au label cliqué
+        document.getElementById('label-' + type).classList.add('selected');
+        
+        // Mettre à jour le label du champ de saisie
+        var inputLabel = document.getElementById('contact-input-label');
+        if (type === 'whatsapp') {
+            inputLabel.innerHTML = '<i class="fas fa-phone" style="color:var(--primary-yellow)"></i> Numéro WhatsApp *';
+            document.getElementById('sub-contact-info').placeholder = '06 12 34 56 78';
+        } else {
+            inputLabel.innerHTML = '<i class="fab fa-instagram" style="color:var(--primary-yellow)"></i> Pseudo Instagram *';
+            document.getElementById('sub-contact-info').placeholder = '@votre_pseudo';
+        }
     }
 
     // ===== GESTION DE LA SOUSCRIPTION =====
@@ -2338,10 +2432,12 @@
         document.getElementById('subscribe-pack-title').textContent = 'Souscrire au ' + packName;
         document.getElementById('subscribe-pack-type').value = packType;
         
-        // Réinitialiser les champs
-        document.getElementById('sub-phone').value = '';
-        document.getElementById('sub-insta').value = '';
+        // Réinitialiser les champs et préférences
+        document.getElementById('sub-contact-info').value = '';
         document.getElementById('sub-message').value = '';
+        
+        // Rétablir WhatsApp par défaut
+        document.getElementById('label-whatsapp').click(); 
         
         // Afficher le popup
         var popup = document.getElementById('subscribe-popup');
@@ -2357,20 +2453,26 @@
     }
 
     function submitSubscription() {
-        var phone = document.getElementById('sub-phone').value.trim();
-        var insta = document.getElementById('sub-insta').value.trim();
+        var contactInfo = document.getElementById('sub-contact-info').value.trim();
         var message = document.getElementById('sub-message').value.trim();
         var packType = document.getElementById('subscribe-pack-type').value;
         
-        // Vérification obligatoire du téléphone
-        if (!phone) {
-            showToast('Le numéro de téléphone est obligatoire.', true);
+        // Déterminer la méthode de contact sélectionnée
+        var contactMethod = document.querySelector('input[name="contact-pref"]:checked').value;
+        
+        // Vérification obligatoire de l'info de contact
+        if (!contactInfo) {
+            var msg = contactMethod === 'whatsapp' ? 'Le numéro de téléphone est obligatoire.' : 'Le pseudo Instagram est obligatoire.';
+            showToast(msg, true);
             return;
         }
 
         /* 
-         * ICI : Tu pourras ajouter plus tard la ligne Supabase pour envoyer la demande dans ta base de données.
-         * L'email et l'ID de l'utilisateur sont déjà connectés via la session Supabase active.
+         * ICI : Envoyer la demande à Supabase.
+         * contactMethod ('whatsapp' ou 'instagram')
+         * contactInfo (le numéro ou le pseudo)
+         * message (le message optionnel)
+         * packType (le pack choisi)
          */
         
         // Ferme le formulaire
