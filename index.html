@@ -11,8 +11,10 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0D0D0D">
     <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlNjb3JlTWFzdGVyIiwKICAic2hvcnRfbmFtZSI6ICJTTSB2aXAiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBEMEQwRCIsCiAgInRoZW1lX2NvbG9yIjogIiMwRDBEMEQiLAogICJvcmllbnRhdGlvbiI6ICJwb3J0cmFpdCIKfQ==">
+    
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
     <style>
         .combined-card { display: flex; flex-direction: column; }
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
@@ -216,6 +218,7 @@
         .vip-combined-status{padding:14px;background:var(--primary-yellow);border-radius:12px;text-align:center;font-size:14px;font-weight:700;color:#000}
         .vip-combined-status .disponible{color:var(--green);font-weight:800}
         .vip-combined-container{padding:0 20px;margin-bottom:15px}
+        
         #admin-page{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg-dark);z-index:8000;overflow-y:auto;-webkit-overflow-scrolling:touch}
         #admin-page.active{display:block}
         .admin-header{padding:calc(15px + var(--safe-top)) 20px 15px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg-dark);z-index:10}
@@ -267,6 +270,16 @@
         .toast i{font-size:18px}
         ::-webkit-scrollbar{width:0}
         @media(min-width:500px){body{display:flex;align-items:center;justify-content:center;background:#000}#splash-screen,#login-screen,#app,#admin-page{max-width:420px;max-height:900px;border-radius:30px;overflow:hidden}#admin-page.active{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);max-width:420px;max-height:900px;border-radius:30px}}
+        
+        /* Styles pour l'historique */
+        .history-card { background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
+        .history-card .date { font-size:12px; color:var(--text-gray); margin-bottom:4px; }
+        .history-card .status { font-weight:700; font-size:14px; }
+        .history-card .status.termine { color:var(--green); }
+        .history-card .status.perdu { color:var(--red); }
+        .admin-history-item { background:#2A2A2A; padding:12px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; }
+        .admin-history-item span { font-size:13px; color:#fff; }
+        .admin-history-item button { background:var(--primary-yellow); color:#000; border:none; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer; }
     </style>
 </head>
 <body>
@@ -279,7 +292,6 @@
     const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
     
-    // Initialisation directe et propre avec le lien CDN ajouté en haut
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 </script>
 
@@ -387,10 +399,20 @@
                     <i class="far fa-heart heart-icon" onclick="event.stopPropagation();this.classList.toggle('liked');this.classList.toggle('far');this.classList.toggle('fas');"></i>
                 </div>
             </div>
+            
             <div class="home-vip-section fade-in-up delay-5">
                 <h3>🔥 Dernier Combiné VIP+</h3>
                 <div id="home-combined-container"><div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div></div>
             </div>
+            
+            <!-- HISTORIQUE PUBLIC -->
+            <div class="section-header fade-in-up delay-5" style="margin-top: 10px;">
+                <span class="section-title">Nos derniers combinés</span>
+            </div>
+            <div id="history-container" class="fade-in-up delay-5" style="padding: 0 20px; margin-bottom: 20px;">
+                <div class="no-combined-message"><i class="fas fa-history"></i>Aucun historique.</div>
+            </div>
+
             <div class="help-card fade-in-up delay-5">
                 <div class="help-card-icon"><i class="fas fa-comment-dots"></i></div>
                 <div class="help-card-info">
@@ -566,31 +588,35 @@
             <div class="admin-stat-card red"><i class="fas fa-times-circle"></i><span class="stat-value" id="stat-losses">0</span><div class="stat-label">Perdus</div></div>
         </div>
     </div>
+    
+    <!-- HISTORIQUE ADMIN -->
+    <div class="admin-section" style="margin-top: 15px;">
+        <div class="admin-section-title"><i class="fas fa-history"></i> Modifier un ancien combiné</div>
+        <div id="admin-history-list" style="max-height: 150px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color);">
+            <!-- Liste générée en JS -->
+        </div>
+        <button onclick="resetEditor()" style="width:100%; padding:10px; margin-top:10px; background:transparent; border:1px dashed var(--text-gray); color:var(--text-gray); border-radius:8px; cursor:pointer;">
+            <i class="fas fa-plus"></i> Créer un NOUVEAU combiné (Vider l'éditeur)
+        </button>
+    </div>
 
-    <div class="admin-section">
-        <div class="admin-section-title"><i class="fas fa-plus-circle"></i> Créer un combiné</div>
+    <div class="admin-section" style="margin-top: 20px;">
+        <div class="admin-section-title" id="editor-title"><i class="fas fa-edit"></i> Éditeur de combiné</div>
         <div class="admin-card">
-            <!-- Ligne 1 : Date et Heure -->
             <div class="admin-row" style="margin-bottom: 16px;">
                 <div class="admin-field">
                     <div class="admin-label"><i class="fas fa-calendar"></i> Date</div>
                     <input type="date" class="admin-input" id="admin-date">
                 </div>
+                <div class="admin-field">
+                    <div class="admin-label"><i class="fas fa-flag"></i> Statut</div>
+                    <select class="admin-select" id="admin-status">
+                        <option value="en-cours">En cours</option>
+                        <option value="termine">Terminé ✅</option>
+                        <option value="perdu">Perdu ❌</option>
+                    </select>
+                </div>
             </div>
-            
-            <!-- Ligne 2 : Statut -->
-            <div class="admin-field">
-                <div class="admin-label"><i class="fas fa-flag"></i> Statut</div>
-                <select class="admin-select" id="admin-status">
-                    <option value="en-cours">En cours</option>
-                    <option value="termine">Terminé ✅</option>
-                    <option value="perdu">Perdu ❌</option>
-                </select>
-            </div>
-            
-            <button onclick="updateDateOnly()" style="width:100%;padding:12px;background:transparent;border:1px solid var(--primary-yellow);color:var(--primary-yellow);border-radius:10px;font-size:13px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;">
-                <i class="fas fa-calendar-check"></i> Modifier date/statut
-            </button>
         </div>
     </div>
 
@@ -617,8 +643,8 @@
     </div>
 
     <div class="admin-section">
-        <button class="admin-submit-btn" onclick="publishCombined()"><i class="fas fa-paper-plane"></i> Publier le combiné</button>
-        <button class="admin-delete-btn" onclick="deleteCombined()"><i class="fas fa-trash-alt"></i> Supprimer le combiné</button>
+        <button class="admin-submit-btn" id="btn-publish" onclick="publishCombined()"><span id="btn-publish-text"><i class="fas fa-paper-plane"></i> Publier le combiné</span></button>
+        <button class="admin-delete-btn" onclick="deleteCombined()"><i class="fas fa-trash-alt"></i> Supprimer le combiné ouvert</button>
     </div>
 </div>
 
@@ -650,36 +676,33 @@
         document.getElementById('pack-detail-3').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
     }
 
-    var currentCombined = null, matchEntryCount = 0, appStats = { total: 0, wins: 0, losses: 0, pending: 0 };
+    var allCombineds = [];
+    var currentCombined = null; 
+    var editingId = null; // IMPORTANT : Pour savoir si on modifie ou si on crée
+    var matchEntryCount = 0, appStats = { total: 0, wins: 0, losses: 0, pending: 0 };
 
     function loadState() {
         var s = localStorage.getItem('scoreMasterData');
-        if (s) { var d = JSON.parse(s); currentCombined = d.combined || null; appStats = d.stats || { total: 0, wins: 0, losses: 0, pending: 0 }; }
+        if (s) { var d = JSON.parse(s); appStats = d.stats || { total: 0, wins: 0, losses: 0, pending: 0 }; }
     }
-    function saveState() { localStorage.setItem('scoreMasterData', JSON.stringify({ combined: currentCombined, stats: appStats })); }
+    function saveState() { localStorage.setItem('scoreMasterData', JSON.stringify({ stats: appStats })); }
 
     window.addEventListener('load', function () {
         setLogos();
         loadState();
-        document.getElementById('admin-date').value = new Date().toISOString().split('T')[0];
-        addMatchEntry();
-        addMatchEntry();
         setTimeout(function () {
             document.getElementById('splash-screen').classList.add('hidden');
             setTimeout(function () { document.getElementById('login-screen').classList.add('active'); }, 300);
         }, 2500);
     });
 
-    // Toggle password visibility
     document.getElementById('togglePassword').addEventListener('click', function () {
         var pwd = document.getElementById('login-password');
-        var isPassword = pwd.getAttribute('type') === 'password';
-        pwd.setAttribute('type', isPassword ? 'text' : 'password');
+        pwd.setAttribute('type', pwd.getAttribute('type') === 'password' ? 'text' : 'password');
         this.classList.toggle('fa-eye');
         this.classList.toggle('fa-eye-slash');
     });
 
-    // Toggle login / signup mode
     var isSignUpMode = false;
     function toggleAuthMode() {
         isSignUpMode = !isSignUpMode;
@@ -689,12 +712,10 @@
         document.getElementById('toggle-auth').textContent = isSignUpMode ? 'Déjà un compte ? Connexion' : 'Créer un compte';
     }
 
-    // Submit on Enter key
     document.getElementById('login-password').addEventListener('keypress', function (e) {
         if (e.key === 'Enter') handleAuth();
     });
 
-    // Auth handler
     async function handleAuth() {
         var email = document.getElementById('login-email').value;
         var password = document.getElementById('login-password').value;
@@ -746,32 +767,39 @@
 
     async function chargerDonnees() {
         try {
-            var publicRes = await supabaseClient.from('combineds_public').select('*').order('id', { ascending: false }).limit(1).single();
+            // NOUVEAU : On récupère les 10 derniers combinés !
+            var publicRes = await supabaseClient.from('combineds_public').select('*').order('id', { ascending: false }).limit(10);
             var publicData = publicRes.data;
-            var publicErr = publicRes.error;
 
-            if (publicErr || !publicData) {
+            if (publicRes.error || !publicData || publicData.length === 0) {
+                allCombineds = [];
                 currentCombined = null;
                 renderCombined();
+                renderHistory();
                 return;
             }
 
             if (window.isUserVip) {
-                var vipRes = await supabaseClient.from('combineds_vip').select('*').eq('id', publicData.id).single();
+                var ids = publicData.map(function(c) { return c.id; });
+                var vipRes = await supabaseClient.from('combineds_vip').select('*').in('id', ids);
                 if (vipRes.data && !vipRes.error) {
-                    currentCombined = Object.assign({}, publicData, vipRes.data);
-                } else {
-                    console.warn('Accès VIP refusé (RLS)');
-                    currentCombined = publicData;
+                    publicData = publicData.map(function(pub) {
+                        var vipMatch = vipRes.data.find(function(v) { return v.id === pub.id; });
+                        return vipMatch ? Object.assign({}, pub, vipMatch) : pub;
+                    });
                 }
-            } else {
-                currentCombined = publicData;
             }
+            
+            allCombineds = publicData;
+            currentCombined = allCombineds[0]; // Le plus récent en 1er
+
         } catch (e) {
             console.error('Erreur lors du chargement des données :', e);
+            allCombineds = [];
             currentCombined = null;
         }
         renderCombined();
+        renderHistory();
     }
 
     function navigateTo(page) {
@@ -790,18 +818,40 @@
         if (target) target.classList.add('active');
     }
     
+    function resetEditor() {
+        editingId = null;
+        document.getElementById('admin-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('admin-status').value = 'en-cours';
+        document.getElementById('admin-mise').value = '100';
+        document.getElementById('admin-matches').innerHTML = '';
+        matchEntryCount = 0;
+        addMatchEntry(); addMatchEntry();
+        calculateGains();
+        document.getElementById('btn-publish-text').innerHTML = '<i class="fas fa-paper-plane"></i> Publier le combiné';
+        document.getElementById('editor-title').innerHTML = '<i class="fas fa-plus-circle"></i> Créer un combiné';
+    }
+
+    function loadIntoEditor(id) {
+        var c = allCombineds.find(function(x) { return x.id === id; });
+        if(!c) return;
+        editingId = c.id; // On mémorise qu'on est en train de modifier cet ID !
+        document.getElementById('admin-date').value = c.date || '';
+        document.getElementById('admin-status').value = c.status || 'en-cours';
+        document.getElementById('admin-mise').value = c.mise || '';
+        document.getElementById('admin-matches').innerHTML = '';
+        matchEntryCount = 0;
+        if(c.matches) c.matches.forEach(function(m) { addMatchEntry(m); });
+        calculateGains();
+        document.getElementById('btn-publish-text').innerHTML = '<i class="fas fa-save"></i> Mettre à jour';
+        document.getElementById('editor-title').innerHTML = '<i class="fas fa-edit"></i> Modification en cours...';
+        // Scroll automatique vers l'éditeur
+        document.getElementById('admin-date').scrollIntoView({behavior: 'smooth', block: 'center'});
+    }
+
     function openAdmin() {
         document.getElementById('admin-page').classList.add('active');
-        if (currentCombined) {
-            document.getElementById('admin-date').value = currentCombined.date || new Date().toISOString().split('T')[0];
-            // Ligne admin-time supprimée ici !
-            document.getElementById('admin-status').value = currentCombined.status || 'en-cours';
-            document.getElementById('admin-mise').value = currentCombined.mise || '';
-            document.getElementById('admin-matches').innerHTML = '';
-            matchEntryCount = 0;
-            currentCombined.matches.forEach(function (m) { addMatchEntry(m); });
-            calculateGains();
-        }
+        resetEditor(); // On ouvre toujours sur un formulaire vierge par défaut
+        renderAdminHistory();
         updateStats();
     }
     
@@ -848,7 +898,7 @@
 
     function fmtC(v) { return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(v); }
 
-async function publishCombined() {
+    async function publishCombined() {
         var entries = document.querySelectorAll('.match-entry');
         var date = document.getElementById('admin-date').value;
         var status = document.getElementById('admin-status').value;
@@ -858,10 +908,8 @@ async function publishCombined() {
         if (mise <= 0) { showToast('Saisissez une mise !', true); return; }
 
         var matches = [], publicMatches = [], valid = true;
+        var earliestTime = '23:59'; // Calcul automatique de l'heure
         
-        // --- LE CERVEAU DE L'AUTOMATISATION ---
-        var earliestTime = '23:59'; // On part de minuit
-
         entries.forEach(function (e) {
             var t = e.querySelector('.match-teams-input').value.trim();
             var s = e.querySelector('.match-score-input').value.trim();
@@ -870,13 +918,10 @@ async function publishCombined() {
             if (!t || !s || o <= 0) valid = false;
             
             matches.push({ teams: t, score: s, odds: o, time: ti });
-            publicMatches.push({ teams: t, time: ti, score: '?-?', odds: 0 }); 
-
-            // L'IA lit ton texte (ex: "Dem. 13:00") et extrait juste "13:00"
+            publicMatches.push({ teams: t, time: ti, score: '?-?', odds: 0 });
+            
             var extracted = ti.match(/\d{2}:\d{2}/);
-            if (extracted && extracted[0] < earliestTime) {
-                earliestTime = extracted[0]; // Mémorise l'heure la plus petite !
-            }
+            if (extracted && extracted[0] < earliestTime) { earliestTime = extracted[0]; }
         });
 
         if (!valid) { showToast('Remplissez tous les champs !', true); return; }
@@ -885,44 +930,46 @@ async function publishCombined() {
         matches.forEach(function (m) { tot *= m.odds; });
         var gains = mise * tot;
 
-        // Envoi public avec l'heure calculée TOUTE SEULE !
-        var pubRes = await supabaseClient.from('combineds_public').insert([{ 
-            date: date, 
-            time: earliestTime, // <-- Magie !
-            status: status, 
-            nombre_matchs: matches.length,
-            matches: publicMatches
-        }]).select().single();
-        
-        if (pubRes.error) { showToast('Erreur de publication publique', true); return; }
+        if (editingId) {
+            // MODE MISE À JOUR (UPDATE)
+            var updatePub = await supabaseClient.from('combineds_public').update({ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }).eq('id', editingId);
+            if (updatePub.error) { showToast('Erreur Update', true); return; }
+            
+            var updateVip = await supabaseClient.from('combineds_vip').update({ matches: matches, mise: mise, gains: gains, total_odds: tot }).eq('id', editingId);
+            if (updateVip.error) { showToast('Erreur Update VIP', true); return; }
+            
+            showToast('Combiné mis à jour !');
+        } else {
+            // MODE CRÉATION (INSERT)
+            var pubRes = await supabaseClient.from('combineds_public').insert([{ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }]).select().single();
+            if (pubRes.error) { showToast('Erreur Création', true); return; }
+    
+            var vipRes = await supabaseClient.from('combineds_vip').insert([{ id: pubRes.data.id, matches: matches, mise: mise, gains: gains, total_odds: tot }]);
+            if (vipRes.error) { showToast('Erreur Création VIP', true); return; }
+            
+            if (status === 'en-cours') appStats.pending++;
+            else if (status === 'termine') appStats.wins++;
+            else appStats.losses++;
+            appStats.total++;
+            saveState();
+            
+            showToast('Combiné créé avec succès !');
+        }
 
-        var vipRes = await supabaseClient.from('combineds_vip').insert([{ id: pubRes.data.id, matches: matches, mise: mise, gains: gains, total_odds: tot }]);
-        if (vipRes.error) { showToast('Erreur de publication VIP', true); return; }
-
-        currentCombined = Object.assign({}, pubRes.data, { matches: matches, mise: mise, gains: gains, totalOdds: tot });
-
-        if (status === 'en-cours') appStats.pending++;
-        else if (status === 'termine') appStats.wins++;
-        else appStats.losses++;
-        appStats.total++;
-        saveState(); updateStats(); renderCombined();
-        showToast('Combiné publié !'); closeAdmin();
+        // On recharge tout pour que ça s'affiche bien
+        await chargerDonnees();
+        closeAdmin();
     }
     
     async function deleteCombined() {
-        if (currentCombined && currentCombined.id) {
-            await supabaseClient.from('combineds_vip').delete().eq('id', currentCombined.id);
-            await supabaseClient.from('combineds_public').delete().eq('id', currentCombined.id);
-            currentCombined = null;
-            saveState();
-            renderCombined();
+        var idToDelete = editingId ? editingId : (currentCombined ? currentCombined.id : null);
+        if (idToDelete) {
+            await supabaseClient.from('combineds_vip').delete().eq('id', idToDelete);
+            await supabaseClient.from('combineds_public').delete().eq('id', idToDelete);
             showToast('Combiné supprimé !', true);
-            document.getElementById('admin-matches').innerHTML = '';
-            matchEntryCount = 0;
-            document.getElementById('admin-mise').value = '';
-            addMatchEntry();
-            addMatchEntry();
-            calculateGains();
+            await chargerDonnees();
+            resetEditor();
+            closeAdmin();
         } else {
             showToast('Aucun combiné à supprimer !', true);
         }
@@ -940,17 +987,68 @@ async function publishCombined() {
         var hc = document.getElementById('home-combined-container');
         var sb = document.getElementById('vip-combined-status-bar');
         if (!currentCombined) {
-            var empty = '<div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div>';
+            var empty = '<div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné en cours.</div>';
             vc.innerHTML = empty; hc.innerHTML = empty; sb.innerHTML = '';
             return;
         }
         var df = fmtD(currentCombined.date), sc = currentCombined.status;
-        var sl = { 'en-cours': 'En cours', 'termine': 'Terminé', 'perdu': 'Perdu' };
+        var sl = { 'en-cours': 'En cours', 'termine': 'Terminé ✅', 'perdu': 'Perdu ❌' };
         var pw = '50%';
         if (sc === 'termine' || sc === 'perdu') pw = '100%';
         vc.innerHTML = buildCC(currentCombined, sc, sl, pw, false);
         hc.innerHTML = buildCC(currentCombined, sc, sl, pw, true);
-        sb.innerHTML = '<div class="vip-combined-status" style="margin:0 20px 15px;">Combiné du ' + df + ' <span class="disponible">DISPONIBLE !</span></div>';
+        sb.innerHTML = '<div class="vip-combined-status" style="margin:0 20px 15px;">Dernier Combiné : <span class="disponible">' + sl[sc] + '</span></div>';
+    }
+    
+    // NOUVEAU : Fonction pour afficher l'historique public
+    function renderHistory() {
+        var hc = document.getElementById('history-container');
+        if (!hc) return;
+        if (allCombineds.length <= 1) {
+            hc.innerHTML = '<div class="no-combined-message"><i class="fas fa-history"></i>Aucun historique pour le moment.</div>';
+            return;
+        }
+        var html = '';
+        var sl = { 'en-cours': 'En cours', 'termine': 'Terminé ✅', 'perdu': 'Perdu ❌' };
+        
+        // On affiche tous les combinés SAUF le premier (qui est déjà en haut)
+        for(var i = 1; i < allCombineds.length; i++) {
+            var c = allCombineds[i];
+            var sc = c.status;
+            var statusColor = sc === 'termine' ? 'var(--green)' : (sc === 'perdu' ? 'var(--red)' : 'var(--primary-yellow)');
+            var odds = c.total_odds ? c.total_odds.toFixed(2) : (window.isUserVip ? '?' : '***');
+            
+            html += `<div class="history-card">
+                <div>
+                    <div class="date">Combiné du ${fmtD(c.date)}</div>
+                    <div class="status ${sc}">${sl[sc] || sc}</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:12px; color:var(--text-gray); margin-bottom:4px;">Cote totale</div>
+                    <div style="font-weight:700; font-size:14px;">${odds}</div>
+                </div>
+            </div>`;
+        }
+        hc.innerHTML = html;
+    }
+    
+    // NOUVEAU : Fonction pour afficher la liste dans l'admin
+    function renderAdminHistory() {
+        var container = document.getElementById('admin-history-list');
+        if(!container) return;
+        if(allCombineds.length === 0) {
+            container.innerHTML = '<span style="color:var(--text-gray); font-size:12px;">Aucun historique</span>';
+            return;
+        }
+        var html = '';
+        allCombineds.forEach(function(c) {
+            var sl = { 'en-cours': 'En cours', 'termine': 'Terminé ✅', 'perdu': 'Perdu ❌' };
+            html += `<div class="admin-history-item">
+                <span>Le ${fmtD(c.date)} - ${sl[c.status]}</span>
+                <button onclick="loadIntoEditor(${c.id})">Éditer</button>
+            </div>`;
+        });
+        container.innerHTML = html;
     }
 
     function buildCC(c, sc, sl, pw, isHome) {
@@ -1003,18 +1101,6 @@ async function publishCombined() {
         }
 
         return '<div class="combined-card"><div class="combined-header"><div class="combined-status"><span class="status-badge ' + sc + '">' + sl[sc] + '</span><span class="combined-label">Combiné</span><div class="combined-count"><i class="fas fa-futbol"></i> ' + matchesToDisplay.length + '</div></div><i class="fas fa-ellipsis-h combined-more"></i></div><div class="combined-progress"><div class="combined-progress-fill" style="width:' + pw + ';' + pc + '"></div></div><div class="combined-matches-icons">' + ic + '<span style="font-size:12px;color:var(--text-gray);margin-left:4px;">' + matchesToDisplay.length + '</span></div><div class="combined-body">' + mH + '</div><div class="combined-footer"><div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span><span class="combined-footer-value '+(isObscured?'blurred-value':'')+'">' + displayTotalOdds + '</span></div><div class="combined-footer-row"><span class="combined-footer-label">Mise</span><span class="combined-footer-value">' + displayMise + '</span></div><div class="combined-footer-row"><span class="combined-footer-label">Gains potentiels</span><span class="combined-footer-value gains '+(isObscured?'blurred-value':'')+'">' + displayGains + '</span></div></div>' + ctaBtn + timeMessage + '</div>';
-    }
-
-    function updateDateOnly() {
-        if (!currentCombined) { showToast('Aucun combiné à modifier !', true); return; }
-        var newDate = document.getElementById('admin-date').value;
-        var newStatus = document.getElementById('admin-status').value;
-        if (!newDate) { showToast('Sélectionnez une date !', true); return; }
-        currentCombined.date = newDate;
-        currentCombined.status = newStatus;
-        saveState();
-        renderCombined();
-        showToast('Date et statut mis à jour !');
     }
 
     function fmtD(d) {
