@@ -192,7 +192,6 @@
         .page-title-bar{padding:15px 20px;display:flex;align-items:center;justify-content:space-between}
         .page-title-bar h2{font-size:22px;font-weight:800}
         
-        /* STYLE PACKS AMÉLIORÉ */
         .packs-page-list{padding:0 20px}
         .pack-detail-card{background:var(--bg-card);border-radius:16px;padding:20px;margin-bottom:14px;border:1px solid var(--border-color)}
         .pack-detail-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
@@ -303,11 +302,21 @@
         .admin-history-item { background:#2A2A2A; padding:12px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; }
         .admin-history-item span { font-size:13px; color:#fff; }
         .admin-history-item button { background:var(--primary-yellow); color:#000; border:none; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer; }
+        
+        /* --- NOUVEAU : STYLE DES ONGLETS ADMIN --- */
+        .admin-tabs { display: flex; gap: 10px; padding: 0 20px; margin-bottom: 20px; }
+        .admin-tab-btn { flex: 1; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-gray); border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .admin-tab-btn.active { background: rgba(255, 215, 0, 0.15); border-color: var(--primary-yellow); color: var(--primary-yellow); }
+        .admin-tab-content { display: none; animation: fadeInUp 0.4s ease; }
+        .admin-tab-content.active { display: block; }
+        .btn-create-new { width: 100%; padding: 14px; margin-top: 10px; background: rgba(0, 200, 83, 0.15); border: 1px dashed var(--green); color: var(--green); border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px; transition: all 0.2s;}
+        .btn-create-new:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
 
 <script>
+    // --- VOS LOGOS PERSONNELS ---
     const LOGO_DARK = "logo-dark.png";
     const LOGO_LIGHT = "logo-light.png";
     const LOGO_SPLASH = "logo-splash.png";
@@ -644,81 +653,88 @@
     </div>
 </div>
 
-<!-- ADMIN -->
+<!-- ADMIN PANEL AVEC ONGLETS -->
 <div id="admin-page">
     <div class="admin-header">
         <h2><img id="img-admin" alt="SM" class="admin-header-logo"> Panel Admin</h2>
         <button class="admin-close" onclick="closeAdmin()"><i class="fas fa-times"></i></button>
     </div>
     
-    <div class="admin-section">
-        <div class="admin-stats">
-            <div class="admin-stat-card yellow"><i class="fas fa-futbol"></i><span class="stat-value" id="stat-total">0</span><div class="stat-label">Combinés publiés</div></div>
-            <div class="admin-stat-card green"><i class="fas fa-check-circle"></i><span class="stat-value" id="stat-wins">0</span><div class="stat-label">Gagnés</div></div>
-            <div class="admin-stat-card blue"><i class="fas fa-clock"></i><span class="stat-value" id="stat-pending">0</span><div class="stat-label">En cours</div></div>
-            <div class="admin-stat-card red"><i class="fas fa-times-circle"></i><span class="stat-value" id="stat-losses">0</span><div class="stat-label">Perdus</div></div>
-        </div>
-    </div>
-    
-    <div class="admin-section" style="margin-top: 15px;">
-        <div class="admin-section-title"><i class="fas fa-history"></i> Modifier un ancien combiné</div>
-        <div id="admin-history-list" style="max-height: 150px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color);"></div>
-        <button onclick="resetEditor()" style="width:100%; padding:10px; margin-top:10px; background:transparent; border:1px dashed var(--text-gray); color:var(--text-gray); border-radius:8px; cursor:pointer;">
-            <i class="fas fa-plus"></i> Créer un NOUVEAU combiné (Vider l'éditeur)
-        </button>
+    <!-- ONGLETS DE NAVIGATION -->
+    <div class="admin-tabs">
+        <button class="admin-tab-btn active" id="btn-tab-dashboard" onclick="switchAdminTab('dashboard')"><i class="fas fa-chart-pie"></i> Vue d'ensemble</button>
+        <button class="admin-tab-btn" id="btn-tab-editor" onclick="switchAdminTab('editor')"><i class="fas fa-edit"></i> Éditeur</button>
     </div>
 
-    <div class="admin-section" style="margin-top: 20px;">
-        <div class="admin-section-title" id="editor-title"><i class="fas fa-edit"></i> Éditeur de combiné</div>
-        <div class="admin-card">
-            <div class="admin-row" style="margin-bottom: 16px;">
-                <div class="admin-field">
-                    <div class="admin-label"><i class="fas fa-calendar"></i> Date</div>
-                    <input type="date" class="admin-input" id="admin-date">
-                </div>
-                <div class="admin-field">
-                    <div class="admin-label"><i class="fas fa-flag"></i> Statut</div>
-                    <select class="admin-select" id="admin-status">
-                        <option value="en-cours">En cours</option>
-                        <option value="termine">Gagné ✅</option>
-                        <option value="perdu">Perdu ❌</option>
-                    </select>
+    <!-- ONGLET 1 : DASHBOARD (Stats & Historique) -->
+    <div class="admin-tab-content active" id="admin-tab-dashboard">
+        <div class="admin-section">
+            <div class="admin-stats">
+                <div class="admin-stat-card yellow"><i class="fas fa-futbol"></i><span class="stat-value" id="stat-total">0</span><div class="stat-label">Publiés</div></div>
+                <div class="admin-stat-card green"><i class="fas fa-check-circle"></i><span class="stat-value" id="stat-wins">0</span><div class="stat-label">Gagnés</div></div>
+                <div class="admin-stat-card blue"><i class="fas fa-clock"></i><span class="stat-value" id="stat-pending">0</span><div class="stat-label">En cours</div></div>
+                <div class="admin-stat-card red"><i class="fas fa-times-circle"></i><span class="stat-value" id="stat-losses">0</span><div class="stat-label">Perdus</div></div>
+            </div>
+        </div>
+        
+        <div class="admin-section">
+            <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-history" style="color:var(--primary-yellow);"></i> Gérer les combinés</div>
+            <div id="admin-history-list" style="max-height: 250px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color);"></div>
+            
+            <button class="btn-create-new" onclick="resetEditor()">
+                <i class="fas fa-plus-circle"></i> Créer un NOUVEAU combiné
+            </button>
+        </div>
+    </div>
+
+    <!-- ONGLET 2 : ÉDITEUR (Création & Modification) -->
+    <div class="admin-tab-content" id="admin-tab-editor">
+        <div class="admin-section">
+            <div class="admin-section-title" id="editor-title"><i class="fas fa-edit"></i> Éditeur de combiné</div>
+            <div class="admin-card">
+                <div class="admin-row">
+                    <div class="admin-field">
+                        <div class="admin-label"><i class="fas fa-calendar"></i> Date</div>
+                        <input type="date" class="admin-input" id="admin-date">
+                    </div>
+                    <div class="admin-field">
+                        <div class="admin-label"><i class="fas fa-flag"></i> Statut</div>
+                        <select class="admin-select" id="admin-status">
+                            <option value="en-cours">En cours (Bleu)</option>
+                            <option value="termine">Gagné ✅ (Vert)</option>
+                            <option value="perdu">Perdu ❌ (Rouge)</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="admin-section">
-        <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs</div>
-        
-        <!-- BOUTON API FOOTBALL -->
-        <button id="btn-fetch-api" onclick="fetchMatchesFromAPI()" style="width:100%; padding:10px; background:rgba(74, 144, 217, 0.15); color:var(--blue); border:1px solid rgba(74, 144, 217, 0.3); border-radius:8px; cursor:pointer; margin-bottom:10px; font-weight:600;">
-            <i class="fas fa-plug"></i> Charger les matchs du jour
-        </button>
-        <div id="api-matches-container"></div>
-        
-        <div id="admin-matches"></div>
-        <button class="admin-add-match-btn" onclick="addMatchEntry()"><i class="fas fa-plus"></i> Ajouter un match (manuel)</button>
-    </div>
+        <div class="admin-section">
+            <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs du combiné</div>
+            <button id="btn-fetch-api" onclick="fetchMatchesFromAPI()" style="width:100%; padding:12px; background:rgba(74, 144, 217, 0.15); color:var(--blue); border:1px solid rgba(74, 144, 217, 0.3); border-radius:10px; cursor:pointer; margin-bottom:15px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
+                <i class="fas fa-plug"></i> Charger les matchs du jour (API)
+            </button>
+            <div id="api-matches-container"></div>
+            <div id="admin-matches"></div>
+            <button class="admin-add-match-btn" onclick="addMatchEntry()"><i class="fas fa-plus"></i> Ajouter un match manuellement</button>
+        </div>
 
-    <div class="admin-section">
-        <div class="admin-section-title"><i class="fas fa-coins"></i> Mise & Résumé</div>
-        <div class="admin-card">
-            <div class="admin-field">
-                <div class="admin-label"><i class="fas fa-money-bill"></i> Mise (€)</div>
-                <input type="number" class="admin-input" id="admin-mise" placeholder="100.00" oninput="calculateGains()">
+        <div class="admin-section">
+            <div class="admin-section-title"><i class="fas fa-coins"></i> Mise & Gain</div>
+            <div class="admin-card" style="margin-bottom:10px;">
+                <div class="admin-field" style="margin-bottom:0;">
+                    <input type="number" class="admin-input" id="admin-mise" placeholder="Mise en € (ex: 100)" oninput="calculateGains()">
+                </div>
+            </div>
+            <div class="admin-summary">
+                <div class="admin-summary-row"><span class="admin-summary-label">Cote totale</span><span class="admin-summary-value" id="summary-odds" style="color:var(--primary-yellow);">0.00</span></div>
+                <div class="admin-summary-row"><span class="admin-summary-label">Gains potentiels</span><span class="admin-summary-value gains" id="summary-gains">0,00 €</span></div>
             </div>
         </div>
-        <div class="admin-summary">
-            <div class="admin-summary-row"><span class="admin-summary-label">Matchs</span><span class="admin-summary-value" id="summary-matches">0</span></div>
-            <div class="admin-summary-row"><span class="admin-summary-label">Cote totale</span><span class="admin-summary-value" id="summary-odds">0.00</span></div>
-            <div class="admin-summary-row"><span class="admin-summary-label">Mise</span><span class="admin-summary-value" id="summary-mise">0,00 €</span></div>
-            <div class="admin-summary-row"><span class="admin-summary-label">Gains potentiels</span><span class="admin-summary-value gains" id="summary-gains">0,00 €</span></div>
-        </div>
-    </div>
 
-    <div class="admin-section">
-        <button class="admin-submit-btn" id="btn-publish" onclick="publishCombined()"><span id="btn-publish-text"><i class="fas fa-paper-plane"></i> Publier le combiné</span></button>
+        <div class="admin-section">
+            <button class="admin-submit-btn" id="btn-publish" onclick="publishCombined()"><span id="btn-publish-text"><i class="fas fa-paper-plane"></i> Publier le combiné</span></button>
+        </div>
     </div>
 </div>
 
@@ -866,6 +882,15 @@
         setTimeout(function () { popup.style.display = 'none'; }, 300);
     }
 
+    // --- GESTION DES ONGLETS DU PANEL ADMIN ---
+    function switchAdminTab(tabName) {
+        document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.admin-tab-btn').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById('admin-tab-' + tabName).classList.add('active');
+        document.getElementById('btn-tab-' + tabName).classList.add('active');
+    }
+
     // --- REQUÊTE API-SPORTS.IO (AVEC FILTRES AVANCÉS) ---
     async function fetchMatchesFromAPI() {
         var date = document.getElementById('admin-date').value;
@@ -904,7 +929,6 @@
                 });
 
                 // 2. Trier: Compétitions majeures en premier, puis par heure
-                // LDC(2), Europa(3), Conference(848), PL(39), L1(61), Liga(140), Serie A(135), Buli(78)
                 var topLeagues = [2, 3, 848, 39, 61, 140, 135, 78]; 
                 
                 filteredMatches.sort(function(a, b) {
@@ -918,7 +942,7 @@
                 if (filteredMatches.length === 0) {
                     showToast('Aucun match majeur à venir après 18h.', true);
                     document.getElementById('api-matches-container').innerHTML = '';
-                    btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs du jour';
+                    btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs du jour (API)';
                     return;
                 }
 
@@ -930,7 +954,6 @@
 
                 var limit = Math.min(filteredMatches.length, 50); 
                 
-                // Préparation pour le calcul Auj. / Dem.
                 var today = new Date();
                 var tomorrow = new Date();
                 tomorrow.setDate(today.getDate() + 1);
@@ -943,7 +966,6 @@
                     var teamAway = match.teams.away.name || 'Ext.';
                     var timeStr = matchDate.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
                     
-                    // Prefix Auj. ou Dem.
                     var prefix = "";
                     if (matchDate.toDateString() === today.toDateString()) {
                         prefix = "Auj. ";
@@ -980,12 +1002,10 @@
             showToast('Erreur: ' + error.message, true);
         }
 
-        btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs du jour';
+        btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs du jour (API)';
     }
 
-    // Auto-remplissage
     function addMatchFromAPI(teams, time) {
-        // Pré-remplissage avec Score 2-1 et Cote 7.00
         addMatchEntry({ teams: teams, score: '2 - 1', odds: '7.00', time: time });
         showToast('Match ajouté !');
     }
@@ -1144,6 +1164,8 @@
         calculateGains();
         document.getElementById('btn-publish-text').innerHTML = '<i class="fas fa-paper-plane"></i> Publier le combiné';
         document.getElementById('editor-title').innerHTML = '<i class="fas fa-plus-circle"></i> Créer un combiné';
+        
+        switchAdminTab('editor');
     }
 
     function loadIntoEditor(id) {
@@ -1160,12 +1182,13 @@
         calculateGains();
         document.getElementById('btn-publish-text').innerHTML = '<i class="fas fa-save"></i> Mettre à jour';
         document.getElementById('editor-title').innerHTML = '<i class="fas fa-edit"></i> Modification en cours...';
-        document.getElementById('admin-date').scrollIntoView({behavior: 'smooth', block: 'center'});
+        
+        switchAdminTab('editor');
     }
 
     function openAdmin() {
         document.getElementById('admin-page').classList.add('active');
-        resetEditor(); 
+        switchAdminTab('dashboard'); 
         renderAdminHistory();
         updateStats();
     }
@@ -1271,7 +1294,10 @@
         }
 
         await chargerDonnees();
-        closeAdmin();
+        
+        // Retourner sur le dashboard après publication
+        switchAdminTab('dashboard');
+        renderAdminHistory();
     }
     
     async function deleteSpecificCombined(id) {
