@@ -135,11 +135,13 @@
         .login-header {
             text-align: center; margin-bottom: 32px;
             animation: fadeSlideDown 0.7s cubic-bezier(0.23,1,0.32,1) both;
-        }
-        .login-logo-wrap {
-            width: 80px; height: 80px; background: var(--yellow); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
-            box-shadow: 0 0 40px var(--yellow-glow), 0 8px 24px rgba(0,0,0,0.3); animation: logoPulse 3s ease-in-out infinite;
-        }
+            .login-logo-wrap {
+                width: 80px; height: 80px; 
+                background: var(--white); /* Fond passé en blanc */
+                border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
+                box-shadow: 0 0 30px rgba(255, 255, 255, 0.2), 0 8px 24px rgba(0,0,0,0.3); /* Ombre adoucie */
+                animation: logoPulse 3s ease-in-out infinite;
+}
         .login-logo-wrap i { font-size: 34px; color: var(--black); }
         @keyframes logoPulse {
             0%, 100% { box-shadow: 0 0 40px var(--yellow-glow), 0 8px 24px rgba(0,0,0,0.3); }
@@ -508,7 +510,7 @@
         .btn-create-new:active { transform: scale(0.98); }
 
         /* ===== PACKS AMÉLIORÉS ===== */
-        .pack-animated { animation: fadeInUp 0.6s ease forwards; opacity: 0; }
+        .pack-animated { animation: fadeInUp 0.6s ease; opacity: 1; }
 
         .urgency-bar {
             margin: 0 20px 15px;
@@ -922,13 +924,14 @@
     <div class="login-content">
 
         <!-- En-tête -->
-        <div class="login-header">
-            <div class="login-logo-wrap">
-                <img id="img-login" src="logo-dark.png" alt="SM" style="width:100%;height:100%;object-fit:contain;border-radius:24px;">
-            </div>
-            <div class="login-tagline">Score<span>Master</span></div>
-            <div class="login-sub" id="auth-subtitle">Connectez-vous pour continuer</div>
-        </div>
+<div class="login-header">
+    <div class="login-logo-wrap">
+        <!-- Remplacer logo-light.png par le nom exact de ton logo noir si besoin -->
+        <img id="img-login" src="logo-light.png" alt="SM" style="width:75%;height:75%;object-fit:contain;">
+    </div>
+    <!-- Le texte ScoreMaster a été supprimé ici -->
+    <div class="login-sub" id="auth-subtitle">Connectez-vous pour continuer</div>
+</div>
 
         <!-- Carte formulaire -->
         <div class="login-card">
