@@ -272,9 +272,11 @@
         @media(min-width:500px){body{display:flex;align-items:center;justify-content:center;background:#000}#splash-screen,#login-screen,#app,#admin-page{max-width:420px;max-height:900px;border-radius:30px;overflow:hidden}#admin-page.active{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);max-width:420px;max-height:900px;border-radius:30px}}
         
         /* Styles pour l'historique */
-        .history-card { background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:15px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
-        .history-card .date { font-size:12px; color:var(--text-gray); margin-bottom:4px; }
-        .history-card .status { font-weight:700; font-size:14px; }
+        .history-card { background:var(--bg-card); border:1px solid var(--border-color); border-radius:16px; padding:16px; margin-bottom:14px; display:flex; flex-direction:column; align-items:stretch; transition: all 0.3s; }
+        .history-card.termine { border-color: rgba(0, 200, 83, 0.4); background: linear-gradient(145deg, rgba(0,200,83,0.08) 0%, var(--bg-card) 100%); }
+        .history-card.perdu { border-color: rgba(255, 61, 61, 0.3); background: linear-gradient(145deg, rgba(255,61,61,0.05) 0%, var(--bg-card) 100%); }
+        .history-card .date { font-size:12px; color:var(--text-gray); margin-bottom:4px; font-weight:500; }
+        .history-card .status { font-weight:800; font-size:15px; text-transform:uppercase; letter-spacing:0.5px;}
         .history-card .status.termine { color:var(--green); }
         .history-card .status.perdu { color:var(--red); }
         .admin-history-item { background:#2A2A2A; padding:12px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; }
@@ -612,7 +614,7 @@
                     <div class="admin-label"><i class="fas fa-flag"></i> Statut</div>
                     <select class="admin-select" id="admin-status">
                         <option value="en-cours">En cours</option>
-                        <option value="termine">Terminé ✅</option>
+                        <option value="termine">Gagné ✅</option>
                         <option value="perdu">Perdu ❌</option>
                     </select>
                 </div>
@@ -903,7 +905,7 @@
 
     function fmtC(v) { return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(v); }
 
-    async function publishCombined() {
+   async function publishCombined() {
         var entries = document.querySelectorAll('.match-entry');
         var date = document.getElementById('admin-date').value;
         var status = document.getElementById('admin-status').value;
@@ -913,7 +915,10 @@
         if (mise <= 0) { showToast('Saisissez une mise !', true); return; }
 
         var matches = [], publicMatches = [], valid = true;
-        var earliestTime = '23:59'; // Calcul automatique de l'heure
+        var earliestTime = '23:59'; 
+        
+        // On vérifie si le combiné est fini pour dévoiler les scores au public !
+        var isFinished = (status === 'termine' || status === 'perdu');
         
         entries.forEach(function (e) {
             var t = e.querySelector('.match-teams-input').value.trim();
@@ -923,7 +928,9 @@
             if (!t || !s || o <= 0) valid = false;
             
             matches.push({ teams: t, score: s, odds: o, time: ti });
-            publicMatches.push({ teams: t, time: ti, score: '?-?', odds: 0 });
+            
+            // Si Gagné/Perdu, on rend le vrai score public. Sinon, on laisse "?-?"
+            publicMatches.push({ teams: t, time: ti, score: isFinished ? s : '?-?', odds: isFinished ? o : 0 });
             
             var extracted = ti.match(/\d{2}:\d{2}/);
             if (extracted && extracted[0] < earliestTime) { earliestTime = extracted[0]; }
@@ -936,19 +943,14 @@
         var gains = mise * tot;
 
         if (editingId) {
-            // MODE MISE À JOUR (UPDATE)
             var updatePub = await supabaseClient.from('combineds_public').update({ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }).eq('id', editingId);
             if (updatePub.error) { showToast('Erreur Update', true); return; }
-            
             var updateVip = await supabaseClient.from('combineds_vip').update({ matches: matches, mise: mise, gains: gains, total_odds: tot }).eq('id', editingId);
             if (updateVip.error) { showToast('Erreur Update VIP', true); return; }
-            
             showToast('Combiné mis à jour !');
         } else {
-            // MODE CRÉATION (INSERT)
             var pubRes = await supabaseClient.from('combineds_public').insert([{ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }]).select().single();
             if (pubRes.error) { showToast('Erreur Création', true); return; }
-    
             var vipRes = await supabaseClient.from('combineds_vip').insert([{ id: pubRes.data.id, matches: matches, mise: mise, gains: gains, total_odds: tot }]);
             if (vipRes.error) { showToast('Erreur Création VIP', true); return; }
             
@@ -957,34 +959,10 @@
             else appStats.losses++;
             appStats.total++;
             saveState();
-            
             showToast('Combiné créé avec succès !');
         }
-
-        // On recharge tout pour que ça s'affiche bien
         await chargerDonnees();
         closeAdmin();
-    }
-    
-    async function deleteCombined() {
-        var idToDelete = editingId ? editingId : (currentCombined ? currentCombined.id : null);
-        if (idToDelete) {
-            await supabaseClient.from('combineds_vip').delete().eq('id', idToDelete);
-            await supabaseClient.from('combineds_public').delete().eq('id', idToDelete);
-            showToast('Combiné supprimé !', true);
-            await chargerDonnees();
-            resetEditor();
-            closeAdmin();
-        } else {
-            showToast('Aucun combiné à supprimer !', true);
-        }
-    }
-
-    function updateStats() {
-        document.getElementById('stat-total').textContent = appStats.total;
-        document.getElementById('stat-wins').textContent = appStats.wins;
-        document.getElementById('stat-pending').textContent = appStats.pending;
-        document.getElementById('stat-losses').textContent = appStats.losses;
     }
 
     function renderCombined() {
@@ -997,15 +975,14 @@
             return;
         }
         var df = fmtD(currentCombined.date), sc = currentCombined.status;
-        var sl = { 'en-cours': 'En cours', 'termine': 'Terminé ✅', 'perdu': 'Perdu ❌' };
+        var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
         var pw = '50%';
         if (sc === 'termine' || sc === 'perdu') pw = '100%';
         vc.innerHTML = buildCC(currentCombined, sc, sl, pw, false);
         hc.innerHTML = buildCC(currentCombined, sc, sl, pw, true);
         sb.innerHTML = '<div class="vip-combined-status" style="margin:0 20px 15px;">Dernier Combiné : <span class="disponible">' + sl[sc] + '</span></div>';
     }
-    
-    // NOUVEAU : Fonction pour afficher l'historique public
+
     function renderHistory() {
         var hc = document.getElementById('history-container');
         if (!hc) return;
@@ -1014,30 +991,45 @@
             return;
         }
         var html = '';
-        var sl = { 'en-cours': 'En cours', 'termine': 'Terminé ✅', 'perdu': 'Perdu ❌' };
+        var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
         
-        // On affiche tous les combinés SAUF le premier (qui est déjà en haut)
         for(var i = 1; i < allCombineds.length; i++) {
             var c = allCombineds[i];
             var sc = c.status;
             var statusColor = sc === 'termine' ? 'var(--green)' : (sc === 'perdu' ? 'var(--red)' : 'var(--primary-yellow)');
             var odds = c.total_odds ? c.total_odds.toFixed(2) : (window.isUserVip ? '?' : '***');
             
-            html += `<div class="history-card">
-                <div>
-                    <div class="date">Combiné du ${fmtD(c.date)}</div>
-                    <div class="status ${sc}">${sl[sc] || sc}</div>
+            // Génération des petits blocs de matchs à l'intérieur de la carte
+            var matchesHtml = '';
+            if(c.matches && c.matches.length > 0) {
+                matchesHtml = '<div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.1);">';
+                c.matches.forEach(function(m) {
+                    var scoreColor = sc === 'termine' ? 'var(--green)' : 'var(--text-white)';
+                    matchesHtml += `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; align-items:center;">
+                        <span style="color:var(--text-light-gray);"><i class="fas fa-futbol" style="font-size:10px; margin-right:6px; color:var(--text-gray);"></i> ${m.teams || 'Équipes'}</span>
+                        <span style="font-weight:700; color:${scoreColor}; background:rgba(255,255,255,0.05); padding:3px 8px; border-radius:6px;">${m.score}</span>
+                    </div>`;
+                });
+                matchesHtml += '</div>';
+            }
+
+            html += `<div class="history-card ${sc}">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div class="date"><i class="fas fa-calendar-alt"></i> Combiné du ${fmtD(c.date)}</div>
+                        <div class="status ${sc}" style="color:${statusColor};">${sl[sc] || sc}</div>
+                    </div>
+                    <div style="text-align:right; background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:10px;">
+                        <div style="font-size:11px; color:var(--text-gray); margin-bottom:2px;">Cote</div>
+                        <div style="font-weight:800; font-size:16px; color:var(--text-white);">${odds}</div>
+                    </div>
                 </div>
-                <div style="text-align:right;">
-                    <div style="font-size:12px; color:var(--text-gray); margin-bottom:4px;">Cote totale</div>
-                    <div style="font-weight:700; font-size:14px;">${odds}</div>
-                </div>
+                ${matchesHtml}
             </div>`;
         }
         hc.innerHTML = html;
     }
-    
-    // NOUVEAU : Fonction pour afficher la liste dans l'admin
+
     function renderAdminHistory() {
         var container = document.getElementById('admin-history-list');
         if(!container) return;
@@ -1047,7 +1039,7 @@
         }
         var html = '';
         allCombineds.forEach(function(c) {
-            var sl = { 'en-cours': 'En cours', 'termine': 'Terminé ✅', 'perdu': 'Perdu ❌' };
+            var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
             html += `<div class="admin-history-item">
                 <span>Le ${fmtD(c.date)} - ${sl[c.status]}</span>
                 <button onclick="loadIntoEditor('${c.id}')">Éditer</button>
