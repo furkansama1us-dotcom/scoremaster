@@ -106,13 +106,7 @@
         .home-notif i{color:var(--text-white);font-size:18px}
         .home-notif .notif-dot{width:8px;height:8px;background:var(--red);border-radius:50%;position:absolute;top:10px;right:10px}
         
-        .search-bar{margin:5px 20px 15px;display:flex;align-items:center;background:var(--bg-card);border-radius:14px;padding:12px 16px;gap:10px;border:1px solid var(--border-color)}
-        .search-bar i{color:var(--text-gray);font-size:16px}
-        .search-bar input{flex:1;background:none;border:none;color:var(--text-white);font-size:14px;outline:none;font-family:'Inter',sans-serif}
-        .search-bar input::placeholder{color:var(--text-gray)}
-        .search-bar .mic-btn{color:var(--primary-yellow);cursor:pointer}
-        
-        .api-banner{margin:0 20px 15px;padding:10px 16px;background:linear-gradient(135deg,rgba(74,144,217,.15),rgba(74,144,217,.05));border:1px solid rgba(74,144,217,.25);border-radius:12px;display:flex;align-items:center;gap:10px}
+        .api-banner{margin:5px 20px 15px;padding:10px 16px;background:linear-gradient(135deg,rgba(74,144,217,.15),rgba(74,144,217,.05));border:1px solid rgba(74,144,217,.25);border-radius:12px;display:flex;align-items:center;gap:10px}
         .api-banner .api-icon{width:32px;height:32px;background:rgba(74,144,217,.2);border-radius:8px;display:flex;align-items:center;justify-content:center}
         .api-banner .api-icon i{color:var(--blue);font-size:16px}
         .api-banner .api-info{flex:1}
@@ -412,11 +406,7 @@
                     <div class="notif-dot"></div>
                 </div>
             </div>
-            <div class="search-bar fade-in-up delay-2">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Rechercher un match...">
-                <i class="fas fa-microphone mic-btn"></i>
-            </div>
+            
             <div class="api-banner fade-in-up delay-2">
                 <div class="api-icon"><i class="fas fa-plug"></i></div>
                 <div class="api-info">
@@ -425,6 +415,7 @@
                 </div>
                 <span class="betclic-badge platform-badge-display">BETCLIC</span>
             </div>
+            
             <div class="section-header fade-in-up delay-3">
                 <span class="section-title">Découvrez nos packs !</span>
                 <span class="section-more" onclick="navigateTo('packs')">Voir plus</span>
@@ -473,7 +464,7 @@
             <div style="height:20px;"></div>
         </div>
 
-        <!-- PACKS PAGE -->
+        <!-- PACKS PAGE PERSONNALISÉE -->
         <div class="page" id="page-packs">
             <div class="page-title-bar"><h2>Nos Packs</h2></div>
             <div class="packs-page-list">
@@ -975,7 +966,6 @@
                     var flagUrl = match.league.flag || match.league.logo || '';
                     var safeMatchString = `${teamHome} - ${teamAway}`.replace(/'/g, "\\'");
 
-                    // On envoie aussi le flagUrl (le logo de la compétition) dans la fonction !
                     matchesHtml += `<button type="button" onclick="addMatchFromAPI('${safeMatchString}', '${displayTime}', '${flagUrl}')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer; transition:border-color 0.2s;">
                         <div style="font-size:10px; color:var(--text-gray); margin-bottom:4px; display:flex; align-items:center; gap:6px;">
                             ${flagUrl ? `<img src="${flagUrl}" style="width:14px; height:10px; object-fit:cover; border-radius:2px;">` : ''}
@@ -1003,7 +993,6 @@
         btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs du jour (API)';
     }
 
-    // Réception du paramètre logo (flagUrl) en plus !
     function addMatchFromAPI(teams, time, logo) {
         addMatchEntry({ teams: teams, score: '2 - 1', odds: '7.00', time: time, logo: logo });
         showToast('Match ajouté !');
@@ -1159,7 +1148,6 @@
         document.getElementById('admin-matches').innerHTML = '';
         document.getElementById('api-matches-container').innerHTML = '';
         matchEntryCount = 0;
-        addMatchEntry(); addMatchEntry();
         calculateGains();
         document.getElementById('btn-publish-text').innerHTML = '<i class="fas fa-paper-plane"></i> Publier le combiné';
         document.getElementById('editor-title').innerHTML = '<i class="fas fa-plus-circle"></i> Créer un combiné';
@@ -1200,7 +1188,6 @@
         var c = document.getElementById('admin-matches');
         var e = document.createElement('div');
         e.className = 'match-entry';
-        // Ajout d'un input caché pour sauvegarder l'URL du logo du match !
         e.innerHTML = '<div class="match-entry-header"><span class="match-entry-number"><i class="fas fa-futbol"></i> Match ' + matchEntryCount + '</span><button type="button" class="match-entry-remove" onclick="removeMatchEntry(this)"><i class="fas fa-trash"></i></button></div>'
             + '<input type="hidden" class="match-logo-input" value="' + (data && data.logo ? data.logo : '') + '">'
             + '<div class="admin-field"><div class="admin-label"><i class="fas fa-users"></i> Équipes</div><input type="text" class="admin-input match-teams-input" placeholder="Équipe A - Équipe B" value="' + (data ? data.teams : '') + '" oninput="calculateGains()"></div>'
@@ -1225,7 +1212,6 @@
 
     function calculateGains() {
         var entries = document.querySelectorAll('.match-entry');
-        // Remplacement des virgules par des points pour contrer le bug des navigateurs
         var miseVal = document.getElementById('admin-mise').value.replace(',', '.');
         var mise = parseFloat(miseVal) || 0;
         var tot = 1, cnt = 0;
@@ -1263,7 +1249,7 @@
             var oVal = e.querySelector('.match-odds-input').value.replace(',', '.');
             var o = parseFloat(oVal) || 0;
             var ti = e.querySelector('.match-time-input').value.trim();
-            var l = e.querySelector('.match-logo-input').value; // Récupère le logo
+            var l = e.querySelector('.match-logo-input').value; 
             
             if (!t || !s || o <= 0) valid = false;
             
@@ -1306,7 +1292,6 @@
 
         await chargerDonnees();
         
-        // Retourner sur le dashboard après publication
         switchAdminTab('dashboard');
         renderAdminHistory();
     }
@@ -1382,7 +1367,6 @@
                 c.matches.forEach(function(m) {
                     var scoreColor = sc === 'termine' ? 'var(--green)' : 'var(--text-white)';
                     
-                    // NOUVEAU: Affichage du logo du championnat si existant
                     var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:12px;height:12px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<i class="fas fa-shield-alt" style="font-size:10px; margin-right:6px; color:var(--text-gray);"></i>`;
                     
                     matchesHtml += `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; align-items:center;">
@@ -1410,7 +1394,6 @@
         hc.innerHTML = html;
     }
     
-    // NOUVEAU: SEPARATION DES HISTORIQUES DANS L'ADMIN
     function renderAdminHistory() {
         var containerActive = document.getElementById('admin-history-active');
         var containerPast = document.getElementById('admin-history-past');
@@ -1452,7 +1435,6 @@
             var scoreHtml = isObscured ? '<span class="match-score blurred-value">' + displayScore + '</span>' : '<span class="match-score">' + displayScore + '</span>';
             var oddsHtml = isObscured ? '<div class="match-odds blurred-value">' + displayOdds + '</div>' : '<div class="match-odds">' + displayOdds + '</div>';
             
-            // NOUVEAU: Affichage du logo du championnat si existant (dans la carte principale)
             var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<i class="fas fa-shield-alt"></i> `;
             
             mH += '<div class="match-row"><div class="match-row-top"><div class="match-type"><i class="fas fa-futbol"></i> Score exact ' + scoreHtml + '</div>' + oddsHtml + '</div><div class="match-row-bottom"><div class="match-teams">' + logoDisplay + (m.teams || 'Équipes') + '</div><div class="match-time">' + (m.time || '') + '</div></div></div>';
