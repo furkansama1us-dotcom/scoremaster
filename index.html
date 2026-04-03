@@ -12,16 +12,62 @@
     <meta name="theme-color" content="#0D0D0D">
     <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlNjb3JlTWFzdGVyIiwKICAic2hvcnRfbmFtZSI6ICJTTSB2aXAiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBEMEQwRCIsCiAgInRoZW1lX2NvbG9yIjogIiMwRDBEMEQiLAogICJvcmllbnRhdGlvbiI6ICJwb3J0cmFpdCIKfQ==">
     
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
     <style>
-        .combined-card { display: flex; flex-direction: column; }
+        /* ==========================================
+           VARIABLES & RESET GLOBALES
+           ========================================== */
+        :root {
+            /* Variables globales existantes */
+            --primary-yellow: #FFD700;
+            --dark-yellow: #E6C200;
+            --light-yellow: #FFF8DC;
+            --green: #00C853;
+            --red: #FF3D3D;
+            --dark: #1A1A1A;
+            --gray-700: #495057;
+            --gray-500: #6C757D;
+            --gray-400: #ADB5BD;
+            --gray-200: #E0E0E0;
+            --gray-100: #F8F9FA;
+            --white: #FFFFFF;
+            --bg-dark: #0D0D0D;
+            --bg-card: #1A1A1A;
+            --bg-input: #2A2A2A;
+            --text-white: #FFFFFF;
+            --text-gray: #8A8A8A;
+            --text-light-gray: #B0B0B0;
+            --border-color: #333333;
+            --blue: #4A90D9;
+            
+            /* Variables spécifiques Login */
+            --yellow: #FFD700;
+            --yellow-pale: #FFF8CC;
+            --yellow-glow: rgba(255, 215, 0, 0.35);
+            --black: #0D0D0D;
+            --gray-light: #F5F5F5;
+            --gray-mid: #C0C0C0;
+            --gray-text: #6B6B6B;
+            --radius-card: 28px;
+            --radius-input: 14px;
+            --shadow-card: 0 24px 60px rgba(0,0,0,0.13);
+            
+            --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.06);
+            --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+        
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
-        
-        :root{--primary-yellow:#FFD700;--dark-yellow:#E6C200;--bg-dark:#0D0D0D;--bg-card:#1A1A1A;--bg-input:#2A2A2A;--text-white:#FFFFFF;--text-gray:#8A8A8A;--text-light-gray:#B0B0B0;--green:#00C853;--red:#FF3D3D;--blue:#4A90D9;--border-color:#333333;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
-        html,body{font-family:'Inter','Montserrat',sans-serif;background:var(--bg-dark);color:var(--text-white);overflow:hidden;height:100%;width:100%;position:fixed;top:0;left:0}
-        
+        html,body{font-family:'Inter','DM Sans','Montserrat',sans-serif;background:var(--bg-dark);color:var(--text-white);overflow:hidden;height:100%;width:100%;position:fixed;top:0;left:0}
+
+        /* ==========================================
+           SPLASH SCREEN
+           ========================================== */
         #splash-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;z-index:10000;transition:opacity .6s,visibility .6s}
         #splash-screen.hidden{opacity:0;visibility:hidden}
         .splash-content{text-align:center;animation:splashFadeIn 1s ease-out}
@@ -30,42 +76,197 @@
         .splash-loader span{width:8px;height:8px;background:var(--primary-yellow);border-radius:50%;animation:loaderBounce 1.4s ease infinite}
         .splash-loader span:nth-child(2){animation-delay:.2s}
         .splash-loader span:nth-child(3){animation-delay:.4s}
-        
+
         @keyframes splashFadeIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
         @keyframes loaderBounce{0%,80%,100%{transform:scale(.6);opacity:.3}40%{transform:scale(1);opacity:1}}
+
+        /* ==========================================
+           NOUVEAU ECRAN DE CONNEXION (DARK PREMIUM)
+           ========================================== */
+        #login-screen {
+            position: fixed; inset: 0;
+            display: none; /* Masqué par défaut, affiché via .active */
+            flex-direction: column;
+            align-items: center; justify-content: flex-start;
+            z-index: 9000;
+            overflow-y: auto;
+            background: var(--black);
+        }
+        #login-screen.active {
+            display: flex;
+        }
+
+        .bg-canvas {
+            position: fixed; inset: 0; z-index: 0;
+            background: linear-gradient(145deg, #1a1400 0%, #0D0D0D 50%, #001a0a 100%);
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        /* Hexagones décoratifs en fond */
+        .hex-grid { position: absolute; inset: 0; opacity: 0.07; }
+        .hex-grid svg { width: 100%; height: 100%; }
+
+        /* Orbe lumineux jaune */
+        .bg-orb {
+            position: absolute; border-radius: 50%; filter: blur(80px); animation: orbFloat 8s ease-in-out infinite;
+        }
+        .bg-orb-1 {
+            width: 420px; height: 420px; background: radial-gradient(circle, rgba(255,215,0,0.22) 0%, transparent 70%);
+            top: -120px; left: -80px; animation-delay: 0s;
+        }
+        .bg-orb-2 {
+            width: 280px; height: 280px; background: radial-gradient(circle, rgba(0,200,83,0.12) 0%, transparent 70%);
+            bottom: 80px; right: -60px; animation-delay: -3s;
+        }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-30px) scale(1.05); }
+        }
+
+        .login-content {
+            position: relative; z-index: 1; width: 100%; max-width: 420px;
+            padding: calc(30px + var(--safe-top)) 20px calc(40px + var(--safe-bottom));
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh; justify-content: center;
+        }
+
+        /* En-tête */
+        .login-header {
+            text-align: center; margin-bottom: 32px;
+            animation: fadeSlideDown 0.7s cubic-bezier(0.23,1,0.32,1) both;
+        }
+        .login-logo-wrap {
+            width: 80px; height: 80px; background: var(--yellow); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
+            box-shadow: 0 0 40px var(--yellow-glow), 0 8px 24px rgba(0,0,0,0.3); animation: logoPulse 3s ease-in-out infinite;
+        }
+        .login-logo-wrap i { font-size: 34px; color: var(--black); }
+        @keyframes logoPulse {
+            0%, 100% { box-shadow: 0 0 40px var(--yellow-glow), 0 8px 24px rgba(0,0,0,0.3); }
+            50% { box-shadow: 0 0 60px rgba(255,215,0,0.5), 0 8px 24px rgba(0,0,0,0.3); }
+        }
+        .login-tagline {
+            font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--white); line-height: 1.2; letter-spacing: -0.5px; margin-bottom: 6px;
+        }
+        .login-tagline span { color: var(--yellow); }
+        .login-sub { font-size: 13px; color: var(--gray-mid); font-weight: 400; letter-spacing: 0.3px; }
+
+        /* Carte formulaire */
+        .login-card {
+            width: 100%; background: var(--white); border-radius: var(--radius-card); padding: 32px 28px 28px;
+            box-shadow: var(--shadow-card); animation: fadeSlideUp 0.7s cubic-bezier(0.23,1,0.32,1) 0.15s both;
+        }
+
+        /* Mode Switcher */
+        .mode-switcher {
+            display: flex; background: var(--gray-light); border-radius: 12px; padding: 4px; margin-bottom: 28px; gap: 4px;
+        }
+        .mode-btn {
+            flex: 1; padding: 10px; border: none; background: transparent; border-radius: 9px; font-family: 'DM Sans', sans-serif;
+            font-size: 13px; font-weight: 600; color: var(--gray-text); cursor: pointer; transition: all 0.3s cubic-bezier(0.23,1,0.32,1);
+        }
+        .mode-btn.active { background: var(--white); color: var(--black); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+        /* Champs */
+        .field-group { margin-bottom: 16px; animation: fadeSlideUp 0.5s cubic-bezier(0.23,1,0.32,1) both; }
+        .field-group:nth-child(2) { animation-delay: 0.05s; }
+        .field-group:nth-child(3) { animation-delay: 0.1s; }
+        .field-group:nth-child(4) { animation-delay: 0.15s; }
+        .field-label {
+            font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--gray-text); margin-bottom: 8px; display: block;
+        }
+        .field-wrap { position: relative; }
+        .field-icon {
+            position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--gray-mid); font-size: 15px; transition: color 0.3s; pointer-events: none;
+        }
+        .login-input {
+            width: 100%; padding: 15px 44px 15px 44px; background: var(--gray-light); border: 1.5px solid transparent; border-radius: var(--radius-input);
+            color: var(--black); font-size: 14px; font-family: 'DM Sans', sans-serif; font-weight: 500; outline: none; transition: all 0.25s cubic-bezier(0.23,1,0.32,1);
+        }
+        .login-input::placeholder { color: var(--gray-mid); font-weight: 400; }
+        .login-input:focus { border-color: var(--yellow); background: var(--yellow-pale); box-shadow: 0 0 0 4px var(--yellow-glow); }
+        .login-input:focus + .field-icon, .field-wrap:focus-within .field-icon { color: var(--yellow-dark); }
+        
+        .toggle-pwd {
+            position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--gray-mid); font-size: 15px; cursor: pointer;
+            background: none; border: none; padding: 4px; transition: color 0.2s;
+        }
+        .toggle-pwd:hover { color: var(--black); }
+
+        /* Champ Caché (Pseudo) */
+        .field-hidden {
+            overflow: hidden; max-height: 0; opacity: 0; transition: max-height 0.4s cubic-bezier(0.23,1,0.32,1), opacity 0.3s, margin-bottom 0.4s; margin-bottom: 0;
+        }
+        .field-hidden.visible { max-height: 90px; opacity: 1; margin-bottom: 16px; }
+
+        /* Bouton principal */
+        .login-btn {
+            width: 100%; padding: 16px; background: var(--yellow); color: var(--black); border: none; border-radius: var(--radius-input);
+            font-size: 15px; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer; margin-top: 8px; letter-spacing: 0.3px;
+            position: relative; overflow: hidden; transition: all 0.3s cubic-bezier(0.23,1,0.32,1); box-shadow: 0 6px 20px rgba(255,215,0,0.4);
+        }
+        .login-btn::after {
+            content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 60%); opacity: 0; transition: opacity 0.3s;
+        }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(255,215,0,0.5); }
+        .login-btn:hover::after { opacity: 1; }
+        .login-btn:active { transform: scale(0.97) translateY(0); box-shadow: 0 4px 12px rgba(255,215,0,0.3); }
+        .login-btn.loading { pointer-events: none; opacity: 0.8; }
+        .login-btn.loading .btn-text { opacity: 0; }
+        .login-btn.loading .btn-spinner { opacity: 1; }
+        .btn-text { transition: opacity 0.2s; }
+        .btn-spinner {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0; transition: opacity 0.2s;
+            width: 20px; height: 20px; border: 2.5px solid rgba(0,0,0,0.2); border-top-color: var(--black); border-radius: 50%; animation: spin 0.7s linear infinite;
+        }
+
+        /* Erreur */
+        .login-error {
+            display: none; align-items: center; gap: 8px; background: #FFF0F0; border: 1px solid #FFD0D0;
+            color: var(--red); font-size: 12.5px; font-weight: 500; padding: 11px 14px; border-radius: 10px; margin-top: 14px; animation: shake 0.4s ease;
+        }
+        .login-error.show { display: flex; }
+
+        /* Options bas */
+        .login-options { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+        .forgot-password { font-size: 12px; font-weight: 600; color: var(--gray-text); text-decoration: none; transition: color 0.2s; }
+        .forgot-password:hover { color: var(--black); }
+        .remember-me { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .remember-label { font-size: 12px; color: var(--gray-text); }
+        .toggle-switch {
+            width: 40px; height: 22px; background: #E0E0E0; border-radius: 11px; position: relative; transition: background 0.3s; flex-shrink: 0;
+        }
+        .toggle-switch.active { background: var(--yellow); }
+        .toggle-switch::after {
+            content: ''; width: 16px; height: 16px; background: #fff; border-radius: 50%; position: absolute; top: 3px; left: 3px;
+            transition: transform 0.3s cubic-bezier(0.23,1,0.32,1); box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+        .toggle-switch.active::after { transform: translateX(18px); }
+
+        /* Diviseur */
+        .divider { display: flex; align-items: center; gap: 12px; margin: 22px 0; }
+        .divider-line { flex: 1; height: 1px; background: #EDEDED; }
+        .divider-text { font-size: 11px; color: var(--gray-mid); font-weight: 500; letter-spacing: 0.5px; }
+
+        /* Badge API */
+        .api-badge {
+            display: flex; align-items: center; gap: 8px; padding: 11px 16px; background: var(--black); border-radius: 12px; margin-top: 22px;
+        }
+        .api-badge i { color: var(--yellow); font-size: 13px; }
+        .api-badge-text { flex: 1; font-size: 12px; color: var(--gray-mid); font-weight: 500; }
+        .api-dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px rgba(0,200,83,0.6); animation: blink 2s ease-in-out infinite; }
+        .api-connected { font-size: 11px; color: var(--green); font-weight: 600; }
+
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        @keyframes fadeSlideDown { from { opacity: 0; transform: translateY(-24px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ==========================================
+           APP PRINCIPALE & COMPOSANTS
+           ========================================== */
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
         @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-        @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         @keyframes glowPass{0%,100%{box-shadow: 0 0 5px rgba(0,200,83,0.3);} 50%{box-shadow: 0 0 15px rgba(0,200,83,0.7);}}
-
-        .fade-in-up{animation:fadeInUp .5s ease forwards}
-        .delay-1{animation-delay:.1s;opacity:0}.delay-2{animation-delay:.2s;opacity:0}.delay-3{animation-delay:.3s;opacity:0}.delay-4{animation-delay:.4s;opacity:0}.delay-5{animation-delay:.5s;opacity:0}
-        
-        /* LOGIN CLAIR ET JAUNE */
-        #login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,var(--primary-yellow) 0%,var(--primary-yellow) 35%,#FFFFFF 35%);z-index:9000;display:none;flex-direction:column;transition:opacity .4s}
-        #login-screen.active{display:flex}
-        .login-header{flex:0 0 auto;padding-top:calc(30px + var(--safe-top));padding-bottom:20px;text-align:center}
-        .login-logo-img{width:110px;height:auto;object-fit:contain;filter:drop-shadow(0 4px 15px rgba(0,0,0,0.1));border-radius:24px;}
-        .login-form-container{flex:1;background:#FFFFFF;border-radius:30px 30px 0 0;padding:35px 25px;padding-bottom:calc(30px + var(--safe-bottom));box-shadow: 0 -10px 30px rgba(0,0,0,0.05);}
-        .login-form-title{font-size:13px;color:#6C757D;margin-bottom:8px;font-weight:500}
-        .login-input{width:100%;padding:16px 16px;background:#F8F9FA;border:1px solid #E0E0E0;border-radius:12px;color:#1A1A1A;font-size:15px;font-family:'Inter',sans-serif;margin-bottom:20px;outline:none;transition:border-color .3s}
-        .login-input:focus{border-color:var(--primary-yellow); background:#FFFFFF;}
-        .login-input::placeholder{color:#ADB5BD}
-        .login-btn{width:100%;padding:16px;background:var(--primary-yellow);color:#000;border:none;border-radius:12px;font-size:16px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:10px;transition:all .3s;box-shadow: 0 4px 12px rgba(255,215,0,0.3);}
-        .login-btn:active{transform:scale(.98);background:var(--dark-yellow)}
-        .login-options{display:flex;justify-content:space-between;align-items:center;margin-top:20px}
-        .forgot-password{color:#1A1A1A;font-size:13px;text-decoration:none;font-weight:700}
-        .remember-me{display:flex;align-items:center;gap:8px;font-size:13px;color:#6C757D}
-        .toggle-switch{width:44px;height:24px;background:#E0E0E0;border-radius:12px;position:relative;cursor:pointer;transition:background .3s}
-        .toggle-switch.active{background:var(--primary-yellow)}
-        .toggle-switch::after{content:'';width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .3s;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
-        .toggle-switch.active::after{transform:translateX(20px)}
-        .login-error{color:var(--red);font-size:13px;text-align:center;margin-top:12px;display:none;animation:shake .5s ease}
-        .login-error.show{display:block}
-        .api-badge-login{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:40px;padding:12px 16px;background:#F8F9FA;border:1px solid #E0E0E0;border-radius:12px}
-        .api-badge-login i{color:#ADB5BD;font-size:14px}
-        .api-badge-login span{font-size:11px;color:#6C757D;font-weight:500}
-        .api-badge-login .api-status-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
         
         #app{display:none;height:100%;width:100%;flex-direction:column}
         #app.active{display:flex}
@@ -694,46 +895,125 @@
     </div>
 </div>
 
-<!-- LOGIN CLAIR & JAUNE -->
+<!-- ==========================================
+     ÉCRAN DE CONNEXION (NOUVEAU DESIGN PREMIUM)
+     ========================================== -->
 <div id="login-screen">
-    <div class="login-header">
-        <img id="img-login" alt="ScoreMaster" class="login-logo-img">
+    <!-- Fond animé -->
+    <div class="bg-canvas">
+        <div class="bg-orb bg-orb-1"></div>
+        <div class="bg-orb bg-orb-2"></div>
+        <!-- Grille hexagonale SVG en fond -->
+        <div class="hex-grid">
+            <svg viewBox="0 0 800 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <pattern id="hex" x="0" y="0" width="60" height="104" patternUnits="userSpaceOnUse">
+                        <polygon points="30,2 58,17 58,47 30,62 2,47 2,17" fill="none" stroke="#FFD700" stroke-width="1"/>
+                        <polygon points="30,54 58,69 58,99 30,114 2,99 2,69" fill="none" stroke="#FFD700" stroke-width="1"/>
+                        <polygon points="60,28 88,43 88,73 60,88 32,73 32,43" fill="none" stroke="#FFD700" stroke-width="1"/>
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#hex)"/>
+            </svg>
+        </div>
     </div>
-    <div class="login-form-container">
-        <div class="login-form-title" style="color: #6C757D;">Email</div>
-        <input type="email" class="login-input" id="login-email" placeholder="Votre email" style="background:#F8F9FA; border-color:#E0E0E0; color:#1A1A1A;">
 
-        <div class="login-form-title" id="title-username" style="display:none; color: #6C757D;">Pseudo</div>
-        <input type="text" class="login-input" id="login-username" placeholder="Votre pseudo" style="display:none; background:#F8F9FA; border-color:#E0E0E0; color:#1A1A1A;">
+    <!-- Contenu centré -->
+    <div class="login-content">
 
-        <div class="login-form-title" style="color: #6C757D;">Mot de passe</div>
-        <div style="position:relative;width:100%;">
-            <input type="password" class="login-input" id="login-password" placeholder="••••••••••••" style="padding-right:45px;margin-bottom:20px;width:100%; background:#F8F9FA; border-color:#E0E0E0; color:#1A1A1A;">
-            <i class="fas fa-eye" id="togglePassword" style="position:absolute;right:15px;top:15px;color:#ADB5BD;cursor:pointer;font-size:16px;z-index:10;"></i>
-        </div>
-
-        <button class="login-btn" id="btn-action" onclick="handleAuth()">Connexion</button>
-        <div class="login-error" id="login-error"><i class="fas fa-exclamation-circle"></i> Identifiants incorrects</div>
-
-        <div class="login-options">
-            <a href="#" class="forgot-password" id="toggle-auth" onclick="toggleAuthMode(); return false;" style="color:#1A1A1A; font-weight:700;">Créer un compte</a>
-            <div class="remember-me" style="color:#6C757D;">
-                <div class="toggle-switch active" onclick="this.classList.toggle('active')" style="background:var(--primary-yellow);"></div>
-                <span>Se souvenir de moi</span>
+        <!-- En-tête -->
+        <div class="login-header">
+            <div class="login-logo-wrap">
+                <img id="img-login" src="logo-dark.png" alt="SM" style="width:100%;height:100%;object-fit:contain;border-radius:24px;">
             </div>
+            <div class="login-tagline">Score<span>Master</span></div>
+            <div class="login-sub" id="auth-subtitle">Connectez-vous pour continuer</div>
         </div>
 
-        <div class="api-badge-login" style="background:#F8F9FA; border-color:#E0E0E0;">
-            <i class="fas fa-plug" style="color:#ADB5BD;"></i>
-            <span style="color:#6C757D;">API sportifs connectés</span>
-            <div class="api-status-dot"></div>
+        <!-- Carte formulaire -->
+        <div class="login-card">
+
+            <!-- Switcher Connexion / Inscription -->
+            <div class="mode-switcher">
+                <button class="mode-btn active" id="btn-login-mode" onclick="setMode(false)">Connexion</button>
+                <button class="mode-btn" id="btn-signup-mode" onclick="setMode(true)">Inscription</button>
+            </div>
+
+            <!-- Champ Email -->
+            <div class="field-group">
+                <label class="field-label" for="login-email">Adresse e-mail</label>
+                <div class="field-wrap">
+                    <i class="fas fa-envelope field-icon"></i>
+                    <input type="email" class="login-input" id="login-email" placeholder="vous@exemple.com" autocomplete="email">
+                </div>
+            </div>
+
+            <!-- Champ Pseudo (caché par défaut) -->
+            <div class="field-hidden" id="field-username">
+                <div class="field-group" style="margin-bottom:0">
+                    <label class="field-label" for="login-username">Pseudo</label>
+                    <div class="field-wrap">
+                        <i class="fas fa-user field-icon"></i>
+                        <input type="text" class="login-input" id="login-username" placeholder="Votre pseudo" autocomplete="username">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Champ Mot de passe -->
+            <div class="field-group">
+                <label class="field-label" for="login-password">Mot de passe</label>
+                <div class="field-wrap">
+                    <i class="fas fa-lock field-icon"></i>
+                    <input type="password" class="login-input" id="login-password" placeholder="••••••••••" autocomplete="current-password">
+                    <button class="toggle-pwd" id="togglePassword" type="button" aria-label="Afficher le mot de passe">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bouton principal -->
+            <button class="login-btn" id="btn-action" onclick="handleAuth()">
+                <span class="btn-text">Connexion</span>
+                <span class="btn-spinner"></span>
+            </button>
+
+            <!-- Message d'erreur/Succès -->
+            <div class="login-error" id="login-error">
+                <i class="fas fa-circle-exclamation"></i>
+                <span id="error-text">Identifiants incorrects</span>
+            </div>
+
+            <!-- Diviseur -->
+            <div class="divider">
+                <div class="divider-line"></div>
+                <span class="divider-text">OPTIONS</span>
+                <div class="divider-line"></div>
+            </div>
+
+            <!-- Options bas -->
+            <div class="login-options">
+                <a href="#" class="forgot-password" id="forgot-link" onclick="showToast('Veuillez contacter le support Telegram pour réinitialiser votre mot de passe.', true)">Mot de passe oublié ?</a>
+                <div class="remember-me">
+                    <div class="toggle-switch active" id="remember-toggle" onclick="this.classList.toggle('active')" aria-label="Se souvenir de moi"></div>
+                    <span class="remember-label">Se souvenir</span>
+                </div>
+            </div>
+
+            <!-- Badge API -->
+            <div class="api-badge">
+                <i class="fas fa-satellite-dish"></i>
+                <span class="api-badge-text">API sportifs</span>
+                <div class="api-dot"></div>
+                <span class="api-connected">Connecté</span>
+            </div>
+
         </div>
     </div>
 </div>
 
 <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toast-message"></span></div>
 
-<!-- APP -->
+<!-- APP PRINCIPALE -->
 <div id="app">
     <div class="pages-container">
 
@@ -861,7 +1141,6 @@
                         <div class="pack-feature"><i class="fas fa-check"></i> Notification push</div>
                     </div>
 
-                    <!-- BARRE DE PROGRESSION DES PLACES -->
                     <div class="spots-container">
                         <div class="spots-header">
                             <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:#FF9800;"></i> Plus que <strong id="spots-1">7</strong> places à ce prix !</span>
@@ -872,7 +1151,6 @@
                         </div>
                     </div>
 
-                    <!-- GARANTIE -->
                     <div class="guarantee-badge">
                         <i class="fas fa-shield-alt"></i>
                         <span>Satisfait ou remboursé sous 48h</span>
@@ -890,7 +1168,6 @@
                         </button>
                     </div>
 
-                    <!-- MÉTHODES DE PAIEMENT -->
                     <div class="payment-methods">
                         <span style="font-size:11px; color:var(--text-gray);">Paiement sécurisé</span>
                         <div class="payment-icons">
@@ -905,7 +1182,6 @@
 
                 <!-- ===== PACK 2 : VIP+ (POPULAIRE) ===== -->
                 <div class="pack-detail-card pack-popular pack-animated" style="animation-delay: 0.2s;">
-                    <!-- BADGE POPULAIRE -->
                     <div class="popular-ribbon">
                         <i class="fas fa-crown"></i> LE PLUS POPULAIRE
                     </div>
@@ -936,7 +1212,6 @@
                         <div class="pack-feature" style="background:rgba(255,215,0,0.15); color:#FFD700; font-weight:700;"><i class="fas fa-star" style="color:#FFD700;"></i> Accès fondateurs</div>
                     </div>
 
-                    <!-- BARRE DE PROGRESSION DES PLACES -->
                     <div class="spots-container">
                         <div class="spots-header">
                             <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:var(--red);"></i> Plus que <strong id="spots-2" style="color:var(--red);">3</strong> places à ce prix !</span>
@@ -947,14 +1222,12 @@
                         </div>
                     </div>
 
-                    <!-- TÉMOIGNAGE INTÉGRÉ -->
                     <div class="testimonial-inline">
                         <div class="testimonial-stars">★★★★★</div>
                         <p>"J'ai récupéré ma mise x47 dès la première semaine. Le VIP+ est incroyable !"</p>
                         <span class="testimonial-author">— Kévin M. <span style="color:var(--green);">✓ Achat vérifié</span></span>
                     </div>
 
-                    <!-- GARANTIE -->
                     <div class="guarantee-badge" style="border-color:rgba(255,215,0,0.3); background:rgba(255,215,0,0.05);">
                         <i class="fas fa-shield-alt" style="color:#FFD700;"></i>
                         <span style="color:#FFD700;">Garantie satisfait ou remboursé 7 jours</span>
@@ -972,7 +1245,6 @@
                         </button>
                     </div>
 
-                    <!-- MÉTHODES DE PAIEMENT -->
                     <div class="payment-methods">
                         <span style="font-size:11px; color:var(--text-gray);">Paiement sécurisé 🔒</span>
                         <div class="payment-icons">
@@ -1283,13 +1555,11 @@
         <button class="admin-close" onclick="closeAdmin()"><i class="fas fa-times"></i></button>
     </div>
     
-    <!-- ONGLETS DE NAVIGATION -->
     <div class="admin-tabs">
         <button class="admin-tab-btn active" id="btn-tab-dashboard" onclick="switchAdminTab('dashboard')"><i class="fas fa-chart-pie"></i> Vue d'ensemble</button>
         <button class="admin-tab-btn" id="btn-tab-editor" onclick="switchAdminTab('editor')"><i class="fas fa-edit"></i> Éditeur</button>
     </div>
 
-    <!-- ONGLET 1 : DASHBOARD (Stats & Historique) -->
     <div class="admin-tab-content active" id="admin-tab-dashboard">
         <div class="admin-section">
             <div class="admin-stats">
@@ -1301,11 +1571,9 @@
         </div>
         
         <div class="admin-section">
-            <!-- Combinés en cours -->
             <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-clock" style="color:var(--primary-yellow);"></i> Combinés En Cours</div>
             <div id="admin-history-active" style="max-height: 200px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color); margin-bottom:20px;"></div>
             
-            <!-- Historique (Terminés) -->
             <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-history" style="color:var(--primary-yellow);"></i> Déjà Terminés</div>
             <div id="admin-history-past" style="max-height: 200px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color);"></div>
             
@@ -1315,7 +1583,6 @@
         </div>
     </div>
 
-    <!-- ONGLET 2 : ÉDITEUR (Création & Modification) -->
     <div class="admin-tab-content" id="admin-tab-editor">
         <div class="admin-section">
             <div class="admin-section-title" id="editor-title"><i class="fas fa-edit"></i> Éditeur de combiné</div>
@@ -1351,7 +1618,6 @@
             <div class="admin-section-title"><i class="fas fa-coins"></i> Mise & Gain</div>
             <div class="admin-card" style="margin-bottom:10px;">
                 <div class="admin-field" style="margin-bottom:0;">
-                    <!-- Remplacement par un inputmode decimal pour contrer le bug de la virgule sur certains navigateurs -->
                     <input type="text" inputmode="decimal" class="admin-input" id="admin-mise" placeholder="Mise en € (ex: 100)" oninput="calculateGains()">
                 </div>
             </div>
@@ -1632,53 +1898,129 @@
         showToast('Match ajouté !');
     }
 
-    window.addEventListener('load', function () {
-        setLogos();
-        loadState();
-        updatePlatformDisplay(); 
-        
-        document.getElementById('role-home').innerHTML = '<span style="color:var(--blue);">Visiteur</span>';
-        document.getElementById('role-vip').innerHTML = '<span style="color:var(--blue);">Visiteur</span>';
-        
-        // Initialisation des animations pour la page Packs
-        startCountdown();
-        animateOnlineCount();
-        
-        setTimeout(function () {
-            document.getElementById('splash-screen').classList.add('hidden');
-            setTimeout(function () { document.getElementById('login-screen').classList.add('active'); }, 300);
-        }, 2500);
-    });
-
+    // ==========================================
+    // LOGIQUE DU NOUVEAU LOGIN
+    // ==========================================
+    
     document.getElementById('togglePassword').addEventListener('click', function () {
         var pwd = document.getElementById('login-password');
-        pwd.setAttribute('type', pwd.getAttribute('type') === 'password' ? 'text' : 'password');
-        this.classList.toggle('fa-eye');
-        this.classList.toggle('fa-eye-slash');
+        var icon = this.querySelector('i');
+        var isText = pwd.getAttribute('type') === 'text';
+        pwd.setAttribute('type', isText ? 'password' : 'text');
+        icon.classList.toggle('fa-eye', isText);
+        icon.classList.toggle('fa-eye-slash', !isText);
     });
 
     var isSignUpMode = false;
-    function toggleAuthMode() {
-        isSignUpMode = !isSignUpMode;
-        document.getElementById('title-username').style.display = isSignUpMode ? 'block' : 'none';
-        document.getElementById('login-username').style.display = isSignUpMode ? 'block' : 'none';
-        document.getElementById('btn-action').textContent = isSignUpMode ? "S'inscrire" : 'Connexion';
-        document.getElementById('toggle-auth').textContent = isSignUpMode ? 'Déjà un compte ? Connexion' : 'Créer un compte';
+    function setMode(signUp) {
+        isSignUpMode = signUp;
+
+        document.getElementById('btn-login-mode').classList.toggle('active', !signUp);
+        document.getElementById('btn-signup-mode').classList.toggle('active', signUp);
+
+        var fieldUser = document.getElementById('field-username');
+        fieldUser.classList.toggle('visible', signUp);
+
+        document.querySelector('#btn-action .btn-text').textContent = signUp ? "Créer mon compte" : "Connexion";
+
+        var forgotLink = document.getElementById('forgot-link');
+        forgotLink.style.visibility = signUp ? 'hidden' : 'visible';
+        
+        var subtitle = document.getElementById('auth-subtitle');
+        var welcome = document.querySelector('.login-welcome');
+        subtitle.textContent = signUp ? 'Créez votre compte en 30 secondes' : 'Connectez-vous pour continuer';
+        welcome.textContent = signUp ? 'Bienvenue 🎉' : 'Bon retour 👋';
+
+        var strengthDiv = document.getElementById('password-strength');
+        if (signUp) {
+            strengthDiv.classList.add('show');
+            updatePasswordStrength(document.getElementById('login-password').value);
+        } else {
+            strengthDiv.classList.remove('show');
+        }
+
+        hideError();
+        var pwd = document.getElementById('login-password');
+        pwd.setAttribute('autocomplete', signUp ? 'new-password' : 'current-password');
     }
 
-    document.getElementById('login-password').addEventListener('keypress', function (e) {
+    document.getElementById('login-password').addEventListener('input', function () {
+        if (isSignUpMode) {
+            updatePasswordStrength(this.value);
+        }
+    });
+
+    function updatePasswordStrength(password) {
+        const bars = [
+            document.getElementById('str-1'),
+            document.getElementById('str-2'),
+            document.getElementById('str-3'),
+            document.getElementById('str-4')
+        ];
+        const label = document.getElementById('strength-label');
+
+        let score = 0;
+        if (password.length >= 6) score++;
+        if (password.length >= 10) score++;
+        if (/[A-Z]/.test(password) && /[0-9]/.test(password)) score++;
+        if (/[^A-Za-z0-9]/.test(password)) score++;
+
+        const levels = [
+            { text: 'Trop court', cls: 'weak', color: '#FF3D3D' },
+            { text: 'Faible', cls: 'weak', color: '#FF3D3D' },
+            { text: 'Moyen', cls: 'medium', color: '#FFA726' },
+            { text: 'Bon', cls: 'strong', color: '#00C853' },
+            { text: 'Excellent', cls: 'strong', color: '#00C853' }
+        ];
+
+        bars.forEach((bar, i) => {
+            bar.className = 'strength-bar';
+            if (i < score) {
+                bar.classList.add('active', levels[score].cls);
+            }
+        });
+
+        label.textContent = levels[score].text;
+        label.style.color = levels[score].color;
+    }
+
+    function showError(msg) {
+        var err = document.getElementById('login-error');
+        document.getElementById('error-text').textContent = msg || 'Identifiants incorrects';
+        err.classList.add('show');
+    }
+    function hideError() {
+        document.getElementById('login-error').classList.remove('show');
+    }
+
+    ['login-email','login-password','login-username'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.addEventListener('input', hideError);
+    });
+
+    document.getElementById('login-password').addEventListener('keydown', function (e) {
         if (e.key === 'Enter') handleAuth();
     });
 
-    async function handleAuth() {
-        var email = document.getElementById('login-email').value;
-        var password = document.getElementById('login-password').value;
-        var username = document.getElementById('login-username').value;
+    function socialLogin(provider) {
+        showToast('Connexion sociale ' + provider + ' bientôt disponible !');
+    }
 
-        if (!email || !password || (isSignUpMode && !username)) {
-            showToast('Veuillez remplir tous les champs', true);
-            return;
-        }
+    async function handleAuth() {
+        hideError();
+        var email = document.getElementById('login-email').value.trim();
+        var password = document.getElementById('login-password').value;
+        var username = document.getElementById('login-username').value.trim();
+
+        if (!email) { showError('Veuillez entrer votre adresse e-mail.'); return; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('Adresse e-mail invalide.'); return; }
+        if (isSignUpMode && !username) { showError('Veuillez choisir un pseudo.'); return; }
+        if (!password) { showError('Veuillez entrer votre mot de passe.'); return; }
+        if (isSignUpMode && password.length < 6) { showError('Le mot de passe doit faire au moins 6 caractères.'); return; }
+
+        var btn = document.getElementById('btn-action');
+        btn.classList.add('loading');
+        btn.disabled = true;
 
         try {
             var result;
@@ -1686,17 +2028,19 @@
                 result = await supabaseClient.auth.signUp({ email, password });
                 if (result.error) throw result.error;
                 await supabaseClient.from('profiles').insert([{ id: result.data.user.id, email: email, username: username, is_vip: false, is_admin: false }]);
-                showToast('Compte créé ! Connectez-vous.');
-                toggleAuthMode();
+                
+                showToast('Compte créé avec succès ! Connectez-vous.', false);
+                setMode(false); // Repasse en mode connexion
+                btn.classList.remove('loading');
+                btn.disabled = false;
                 return;
             } else {
                 result = await supabaseClient.auth.signInWithPassword({ email, password });
                 if (result.error) throw result.error;
             }
 
-            var profile = null;
             var profileRes = await supabaseClient.from('profiles').select('is_vip, is_admin, username').eq('id', result.data.user.id).single();
-            profile = profileRes.data;
+            var profile = profileRes.data;
 
             window.isUserVip = profile ? profile.is_vip : false;
             window.isAdmin = profile ? profile.is_admin : false;
@@ -1714,17 +2058,48 @@
             document.getElementById('role-home').innerHTML = roleHtml;
             document.getElementById('role-vip').innerHTML = roleHtml;
 
-            document.getElementById('login-screen').style.opacity = '0';
+            showToast('Connexion réussie !');
+
             setTimeout(function () {
-                document.getElementById('login-screen').classList.remove('active');
-                document.getElementById('app').classList.add('active');
-                chargerDonnees();
-            }, 400);
+                document.getElementById('login-screen').style.opacity = '0';
+                setTimeout(function () {
+                    document.getElementById('login-screen').classList.remove('active');
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('app').classList.add('active');
+                    chargerDonnees();
+                }, 400);
+            }, 800);
 
         } catch (err) {
-            showToast(err.message || "Erreur d'authentification", true);
+            let msg = err.message;
+            if (msg.includes('Invalid login credentials')) msg = 'Identifiants incorrects';
+            if (msg.includes('User already registered')) msg = 'Cet email est déjà utilisé';
+            showError(msg);
+        } finally {
+            btn.classList.remove('loading');
+            btn.disabled = false;
         }
     }
+
+    // ==========================================
+    // INITIALISATION GENERALE
+    // ==========================================
+    window.addEventListener('load', function () {
+        setLogos();
+        loadState();
+        updatePlatformDisplay(); 
+        
+        document.getElementById('role-home').innerHTML = '<span style="color:var(--blue);">Visiteur</span>';
+        document.getElementById('role-vip').innerHTML = '<span style="color:var(--blue);">Visiteur</span>';
+        
+        startCountdown();
+        animateOnlineCount();
+        
+        setTimeout(function () {
+            document.getElementById('splash-screen').classList.add('hidden');
+            setTimeout(function () { document.getElementById('login-screen').classList.add('active'); }, 300);
+        }, 2500);
+    });
 
     async function chargerDonnees() {
         try {
@@ -2039,7 +2414,6 @@
         
         var htmlActive = '';
         var htmlPast = '';
-        
         var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
         
         allCombineds.forEach(function(c) {
@@ -2050,12 +2424,8 @@
                     <button onclick="deleteSpecificCombined('${c.id}')" style="background:var(--red); color:#fff;"><i class="fas fa-trash"></i></button>
                 </div>
             </div>`;
-            
-            if (c.status === 'en-cours') {
-                htmlActive += itemHtml;
-            } else {
-                htmlPast += itemHtml;
-            }
+            if (c.status === 'en-cours') htmlActive += itemHtml;
+            else htmlPast += itemHtml;
         });
         
         containerActive.innerHTML = htmlActive || '<span style="color:var(--text-gray); font-size:12px;">Aucun combiné en cours</span>';
@@ -2072,7 +2442,6 @@
             var displayOdds = isObscured ? '***' : m.odds.toFixed(2);
             var scoreHtml = isObscured ? '<span class="match-score blurred-value">' + displayScore + '</span>' : '<span class="match-score">' + displayScore + '</span>';
             var oddsHtml = isObscured ? '<div class="match-odds blurred-value">' + displayOdds + '</div>' : '<div class="match-odds">' + displayOdds + '</div>';
-            
             var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<i class="fas fa-shield-alt"></i> `;
             
             mH += '<div class="match-row"><div class="match-row-top"><div class="match-type"><i class="fas fa-futbol"></i> Score exact ' + scoreHtml + '</div>' + oddsHtml + '</div><div class="match-row-bottom"><div class="match-teams">' + logoDisplay + (m.teams || 'Équipes') + '</div><div class="match-time">' + (m.time || '') + '</div></div></div>';
@@ -2141,7 +2510,6 @@
         }
     }
 
-    // ===== COUNTDOWN TIMER =====
     function startCountdown() {
         var el = document.getElementById('countdown-timer');
         if (!el) return;
@@ -2170,7 +2538,6 @@
         setInterval(update, 1000);
     }
 
-    // ===== ONLINE COUNT ANIMATION =====
     function animateOnlineCount() {
         var el = document.getElementById('online-count');
         if (!el) return;
@@ -2181,12 +2548,10 @@
         }, 8000);
     }
 
-    // ===== FAQ TOGGLE =====
     function toggleFaq(el) {
         el.classList.toggle('open');
     }
 
-    // ===== CHECKOUT (À PERSONNALISER AVEC TON SYSTÈME DE PAIEMENT) =====
     function openCheckout(pack, price) {
         showToast('Redirection vers le paiement...');
         setTimeout(function() {
