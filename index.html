@@ -18,8 +18,6 @@
     <style>
         .combined-card { display: flex; flex-direction: column; }
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
-        
-        /* THEME SOMBRE (Base conservée intacte) */
         :root{--primary-yellow:#FFD700;--dark-yellow:#E6C200;--bg-dark:#0D0D0D;--bg-card:#1A1A1A;--bg-input:#2A2A2A;--text-white:#FFFFFF;--text-gray:#8A8A8A;--text-light-gray:#B0B0B0;--green:#00C853;--red:#FF3D3D;--blue:#4A90D9;--border-color:#333333;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
         html,body{font-family:'Inter','Montserrat',sans-serif;background:var(--bg-dark);color:var(--text-white);overflow:hidden;height:100%;width:100%;position:fixed;top:0;left:0}
         
@@ -42,46 +40,32 @@
         .fade-in-up{animation:fadeInUp .5s ease forwards}
         .delay-1{animation-delay:.1s;opacity:0}.delay-2{animation-delay:.2s;opacity:0}.delay-3{animation-delay:.3s;opacity:0}.delay-4{animation-delay:.4s;opacity:0}.delay-5{animation-delay:.5s;opacity:0}
         
-        #login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,var(--primary-yellow) 0%,var(--primary-yellow) 42%,var(--bg-dark) 42%);z-index:9000;display:none;flex-direction:column;transition:opacity .4s}
+        /* LOGIN ECRAN : EXCLUSIVEMENT CLAIR ET JAUNE */
+        #login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,var(--primary-yellow) 0%,var(--primary-yellow) 35%,#FFFFFF 35%);z-index:9000;display:none;flex-direction:column;transition:opacity .4s}
         #login-screen.active{display:flex}
         .login-header{flex:0 0 auto;padding-top:calc(30px + var(--safe-top));padding-bottom:20px;text-align:center}
-        .login-logo-img{width:130px;height:auto;object-fit:contain;filter:drop-shadow(0 4px 15px rgba(0,0,0,.25))}
-        .login-form-container{flex:1;background:var(--bg-dark);border-radius:30px 30px 0 0;padding:35px 25px;padding-bottom:calc(30px + var(--safe-bottom))}
-        .login-form-title{font-size:13px;color:var(--text-gray);margin-bottom:8px;font-weight:500}
-        .login-input{width:100%;padding:14px 16px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:12px;color:var(--text-white);font-size:15px;font-family:'Inter',sans-serif;margin-bottom:20px;outline:none;transition:border-color .3s}
-        .login-input:focus{border-color:var(--primary-yellow)}
-        .login-input::placeholder{color:var(--text-gray)}
-        .login-btn{width:100%;padding:15px;background:var(--primary-yellow);color:#000;border:none;border-radius:12px;font-size:16px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:10px;transition:all .3s}
+        .login-logo-img{width:130px;height:auto;object-fit:contain;filter:drop-shadow(0 4px 15px rgba(0,0,0,0.1))}
+        .login-form-container{flex:1;background:#FFFFFF;border-radius:30px 30px 0 0;padding:35px 25px;padding-bottom:calc(30px + var(--safe-bottom));box-shadow: 0 -10px 30px rgba(0,0,0,0.05);}
+        .login-form-title{font-size:13px;color:#6C757D;margin-bottom:8px;font-weight:500}
+        .login-input{width:100%;padding:16px 16px;background:#F8F9FA;border:1px solid #E0E0E0;border-radius:12px;color:#1A1A1A;font-size:15px;font-family:'Inter',sans-serif;margin-bottom:20px;outline:none;transition:border-color .3s}
+        .login-input:focus{border-color:var(--primary-yellow); background:#FFFFFF;}
+        .login-input::placeholder{color:#ADB5BD}
+        .login-btn{width:100%;padding:16px;background:var(--primary-yellow);color:#000;border:none;border-radius:12px;font-size:16px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:10px;transition:all .3s;box-shadow: 0 4px 12px rgba(255,215,0,0.3);}
         .login-btn:active{transform:scale(.98);background:var(--dark-yellow)}
-        .login-options{display:flex;justify-content:space-between;align-items:center;margin-top:18px}
-        .forgot-password{color:var(--primary-yellow);font-size:13px;text-decoration:none;font-weight:500}
-        .remember-me{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-light-gray)}
-        .toggle-switch{width:44px;height:24px;background:var(--bg-input);border-radius:12px;position:relative;cursor:pointer;transition:background .3s}
+        .login-options{display:flex;justify-content:space-between;align-items:center;margin-top:20px}
+        .forgot-password{color:#1A1A1A;font-size:13px;text-decoration:none;font-weight:700}
+        .remember-me{display:flex;align-items:center;gap:8px;font-size:13px;color:#6C757D}
+        .toggle-switch{width:44px;height:24px;background:#E0E0E0;border-radius:12px;position:relative;cursor:pointer;transition:background .3s}
         .toggle-switch.active{background:var(--primary-yellow)}
-        .toggle-switch::after{content:'';width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .3s;box-shadow:0 2px 4px rgba(0,0,0,.3)}
+        .toggle-switch::after{content:'';width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .3s;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
         .toggle-switch.active::after{transform:translateX(20px)}
         .login-error{color:var(--red);font-size:13px;text-align:center;margin-top:12px;display:none;animation:shake .5s ease}
         .login-error.show{display:block}
-        .api-badge-login{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:30px;padding:10px 16px;background:rgba(74,144,217,.1);border:1px solid rgba(74,144,217,.2);border-radius:10px}
-        .api-badge-login i{color:var(--blue);font-size:14px}
-        .api-badge-login span{font-size:11px;color:var(--text-light-gray);font-weight:500}
+        .api-badge-login{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:40px;padding:12px 16px;background:#F8F9FA;border:1px solid #E0E0E0;border-radius:12px}
+        .api-badge-login i{color:#ADB5BD;font-size:14px}
+        .api-badge-login span{font-size:11px;color:#6C757D;font-weight:500}
         .api-badge-login .api-status-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
         
-        /* SURCHARGE : THEME BLANC POUR LE LOGIN UNIQUEMENT */
-        #login-screen { background: linear-gradient(180deg, var(--primary-yellow) 0%, var(--primary-yellow) 35%, #FFFFFF 35%) !important; }
-        #login-screen .login-form-container { background: #FFFFFF !important; box-shadow: 0 -10px 30px rgba(0,0,0,0.05); }
-        #login-screen .login-form-title { color: #6C757D !important; }
-        #login-screen .login-input { background: #F8F9FA !important; border: 1px solid #E0E0E0 !important; color: #1A1A1A !important; }
-        #login-screen .login-input:focus { border-color: var(--primary-yellow) !important; background: #FFFFFF !important; }
-        #login-screen .login-input::placeholder { color: #ADB5BD !important; }
-        #login-screen .forgot-password { color: #1A1A1A !important; font-weight: 700 !important; }
-        #login-screen .remember-me { color: #6C757D !important; }
-        #login-screen .api-badge-login { background: #F8F9FA !important; border: 1px solid #E0E0E0 !important; }
-        #login-screen .api-badge-login i { color: #ADB5BD !important; }
-        #login-screen .api-badge-login span { color: #6C757D !important; }
-        #togglePassword { color: #ADB5BD !important; }
-
-        /* APP MAIN (Sombre) */
         #app{display:none;height:100%;width:100%;flex-direction:column}
         #app.active{display:flex}
         .pages-container{flex:1;overflow:hidden;position:relative;padding-top:var(--safe-top)}
@@ -117,7 +101,6 @@
         .home-user{display:flex;align-items:center;gap:12px}
         .home-greeting{font-size:12px;color:var(--text-gray)}
         .home-username{font-size:16px;font-weight:700;display:flex;align-items:center;gap:5px}
-        .home-username i{font-size:12px;color:var(--text-gray)}
         .home-notif{width:40px;height:40px;background:var(--bg-card);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
         .home-notif i{color:var(--text-white);font-size:18px}
         .home-notif .notif-dot{width:8px;height:8px;background:var(--red);border-radius:50%;position:absolute;top:10px;right:10px}
@@ -135,7 +118,7 @@
         .api-banner .api-title{font-size:12px;font-weight:600;color:var(--text-white);display:flex;align-items:center;gap:6px}
         .api-banner .api-title .live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
         .api-banner .api-desc{font-size:10px;color:var(--text-gray);margin-top:2px}
-        .betclic-badge{font-weight:800;font-size:12px;color:var(--red);background:rgba(255,61,61,.15);padding:5px 10px;border-radius:6px;letter-spacing:.5px}
+        .betclic-badge{font-weight:800;font-size:11px;text-transform:uppercase;color:var(--red);background:rgba(255,61,61,.15);padding:5px 10px;border-radius:6px;letter-spacing:.5px; transition: all 0.3s;}
         
         .section-header{display:flex;justify-content:space-between;align-items:center;padding:0 20px;margin-bottom:15px}
         .section-title{font-size:17px;font-weight:700}
@@ -299,7 +282,7 @@
         ::-webkit-scrollbar{width:0}
         @media(min-width:500px){body{display:flex;align-items:center;justify-content:center;background:#000}#splash-screen,#login-screen,#app,#admin-page{max-width:420px;max-height:900px;border-radius:30px;overflow:hidden}#admin-page.active{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);max-width:420px;max-height:900px;border-radius:30px}}
         
-        /* STYLE HISTORIQUE ET ADMIN (Thème sombre) */
+        /* STYLE HISTORIQUE */
         .history-card { background:var(--bg-card); border:1px solid var(--border-color); border-radius:16px; padding:16px; margin-bottom:14px; display:flex; flex-direction:column; align-items:stretch; transition: all 0.3s; }
         .history-card.termine { border-color: rgba(0, 200, 83, 0.4); background: linear-gradient(145deg, rgba(0,200,83,0.08) 0%, var(--bg-card) 100%); }
         .history-card.perdu { border-color: rgba(255, 61, 61, 0.3); background: linear-gradient(145deg, rgba(255,61,61,0.05) 0%, var(--bg-card) 100%); }
@@ -333,38 +316,38 @@
     </div>
 </div>
 
-<!-- LOGIN -->
+<!-- LOGIN CLAIR & JAUNE -->
 <div id="login-screen">
     <div class="login-header">
         <img id="img-login" alt="ScoreMaster" class="login-logo-img">
     </div>
     <div class="login-form-container">
-        <div class="login-form-title">Email</div>
-        <input type="email" class="login-input" id="login-email" placeholder="Votre email">
+        <div class="login-form-title" style="color: #6C757D;">Email</div>
+        <input type="email" class="login-input" id="login-email" placeholder="Votre email" style="background:#F8F9FA; border-color:#E0E0E0; color:#1A1A1A;">
 
-        <div class="login-form-title" id="title-username" style="display:none;">Pseudo</div>
-        <input type="text" class="login-input" id="login-username" placeholder="Votre pseudo" style="display:none;">
+        <div class="login-form-title" id="title-username" style="display:none; color: #6C757D;">Pseudo</div>
+        <input type="text" class="login-input" id="login-username" placeholder="Votre pseudo" style="display:none; background:#F8F9FA; border-color:#E0E0E0; color:#1A1A1A;">
 
-        <div class="login-form-title">Mot de passe</div>
+        <div class="login-form-title" style="color: #6C757D;">Mot de passe</div>
         <div style="position:relative;width:100%;">
-            <input type="password" class="login-input" id="login-password" placeholder="••••••••••••" style="padding-right:45px;margin-bottom:20px;width:100%;">
-            <i class="fas fa-eye" id="togglePassword" style="position:absolute;right:15px;top:15px;color:var(--text-gray);cursor:pointer;font-size:16px;z-index:10;"></i>
+            <input type="password" class="login-input" id="login-password" placeholder="••••••••••••" style="padding-right:45px;margin-bottom:20px;width:100%; background:#F8F9FA; border-color:#E0E0E0; color:#1A1A1A;">
+            <i class="fas fa-eye" id="togglePassword" style="position:absolute;right:15px;top:15px;color:#ADB5BD;cursor:pointer;font-size:16px;z-index:10;"></i>
         </div>
 
         <button class="login-btn" id="btn-action" onclick="handleAuth()">Connexion</button>
         <div class="login-error" id="login-error"><i class="fas fa-exclamation-circle"></i> Identifiants incorrects</div>
 
         <div class="login-options">
-            <a href="#" class="forgot-password" id="toggle-auth" onclick="toggleAuthMode(); return false;">Créer un compte</a>
-            <div class="remember-me">
-                <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+            <a href="#" class="forgot-password" id="toggle-auth" onclick="toggleAuthMode(); return false;" style="color:#1A1A1A; font-weight:700;">Créer un compte</a>
+            <div class="remember-me" style="color:#6C757D;">
+                <div class="toggle-switch active" onclick="this.classList.toggle('active')" style="background:var(--primary-yellow);"></div>
                 <span>Se souvenir de moi</span>
             </div>
         </div>
 
-        <div class="api-badge-login">
-            <i class="fas fa-plug"></i>
-            <span>API sportifs connectés</span>
+        <div class="api-badge-login" style="background:#F8F9FA; border-color:#E0E0E0;">
+            <i class="fas fa-plug" style="color:#ADB5BD;"></i>
+            <span style="color:#6C757D;">API sportifs connectés</span>
             <div class="api-status-dot"></div>
         </div>
     </div>
@@ -384,7 +367,11 @@
                     <div class="logo-avatar small" id="avatar-home"></div>
                     <div>
                         <div class="home-greeting">Bienvenue !</div>
-                        <div class="home-username">Admin SM <i class="fas fa-chevron-down"></i></div>
+                        <div class="home-username">
+                            <span class="home-username-text">Utilisateur</span> 
+                            <i class="fas fa-cog" onclick="openProfileSettings()" style="color:var(--text-gray); font-size:14px; margin-left:4px; cursor:pointer;"></i>
+                        </div>
+                        <div id="role-home" style="font-size: 11px; font-weight: 700; margin-top: 2px;"></div>
                     </div>
                 </div>
                 <div class="home-notif" onclick="showToast('Pas de nouvelles notifications',true)">
@@ -403,7 +390,7 @@
                     <div class="api-title">API sportifs connectés <div class="live-dot"></div></div>
                     <div class="api-desc">Données en temps réel • Cotes actualisées</div>
                 </div>
-                <span class="betclic-badge">LIVE</span>
+                <span class="betclic-badge platform-badge-display">BETCLIC</span>
             </div>
             <div class="section-header fade-in-up delay-3">
                 <span class="section-title">Découvrez nos packs !</span>
@@ -566,7 +553,13 @@
             <div class="vip-header"><h2>Espace SM VIP+</h2></div>
             <div class="vip-profile">
                 <div class="logo-avatar medium" id="avatar-vip"></div>
-                <div class="vip-user-info"><h3>Admin SM</h3></div>
+                <div class="vip-user-info">
+                    <h3 style="display:flex; align-items:center; gap:6px;">
+                        <span class="vip-username-text">Admin SM</span>
+                        <i class="fas fa-cog" onclick="openProfileSettings()" style="color:var(--text-gray); font-size:14px; cursor:pointer;"></i>
+                    </h3>
+                    <div id="role-vip" style="font-size: 12px; font-weight: 700; margin-top: 4px;"></div>
+                </div>
                 <button class="vip-modify-btn" onclick="promptAdminCode()" style="border-color:transparent;color:transparent;">Modifier</button>
             </div>
             <div class="vip-notice">Le prochain combiné apparaîtra ci-dessous une fois disponible ! (activez vos notifs !)</div>
@@ -576,7 +569,7 @@
                     <div class="api-title">API sportifs connectés <div class="live-dot"></div></div>
                     <div class="api-desc">Données en temps réel • Cotes actualisées</div>
                 </div>
-                <span class="betclic-badge">LIVE</span>
+                <span class="betclic-badge platform-badge-display">BETCLIC</span>
             </div>
             <div id="vip-combined-status-bar"></div>
             <div class="vip-combined-container" id="vip-combined-container">
@@ -691,10 +684,40 @@
     </div>
 </div>
 
+<!-- NOUVEAU POPUP PARAMETRES PROFIL -->
+<div id="profile-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+    <div style="background:var(--bg-card);padding:30px;border-radius:24px;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 style="font-size:18px;font-weight:700;color:#fff;font-family:'Montserrat',sans-serif;">Paramètres</h3>
+            <i class="fas fa-times" onclick="closeProfileSettings()" style="color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
+        </div>
+        <div class="admin-field">
+            <div class="admin-label" style="color:var(--text-gray); margin-bottom:8px;"><i class="fas fa-gamepad" style="color:var(--primary-yellow)"></i> Plateforme de paris favorite</div>
+            <select class="admin-select" id="user-platform-select" style="background:var(--bg-input); color:var(--text-white); border:1px solid var(--border-color); padding:14px; border-radius:12px;">
+                <option value="BETCLIC">Betclic</option>
+                <option value="WINAMAX">Winamax</option>
+                <option value="UNIBET">Unibet</option>
+            </select>
+        </div>
+        <button onclick="saveProfileSettings()" style="width:100%;padding:14px;background:var(--primary-yellow);color:#000;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:20px;">Enregistrer</button>
+    </div>
+</div>
+
+<script>
+    const LOGO_DARK = "logo-dark.png";
+    const LOGO_LIGHT = "logo-light.png";
+    const LOGO_SPLASH = "logo-splash.png";
+    const TELEGRAM_LINK = "https://t.me/scoremasteroff";
+    const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
+    
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+
 <script>
     function setLogos() {
         document.getElementById('img-splash').src = LOGO_SPLASH;
-        document.getElementById('img-login').src = LOGO_DARK; /* Le logo sombre pour le fond clair du login */
+        document.getElementById('img-login').src = LOGO_DARK; // Logo noir pour l'écran clair
         document.getElementById('img-admin').src = LOGO_DARK;
         document.getElementById('avatar-home').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
         document.getElementById('avatar-vip').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
@@ -709,16 +732,69 @@
     var currentCombined = null; 
     var editingId = null; 
     var matchEntryCount = 0, appStats = { total: 0, wins: 0, losses: 0, pending: 0 };
+    var userPlatform = 'BETCLIC'; // Plateforme par défaut
 
     function loadState() {
         var s = localStorage.getItem('scoreMasterData');
-        if (s) { var d = JSON.parse(s); appStats = d.stats || { total: 0, wins: 0, losses: 0, pending: 0 }; }
+        if (s) { 
+            var d = JSON.parse(s); 
+            appStats = d.stats || { total: 0, wins: 0, losses: 0, pending: 0 }; 
+            userPlatform = d.platform || 'BETCLIC';
+        }
     }
-    function saveState() { localStorage.setItem('scoreMasterData', JSON.stringify({ stats: appStats })); }
+    
+    function saveState() { 
+        localStorage.setItem('scoreMasterData', JSON.stringify({ stats: appStats, platform: userPlatform })); 
+    }
+
+    // Gestion du popup Profil
+    function openProfileSettings() {
+        document.getElementById('user-platform-select').value = userPlatform;
+        var popup = document.getElementById('profile-popup');
+        popup.style.display = 'flex';
+        setTimeout(function () { popup.style.opacity = '1'; popup.firstElementChild.style.transform = 'scale(1)'; }, 10);
+    }
+    
+    function closeProfileSettings() {
+        var popup = document.getElementById('profile-popup');
+        popup.style.opacity = '0';
+        popup.firstElementChild.style.transform = 'scale(0.9)';
+        setTimeout(function () { popup.style.display = 'none'; }, 300);
+    }
+    
+    function saveProfileSettings() {
+        userPlatform = document.getElementById('user-platform-select').value;
+        saveState();
+        updatePlatformDisplay();
+        closeProfileSettings();
+        showToast('Profil mis à jour !');
+    }
+
+    function updatePlatformDisplay() {
+        document.querySelectorAll('.platform-badge-display').forEach(function(el) {
+            el.textContent = userPlatform;
+            if(userPlatform === 'WINAMAX') {
+                el.style.color = '#fff';
+                el.style.background = 'rgba(255, 0, 0, 0.5)';
+            } else if(userPlatform === 'UNIBET') {
+                el.style.color = '#00e676';
+                el.style.background = 'rgba(0, 230, 118, 0.15)';
+            } else {
+                el.style.color = 'var(--red)';
+                el.style.background = 'rgba(255,61,61,.15)';
+            }
+        });
+    }
 
     window.addEventListener('load', function () {
         setLogos();
         loadState();
+        updatePlatformDisplay(); // Appliquer le design au chargement
+        
+        // Rôle par défaut si non connecté
+        document.getElementById('role-home').innerHTML = '<span style="color:var(--blue);">Visiteur</span>';
+        document.getElementById('role-vip').innerHTML = '<span style="color:var(--blue);">Visiteur</span>';
+        
         setTimeout(function () {
             document.getElementById('splash-screen').classList.add('hidden');
             setTimeout(function () { document.getElementById('login-screen').classList.add('active'); }, 300);
@@ -777,10 +853,19 @@
             window.isAdmin = profile ? profile.is_admin : false;
 
             var finalUsername = (profile && profile.username) ? profile.username : 'Utilisateur';
-            var homeName = document.querySelector('.home-username');
-            if (homeName) homeName.innerHTML = finalUsername + ' <i class="fas fa-chevron-down"></i>';
-            var vipName = document.querySelector('.vip-user-info h3');
+            
+            // Mise à jour des Noms
+            var homeName = document.querySelector('.home-username-text');
+            if (homeName) homeName.textContent = finalUsername;
+            var vipName = document.querySelector('.vip-username-text');
             if (vipName) vipName.textContent = finalUsername;
+            
+            // Mise à jour du Rôle !
+            var roleText = window.isUserVip ? 'SM VIP+' : 'Visiteur';
+            var roleColor = window.isUserVip ? 'var(--red)' : 'var(--blue)';
+            var roleHtml = `<span style="color:${roleColor};">${roleText}</span>`;
+            document.getElementById('role-home').innerHTML = roleHtml;
+            document.getElementById('role-vip').innerHTML = roleHtml;
 
             document.getElementById('login-screen').style.opacity = '0';
             setTimeout(function () {
@@ -819,7 +904,7 @@
             }
             
             allCombineds = publicData;
-            currentCombined = allCombineds[0]; 
+            currentCombined = allCombineds.find(function(c) { return c.status === 'en-cours'; }) || allCombineds[0]; 
 
         } catch (e) {
             console.error('Erreur lors du chargement des données :', e);
@@ -834,7 +919,7 @@
         if (page === 'vip' && !window.isUserVip) {
             var popup = document.getElementById('vip-popup');
             popup.style.display = 'flex';
-            setTimeout(function () { popup.style.opacity = '1'; }, 10);
+            setTimeout(function () { popup.style.opacity = '1'; popup.firstElementChild.style.transform = 'scale(1)'; }, 10);
             return;
         }
         document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); });
@@ -1010,21 +1095,25 @@
         var vc = document.getElementById('vip-combined-container');
         var hc = document.getElementById('home-combined-container');
         var sb = document.getElementById('vip-combined-status-bar');
+        
         if (!currentCombined) {
-            var empty = '<div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné en cours.</div>';
-            vc.innerHTML = empty; hc.innerHTML = empty; sb.innerHTML = '';
+            var empty = '<div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div>';
+            if (vc) vc.innerHTML = empty; 
+            if (hc) hc.innerHTML = empty; 
+            if (sb) sb.innerHTML = '';
             return;
         }
         var df = fmtD(currentCombined.date), sc = currentCombined.status;
         var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
         var pw = '50%';
         if (sc === 'termine' || sc === 'perdu') pw = '100%';
-        vc.innerHTML = buildCC(currentCombined, sc, sl, pw, false);
-        hc.innerHTML = buildCC(currentCombined, sc, sl, pw, true);
         
-        if (sc === 'en-cours') {
+        if (vc) vc.innerHTML = buildCC(currentCombined, sc, sl, pw, false);
+        if (hc) hc.innerHTML = buildCC(currentCombined, sc, sl, pw, true);
+        
+        if (sc === 'en-cours' && sb) {
             sb.innerHTML = '<div style="background:var(--primary-yellow); color:#000; padding:14px; border-radius:12px; text-align:center; font-weight:800; font-size:15px; margin:0 20px 15px;">Combiné à venir ! 🔥</div>';
-        } else {
+        } else if (sb) {
             sb.innerHTML = '';
         }
     }
@@ -1032,15 +1121,18 @@
     function renderHistory() {
         var hc = document.getElementById('history-container');
         if (!hc) return;
-        if (allCombineds.length <= 1) {
+        
+        // Exclure le combiné affiché dans le bloc principal
+        var historyData = allCombineds.filter(function(c) { return c.id !== currentCombined.id; });
+        
+        if (historyData.length === 0) {
             hc.innerHTML = '<div class="no-combined-message"><i class="fas fa-history"></i>Aucun historique pour le moment.</div>';
             return;
         }
         var html = '';
         var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
         
-        for(var i = 1; i < allCombineds.length; i++) {
-            var c = allCombineds[i];
+        historyData.forEach(function(c) {
             var sc = c.status;
             var statusColor = sc === 'termine' ? 'var(--green)' : (sc === 'perdu' ? 'var(--red)' : 'var(--primary-yellow)');
             var odds = c.total_odds ? c.total_odds.toFixed(2) : (window.isUserVip ? '?' : '***');
@@ -1071,7 +1163,7 @@
                 </div>
                 ${matchesHtml}
             </div>`;
-        }
+        });
         hc.innerHTML = html;
     }
     
