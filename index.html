@@ -3,6 +3,7 @@
 <html lang="fr">
 <head>
 <title>Score Master</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Score Master">
@@ -338,7 +339,19 @@
         .toast.error{background:var(--red);color:#fff;box-shadow:0 10px 30px rgba(255,61,61,.3)}
         .toast i{font-size:18px}
         ::-webkit-scrollbar{width:0}
-        @media(min-width:500px){body{display:flex;align-items:center;justify-content:center;background:#000}#splash-screen,#login-screen,#app,#admin-page{max-width:420px;max-height:900px;border-radius:30px;overflow:hidden}#admin-page.active{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);max-width:420px;max-height:900px;border-radius:30px}}
+        /* Sécurité pour que le formulaire prenne bien toute la largeur sur mobile */
+        .login-form-container { width: 100%; }
+        
+        /* Correction de l'affichage pour les tablettes/PC (Centrage parfait) */
+        @media(min-width:768px){
+            body { display:flex; align-items:center; justify-content:center; background:#000; }
+            #splash-screen, #login-screen, #app, #admin-page {
+                position:fixed !important; left:50% !important; top:50% !important; transform:translate(-50%,-50%) !important;
+                width:100vw !important; height:100vh !important; max-width:420px !important; max-height:900px !important;
+                border-radius:30px !important; overflow:hidden !important;
+            }
+            #app.active { display:flex !important; }
+        }
         
         .history-card { background:var(--bg-card); border:1px solid var(--border-color); border-radius:16px; padding:16px; margin-bottom:14px; display:flex; flex-direction:column; align-items:stretch; transition: all 0.3s; }
         .history-card.termine { border-color: rgba(0, 200, 83, 0.4); background: linear-gradient(145deg, rgba(0,200,83,0.08) 0%, var(--bg-card) 100%); }
@@ -765,16 +778,18 @@
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     function setLogos() {
-        document.getElementById('img-splash').src = LOGO_SPLASH;
-        document.getElementById('img-login').src = LOGO_DARK;
-        document.getElementById('img-admin').src = LOGO_DARK;
-        document.getElementById('avatar-home').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
-        document.getElementById('avatar-vip').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
-        document.getElementById('pack-icon-1').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
-        document.getElementById('pack-icon-2').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
-        document.getElementById('pack-detail-1').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
-        document.getElementById('pack-detail-2').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
-        document.getElementById('pack-detail-3').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+    document.getElementById('img-splash').src = LOGO_SPLASH;
+        
+    // On utilise LOGO_LIGHT pour forcer l'affichage du SM Noir avec la couronne jaune
+    document.getElementById('img-login').src = LOGO_LIGHT;
+    document.getElementById('img-admin').src = LOGO_LIGHT;
+    document.getElementById('avatar-home').innerHTML = '<img src="' + LOGO_LIGHT + '" alt="SM">';
+    document.getElementById('avatar-vip').innerHTML = '<img src="' + LOGO_LIGHT + '" alt="SM">';
+    document.getElementById('pack-icon-1').innerHTML = '<img src="' + LOGO_LIGHT + '" alt="SM">';
+    document.getElementById('pack-icon-2').innerHTML = '<img src="' + LOGO_LIGHT + '" alt="SM">';
+    document.getElementById('pack-detail-1').innerHTML = '<img src="' + LOGO_LIGHT + '" alt="SM">';
+    document.getElementById('pack-detail-2').innerHTML = '<img src="' + LOGO_LIGHT + '" alt="SM">';
+    document.getElementById('pack-detail-3').innerHTML = '<img src="' + LOGO_LIGHT + '" alt="SM">';
     }
 </script>
 
@@ -1343,7 +1358,7 @@
                 </div>
                 <div class="contact-card">
                     <div class="contact-card-icon email"><i class="fas fa-envelope"></i></div>
-                    <div class="contact-card-info"><h4>Email</h4><p>contact@scoremaster.fr</p></div>
+                    <div class="contact-card-info"><h4>Email</h4><p><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="c4a7abaab0a5a7b084b7a7abb6a1a9a5b7b0a1b6eaa2b6">[email&#160;protected]</a></p></div>
                     <i class="fas fa-chevron-right contact-card-arrow"></i>
                 </div>
             </div>
@@ -1478,6 +1493,8 @@
                 </div>
             </div>
             <div class="admin-summary">
+                <div class="admin-summary-row"><span class="admin-summary-label">Matchs</span><span class="admin-summary-value" id="summary-matches">0</span></div>
+                <div class="admin-summary-row"><span class="admin-summary-label">Mise</span><span class="admin-summary-value" id="summary-mise">0,00 €</span></div>
                 <div class="admin-summary-row"><span class="admin-summary-label">Cote totale</span><span class="admin-summary-value" id="summary-odds" style="color:var(--primary-yellow);">0.00</span></div>
                 <div class="admin-summary-row"><span class="admin-summary-label">Gains potentiels</span><span class="admin-summary-value gains" id="summary-gains">0,00 €</span></div>
             </div>
@@ -1587,7 +1604,7 @@
     </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     var allCombineds = [];
     var currentCombined = null; 
     var editingId = null; 
@@ -2488,13 +2505,4 @@
     }
 
     function closeSuccessPopup() {
-        var popup = document.getElementById('success-popup');
-        popup.style.opacity = '0';
-        popup.firstElementChild.style.transform = 'scale(0.9)';
-        setTimeout(function () { popup.style.display = 'none'; }, 300);
-    }
-
-</script>
-
-</body>
-</html>
+        var popup = document.getEl
