@@ -1,8 +1,8 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <title>Score Master</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Score Master">
@@ -762,9 +762,6 @@
     </style>
 </head>
 <body>
-<!-- Supabase CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 
 <script>
     const LOGO_DARK = "logo-dark.png";
@@ -792,6 +789,7 @@
     document.getElementById('pack-detail-1').innerHTML = '<img src="' + LOGO_LIGHT + '" alt="SM">';
     document.getElementById('pack-detail-2').innerHTML = '<img src="' + LOGO_LIGHT + '" alt="SM">';
     document.getElementById('pack-detail-3').innerHTML = '<img src="' + LOGO_LIGHT + '" alt="SM">';
+    }
     }
 </script>
 
@@ -1495,8 +1493,6 @@
                 </div>
             </div>
             <div class="admin-summary">
-                <div class="admin-summary-row"><span class="admin-summary-label">Matchs</span><span class="admin-summary-value" id="summary-matches">0</span></div>
-                <div class="admin-summary-row"><span class="admin-summary-label">Mise</span><span class="admin-summary-value" id="summary-mise">0,00 €</span></div>
                 <div class="admin-summary-row"><span class="admin-summary-label">Cote totale</span><span class="admin-summary-value" id="summary-odds" style="color:var(--primary-yellow);">0.00</span></div>
                 <div class="admin-summary-row"><span class="admin-summary-label">Gains potentiels</span><span class="admin-summary-value gains" id="summary-gains">0,00 €</span></div>
             </div>
