@@ -10,7 +10,6 @@
     <meta name="apple-mobile-web-app-title" content="ScoreMaster">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0D0D0D">
-    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlNjb3JlTWFzdGVyIiwKICAic2hvcnRfbmFtZSI6ICJTTSB2aXAiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBEMEQwRCIsCiAgInRoZW1lX2NvbG9yIjogIiMwRDBEMEQiLAogICJvcmllbnRhdGlvbiI6ICJwb3J0cmFpdCIKfQ==">
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -19,14 +18,13 @@
         .combined-card { display: flex; flex-direction: column; }
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
         
-        /* THEME SOMBRE */
         :root{--primary-yellow:#FFD700;--dark-yellow:#E6C200;--bg-dark:#0D0D0D;--bg-card:#1A1A1A;--bg-input:#2A2A2A;--text-white:#FFFFFF;--text-gray:#8A8A8A;--text-light-gray:#B0B0B0;--green:#00C853;--red:#FF3D3D;--blue:#4A90D9;--border-color:#333333;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
         html,body{font-family:'Inter','Montserrat',sans-serif;background:var(--bg-dark);color:var(--text-white);overflow:hidden;height:100%;width:100%;position:fixed;top:0;left:0}
         
         #splash-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;z-index:10000;transition:opacity .6s,visibility .6s}
         #splash-screen.hidden{opacity:0;visibility:hidden}
         .splash-content{text-align:center;animation:splashFadeIn 1s ease-out}
-        .splash-logo-img{width:300px;height:auto;max-height:350px;object-fit:contain;filter:drop-shadow(0 0 40px rgba(255,215,0,.15))}
+        .splash-logo-img{width:200px;height:auto;max-height:350px;object-fit:contain;filter:drop-shadow(0 0 40px rgba(255,215,0,.15))}
         .splash-loader{margin-top:40px;display:flex;gap:8px;justify-content:center}
         .splash-loader span{width:8px;height:8px;background:var(--primary-yellow);border-radius:50%;animation:loaderBounce 1.4s ease infinite}
         .splash-loader span:nth-child(2){animation-delay:.2s}
@@ -42,11 +40,10 @@
         .fade-in-up{animation:fadeInUp .5s ease forwards}
         .delay-1{animation-delay:.1s;opacity:0}.delay-2{animation-delay:.2s;opacity:0}.delay-3{animation-delay:.3s;opacity:0}.delay-4{animation-delay:.4s;opacity:0}.delay-5{animation-delay:.5s;opacity:0}
         
-        /* LOGIN CLAIR ET JAUNE */
         #login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,var(--primary-yellow) 0%,var(--primary-yellow) 35%,#FFFFFF 35%);z-index:9000;display:none;flex-direction:column;transition:opacity .4s}
         #login-screen.active{display:flex}
         .login-header{flex:0 0 auto;padding-top:calc(30px + var(--safe-top));padding-bottom:20px;text-align:center}
-        .login-logo-img{width:130px;height:auto;object-fit:contain;filter:drop-shadow(0 4px 15px rgba(0,0,0,0.1))}
+        .login-logo-img{width:100px;height:auto;object-fit:contain;filter:drop-shadow(0 4px 15px rgba(0,0,0,0.1))}
         .login-form-container{flex:1;background:#FFFFFF;border-radius:30px 30px 0 0;padding:35px 25px;padding-bottom:calc(30px + var(--safe-bottom));box-shadow: 0 -10px 30px rgba(0,0,0,0.05);}
         .login-form-title{font-size:13px;color:#6C757D;margin-bottom:8px;font-weight:500}
         .login-input{width:100%;padding:16px 16px;background:#F8F9FA;border:1px solid #E0E0E0;border-radius:12px;color:#1A1A1A;font-size:15px;font-family:'Inter',sans-serif;margin-bottom:20px;outline:none;transition:border-color .3s}
@@ -193,7 +190,6 @@
         .page-title-bar{padding:15px 20px;display:flex;align-items:center;justify-content:space-between}
         .page-title-bar h2{font-size:22px;font-weight:800}
         
-        /* STYLE PACKS AMÉLIORÉ */
         .packs-page-list{padding:0 20px}
         .pack-detail-card{background:var(--bg-card);border-radius:16px;padding:20px;margin-bottom:14px;border:1px solid var(--border-color)}
         .pack-detail-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
@@ -309,17 +305,18 @@
 <body>
 
 <script>
-    // --- VARIABLES GLOBALES ET CONNEXION SUPABASE ---
-    const LOGO_DARK = "logo-dark.png";
-    const LOGO_LIGHT = "logo-light.png";
-    const LOGO_SPLASH = "logo-splash.png";
+    // URL DE L'IMAGE GENERIQUE EN LIGNE (Pour éviter les erreurs sur Vercel le temps de tester)
+    // Remets "logo-dark.png" quand tu auras uploadé tes fichiers sur le serveur !
+    const LOGO_DARK = "https://cdn-icons-png.flaticon.com/512/5753/5753982.png"; 
+    const LOGO_LIGHT = "https://cdn-icons-png.flaticon.com/512/5753/5753982.png";
+    const LOGO_SPLASH = "https://cdn-icons-png.flaticon.com/512/5753/5753982.png";
+    
     const TELEGRAM_LINK = "https://t.me/scoremasteroff";
     const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
     
-    // --- AJOUT DE TA CLE SPORTMONKS ICI ---
-    // Remplace le texte ci-dessous par ta vraie clé Sportmonks
-    const SPORTMONKS_API_KEY = 'Tu21daPcYDJc75TOju5H1rpJes5wOtJkCnW67KG6OCIfU4cvIHVhTELEZtbY';
+    // --- METS TA CLE SPORTMONKS ICI ---
+    const SPORTMONKS_API_KEY = 'Tu21daPcYDJc75TOju5H1rpJes5wOtJkCnW67KG6OCIfU4cvIHVhTELEZtbY'; 
     
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -634,7 +631,6 @@
 
     </div>
 
-    <!-- BOTTOM NAV -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="navigateTo('home')"><i class="fas fa-home"></i><span>Accueil</span></div>
         <div class="nav-item" onclick="navigateTo('packs')"><i class="fas fa-clone"></i><span>Nos packs</span></div>
@@ -643,7 +639,7 @@
     </div>
 </div>
 
-<!-- ADMIN PANEL -->
+<!-- ADMIN -->
 <div id="admin-page">
     <div class="admin-header">
         <h2><img id="img-admin" alt="SM" class="admin-header-logo"> Panel Admin</h2>
@@ -690,7 +686,7 @@
     <div class="admin-section">
         <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs</div>
         
-        <!-- NOUVEAU BOUTON API SPORTMONKS -->
+        <!-- BOUTON API SPORTMONKS -->
         <button id="btn-fetch-api" onclick="fetchMatchesFromAPI()" style="width:100%; padding:10px; background:rgba(74, 144, 217, 0.15); color:var(--blue); border:1px solid rgba(74, 144, 217, 0.3); border-radius:8px; cursor:pointer; margin-bottom:10px; font-weight:600;">
             <i class="fas fa-plug"></i> Charger les matchs du jour
         </button>
@@ -786,7 +782,6 @@
         localStorage.setItem('scoreMasterData', JSON.stringify({ stats: appStats, platform: userPlatform })); 
     }
 
-    // GESTION POPUP PROFIL
     function openProfileSettings() {
         document.getElementById('user-platform-select').value = userPlatform;
         var popup = document.getElementById('profile-popup');
@@ -825,7 +820,6 @@
         });
     }
 
-    // GESTION POPUP INFO
     function showPackInfo(packType) {
         var popup = document.getElementById('info-popup');
         var title = document.getElementById('info-popup-title');
@@ -867,9 +861,9 @@
         setTimeout(function () { popup.style.display = 'none'; }, 300);
     }
 
-    // NOUVEAU: CONNEXION A SPORTMONKS API
+    // --- REQUÊTE API SPORTMONKS (Avec proxy de contournement) ---
     async function fetchMatchesFromAPI() {
-        if (SPORTMONKS_API_KEY === 'COLLE_TA_CLE_ICI') {
+        if (SPORTMONKS_API_KEY === 'Tu21daPcYDJc75TOju5H1rpJes5wOtJkCnW67KG6OCIfU4cvIHVhTELEZtbY' || SPORTMONKS_API_KEY.trim() === '') {
             showToast('Met ta clé API Sportmonks dans le code !', true);
             return;
         }
@@ -884,15 +878,28 @@
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement...';
 
         try {
-            var url = `https://api.sportmonks.com/v3/football/fixtures/date/${date}?api_token=${SPORTMONKS_API_KEY}&include=participants`;
+            // Utilisation de AllOrigins pour éviter l'erreur de sécurité CORS de ton navigateur
+            var targetUrl = encodeURIComponent(`https://api.sportmonks.com/v3/football/fixtures/date/${date}?api_token=${SPORTMONKS_API_KEY}&include=participants`);
+            var url = `https://api.allorigins.win/get?url=${targetUrl}`;
+            
             var response = await fetch(url);
-            var data = await response.json();
+            var proxyData = await response.json();
+            
+            if (!proxyData.contents) {
+                throw new Error("Impossible de joindre l'API Sportmonks.");
+            }
+
+            var data = JSON.parse(proxyData.contents);
+
+            if (data.message) {
+                throw new Error(data.message); // Exemple: Clé API invalide, limite atteinte...
+            }
 
             if (data.data && data.data.length > 0) {
                 var matchesHtml = '<div style="background:#2A2A2A; padding:10px; border-radius:8px; margin-bottom:10px; max-height:200px; overflow-y:auto;">';
                 matchesHtml += '<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px;">Matchs trouvés (' + data.data.length + ') :</div>';
 
-                var limit = Math.min(data.data.length, 15); // On prend les 15 premiers pour tester
+                var limit = Math.min(data.data.length, 15);
                 for(var i=0; i<limit; i++) {
                     var match = data.data[i];
                     var team1 = match.participants && match.participants[0] ? match.participants[0].name : 'Equipe A';
@@ -914,7 +921,7 @@
             }
         } catch (error) {
             console.error(error);
-            showToast('Erreur API Sportmonks', true);
+            showToast(error.message || 'Erreur API Sportmonks', true);
         }
 
         btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs du jour';
@@ -925,8 +932,8 @@
         showToast('Match ajouté !');
     }
 
-    // INITIALISATION
     window.addEventListener('load', function () {
+        setLogos();
         loadState();
         updatePlatformDisplay(); 
         
@@ -1073,7 +1080,7 @@
         document.getElementById('admin-status').value = 'en-cours';
         document.getElementById('admin-mise').value = '100';
         document.getElementById('admin-matches').innerHTML = '';
-        document.getElementById('api-matches-container').innerHTML = ''; // Vide l'API
+        document.getElementById('api-matches-container').innerHTML = '';
         matchEntryCount = 0;
         addMatchEntry(); addMatchEntry();
         calculateGains();
