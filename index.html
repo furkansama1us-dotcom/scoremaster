@@ -123,7 +123,8 @@
         .api-badge-login .api-status-dot { width:6px; height:6px; background:var(--green); border-radius:50%; animation:pulse 2s infinite; box-shadow: 0 0 5px var(--green); }
 
         /* CORRECTION STRUCTURE APP ET MENU FIGÉ */
-        #app { display:none; height:100vh; width:100vw; flex-direction:column; position:fixed; top:0; left:0; overflow:hidden; }
+        /* On utilise 100% plutôt que 100vh pour éviter les sauts de hauteur sur iOS */
+        #app { display:none; height:100%; width:100%; flex-direction:column; position:absolute; top:0; left:0; overflow:hidden; }
         #app.active { display:flex; }
         
         .pages-container { flex:1; position:relative; overflow:hidden; width:100%; }
@@ -133,17 +134,19 @@
             overflow-y:auto; overflow-x:hidden; 
             opacity:0; visibility:hidden; transition:opacity .3s, transform .3s; transform:translateY(10px); 
             -webkit-overflow-scrolling:touch; 
-            padding-top:var(--safe-top); padding-bottom:calc(20px + env(safe-area-inset-bottom, 0px)); /* S'assure que le contenu ne passe pas sous le menu */
+            /* On ajoute un padding bottom très large pour que le dernier élément de la page ne soit pas caché par le menu */
+            padding-top:var(--safe-top); padding-bottom: 120px; 
         }
         .page.active { opacity:1; visibility:visible; transform:translateY(0); }
         
         .bottom-nav { 
-            height:calc(65px + var(--safe-bottom)); 
+            /* On force la position absolue en bas, et on gère la zone de sécurité (encoche du bas) */
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            height:calc(65px + env(safe-area-inset-bottom, 0px)); 
             background:#111; border-top:1px solid var(--border-color); 
             display:flex; align-items:flex-start; justify-content:space-around; 
-            flex-shrink:0; width:100%; 
-            padding-top:8px; padding-bottom:var(--safe-bottom);
-            z-index: 1000; /* Force le menu à rester au-dessus du reste */
+            padding-top:8px; padding-bottom:env(safe-area-inset-bottom, 0px);
+            z-index: 1000; 
         }
         .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 12px;border-radius:12px;transition:all .3s}
         .nav-item i{font-size:20px;color:var(--text-gray);transition:color .3s}
