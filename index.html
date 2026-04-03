@@ -11,8 +11,8 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0D0D0D">
     <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlNjb3JlTWFzdGVyIiwKICAic2hvcnRfbmFtZSI6ICJTTSB2aXAiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBEMEQwRCIsCiAgInRoZW1lX2NvbG9yIjogIiMwRDBEMEQiLAogICJvcmllbnRhdGlvbiI6ICJwb3J0cmFpdCIKfQ==">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="[fonts.googleapis.com](https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap)" rel="stylesheet">
+    <link rel="stylesheet" href="[cdnjs.cloudflare.com](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css)">
     <style>
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
         :root{--primary-yellow:#FFD700;--dark-yellow:#E6C200;--bg-dark:#0D0D0D;--bg-card:#1A1A1A;--bg-input:#2A2A2A;--text-white:#FFFFFF;--text-gray:#8A8A8A;--text-light-gray:#B0B0B0;--green:#00C853;--red:#FF3D3D;--blue:#4A90D9;--border-color:#333333;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
@@ -156,14 +156,11 @@
         .combined-footer-value{font-size:15px;font-weight:700}
         .combined-footer-value.gains{color:var(--green);font-size:18px}
         .watermark-img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80px;opacity:.07;pointer-events:none}
-        /* BLUR for home page */
         .blurred-value{filter:blur(6px);user-select:none;-webkit-user-select:none;pointer-events:none}
-        /* TELEGRAM CTA button */
         .combined-cta-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:calc(100% - 32px);margin:0 16px 16px;padding:15px;background:linear-gradient(135deg,#0088cc,#006faa);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;text-decoration:none;text-align:center;box-shadow:0 6px 20px rgba(0,136,204,.35);transition:all .3s;position:relative;overflow:hidden}
         .combined-cta-btn i.tg-icon{font-size:20px}
         .combined-cta-btn .cta-lock{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.7}
         .combined-cta-btn:active{transform:scale(.97);box-shadow:0 3px 10px rgba(0,136,204,.3)}
-        /* Normal VIP button */
         .combined-complete-btn{display:block;width:calc(100% - 32px);margin:0 16px 16px;padding:13px;background:var(--text-white);color:#000;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;text-align:center}
         .help-card{margin:15px 20px;padding:16px;background:var(--bg-card);border-radius:14px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1px solid var(--border-color)}
         .help-card-icon{width:40px;height:40px;background:var(--bg-input);border-radius:50%;display:flex;align-items:center;justify-content:center}
@@ -237,7 +234,7 @@
         .admin-input::placeholder{color:#555}
         .admin-row{display:flex;gap:10px}
         .admin-row .admin-field{flex:1}
-        .admin-select{width:100%;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;color:var(--text-white);font-size:14px;font-family:'Inter',sans-serif;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238A8A8A'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:24px}
+        .admin-select{width:100%;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;color:var(--text-white);font-size:14px;font-family:'Inter',sans-serif;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='[w3.org](http://www.w3.org/2000/svg)' viewBox='0 0 24 24' fill='%238A8A8A'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:24px}
         .admin-select:focus{border-color:var(--primary-yellow)}
         .match-entry{background:var(--bg-card);border-radius:14px;padding:16px;border:1px solid var(--border-color);margin-bottom:12px}
         .match-entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
@@ -272,95 +269,277 @@
     </style>
 </head>
 <body>
+
 <script>
-   const LOGO_DARK="logo-dark.png";
-   const LOGO_LIGHT="logo-light.png";
-   const LOGO_SPLASH="logo-splash.png";
-   const TELEGRAM_LINK="https://t.me/scoremasteroff";
-   const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
-   const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
-   const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const LOGO_DARK = "logo-dark.png";
+    const LOGO_LIGHT = "logo-light.png";
+    const LOGO_SPLASH = "logo-splash.png";
+    const TELEGRAM_LINK = "[t.me](https://t.me/scoremasteroff)";
+    const SUPABASE_URL = '[pytqquerlktxnfnohwmg.supabase.co](https://pytqquerlktxnfnohwmg.supabase.co)';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 </script>
 
-<div id="splash-screen"><div class="splash-content"><img id="img-splash" alt="ScoreMaster" class="splash-logo-img"><div class="splash-loader"><span></span><span></span><span></span></div></div></div>
+<!-- SPLASH -->
+<div id="splash-screen">
+    <div class="splash-content">
+        <img id="img-splash" alt="ScoreMaster" class="splash-logo-img">
+        <div class="splash-loader"><span></span><span></span><span></span></div>
+    </div>
+</div>
 
+<!-- LOGIN -->
 <div id="login-screen">
-    <div class="login-header"><img id="img-login" alt="ScoreMaster" class="login-logo-img"></div>
+    <div class="login-header">
+        <img id="img-login" alt="ScoreMaster" class="login-logo-img">
+    </div>
     <div class="login-form-container">
         <div class="login-form-title">Email</div>
         <input type="email" class="login-input" id="login-email" placeholder="Votre email">
-        
-        <!-- Nouveau champ Pseudo (Caché en mode connexion) -->
+
         <div class="login-form-title" id="title-username" style="display:none;">Pseudo</div>
         <input type="text" class="login-input" id="login-username" placeholder="Votre pseudo" style="display:none;">
-        
+
         <div class="login-form-title">Mot de passe</div>
-        <input type="password" class="login-input" id="login-password" placeholder="••••••••••••">
-        
+        <div style="position:relative;width:100%;">
+            <input type="password" class="login-input" id="login-password" placeholder="••••••••••••" style="padding-right:45px;margin-bottom:20px;width:100%;">
+            <i class="fas fa-eye" id="togglePassword" style="position:absolute;right:15px;top:15px;color:var(--text-gray);cursor:pointer;font-size:16px;z-index:10;"></i>
+        </div>
+
         <button class="login-btn" id="btn-action" onclick="handleAuth()">Connexion</button>
         <div class="login-error" id="login-error"><i class="fas fa-exclamation-circle"></i> Identifiants incorrects</div>
-        
+
         <div class="login-options">
             <a href="#" class="forgot-password" id="toggle-auth" onclick="toggleAuthMode(); return false;">Créer un compte</a>
-            <div class="remember-me"><div class="toggle-switch active" onclick="this.classList.toggle('active')"></div><span>Se souvenir de moi</span></div>
+            <div class="remember-me">
+                <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                <span>Se souvenir de moi</span>
+            </div>
         </div>
-        
-        <div class="api-badge-login"><i class="fas fa-plug"></i><span>API Betclic connectée</span><div class="api-status-dot"></div></div>
-    </div>
 
+        <div class="api-badge-login">
+            <i class="fas fa-plug"></i>
+            <span>API Betclic connectée</span>
+            <div class="api-status-dot"></div>
+        </div>
+    </div>
+</div>
+
+<!-- TOAST -->
 <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toast-message"></span></div>
 
+<!-- APP -->
 <div id="app">
     <div class="pages-container">
+
         <!-- HOME -->
         <div class="page active" id="page-home">
             <div class="home-header fade-in-up delay-1">
-                <div class="home-user"><div class="logo-avatar small" id="avatar-home"></div><div><div class="home-greeting">Bienvenue !</div><div class="home-username">Admin SM <i class="fas fa-chevron-down"></i></div></div></div>
-                <div class="home-notif" onclick="showToast('Pas de nouvelles notifications',true)"><i class="fas fa-bell"></i><div class="notif-dot"></div></div>
+                <div class="home-user">
+                    <div class="logo-avatar small" id="avatar-home"></div>
+                    <div>
+                        <div class="home-greeting">Bienvenue !</div>
+                        <div class="home-username">Admin SM <i class="fas fa-chevron-down"></i></div>
+                    </div>
+                </div>
+                <div class="home-notif" onclick="showToast('Pas de nouvelles notifications',true)">
+                    <i class="fas fa-bell"></i>
+                    <div class="notif-dot"></div>
+                </div>
             </div>
-            <div class="search-bar fade-in-up delay-2"><i class="fas fa-search"></i><input type="text" placeholder="Rechercher un match..."><i class="fas fa-microphone mic-btn"></i></div>
-            <div class="api-banner fade-in-up delay-2"><div class="api-icon"><i class="fas fa-plug"></i></div><div class="api-info"><div class="api-title">API Betclic connectée <div class="live-dot"></div></div><div class="api-desc">Données en temps réel • Cotes actualisées</div></div><span class="betclic-badge">BETCLIC</span></div>
-            <div class="section-header fade-in-up delay-3"><span class="section-title">Découvrez nos packs !</span><span class="section-more" onclick="navigateTo('packs')">Voir plus</span></div>
+            <div class="search-bar fade-in-up delay-2">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Rechercher un match...">
+                <i class="fas fa-microphone mic-btn"></i>
+            </div>
+            <div class="api-banner fade-in-up delay-2">
+                <div class="api-icon"><i class="fas fa-plug"></i></div>
+                <div class="api-info">
+                    <div class="api-title">API Betclic connectée <div class="live-dot"></div></div>
+                    <div class="api-desc">Données en temps réel • Cotes actualisées</div>
+                </div>
+                <span class="betclic-badge">BETCLIC</span>
+            </div>
+            <div class="section-header fade-in-up delay-3">
+                <span class="section-title">Découvrez nos packs !</span>
+                <span class="section-more" onclick="navigateTo('packs')">Voir plus</span>
+            </div>
             <div class="packs-scroll">
-                <div class="pack-card fade-in-up delay-3" onclick="navigateTo('packs')"><div class="logo-pack-icon green" id="pack-icon-1"></div><div class="pack-card-info"><div class="pack-card-name">SM S.E Journalier</div><div class="pack-card-tag"><i class="fas fa-circle"></i> Livraison instantanée !</div><div class="pack-card-btn" style="background:var(--green);color:#fff;">Découvrir !</div></div><i class="far fa-heart heart-icon" onclick="event.stopPropagation();this.classList.toggle('liked');this.classList.toggle('far');this.classList.toggle('fas');"></i></div>
-                <div class="pack-card fade-in-up delay-4" onclick="navigateTo('packs')"><div class="logo-pack-icon red" id="pack-icon-2"></div><div class="pack-card-info"><div class="pack-card-name">SM VIP+ (à vie)</div><div class="pack-card-tag"><i class="fas fa-circle"></i> Livraison instantanée !</div><div class="pack-card-btn" style="background:var(--red);color:#fff;">Découvrir !</div></div><i class="far fa-heart heart-icon" onclick="event.stopPropagation();this.classList.toggle('liked');this.classList.toggle('far');this.classList.toggle('fas');"></i></div>
+                <div class="pack-card fade-in-up delay-3" onclick="navigateTo('packs')">
+                    <div class="logo-pack-icon green" id="pack-icon-1"></div>
+                    <div class="pack-card-info">
+                        <div class="pack-card-name">SM S.E Journalier</div>
+                        <div class="pack-card-tag"><i class="fas fa-circle"></i> Livraison instantanée !</div>
+                        <div class="pack-card-btn" style="background:var(--green);color:#fff;">Découvrir !</div>
+                    </div>
+                    <i class="far fa-heart heart-icon" onclick="event.stopPropagation();this.classList.toggle('liked');this.classList.toggle('far');this.classList.toggle('fas');"></i>
+                </div>
+                <div class="pack-card fade-in-up delay-4" onclick="navigateTo('packs')">
+                    <div class="logo-pack-icon red" id="pack-icon-2"></div>
+                    <div class="pack-card-info">
+                        <div class="pack-card-name">SM VIP+ (à vie)</div>
+                        <div class="pack-card-tag"><i class="fas fa-circle"></i> Livraison instantanée !</div>
+                        <div class="pack-card-btn" style="background:var(--red);color:#fff;">Découvrir !</div>
+                    </div>
+                    <i class="far fa-heart heart-icon" onclick="event.stopPropagation();this.classList.toggle('liked');this.classList.toggle('far');this.classList.toggle('fas');"></i>
+                </div>
             </div>
-            <div class="home-vip-section fade-in-up delay-5"><h3>🔥 Dernier Combiné VIP+</h3><div id="home-combined-container"><div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div></div></div>
-            <div class="help-card fade-in-up delay-5"><div class="help-card-icon"><i class="fas fa-comment-dots"></i></div><div class="help-card-info"><div class="help-card-title">Un problème, ou besoin d'aide ?</div><div class="help-card-desc">Pas de panique ! Contactez nous ici !</div></div><i class="fas fa-chevron-right help-card-arrow"></i></div>
+            <div class="home-vip-section fade-in-up delay-5">
+                <h3>🔥 Dernier Combiné VIP+</h3>
+                <div id="home-combined-container"><div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div></div>
+            </div>
+            <div class="help-card fade-in-up delay-5">
+                <div class="help-card-icon"><i class="fas fa-comment-dots"></i></div>
+                <div class="help-card-info">
+                    <div class="help-card-title">Un problème, ou besoin d'aide ?</div>
+                    <div class="help-card-desc">Pas de panique ! Contactez nous ici !</div>
+                </div>
+                <i class="fas fa-chevron-right help-card-arrow"></i>
+            </div>
             <div style="height:20px;"></div>
         </div>
+
         <!-- PACKS -->
         <div class="page" id="page-packs">
             <div class="page-title-bar"><h2>Nos Packs</h2></div>
             <div class="packs-page-list">
-                <div class="pack-detail-card"><div class="pack-detail-top"><div class="logo-pack-detail green" id="pack-detail-1"></div><div><div class="pack-detail-name">SM Score Exact Journalier</div><div class="pack-detail-desc">Recevez chaque jour notre meilleur pronostic en score exact avec une analyse détaillée.</div></div></div><div class="pack-detail-features"><div class="pack-feature"><i class="fas fa-check"></i> 1 score exact / jour</div><div class="pack-feature"><i class="fas fa-check"></i> Analyse détaillée</div><div class="pack-feature"><i class="fas fa-check"></i> Support 7j/7</div><div class="pack-feature"><i class="fas fa-check"></i> Notification push</div></div><div class="pack-detail-bottom"><div class="pack-price-container"><span class="price-old">89,99€</span><span class="price-new" style="color:var(--green);">50€</span><span class="price-label">unique</span></div><button class="pack-subscribe-btn" style="background:var(--green);color:#fff;">S'abonner</button></div></div>
-                <div class="pack-detail-card"><div class="pack-detail-top"><div class="logo-pack-detail red" id="pack-detail-2"></div><div><div class="pack-detail-name">SM VIP+ (à vie)</div><div class="pack-detail-desc">Accès illimité et à vie à tous nos pronostics, combinés exclusifs et espace membre VIP+.</div></div></div><div class="pack-detail-features"><div class="pack-feature"><i class="fas fa-check"></i> Accès à vie</div><div class="pack-feature"><i class="fas fa-check"></i> 4 à 5 combinés S.E / semaine</div><div class="pack-feature"><i class="fas fa-check"></i> Espace membre VIP+</div><div class="pack-feature"><i class="fas fa-check"></i> Canal Telegram VIP</div><div class="pack-feature"><i class="fas fa-check"></i> Priorité support</div></div><div class="pack-detail-bottom"><div class="pack-price-container"><span class="price-old">179,99€</span><span class="price-new" style="color:var(--primary-yellow);">99,99€</span><span class="price-label">unique</span></div><button class="pack-subscribe-btn" style="background:var(--red);color:#fff;">S'abonner</button></div></div>
-                <div class="pack-detail-card"><div class="pack-detail-top"><div class="logo-pack-detail blue" id="pack-detail-3"></div><div><div class="pack-detail-name">SM Combiné Hebdo</div><div class="pack-detail-desc">Chaque semaine, recevez un combiné score exact soigneusement sélectionné avec des cotes élevées.</div></div></div><div class="pack-detail-features"><div class="pack-feature"><i class="fas fa-check"></i> 1 combiné S.E / semaine</div><div class="pack-feature"><i class="fas fa-check"></i> Cotes élevées</div><div class="pack-feature"><i class="fas fa-check"></i> Suivi en direct</div><div class="pack-feature"><i class="fas fa-check"></i> Récap hebdomadaire</div></div><div class="pack-detail-bottom"><div class="pack-price-container"><span class="price-old">129,99€</span><span class="price-new" style="color:var(--blue);">69,99€</span><span class="price-label">unique</span></div><button class="pack-subscribe-btn" style="background:var(--blue);color:#fff;">S'abonner</button></div></div>
+                <div class="pack-detail-card">
+                    <div class="pack-detail-top">
+                        <div class="logo-pack-detail green" id="pack-detail-1"></div>
+                        <div>
+                            <div class="pack-detail-name">SM Score Exact Journalier</div>
+                            <div class="pack-detail-desc">Recevez chaque jour notre meilleur pronostic en score exact avec une analyse détaillée.</div>
+                        </div>
+                    </div>
+                    <div class="pack-detail-features">
+                        <div class="pack-feature"><i class="fas fa-check"></i> 1 score exact / jour</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Analyse détaillée</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Support 7j/7</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Notification push</div>
+                    </div>
+                    <div class="pack-detail-bottom">
+                        <div class="pack-price-container">
+                            <span class="price-old">89,99€</span>
+                            <span class="price-new" style="color:var(--green);">50€</span>
+                            <span class="price-label">unique</span>
+                        </div>
+                        <button class="pack-subscribe-btn" style="background:var(--green);color:#fff;">S'abonner</button>
+                    </div>
+                </div>
+                <div class="pack-detail-card">
+                    <div class="pack-detail-top">
+                        <div class="logo-pack-detail red" id="pack-detail-2"></div>
+                        <div>
+                            <div class="pack-detail-name">SM VIP+ (à vie)</div>
+                            <div class="pack-detail-desc">Accès illimité et à vie à tous nos pronostics, combinés exclusifs et espace membre VIP+.</div>
+                        </div>
+                    </div>
+                    <div class="pack-detail-features">
+                        <div class="pack-feature"><i class="fas fa-check"></i> Accès à vie</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> 4 à 5 combinés S.E / semaine</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Espace membre VIP+</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Canal Telegram VIP</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Priorité support</div>
+                    </div>
+                    <div class="pack-detail-bottom">
+                        <div class="pack-price-container">
+                            <span class="price-old">179,99€</span>
+                            <span class="price-new" style="color:var(--primary-yellow);">99,99€</span>
+                            <span class="price-label">unique</span>
+                        </div>
+                        <button class="pack-subscribe-btn" style="background:var(--red);color:#fff;">S'abonner</button>
+                    </div>
+                </div>
+                <div class="pack-detail-card">
+                    <div class="pack-detail-top">
+                        <div class="logo-pack-detail blue" id="pack-detail-3"></div>
+                        <div>
+                            <div class="pack-detail-name">SM Combiné Hebdo</div>
+                            <div class="pack-detail-desc">Chaque semaine, recevez un combiné score exact soigneusement sélectionné avec des cotes élevées.</div>
+                        </div>
+                    </div>
+                    <div class="pack-detail-features">
+                        <div class="pack-feature"><i class="fas fa-check"></i> 1 combiné S.E / semaine</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Cotes élevées</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Suivi en direct</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Récap hebdomadaire</div>
+                    </div>
+                    <div class="pack-detail-bottom">
+                        <div class="pack-price-container">
+                            <span class="price-old">129,99€</span>
+                            <span class="price-new" style="color:var(--blue);">69,99€</span>
+                            <span class="price-label">unique</span>
+                        </div>
+                        <button class="pack-subscribe-btn" style="background:var(--blue);color:#fff;">S'abonner</button>
+                    </div>
+                </div>
             </div>
             <div style="height:20px;"></div>
         </div>
+
         <!-- CONTACT -->
         <div class="page" id="page-contact">
             <div class="page-title-bar"><h2>Contact</h2></div>
             <div class="contact-page">
-                <a href="https://t.me/scoremasteroff" target="_blank" rel="noopener" class="contact-link"><div class="contact-card"><div class="contact-card-icon telegram"><i class="fab fa-telegram-plane"></i></div><div class="contact-card-info"><h4>Telegram</h4><p>Rejoignez notre canal officiel</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div></a>
-                <div class="contact-card"><div class="contact-card-icon instagram"><i class="fab fa-instagram"></i></div><div class="contact-card-info"><h4>Instagram</h4><p>@scoremaster.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
-                <div class="contact-card"><div class="contact-card-icon twitter"><i class="fab fa-x-twitter"></i></div><div class="contact-card-info"><h4>X (Twitter)</h4><p>@ScoreMasterFR</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
-                <div class="contact-card"><div class="contact-card-icon email"><i class="fas fa-envelope"></i></div><div class="contact-card-info"><h4>Email</h4><p>contact@scoremaster.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
+                <a href="[t.me](https://t.me/scoremasteroff)" target="_blank" rel="noopener" class="contact-link">
+                    <div class="contact-card">
+                        <div class="contact-card-icon telegram"><i class="fab fa-telegram-plane"></i></div>
+                        <div class="contact-card-info"><h4>Telegram</h4><p>Rejoignez notre canal officiel</p></div>
+                        <i class="fas fa-chevron-right contact-card-arrow"></i>
+                    </div>
+                </a>
+                <div class="contact-card">
+                    <div class="contact-card-icon instagram"><i class="fab fa-instagram"></i></div>
+                    <div class="contact-card-info"><h4>Instagram</h4><p>@scoremaster.fr</p></div>
+                    <i class="fas fa-chevron-right contact-card-arrow"></i>
+                </div>
+                <div class="contact-card">
+                    <div class="contact-card-icon twitter"><i class="fab fa-x-twitter"></i></div>
+                    <div class="contact-card-info"><h4>X (Twitter)</h4><p>@ScoreMasterFR</p></div>
+                    <i class="fas fa-chevron-right contact-card-arrow"></i>
+                </div>
+                <div class="contact-card">
+                    <div class="contact-card-icon email"><i class="fas fa-envelope"></i></div>
+                    <div class="contact-card-info"><h4>Email</h4><p>contact@scoremaster.fr</p></div>
+                    <i class="fas fa-chevron-right contact-card-arrow"></i>
+                </div>
             </div>
         </div>
+
         <!-- VIP -->
         <div class="page" id="page-vip">
             <div class="vip-header"><h2>Espace SM VIP+</h2></div>
-            <div class="vip-profile"><div class="logo-avatar medium" id="avatar-vip"></div><div class="vip-user-info"><h3>Admin SM</h3></div><button class="vip-modify-btn" onclick="promptAdminCode()" style="border-color:transparent;color:transparent;">Modifier</button>
-</div>
+            <div class="vip-profile">
+                <div class="logo-avatar medium" id="avatar-vip"></div>
+                <div class="vip-user-info"><h3>Admin SM</h3></div>
+                <button class="vip-modify-btn" onclick="promptAdminCode()" style="border-color:transparent;color:transparent;">Modifier</button>
+            </div>
             <div class="vip-notice">Le prochain combiné apparaîtra ci-dessous une fois disponible ! (activez vos notifs !)</div>
-            <div class="api-banner" style="margin:0 20px 15px;"><div class="api-icon"><i class="fas fa-plug"></i></div><div class="api-info"><div class="api-title">API Betclic connectée <div class="live-dot"></div></div><div class="api-desc">Données en temps réel • Cotes actualisées</div></div><span class="betclic-badge">BETCLIC</span></div>
+            <div class="api-banner" style="margin:0 20px 15px;">
+                <div class="api-icon"><i class="fas fa-plug"></i></div>
+                <div class="api-info">
+                    <div class="api-title">API Betclic connectée <div class="live-dot"></div></div>
+                    <div class="api-desc">Données en temps réel • Cotes actualisées</div>
+                </div>
+                <span class="betclic-badge">BETCLIC</span>
+            </div>
             <div id="vip-combined-status-bar"></div>
-            <div class="vip-combined-container" id="vip-combined-container"><div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.<br><span style="font-size:12px;color:var(--text-gray);">Revenez bientôt !</span></div></div>
-            <div class="help-card" style="margin:0 20px 20px;"><div class="help-card-icon"><i class="fas fa-comment-dots"></i></div><div class="help-card-info"><div class="help-card-title">Un problème, ou besoin d'aide ?</div><div class="help-card-desc">Pas de panique ! Contactez nous ici !</div></div><i class="fas fa-chevron-right help-card-arrow"></i></div>
+            <div class="vip-combined-container" id="vip-combined-container">
+                <div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.<br><span style="font-size:12px;color:var(--text-gray);">Revenez bientôt !</span></div>
+            </div>
+            <div class="help-card" style="margin:0 20px 20px;">
+                <div class="help-card-icon"><i class="fas fa-comment-dots"></i></div>
+                <div class="help-card-info">
+                    <div class="help-card-title">Un problème, ou besoin d'aide ?</div>
+                    <div class="help-card-desc">Pas de panique ! Contactez nous ici !</div>
+                </div>
+                <i class="fas fa-chevron-right help-card-arrow"></i>
+            </div>
         </div>
+
     </div>
+
+    <!-- BOTTOM NAV -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="navigateTo('home')"><i class="fas fa-home"></i><span>Accueil</span></div>
         <div class="nav-item" onclick="navigateTo('packs')"><i class="fas fa-clone"></i><span>Nos packs</span></div>
@@ -371,440 +550,455 @@
 
 <!-- ADMIN -->
 <div id="admin-page">
-    <div class="admin-header"><h2><img id="img-admin" alt="SM" class="admin-header-logo"> Panel Admin</h2><button class="admin-close" onclick="closeAdmin()"><i class="fas fa-times"></i></button></div>
-    <div class="admin-section"><div class="admin-stats"><div class="admin-stat-card yellow"><i class="fas fa-futbol"></i><span class="stat-value" id="stat-total">0</span><div class="stat-label">Combinés publiés</div></div><div class="admin-stat-card green"><i class="fas fa-check-circle"></i><span class="stat-value" id="stat-wins">0</span><div class="stat-label">Gagnés</div></div><div class="admin-stat-card blue"><i class="fas fa-clock"></i><span class="stat-value" id="stat-pending">0</span><div class="stat-label">En cours</div></div><div class="admin-stat-card red"><i class="fas fa-times-circle"></i><span class="stat-value" id="stat-losses">0</span><div class="stat-label">Perdus</div></div></div></div>
-    <div class="admin-section"><div class="admin-section-title"><i class="fas fa-plus-circle"></i> Créer un combiné</div><div class="admin-card"><div class="admin-row"><div class="admin-field"><div class="admin-label"><i class="fas fa-calendar"></i> Date</div><input type="date" class="admin-input" id="admin-date"></div><div class="admin-field"><div class="admin-label"><i class="fas fa-flag"></i> Statut</div><select class="admin-select" id="admin-status"><option value="en-cours">En cours</option><option value="termine">Terminé ✅</option><option value="perdu">Perdu ❌</option></select></div></div><button onclick="updateDateOnly()" style="width:100%;padding:12px;background:transparent;border:1px solid var(--primary-yellow);color:var(--primary-yellow);border-radius:10px;font-size:13px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="fas fa-calendar-check"></i> Modifier la date / statut uniquement</button></div></div>
-    <div class="admin-section"><div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs</div><div id="admin-matches"></div><button class="admin-add-match-btn" onclick="addMatchEntry()"><i class="fas fa-plus"></i> Ajouter un match</button></div>
-    <div class="admin-section"><div class="admin-section-title"><i class="fas fa-coins"></i> Mise & Résumé</div><div class="admin-card"><div class="admin-field"><div class="admin-label"><i class="fas fa-money-bill"></i> Mise (€)</div><input type="number" class="admin-input" id="admin-mise" placeholder="100.00" oninput="calculateGains()"></div></div><div class="admin-summary"><div class="admin-summary-row"><span class="admin-summary-label">Matchs</span><span class="admin-summary-value" id="summary-matches">0</span></div><div class="admin-summary-row"><span class="admin-summary-label">Cote totale</span><span class="admin-summary-value" id="summary-odds">0.00</span></div><div class="admin-summary-row"><span class="admin-summary-label">Mise</span><span class="admin-summary-value" id="summary-mise">0,00 €</span></div><div class="admin-summary-row"><span class="admin-summary-label">Gains potentiels</span><span class="admin-summary-value gains" id="summary-gains">0,00 €</span></div></div></div>
-    <div class="admin-section"><button class="admin-submit-btn" onclick="publishCombined()"><i class="fas fa-paper-plane"></i> Publier le combiné</button><button class="admin-delete-btn" onclick="deleteCombined()"><i class="fas fa-trash-alt"></i> Supprimer le combiné</button></div>
+    <div class="admin-header">
+        <h2><img id="img-admin" alt="SM" class="admin-header-logo"> Panel Admin</h2>
+        <button class="admin-close" onclick="closeAdmin()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="admin-section">
+        <div class="admin-stats">
+            <div class="admin-stat-card yellow"><i class="fas fa-futbol"></i><span class="stat-value" id="stat-total">0</span><div class="stat-label">Combinés publiés</div></div>
+            <div class="admin-stat-card green"><i class="fas fa-check-circle"></i><span class="stat-value" id="stat-wins">0</span><div class="stat-label">Gagnés</div></div>
+            <div class="admin-stat-card blue"><i class="fas fa-clock"></i><span class="stat-value" id="stat-pending">0</span><div class="stat-label">En cours</div></div>
+            <div class="admin-stat-card red"><i class="fas fa-times-circle"></i><span class="stat-value" id="stat-losses">0</span><div class="stat-label">Perdus</div></div>
+        </div>
+    </div>
+    <div class="admin-section">
+        <div class="admin-section-title"><i class="fas fa-plus-circle"></i> Créer un combiné</div>
+        <div class="admin-card">
+            <div class="admin-row">
+                <div class="admin-field">
+                    <div class="admin-label"><i class="fas fa-calendar"></i> Date</div>
+                    <input type="date" class="admin-input" id="admin-date">
+                </div>
+                <div class="admin-field">
+                    <div class="admin-label"><i class="fas fa-flag"></i> Statut</div>
+                    <select class="admin-select" id="admin-status">
+                        <option value="en-cours">En cours</option>
+                        <option value="termine">Terminé ✅</option>
+                        <option value="perdu">Perdu ❌</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="updateDateOnly()" style="width:100%;padding:12px;background:transparent;border:1px solid var(--primary-yellow);color:var(--primary-yellow);border-radius:10px;font-size:13px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:14px;display:flex;align-items:center;justify-content:center;gap:8px;">
+                <i class="fas fa-calendar-check"></i> Modifier la date / statut uniquement
+            </button>
+        </div>
+    </div>
+    <div class="admin-section">
+        <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs</div>
+        <div id="admin-matches"></div>
+        <button class="admin-add-match-btn" onclick="addMatchEntry()"><i class="fas fa-plus"></i> Ajouter un match</button>
+    </div>
+    <div class="admin-section">
+        <div class="admin-section-title"><i class="fas fa-coins"></i> Mise & Résumé</div>
+        <div class="admin-card">
+            <div class="admin-field">
+                <div class="admin-label"><i class="fas fa-money-bill"></i> Mise (€)</div>
+                <input type="number" class="admin-input" id="admin-mise" placeholder="100.00" oninput="calculateGains()">
+            </div>
+        </div>
+        <div class="admin-summary">
+            <div class="admin-summary-row"><span class="admin-summary-label">Matchs</span><span class="admin-summary-value" id="summary-matches">0</span></div>
+            <div class="admin-summary-row"><span class="admin-summary-label">Cote totale</span><span class="admin-summary-value" id="summary-odds">0.00</span></div>
+            <div class="admin-summary-row"><span class="admin-summary-label">Mise</span><span class="admin-summary-value" id="summary-mise">0,00 €</span></div>
+            <div class="admin-summary-row"><span class="admin-summary-label">Gains potentiels</span><span class="admin-summary-value gains" id="summary-gains">0,00 €</span></div>
+        </div>
+    </div>
+    <div class="admin-section">
+        <button class="admin-submit-btn" onclick="publishCombined()"><i class="fas fa-paper-plane"></i> Publier le combiné</button>
+        <button class="admin-delete-btn" onclick="deleteCombined()"><i class="fas fa-trash-alt"></i> Supprimer le combiné</button>
+    </div>
 </div>
-
-<script>
-function setLogos(){
-    document.getElementById('img-splash').src=LOGO_SPLASH;
-    document.getElementById('img-login').src=LOGO_LIGHT;
-    document.getElementById('img-admin').src=LOGO_DARK;
-    document.getElementById('avatar-home').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
-    document.getElementById('avatar-vip').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
-    document.getElementById('pack-icon-1').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
-    document.getElementById('pack-icon-2').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
-    document.getElementById('pack-detail-1').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
-    document.getElementById('pack-detail-2').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
-    document.getElementById('pack-detail-3').innerHTML='<img src="'+LOGO_DARK+'" alt="SM">';
-}
-
-var currentCombined=null,matchEntryCount=0,appStats={total:0,wins:0,losses:0,pending:0};
-function loadState(){
-    var s=localStorage.getItem('scoreMasterData');
-    if(s){var d=JSON.parse(s);currentCombined=d.combined||null;appStats=d.stats||{total:0,wins:0,losses:0,pending:0};}
-}
-function saveState(){localStorage.setItem('scoreMasterData',JSON.stringify({combined:currentCombined,stats:appStats}));}
-
-window.addEventListener('load',function(){
-    setLogos();loadState();
-    document.getElementById('admin-date').value=new Date().toISOString().split('T')[0];
-    addMatchEntry();addMatchEntry();
-    setTimeout(function(){document.getElementById('splash-screen').classList.add('hidden');setTimeout(function(){document.getElementById('login-screen').classList.add('active');},300);},2500);
-});
-
-let isSignUpMode = false; // Variable pour savoir si on est sur Inscription ou Connexion
-
-function toggleAuthMode() {
-    isSignUpMode = !isSignUpMode;
-    // On affiche ou cache le champ Pseudo
-    document.getElementById('title-username').style.display = isSignUpMode ? 'block' : 'none';
-    document.getElementById('login-username').style.display = isSignUpMode ? 'block' : 'none';
-    // On change les textes des boutons
-    document.getElementById('btn-action').textContent = isSignUpMode ? 'S\'inscrire' : 'Connexion';
-    document.getElementById('toggle-auth').textContent = isSignUpMode ? 'Déjà un compte ? Connexion' : 'Créer un compte';
-}
-
-async function handleAuth() {
-    var email = document.getElementById('login-email').value;
-    var password = document.getElementById('login-password').value;
-    var username = document.getElementById('login-username').value;
-
-    if (!email || !password || (isSignUpMode && !username)) {
-        showToast('Veuillez remplir tous les champs', true);
-        return;
-    }
-
-    if (isSignUpMode) {
-        // --- MODE INSCRIPTION ---
-        const { data, error } = await supabaseClient.auth.signUp({
-            email: email,
-            password: password
-        });
-
-        if (error) {
-            showToast(error.message, true);
-            return;
-        }
-
-        // On crée son profil avec les statuts de base (Ni VIP, Ni Admin)
-        await supabaseClient.from('profiles').insert([{
-            id: data.user.id,
-            email: email,
-            username: username,
-            is_vip: false,
-            is_admin: false
-        }]);
-
-        showToast('Compte créé avec succès ! Connectez-vous.');
-        toggleAuthMode(); // On le remet sur la page de connexion
-        document.getElementById('login-password').value = '';
-
-    } else {
-        // --- MODE CONNEXION ---
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
-            email: email,
-            password: password
-        });
-
-        if (error) {
-            document.getElementById('login-error').classList.add('show');
-            setTimeout(function(){ document.getElementById('login-error').classList.remove('show'); }, 3000);
-            return;
-        }
-
-        // On récupère ses droits ET son pseudo
-        const { data: profile } = await supabaseClient
-            .from('profiles')
-            .select('is_vip, is_admin, username')
-            .eq('id', data.user.id)
-            .single();
-
-        window.isUserVip = profile ? profile.is_vip : false;
-        window.isAdmin = profile ? profile.is_admin : false;
-
-        // 🌟 LA MAGIE EST ICI : On remplace "Admin SM" par le vrai pseudo !
-        let displayUsername = (profile && profile.username) ? profile.username : 'Utilisateur';
-        
-        // Sur la page d'accueil
-        document.querySelector('.home-username').innerHTML = displayUsername + ' <i class="fas fa-chevron-down"></i>';
-        // Dans l'espace VIP
-        document.querySelector('.vip-user-info h3').textContent = displayUsername;
-
-        // On affiche l'application
-        document.getElementById('login-screen').style.opacity = '0';
-        setTimeout(function(){ 
-            document.getElementById('login-screen').classList.remove('active');
-            document.getElementById('login-screen').style.opacity = '';
-            document.getElementById('app').classList.add('active');
-            
-            chargerDonnees(); 
-        }, 400);
-    }
-}
-   
-async function chargerDonnees() {
-    try {
-        // 1. Tentez d'abord de récupérer les infos PUBLIQUES
-        const { data: publicData, error: publicErr } = await supabaseClient
-            .from('combineds_public')
-            .select('*')
-            // Trie pour avoir le plus récent en premier
-            .order('id', { ascending: false }) 
-            .limit(1)
-            .single();
-
-        if (publicErr || !publicData) {
-             // S'il n'y a VRAIMENT aucun combiné publié dans la table publique
-             currentCombined = null; 
-             renderCombined();
-             return;
-        }
-
-        if (window.isUserVip) {
-            // 2. L'utilisateur est VIP ! Tentez d'ouvrir le coffre-fort 🤫
-            const { data: vipData, error: vipErr } = await supabaseClient
-                .from('combineds_vip')
-                .select('*')
-                .eq('id', publicData.id) // On cherche les scores secrets de ce combiné précis
-                .single();
-
-            if (vipData && !vipErr) {
-                // Succès total ! On fusionne les infos publiques et VIP
-                currentCombined = { ...publicData, ...vipData };
-            } else {
-                 // Erreur de récupération VIP (ex: RLS bloque), on se rabat sur le public
-                 console.warn("Accès VIP refusé (RLS)");
-                 currentCombined = publicData;
-            }
-        } else {
-            // 3. L'utilisateur n'est pas VIP. On utilise uniquement les infos publiques.
-            currentCombined = publicData; 
-        }
-    } catch (e) {
-        console.error("Erreur lors du chargement des données :", e);
-        currentCombined = null; // En cas de gros crash, on n'affiche rien
-    }
-
-    // On lance l'affichage à l'écran. 
-    // Rappel: Votre fonction buildCC() doit utiliser "?-?" et "***" si currentCombined.matches n'existe pas.
-    renderCombined();
-}
-   
-document.getElementById('login-password').addEventListener('keypress',function(e){if(e.key==='Enter')handleLogin();});
-
-function navigateTo(page) {
-    // INTERCEPTION POUR LA PAGE VIP
-    if (page === 'vip') {
-        // On vérifie le vrai statut stocké (et pas juste le visuel)
-        if (!window.isUserVip) {
-            // L'utilisateur n'est pas VIP : On affiche le popup et on arrête la fonction !
-            var popup = document.getElementById('vip-popup');
-            popup.style.display = 'flex';
-            // Petit délai pour l'animation d'opacité
-            setTimeout(function() { popup.style.opacity = '1'; }, 10); 
-            return; 
-        }
-    }
-
-    // Comportement normal si c'est une autre page OU si l'utilisateur est VIP
-    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
-    document.getElementById('page-'+page).classList.add('active');
-    
-    // Pour mettre à jour les icônes du menu du bas (en gérant le cas où le clic vient d'ailleurs que la barre de navigation)
-    document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
-    
-    // On cherche le bouton nav-item correspondant à la page pour le mettre en surbrillance
-    var navItemToActivate = Array.from(document.querySelectorAll('.nav-item')).find(item => item.getAttribute('onclick') === `navigateTo('${page}')`);
-    if(navItemToActivate) {
-         navItemToActivate.classList.add('active');
-    }
-}
-
-function openAdmin(){
-    document.getElementById('admin-page').classList.add('active');
-    if(currentCombined){
-        document.getElementById('admin-date').value=currentCombined.date||'';
-        document.getElementById('admin-status').value=currentCombined.status||'en-cours';
-        document.getElementById('admin-mise').value=currentCombined.mise||'';
-        document.getElementById('admin-matches').innerHTML='';matchEntryCount=0;
-        currentCombined.matches.forEach(function(m){addMatchEntry(m);});calculateGains();
-    }
-    updateStats();
-}
-function closeAdmin(){document.getElementById('admin-page').classList.remove('active');}
-
-function addMatchEntry(data){
-    data=data||null;matchEntryCount++;
-    var c=document.getElementById('admin-matches'),e=document.createElement('div');e.className='match-entry';
-    e.innerHTML='<div class="match-entry-header"><span class="match-entry-number"><i class="fas fa-futbol"></i> Match '+matchEntryCount+'</span><button class="match-entry-remove" onclick="removeMatchEntry(this)"><i class="fas fa-trash"></i></button></div><div class="admin-field"><div class="admin-label"><i class="fas fa-users"></i> Équipes</div><input type="text" class="admin-input match-teams-input" placeholder="Équipe A - Équipe B" value="'+(data?data.teams:'')+'" oninput="calculateGains()"></div><div class="admin-row"><div class="admin-field"><div class="admin-label"><i class="fas fa-bullseye"></i> Score exact</div><input type="text" class="admin-input match-score-input" placeholder="2 - 1" value="'+(data?data.score:'')+'" oninput="calculateGains()"></div><div class="admin-field"><div class="admin-label"><i class="fas fa-chart-line"></i> Cote</div><input type="number" step="0.01" class="admin-input match-odds-input" placeholder="7.00" value="'+(data?data.odds:'')+'" oninput="calculateGains()"></div></div><div class="admin-field"><div class="admin-label"><i class="fas fa-clock"></i> Horaire</div><input type="text" class="admin-input match-time-input" placeholder="Dem. 21:00" value="'+(data?data.time:'')+'"></div>';
-    c.appendChild(e);calculateGains();
-}
-function removeMatchEntry(btn){var e=btn.closest('.match-entry');e.style.opacity='0';e.style.transform='scale(0.95)';e.style.transition='all .3s';setTimeout(function(){e.remove();renumberMatches();calculateGains();},300);}
-function renumberMatches(){var entries=document.querySelectorAll('.match-entry');matchEntryCount=entries.length;entries.forEach(function(e,i){e.querySelector('.match-entry-number').innerHTML='<i class="fas fa-futbol"></i> Match '+(i+1);});}
-
-function calculateGains(){
-    var entries=document.querySelectorAll('.match-entry'),mise=parseFloat(document.getElementById('admin-mise').value)||0;
-    var tot=1,cnt=0;entries.forEach(function(e){var o=parseFloat(e.querySelector('.match-odds-input').value)||0;if(o>0){tot*=o;cnt++;}});if(cnt===0)tot=0;
-    document.getElementById('summary-matches').textContent=entries.length;
-    document.getElementById('summary-odds').textContent=tot.toFixed(2);
-    document.getElementById('summary-mise').textContent=fmtC(mise);
-    document.getElementById('summary-gains').textContent=fmtC(mise*tot);
-}
-function fmtC(v){return new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR',minimumFractionDigits:2}).format(v);}
-
-async function publishCombined() {
-    var entries = document.querySelectorAll('.match-entry');
-    var date = document.getElementById('admin-date').value;
-    var status = document.getElementById('admin-status').value;
-    var mise = parseFloat(document.getElementById('admin-mise').value) || 0;
-
-    if (!entries.length) { showToast('Ajoutez au moins un match !', true); return; }
-    if (mise <= 0) { showToast('Saisissez une mise !', true); return; }
-
-    var matches = [], valid = true;
-    entries.forEach(function(e) {
-        var t = e.querySelector('.match-teams-input').value.trim();
-        var s = e.querySelector('.match-score-input').value.trim();
-        var o = parseFloat(e.querySelector('.match-odds-input').value) || 0;
-        var ti = e.querySelector('.match-time-input').value.trim();
-        if (!t || !s || o <= 0) valid = false;
-        matches.push({ teams: t, score: s, odds: o, time: ti });
-    });
-
-    if (!valid) { showToast('Remplissez tous les champs !', true); return; }
-
-    var tot = 1;
-    matches.forEach(function(m) { tot *= m.odds; });
-    var gains = mise * tot;
-
-    // 1. ENVOI À SUPABASE : Table Publique
-    // On insère le statut et la date, et on récupère l'ID officiel généré par Supabase
-    const { data: publicData, error: publicErr } = await supabaseClient
-        .from('combineds_public')
-        .insert([{ date: date, status: status, nombre_matchs: matches.length }])
-        .select()
-        .single();
-
-    if (publicErr) { 
-        showToast('Erreur de publication publique', true); 
-        console.error(publicErr); 
-        return; 
-    }
-
-    // 2. ENVOI À SUPABASE : Table VIP (Le coffre-fort)
-    // On lie les scores VIP à l'ID public qu'on vient de récupérer
-    const { error: vipErr } = await supabaseClient
-        .from('combineds_vip')
-        .insert([{
-            id: publicData.id,
-            matches: matches,
-            mise: mise,
-            gains: gains,
-            total_odds: tot
-        }]);
-
-    if (vipErr) { 
-        showToast('Erreur de publication VIP', true); 
-        console.error(vipErr); 
-        return; 
-    }
-
-    // 3. Succès ! On met à jour l'application locale
-    currentCombined = { ...publicData, matches: matches, mise: mise, gains: gains, totalOdds: tot };
-    
-    // Mise à jour de vos petites stats locales
-    if (status === 'en-cours') appStats.pending++;
-    else if (status === 'termine') appStats.wins++;
-    else appStats.losses++;
-    appStats.total++;
-    saveState(); // Sauvegarde juste les stats
-    
-    updateStats();
-    renderCombined();
-    
-    showToast('Combiné publié avec succès !');
-    setTimeout(function() { closeAdmin(); }, 1000);
-}
-
-async function deleteCombined() {
-    if (currentCombined && currentCombined.id) {
-        
-        // 1. On supprime d'abord les données VIP (car elles dépendent de la table publique)
-        await supabaseClient.from('combineds_vip').delete().eq('id', currentCombined.id);
-        
-        // 2. Ensuite on supprime la donnée publique
-        await supabaseClient.from('combineds_public').delete().eq('id', currentCombined.id);
-        
-        // 3. On nettoie l'interface
-        currentCombined = null;
-        saveState(); 
-        renderCombined();
-        showToast('Combiné supprimé !', true);
-        
-        document.getElementById('admin-matches').innerHTML = '';
-        matchEntryCount = 0;
-        document.getElementById('admin-mise').value = '';
-        addMatchEntry(); 
-        addMatchEntry(); 
-        calculateGains();
-    } else {
-        showToast('Aucun combiné à supprimer !', true);
-    }
-}
-
-function updateStats(){
-    document.getElementById('stat-total').textContent=appStats.total;
-    document.getElementById('stat-wins').textContent=appStats.wins;
-    document.getElementById('stat-pending').textContent=appStats.pending;
-    document.getElementById('stat-losses').textContent=appStats.losses;
-}
-
-function renderCombined(){
-    var vc=document.getElementById('vip-combined-container'),hc=document.getElementById('home-combined-container'),sb=document.getElementById('vip-combined-status-bar');
-    if(!currentCombined){var empty='<div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div>';vc.innerHTML=empty;hc.innerHTML=empty;sb.innerHTML='';return;}
-    var df=fmtD(currentCombined.date),sc=currentCombined.status,sl={'en-cours':'En cours','termine':'Terminé','perdu':'Perdu'};
-    var pw='50%';if(sc==='termine'||sc==='perdu')pw='100%';
-    // VIP: full info + Compléter button
-    vc.innerHTML=buildCC(currentCombined,sc,sl,pw,false);
-    // Home: blurred sensitive info + Telegram CTA button
-    hc.innerHTML=buildCC(currentCombined,sc,sl,pw,true);
-    sb.innerHTML='<div class="vip-combined-status" style="margin:0 20px 15px;">Combiné du '+df+' <span class="disponible">DISPONIBLE !</span></div>';
-}
-
-function buildCC(c, sc, sl, pw, isHome) {
-    var mH = '';
-    
-    // CRUCIAL : Si c.matches n'existe pas (non-VIP), on crée une fausse structure
-    var matchesToDisplay = c.matches ? c.matches : Array(c.nombre_matchs || 2).fill({ teams: 'Match caché', time: '--:--', odds: 0 });
-    
-    // On floute si on est sur l'accueil OU si on a pas reçu les données VIP
-    var isObscured = isHome || !c.matches; 
-
-    matchesToDisplay.forEach(function(m, i) {
-        var displayScore = isObscured ? '?-?' : m.score;
-        var displayOdds = isObscured ? '***' : m.odds.toFixed(2);
-        var teamsName = m.teams || 'Équipe A vs Équipe B';
-        var matchTime = m.time || '';
-
-        var scoreHtml = isObscured ? '<span class="match-score blurred-value">' + displayScore + '</span>' : '<span class="match-score">' + displayScore + '</span>';
-        var oddsHtml = isObscured ? '<div class="match-odds blurred-value">' + displayOdds + '</div>' : '<div class="match-odds">' + displayOdds + '</div>';
-
-        mH += '<div class="match-row"><div class="match-row-top"><div class="match-type"><i class="fas fa-futbol"></i> Score exact ' + scoreHtml + '</div>' + oddsHtml + '</div><div class="match-row-bottom"><div class="match-teams"><i class="fas fa-shield-alt"></i> ' + teamsName + '</div><div class="match-time">' + matchTime + '</div></div></div>';
-    });
-
-    var ic = '';
-    matchesToDisplay.forEach(function(_, i) {
-        ic += '<div class="match-icon-circle ' + (i === matchesToDisplay.length - 1 ? 'highlight' : '') + '"><i class="fas fa-futbol" style="font-size:14px;color:' + (i === matchesToDisplay.length - 1 ? 'white' : 'var(--text-gray)') + '"></i></div>';
-    });
-
-    var pc = c.status === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : c.status === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
-
-    // Sécurisation des gains, mises et cotes totales
-    var displayGains = isObscured ? '***,** €' : fmtC(c.gains || 0);
-    var displayTotalOdds = isObscured ? '***.**' : (c.total_odds || c.totalOdds || 0).toFixed(2);
-    var displayMise = isObscured ? '***,** €' : fmtC(c.mise || 0);
-
-    var gainsHtml = isHome ? '<span class="combined-footer-value gains blurred-value">' + displayGains + '</span>' : '<span class="combined-footer-value gains">' + displayGains + '</span>';
-    var totalOddsHtml = isHome ? '<span class="combined-footer-value blurred-value">' + displayTotalOdds + '</span>' : '<span class="combined-footer-value">' + displayTotalOdds + '</span>';
-
-    var ctaBtn = isHome
-        ? '<a href="' + TELEGRAM_LINK + '" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>'
-        : '<button class="combined-complete-btn">Compléter</button>';
-
-    return '<div class="combined-card"><div class="combined-header"><div class="combined-status"><span class="status-badge ' + sc + '">' + sl[sc] + '</span><span class="combined-label">Combiné</span><div class="combined-count"><i class="fas fa-futbol"></i> ' + matchesToDisplay.length + '</div></div><i class="fas fa-ellipsis-h combined-more"></i></div><div class="combined-progress"><div class="combined-progress-fill" style="width:' + pw + ';' + pc + '"></div></div><div class="combined-matches-icons">' + ic + '<span style="font-size:12px;color:var(--text-gray);margin-left:4px;">' + matchesToDisplay.length + '</span></div><div class="combined-body">' + mH + '</div><div class="combined-footer"><img src="' + LOGO_DARK + '" alt="SM" class="watermark-img"><div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span>' + totalOddsHtml + '</div><div class="combined-footer-row"><span class="combined-footer-label">Mise</span><span class="combined-footer-value">' + displayMise + '</span></div><div class="combined-footer-row"><span class="combined-footer-label">Gains potentiels</span>' + gainsHtml + '</div></div>' + ctaBtn + '</div>';
-}
-   
-function updateDateOnly(){
-    if(!currentCombined){showToast('Aucun combiné à modifier !',true);return;}
-    var newDate=document.getElementById('admin-date').value,newStatus=document.getElementById('admin-status').value;
-    if(!newDate){showToast('Sélectionnez une date !',true);return;}
-    currentCombined.date=newDate;currentCombined.status=newStatus;
-    saveState();renderCombined();showToast('Date et statut mis à jour !');
-}
-function fmtD(d){if(!d)return'';var dt=new Date(d);return String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0');}
-function showToast(msg,err){err=err||false;var t=document.getElementById('toast');document.getElementById('toast-message').textContent=msg;t.querySelector('i').className=err?'fas fa-exclamation-circle':'fas fa-check-circle';t.classList.toggle('error',err);t.classList.add('show');setTimeout(function(){t.classList.remove('show');},3000);}
-function promptAdminCode(){
-    if(window.isAdmin === true){
-        openAdmin();
-    } else {
-        showToast('Accès refusé. Vous n\'êtes pas administrateur.', true);
-    }
-}
-</script>
 
 <!-- POPUP NON-VIP -->
 <div id="vip-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
-    <div style="background:var(--bg-card);padding:40px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow: 0 10px 40px rgba(0,0,0,0.4);">
-        
+    <div style="background:var(--bg-card);padding:40px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);">
         <div style="position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:120px;height:120px;background:var(--red);border-radius:50%;filter:blur(40px);opacity:0.6;z-index:-1;"></div>
-
         <div style="width:70px;height:70px;background:rgba(239,83,80,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 25px auto;">
             <i class="fas fa-lock" style="font-size:35px;color:var(--red);"></i>
         </div>
-
         <h3 style="font-size:22px;font-weight:700;margin-bottom:12px;color:#fff;font-family:'Montserrat',sans-serif;">Accès Réservé</h3>
         <p style="font-size:14px;color:var(--text-gray);margin-bottom:30px;line-height:1.6;font-family:'Montserrat',sans-serif;">Vous n'avez pas accès à l'espace SM VIP+ :( <br><br>Passez au niveau supérieur pour débloquer tous les scores exacts, les cotes exclusives et décupler vos gains !</p>
-        
-        <button onclick="document.getElementById('vip-popup').style.display='none'; navigateTo('packs');" style="width:100%;padding:16px;background:linear-gradient(135deg, var(--red) 0%, #B71C1C 100%);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:12px;box-shadow: 0 4px 15px rgba(239,83,80,0.3);border:1px solid rgba(255,255,255,0.1);">🔥 Découvrir les packs VIP+</button>
-        
+        <button onclick="document.getElementById('vip-popup').style.display='none'; navigateTo('packs');" style="width:100%;padding:16px;background:linear-gradient(135deg,var(--red) 0%,#B71C1C 100%);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:12px;box-shadow:0 4px 15px rgba(239,83,80,0.3);border:1px solid rgba(255,255,255,0.1);">🔥 Découvrir les packs VIP+</button>
         <button onclick="document.getElementById('vip-popup').style.display='none'" style="width:100%;padding:12px;background:transparent;color:var(--text-gray);border:none;font-size:13px;font-family:'Montserrat',sans-serif;cursor:pointer;font-weight:500;">Plus tard</button>
     </div>
 </div>
+
+<script>
+    function setLogos() {
+        document.getElementById('img-splash').src = LOGO_SPLASH;
+        document.getElementById('img-login').src = LOGO_LIGHT;
+        document.getElementById('img-admin').src = LOGO_DARK;
+        document.getElementById('avatar-home').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('avatar-vip').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-icon-1').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-icon-2').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-detail-1').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-detail-2').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-detail-3').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+    }
+
+    var currentCombined = null, matchEntryCount = 0, appStats = { total: 0, wins: 0, losses: 0, pending: 0 };
+
+    function loadState() {
+        var s = localStorage.getItem('scoreMasterData');
+        if (s) { var d = JSON.parse(s); currentCombined = d.combined || null; appStats = d.stats || { total: 0, wins: 0, losses: 0, pending: 0 }; }
+    }
+    function saveState() { localStorage.setItem('scoreMasterData', JSON.stringify({ combined: currentCombined, stats: appStats })); }
+
+    window.addEventListener('load', function () {
+        setLogos();
+        loadState();
+        document.getElementById('admin-date').value = new Date().toISOString().split('T')[0];
+        addMatchEntry();
+        addMatchEntry();
+        setTimeout(function () {
+            document.getElementById('splash-screen').classList.add('hidden');
+            setTimeout(function () { document.getElementById('login-screen').classList.add('active'); }, 300);
+        }, 2500);
+    });
+
+    // Toggle password visibility
+    document.getElementById('togglePassword').addEventListener('click', function () {
+        var pwd = document.getElementById('login-password');
+        var isPassword = pwd.getAttribute('type') === 'password';
+        pwd.setAttribute('type', isPassword ? 'text' : 'password');
+        this.classList.toggle('fa-eye');
+        this.classList.toggle('fa-eye-slash');
+    });
+
+    // Toggle login / signup mode
+    var isSignUpMode = false;
+    function toggleAuthMode() {
+        isSignUpMode = !isSignUpMode;
+        document.getElementById('title-username').style.display = isSignUpMode ? 'block' : 'none';
+        document.getElementById('login-username').style.display = isSignUpMode ? 'block' : 'none';
+        document.getElementById('btn-action').textContent = isSignUpMode ? "S'inscrire" : 'Connexion';
+        document.getElementById('toggle-auth').textContent = isSignUpMode ? 'Déjà un compte ? Connexion' : 'Créer un compte';
+    }
+
+    // Submit on Enter key
+    document.getElementById('login-password').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') handleAuth();
+    });
+
+    // Auth handler
+    async function handleAuth() {
+        var email = document.getElementById('login-email').value;
+        var password = document.getElementById('login-password').value;
+        var username = document.getElementById('login-username').value;
+
+        if (!email || !password || (isSignUpMode && !username)) {
+            showToast('Veuillez remplir tous les champs', true);
+            return;
+        }
+
+        try {
+            var result;
+            if (isSignUpMode) {
+                result = await supabaseClient.auth.signUp({ email, password });
+                if (result.error) throw result.error;
+                await supabaseClient.from('profiles').insert([{ id: result.data.user.id, email: email, username: username, is_vip: false, is_admin: false }]);
+                showToast('Compte créé ! Connectez-vous.');
+                toggleAuthMode();
+                return;
+            } else {
+                result = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (result.error) throw result.error;
+            }
+
+            var profile = null;
+            var profileRes = await supabaseClient.from('profiles').select('is_vip, is_admin, username').eq('id', result.data.user.id).single();
+            profile = profileRes.data;
+
+            window.isUserVip = profile ? profile.is_vip : false;
+            window.isAdmin = profile ? profile.is_admin : false;
+
+            var finalUsername = (profile && profile.username) ? profile.username : 'Utilisateur';
+            var homeName = document.querySelector('.home-username');
+            if (homeName) homeName.innerHTML = finalUsername + ' <i class="fas fa-chevron-down"></i>';
+            var vipName = document.querySelector('.vip-user-info h3');
+            if (vipName) vipName.textContent = finalUsername;
+
+            document.getElementById('login-screen').style.opacity = '0';
+            setTimeout(function () {
+                document.getElementById('login-screen').classList.remove('active');
+                document.getElementById('app').classList.add('active');
+                chargerDonnees();
+            }, 400);
+
+        } catch (err) {
+            showToast(err.message || "Erreur d'authentification", true);
+        }
+    }
+
+    async function chargerDonnees() {
+        try {
+            var publicRes = await supabaseClient.from('combineds_public').select('*').order('id', { ascending: false }).limit(1).single();
+            var publicData = publicRes.data;
+            var publicErr = publicRes.error;
+
+            if (publicErr || !publicData) {
+                currentCombined = null;
+                renderCombined();
+                return;
+            }
+
+            if (window.isUserVip) {
+                var vipRes = await supabaseClient.from('combineds_vip').select('*').eq('id', publicData.id).single();
+                if (vipRes.data && !vipRes.error) {
+                    currentCombined = Object.assign({}, publicData, vipRes.data);
+                } else {
+                    console.warn('Accès VIP refusé (RLS)');
+                    currentCombined = publicData;
+                }
+            } else {
+                currentCombined = publicData;
+            }
+        } catch (e) {
+            console.error('Erreur lors du chargement des données :', e);
+            currentCombined = null;
+        }
+        renderCombined();
+    }
+
+    function navigateTo(page) {
+        if (page === 'vip' && !window.isUserVip) {
+            var popup = document.getElementById('vip-popup');
+            popup.style.display = 'flex';
+            setTimeout(function () { popup.style.opacity = '1'; }, 10);
+            return;
+        }
+        document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); });
+        document.getElementById('page-' + page).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(function (n) { n.classList.remove('active'); });
+        var target = Array.from(document.querySelectorAll('.nav-item')).find(function (item) {
+            return item.getAttribute('onclick') === "navigateTo('" + page + "')";
+        });
+        if (target) target.classList.add('active');
+    }
+
+    function openAdmin() {
+        document.getElementById('admin-page').classList.add('active');
+        if (currentCombined) {
+            document.getElementById('admin-date').value = currentCombined.date || '';
+            document.getElementById('admin-status').value = currentCombined.status || 'en-cours';
+            document.getElementById('admin-mise').value = currentCombined.mise || '';
+            document.getElementById('admin-matches').innerHTML = '';
+            matchEntryCount = 0;
+            currentCombined.matches.forEach(function (m) { addMatchEntry(m); });
+            calculateGains();
+        }
+        updateStats();
+    }
+    function closeAdmin() { document.getElementById('admin-page').classList.remove('active'); }
+
+    function addMatchEntry(data) {
+        data = data || null;
+        matchEntryCount++;
+        var c = document.getElementById('admin-matches');
+        var e = document.createElement('div');
+        e.className = 'match-entry';
+        e.innerHTML = '<div class="match-entry-header"><span class="match-entry-number"><i class="fas fa-futbol"></i> Match ' + matchEntryCount + '</span><button class="match-entry-remove" onclick="removeMatchEntry(this)"><i class="fas fa-trash"></i></button></div>'
+            + '<div class="admin-field"><div class="admin-label"><i class="fas fa-users"></i> Équipes</div><input type="text" class="admin-input match-teams-input" placeholder="Équipe A - Équipe B" value="' + (data ? data.teams : '') + '" oninput="calculateGains()"></div>'
+            + '<div class="admin-row"><div class="admin-field"><div class="admin-label"><i class="fas fa-bullseye"></i> Score exact</div><input type="text" class="admin-input match-score-input" placeholder="2 - 1" value="' + (data ? data.score : '') + '" oninput="calculateGains()"></div>'
+            + '<div class="admin-field"><div class="admin-label"><i class="fas fa-chart-line"></i> Cote</div><input type="number" step="0.01" class="admin-input match-odds-input" placeholder="7.00" value="' + (data ? data.odds : '') + '" oninput="calculateGains()"></div></div>'
+            + '<div class="admin-field"><div class="admin-label"><i class="fas fa-clock"></i> Horaire</div><input type="text" class="admin-input match-time-input" placeholder="Dem. 21:00" value="' + (data ? data.time : '') + '"></div>';
+        c.appendChild(e);
+        calculateGains();
+    }
+
+    function removeMatchEntry(btn) {
+        var e = btn.closest('.match-entry');
+        e.style.opacity = '0'; e.style.transform = 'scale(0.95)'; e.style.transition = 'all .3s';
+        setTimeout(function () { e.remove(); renumberMatches(); calculateGains(); }, 300);
+    }
+    function renumberMatches() {
+        var entries = document.querySelectorAll('.match-entry');
+        matchEntryCount = entries.length;
+        entries.forEach(function (e, i) { e.querySelector('.match-entry-number').innerHTML = '<i class="fas fa-futbol"></i> Match ' + (i + 1); });
+    }
+
+    function calculateGains() {
+        var entries = document.querySelectorAll('.match-entry');
+        var mise = parseFloat(document.getElementById('admin-mise').value) || 0;
+        var tot = 1, cnt = 0;
+        entries.forEach(function (e) { var o = parseFloat(e.querySelector('.match-odds-input').value) || 0; if (o > 0) { tot *= o; cnt++; } });
+        if (cnt === 0) tot = 0;
+        document.getElementById('summary-matches').textContent = entries.length;
+        document.getElementById('summary-odds').textContent = tot.toFixed(2);
+        document.getElementById('summary-mise').textContent = fmtC(mise);
+        document.getElementById('summary-gains').textContent = fmtC(mise * tot);
+    }
+
+    function fmtC(v) { return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(v); }
+
+    async function publishCombined() {
+        var entries = document.querySelectorAll('.match-entry');
+        var date = document.getElementById('admin-date').value;
+        var status = document.getElementById('admin-status').value;
+        var mise = parseFloat(document.getElementById('admin-mise').value) || 0;
+
+        if (!entries.length) { showToast('Ajoutez au moins un match !', true); return; }
+        if (mise <= 0) { showToast('Saisissez une mise !', true); return; }
+
+        var matches = [], valid = true;
+        entries.forEach(function (e) {
+            var t = e.querySelector('.match-teams-input').value.trim();
+            var s = e.querySelector('.match-score-input').value.trim();
+            var o = parseFloat(e.querySelector('.match-odds-input').value) || 0;
+            var ti = e.querySelector('.match-time-input').value.trim();
+            if (!t || !s || o <= 0) valid = false;
+            matches.push({ teams: t, score: s, odds: o, time: ti });
+        });
+
+        if (!valid) { showToast('Remplissez tous les champs !', true); return; }
+
+        var tot = 1;
+        matches.forEach(function (m) { tot *= m.odds; });
+        var gains = mise * tot;
+
+        var pubRes = await supabaseClient.from('combineds_public').insert([{ date: date, status: status, nombre_matchs: matches.length }]).select().single();
+        if (pubRes.error) { showToast('Erreur de publication publique', true); console.error(pubRes.error); return; }
+
+        var vipRes = await supabaseClient.from('combineds_vip').insert([{ id: pubRes.data.id, matches: matches, mise: mise, gains: gains, total_odds: tot }]);
+        if (vipRes.error) { showToast('Erreur de publication VIP', true); console.error(vipRes.error); return; }
+
+        currentCombined = Object.assign({}, pubRes.data, { matches: matches, mise: mise, gains: gains, totalOdds: tot });
+
+        if (status === 'en-cours') appStats.pending++;
+        else if (status === 'termine') appStats.wins++;
+        else appStats.losses++;
+        appStats.total++;
+        saveState();
+        updateStats();
+        renderCombined();
+        showToast('Combiné publié avec succès !');
+        setTimeout(function () { closeAdmin(); }, 1000);
+    }
+
+    async function deleteCombined() {
+        if (currentCombined && currentCombined.id) {
+            await supabaseClient.from('combineds_vip').delete().eq('id', currentCombined.id);
+            await supabaseClient.from('combineds_public').delete().eq('id', currentCombined.id);
+            currentCombined = null;
+            saveState();
+            renderCombined();
+            showToast('Combiné supprimé !', true);
+            document.getElementById('admin-matches').innerHTML = '';
+            matchEntryCount = 0;
+            document.getElementById('admin-mise').value = '';
+            addMatchEntry();
+            addMatchEntry();
+            calculateGains();
+        } else {
+            showToast('Aucun combiné à supprimer !', true);
+        }
+    }
+
+    function updateStats() {
+        document.getElementById('stat-total').textContent = appStats.total;
+        document.getElementById('stat-wins').textContent = appStats.wins;
+        document.getElementById('stat-pending').textContent = appStats.pending;
+        document.getElementById('stat-losses').textContent = appStats.losses;
+    }
+
+    function renderCombined() {
+        var vc = document.getElementById('vip-combined-container');
+        var hc = document.getElementById('home-combined-container');
+        var sb = document.getElementById('vip-combined-status-bar');
+        if (!currentCombined) {
+            var empty = '<div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div>';
+            vc.innerHTML = empty; hc.innerHTML = empty; sb.innerHTML = '';
+            return;
+        }
+        var df = fmtD(currentCombined.date), sc = currentCombined.status;
+        var sl = { 'en-cours': 'En cours', 'termine': 'Terminé', 'perdu': 'Perdu' };
+        var pw = '50%';
+        if (sc === 'termine' || sc === 'perdu') pw = '100%';
+        vc.innerHTML = buildCC(currentCombined, sc, sl, pw, false);
+        hc.innerHTML = buildCC(currentCombined, sc, sl, pw, true);
+        sb.innerHTML = '<div class="vip-combined-status" style="margin:0 20px 15px;">Combiné du ' + df + ' <span class="disponible">DISPONIBLE !</span></div>';
+    }
+
+    function buildCC(c, sc, sl, pw, isHome) {
+        var mH = '';
+        var matchesToDisplay = c.matches ? c.matches : Array(c.nombre_matchs || 2).fill({ teams: 'Match caché', time: '--:--', odds: 0 });
+        var isObscured = isHome || !c.matches;
+
+        matchesToDisplay.forEach(function (m) {
+            var displayScore = isObscured ? '?-?' : m.score;
+            var displayOdds = isObscured ? '***' : m.odds.toFixed(2);
+            var teamsName = m.teams || 'Équipe A vs Équipe B';
+            var matchTime = m.time || '';
+            var scoreHtml = isObscured ? '<span class="match-score blurred-value">' + displayScore + '</span>' : '<span class="match-score">' + displayScore + '</span>';
+            var oddsHtml = isObscured ? '<div class="match-odds blurred-value">' + displayOdds + '</div>' : '<div class="match-odds">' + displayOdds + '</div>';
+            mH += '<div class="match-row"><div class="match-row-top"><div class="match-type"><i class="fas fa-futbol"></i> Score exact ' + scoreHtml + '</div>' + oddsHtml + '</div><div class="match-row-bottom"><div class="match-teams"><i class="fas fa-shield-alt"></i> ' + teamsName + '</div><div class="match-time">' + matchTime + '</div></div></div>';
+        });
+
+        var ic = '';
+        matchesToDisplay.forEach(function (m, i) {
+            ic += '<div class="match-icon-circle ' + (i === matchesToDisplay.length - 1 ? 'highlight' : '') + '"><i class="fas fa-futbol" style="font-size:14px;color:' + (i === matchesToDisplay.length - 1 ? 'white' : 'var(--text-gray)') + '"></i></div>';
+        });
+
+        var pc = c.status === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);'
+            : c.status === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);'
+            : 'background:linear-gradient(90deg,var(--green),var(--blue));';
+
+        var displayGains = isObscured ? '***,** €' : fmtC(c.gains || 0);
+        var displayTotalOdds = isObscured ? '***.**' : (c.total_odds || c.totalOdds || 0).toFixed(2);
+        var displayMise = isObscured ? '***,** €' : fmtC(c.mise || 0);
+
+        var gainsHtml = isObscured
+            ? '<span class="combined-footer-value gains blurred-value">' + displayGains + '</span>'
+            : '<span class="combined-footer-value gains">' + displayGains + '</span>';
+        var totalOddsHtml = isObscured
+            ? '<span class="combined-footer-value blurred-value">' + displayTotalOdds + '</span>'
+            : '<span class="combined-footer-value">' + displayTotalOdds + '</span>';
+
+        var ctaBtn = isHome
+            ? '<a href="' + TELEGRAM_LINK + '" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>'
+            : '<button class="combined-complete-btn">Compléter</button>';
+
+        return '<div class="combined-card"><div class="combined-header"><div class="combined-status"><span class="status-badge ' + sc + '">' + sl[sc] + '</span><span class="combined-label">Combiné</span><div class="combined-count"><i class="fas fa-futbol"></i> ' + matchesToDisplay.length + '</div></div><i class="fas fa-ellipsis-h combined-more"></i></div><div class="combined-progress"><div class="combined-progress-fill" style="width:' + pw + ';' + pc + '"></div></div><div class="combined-matches-icons">' + ic + '<span style="font-size:12px;color:var(--text-gray);margin-left:4px;">' + matchesToDisplay.length + '</span></div><div class="combined-body">' + mH + '</div><div class="combined-footer"><img src="' + LOGO_DARK + '" alt="SM" class="watermark-img"><div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span>' + totalOddsHtml + '</div><div class="combined-footer-row"><span class="combined-footer-label">Mise</span><span class="combined-footer-value">' + displayMise + '</span></div><div class="combined-footer-row"><span class="combined-footer-label">Gains potentiels</span>' + gainsHtml + '</div></div>' + ctaBtn + '</div>';
+    }
+
+    function updateDateOnly() {
+        if (!currentCombined) { showToast('Aucun combiné à modifier !', true); return; }
+        var newDate = document.getElementById('admin-date').value;
+        var newStatus = document.getElementById('admin-status').value;
+        if (!newDate) { showToast('Sélectionnez une date !', true); return; }
+        currentCombined.date = newDate;
+        currentCombined.status = newStatus;
+        saveState();
+        renderCombined();
+        showToast('Date et statut mis à jour !');
+    }
+
+    function fmtD(d) {
+        if (!d) return '';
+        var dt = new Date(d);
+        return String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getMonth() + 1).padStart(2, '0');
+    }
+
+    function showToast(msg, err) {
+        err = err || false;
+        var t = document.getElementById('toast');
+        document.getElementById('toast-message').textContent = msg;
+        t.querySelector('i').className = err ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
+        t.classList.toggle('error', err);
+        t.classList.add('show');
+        setTimeout(function () { t.classList.remove('show'); }, 3000);
+    }
+
+    function promptAdminCode() {
+        if (window.isAdmin === true) {
+            openAdmin();
+        } else {
+            showToast("Accès refusé. Vous n'êtes pas administrateur.", true);
+        }
+    }
+</script>
 
 </body>
 </html>
