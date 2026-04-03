@@ -10,6 +10,7 @@
     <meta name="apple-mobile-web-app-title" content="ScoreMaster">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0D0D0D">
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlNjb3JlTWFzdGVyIiwKICAic2hvcnRfbmFtZSI6ICJTTSB2aXAiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBEMEQwRCIsCiAgInRoZW1lX2NvbG9yIjogIiMwRDBEMEQiLAogICJvcmllbnRhdGlvbiI6ICJwb3J0cmFpdCIKfQ==">
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -24,7 +25,7 @@
         #splash-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;z-index:10000;transition:opacity .6s,visibility .6s}
         #splash-screen.hidden{opacity:0;visibility:hidden}
         .splash-content{text-align:center;animation:splashFadeIn 1s ease-out}
-        .splash-logo-img{width:200px;height:auto;max-height:350px;object-fit:contain;filter:drop-shadow(0 0 40px rgba(255,215,0,.15))}
+        .splash-logo-img{width:180px;height:auto;max-height:350px;object-fit:contain;filter:drop-shadow(0 0 40px rgba(255,215,0,.15));border-radius:30px;}
         .splash-loader{margin-top:40px;display:flex;gap:8px;justify-content:center}
         .splash-loader span{width:8px;height:8px;background:var(--primary-yellow);border-radius:50%;animation:loaderBounce 1.4s ease infinite}
         .splash-loader span:nth-child(2){animation-delay:.2s}
@@ -40,10 +41,11 @@
         .fade-in-up{animation:fadeInUp .5s ease forwards}
         .delay-1{animation-delay:.1s;opacity:0}.delay-2{animation-delay:.2s;opacity:0}.delay-3{animation-delay:.3s;opacity:0}.delay-4{animation-delay:.4s;opacity:0}.delay-5{animation-delay:.5s;opacity:0}
         
+        /* LOGIN CLAIR ET JAUNE */
         #login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,var(--primary-yellow) 0%,var(--primary-yellow) 35%,#FFFFFF 35%);z-index:9000;display:none;flex-direction:column;transition:opacity .4s}
         #login-screen.active{display:flex}
         .login-header{flex:0 0 auto;padding-top:calc(30px + var(--safe-top));padding-bottom:20px;text-align:center}
-        .login-logo-img{width:100px;height:auto;object-fit:contain;filter:drop-shadow(0 4px 15px rgba(0,0,0,0.1))}
+        .login-logo-img{width:110px;height:auto;object-fit:contain;filter:drop-shadow(0 4px 15px rgba(0,0,0,0.1));border-radius:24px;}
         .login-form-container{flex:1;background:#FFFFFF;border-radius:30px 30px 0 0;padding:35px 25px;padding-bottom:calc(30px + var(--safe-bottom));box-shadow: 0 -10px 30px rgba(0,0,0,0.05);}
         .login-form-title{font-size:13px;color:#6C757D;margin-bottom:8px;font-weight:500}
         .login-input{width:100%;padding:16px 16px;background:#F8F9FA;border:1px solid #E0E0E0;border-radius:12px;color:#1A1A1A;font-size:15px;font-family:'Inter',sans-serif;margin-bottom:20px;outline:none;transition:border-color .3s}
@@ -79,22 +81,18 @@
         .nav-item.vip.active i{color:var(--red)}
         .nav-item.vip.active span{color:var(--red)}
         
-        .logo-avatar{border-radius:50%;overflow:hidden;border:2px solid var(--primary-yellow);display:flex;align-items:center;justify-content:center;background:#000;flex-shrink:0}
-        .logo-avatar img{width:75%;height:75%;object-fit:contain}
+        .logo-avatar{border-radius:50%;overflow:hidden;border:2px solid var(--primary-yellow);display:flex;align-items:center;justify-content:center;background:#1A1A1A;flex-shrink:0}
+        .logo-avatar img{width:100%;height:100%;object-fit:cover}
         .logo-avatar.small{width:44px;height:44px}
         .logo-avatar.medium{width:60px;height:60px}
-        .logo-pack-icon{width:55px;height:55px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;padding:8px}
-        .logo-pack-icon img{width:100%;height:100%;object-fit:contain}
+        .logo-pack-icon{width:55px;height:55px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
+        .logo-pack-icon img{width:100%;height:100%;object-fit:cover}
         .logo-pack-icon.yellow{background:linear-gradient(135deg,var(--primary-yellow),var(--dark-yellow))}
         .logo-pack-icon.red{background:linear-gradient(135deg,#FF3D3D,#CC0000)}
         .logo-pack-icon.green{background:linear-gradient(135deg,#00C853,#009624)}
         .logo-pack-icon.blue{background:linear-gradient(135deg,#4A90D9,#2E6AAD)}
-        .logo-pack-detail{width:60px;height:60px;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;padding:10px}
-        .logo-pack-detail img{width:100%;height:100%;object-fit:contain}
-        .logo-pack-detail.yellow{background:linear-gradient(135deg,var(--primary-yellow),var(--dark-yellow))}
-        .logo-pack-detail.red{background:linear-gradient(135deg,#FF3D3D,#CC0000)}
-        .logo-pack-detail.green{background:linear-gradient(135deg,#00C853,#009624)}
-        .logo-pack-detail.blue{background:linear-gradient(135deg,#4A90D9,#2E6AAD)}
+        .logo-pack-detail{width:60px;height:60px;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
+        .logo-pack-detail img{width:100%;height:100%;object-fit:cover}
         
         .home-header{padding:15px 20px;display:flex;align-items:center;justify-content:space-between}
         .home-user{display:flex;align-items:center;gap:12px}
@@ -305,17 +303,17 @@
 <body>
 
 <script>
-    // URL DE L'IMAGE GENERIQUE EN LIGNE (Pour éviter les erreurs sur Vercel le temps de tester)
-    // Remets "logo-dark.png" quand tu auras uploadé tes fichiers sur le serveur !
-    const LOGO_DARK = "https://cdn-icons-png.flaticon.com/512/5753/5753982.png"; 
-    const LOGO_LIGHT = "https://cdn-icons-png.flaticon.com/512/5753/5753982.png";
-    const LOGO_SPLASH = "https://cdn-icons-png.flaticon.com/512/5753/5753982.png";
+    // --- LOGOS EN SVG (Ne disparaîtront JAMAIS) ---
+    const BASE64_LOGO = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIiB2aWV3Qm94PSIwIDAgNDAwIDQwMCI+PHJlY3Qgd2lkdGg9IjQwMCIgaGVpZ2h0PSI0MDAiIGZpbGw9IiMxQTFBMUEiIHJ4PSI0MCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iTW9udHNlcnJhdCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNDAiIGZvbnQtd2VpZ2h0PSI5MDAiIGZpbGw9IiNGRkQ3MDAiPlNNPC90ZXh0PjxwYXRoIGQ9Ik0xMjAgMTMwIEwxNTAgODAgTDE4MCAxMTAgTDIwMCA2MCBMMjIwIDExMCBMMjUwIDgwIEwyODAgMTMwIFoiIGZpbGw9IiNGRkQ3MDAiLz48L3N2Zz4=";
+    const LOGO_DARK = BASE64_LOGO;
+    const LOGO_LIGHT = BASE64_LOGO;
+    const LOGO_SPLASH = BASE64_LOGO;
     
     const TELEGRAM_LINK = "https://t.me/scoremasteroff";
     const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
     
-    // --- METS TA CLE SPORTMONKS ICI ---
+    // --- TA CLE API SPORTMONKS ---
     const SPORTMONKS_API_KEY = 'Tu21daPcYDJc75TOju5H1rpJes5wOtJkCnW67KG6OCIfU4cvIHVhTELEZtbY'; 
     
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -447,6 +445,7 @@
                 <div id="home-combined-container"><div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div></div>
             </div>
             
+            <!-- HISTORIQUE PUBLIC -->
             <div class="section-header fade-in-up delay-5" style="margin-top: 10px;">
                 <span class="section-title">Nos derniers combinés</span>
             </div>
@@ -465,10 +464,11 @@
             <div style="height:20px;"></div>
         </div>
 
-        <!-- PACKS PAGE -->
+        <!-- PACKS PAGE PERSONNALISÉE -->
         <div class="page" id="page-packs">
             <div class="page-title-bar"><h2>Nos Packs</h2></div>
             <div class="packs-page-list">
+                <!-- PACK 1 -->
                 <div class="pack-detail-card">
                     <div class="pack-detail-top">
                         <div class="logo-pack-detail green" id="pack-detail-1"></div>
@@ -499,6 +499,7 @@
                     </div>
                 </div>
 
+                <!-- PACK 2 -->
                 <div class="pack-detail-card">
                     <div class="pack-detail-top">
                         <div class="logo-pack-detail red" id="pack-detail-2"></div>
@@ -530,6 +531,7 @@
                     </div>
                 </div>
 
+                <!-- PACK 3 -->
                 <div class="pack-detail-card">
                     <div class="pack-detail-top">
                         <div class="logo-pack-detail blue" id="pack-detail-3"></div>
@@ -631,6 +633,7 @@
 
     </div>
 
+    <!-- BOTTOM NAV -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="navigateTo('home')"><i class="fas fa-home"></i><span>Accueil</span></div>
         <div class="nav-item" onclick="navigateTo('packs')"><i class="fas fa-clone"></i><span>Nos packs</span></div>
@@ -861,13 +864,8 @@
         setTimeout(function () { popup.style.display = 'none'; }, 300);
     }
 
-    // --- REQUÊTE API SPORTMONKS (Avec proxy de contournement) ---
+    // --- REQUÊTE API SPORTMONKS DIRECTE ---
     async function fetchMatchesFromAPI() {
-        if (SPORTMONKS_API_KEY === 'Tu21daPcYDJc75TOju5H1rpJes5wOtJkCnW67KG6OCIfU4cvIHVhTELEZtbY' || SPORTMONKS_API_KEY.trim() === '') {
-            showToast('Met ta clé API Sportmonks dans le code !', true);
-            return;
-        }
-
         var date = document.getElementById('admin-date').value;
         if (!date) {
             showToast('Choisis une date d\'abord', true);
@@ -878,50 +876,46 @@
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement...';
 
         try {
-            // Utilisation de AllOrigins pour éviter l'erreur de sécurité CORS de ton navigateur
-            var targetUrl = encodeURIComponent(`https://api.sportmonks.com/v3/football/fixtures/date/${date}?api_token=${SPORTMONKS_API_KEY}&include=participants`);
-            var url = `https://api.allorigins.win/get?url=${targetUrl}`;
+            // Utilisation directe de l'API avec la structure des screenshots
+            var url = `https://api.sportmonks.com/v3/football/fixtures/date/${date}?api_token=${SPORTMONKS_API_KEY}`;
             
             var response = await fetch(url);
-            var proxyData = await response.json();
-            
-            if (!proxyData.contents) {
-                throw new Error("Impossible de joindre l'API Sportmonks.");
-            }
+            var data = await response.json();
 
-            var data = JSON.parse(proxyData.contents);
-
+            // Si erreur d'API (ex: limite atteinte)
             if (data.message) {
-                throw new Error(data.message); // Exemple: Clé API invalide, limite atteinte...
+                throw new Error(data.message); 
             }
 
             if (data.data && data.data.length > 0) {
                 var matchesHtml = '<div style="background:#2A2A2A; padding:10px; border-radius:8px; margin-bottom:10px; max-height:200px; overflow-y:auto;">';
                 matchesHtml += '<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px;">Matchs trouvés (' + data.data.length + ') :</div>';
 
-                var limit = Math.min(data.data.length, 15);
+                var limit = Math.min(data.data.length, 30); // On charge max 30 matchs pour la liste
                 for(var i=0; i<limit; i++) {
                     var match = data.data[i];
-                    var team1 = match.participants && match.participants[0] ? match.participants[0].name : 'Equipe A';
-                    var team2 = match.participants && match.participants[1] ? match.participants[1].name : 'Equipe B';
+                    
+                    // Dans Sportmonks V3, le nom du match est directement accessible (ex: "Liverpool vs Wrexham")
+                    var teamNameStr = match.name || 'Équipe A - Équipe B';
                     var time = match.starting_at ? match.starting_at.substring(11, 16) : '00:00';
 
-                    var safeMatchString = `${team1} - ${team2}`.replace(/'/g, "\\'");
+                    // On remplace le " vs " par " - " pour faire plus propre
+                    var safeMatchString = teamNameStr.replace(' vs ', ' - ').replace(/'/g, "\\'");
 
-                    matchesHtml += `<button onclick="addMatchFromAPI('${safeMatchString}', '${time}')" style="display:block; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:8px; border-radius:6px; margin-bottom:6px; color:#fff; font-size:12px; cursor:pointer;">
-                        <span style="color:var(--primary-yellow)">${time}</span> | ${team1} - ${team2}
+                    matchesHtml += `<button onclick="addMatchFromAPI('${safeMatchString}', '${time}')" style="display:block; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; font-size:13px; font-weight:600; cursor:pointer;">
+                        <span style="color:var(--primary-yellow); margin-right:8px;"><i class="fas fa-clock"></i> ${time}</span> ${safeMatchString}
                     </button>`;
                 }
                 matchesHtml += '</div>';
 
                 document.getElementById('api-matches-container').innerHTML = matchesHtml;
-                showToast('Matchs chargés !');
+                showToast('Matchs chargés avec succès !');
             } else {
                 showToast('Aucun match trouvé à cette date.', true);
             }
         } catch (error) {
             console.error(error);
-            showToast(error.message || 'Erreur API Sportmonks', true);
+            showToast('Erreur connexion API', true);
         }
 
         btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs du jour';
@@ -1182,7 +1176,7 @@
             if (extracted && extracted[0] < earliestTime) { earliestTime = extracted[0]; }
         });
 
-        if (!valid) { showToast('Remplissez tous les champs !', true); return; }
+        if (!valid) { showToast('Remplissez tous champs !', true); return; }
 
         var tot = 1;
         matches.forEach(function (m) { tot *= m.odds; });
