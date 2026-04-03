@@ -4,295 +4,109 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ScoreMaster VIP</title>
+    <title>ScoreMaster</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SM VIP">
+    <meta name="apple-mobile-web-app-title" content="ScoreMaster">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0D0D0D">
     <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIlNjb3JlTWFzdGVyIiwKICAic2hvcnRfbmFtZSI6ICJTTSB2aXAiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzBEMEQwRCIsCiAgInRoZW1lX2NvbG9yIjogIiMwRDBEMEQiLAogICJvcmllbnRhdGlvbiI6ICJwb3J0cmFpdCIKfQ==">
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
     <style>
-        /* ==========================================
-           VARIABLES GLOBALES & RESET
-           ========================================== */
-        :root {
-            /* Couleurs principales App */
-            --primary-yellow: #FFD700;
-            --dark-yellow: #E6C200;
-            --green: #00C853;
-            --red: #FF3D3D;
-            --blue: #4A90D9;
-            
-            /* Couleurs de Fond App */
-            --bg-dark: #0D0D0D;
-            --bg-card: #1A1A1A;
-            --bg-input: #2A2A2A;
-            
-            /* Couleurs de Texte App */
-            --text-white: #FFFFFF;
-            --text-gray: #8A8A8A;
-            --text-light-gray: #B0B0B0;
-            --border-color: #333333;
-            
-            /* Variables Spécifiques Login Premium (Dark/White) */
-            --yellow-pale: #FFF8CC;
-            --yellow-glow: rgba(255, 215, 0, 0.35);
-            --black: #0D0D0D;
-            --white: #FFFFFF;
-            --gray-light: #F5F5F5;
-            --gray-mid: #C0C0C0;
-            --gray-text: #6B6B6B;
-            --radius-card: 28px;
-            --radius-input: 14px;
-            --shadow-card: 0 24px 60px rgba(0,0,0,0.13);
-            
-            /* Safe Areas Mobile */
-            --safe-top: env(safe-area-inset-top, 0px);
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
-        }
-
-        /* Reset global pour mobile */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color:transparent; -webkit-touch-callout:none; }
+        .combined-card { display: flex; flex-direction: column; }
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
         
-        html, body {
-            font-family: 'Inter', 'DM Sans', sans-serif;
-            background: var(--bg-dark);
-            color: var(--text-white);
-            overflow: hidden;
-            height: 100vh;
-            width: 100vw;
-            position: fixed;
-            top: 0; left: 0;
-            -webkit-text-size-adjust: 100%;
-        }
-
-        /* ==========================================
-           COMPOSANTS GENERAUX (LOGOS)
-           ========================================== */
-        /* Avatars ronds (home, vip) */
-        .logo-avatar { border-radius: 50%; overflow: hidden; border: 2px solid var(--primary-yellow); display: flex; align-items: center; justify-content: center; background: #1A1A1A; flex-shrink: 0; }
-        .logo-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .logo-avatar.small { width: 44px; height: 44px; }
-        .logo-avatar.medium { width: 60px; height: 60px; }
+        :root{--primary-yellow:#FFD700;--dark-yellow:#E6C200;--bg-dark:#0D0D0D;--bg-card:#1A1A1A;--bg-input:#2A2A2A;--text-white:#FFFFFF;--text-gray:#8A8A8A;--text-light-gray:#B0B0B0;--green:#00C853;--red:#FF3D3D;--blue:#4A90D9;--border-color:#333333;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+        html,body{font-family:'Inter','Montserrat',sans-serif;background:var(--bg-dark);color:var(--text-white);overflow:hidden;height:100%;width:100%;position:fixed;top:0;left:0}
         
-        /* Petits logos packs (home) */
-        .logo-pack-icon { width: 55px; height: 55px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; padding: 5px; }
-        .logo-pack-icon img { width: 100%; height: 100%; object-fit: contain; }
-        .logo-pack-icon.yellow { background: linear-gradient(135deg,var(--primary-yellow),var(--dark-yellow)); }
-        .logo-pack-icon.red { background: linear-gradient(135deg,#FF3D3D,#CC0000); }
-        .logo-pack-icon.green { background: linear-gradient(135deg,#00C853,#009624); }
-        .logo-pack-icon.blue { background: linear-gradient(135deg,#4A90D9,#2E6AAD); }
+        #splash-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;z-index:10000;transition:opacity .6s,visibility .6s}
+        #splash-screen.hidden{opacity:0;visibility:hidden}
+        .splash-content{text-align:center;animation:splashFadeIn 1s ease-out}
+        .splash-logo-img{width:180px;height:auto;max-height:350px;object-fit:contain;filter:drop-shadow(0 0 40px rgba(255,215,0,.15));border-radius:30px;}
+        .splash-loader{margin-top:40px;display:flex;gap:8px;justify-content:center}
+        .splash-loader span{width:8px;height:8px;background:var(--primary-yellow);border-radius:50%;animation:loaderBounce 1.4s ease infinite}
+        .splash-loader span:nth-child(2){animation-delay:.2s}
+        .splash-loader span:nth-child(3){animation-delay:.4s}
         
-        /* Grands logos packs (page packs) */
-        .logo-pack-detail { width: 60px; height: 60px; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; padding: 8px; }
-        .logo-pack-detail img { width: 100%; height: 100%; object-fit: contain; }
-        .logo-pack-detail.yellow { background: linear-gradient(135deg,var(--primary-yellow),var(--dark-yellow)); }
-        .logo-pack-detail.red { background: linear-gradient(135deg,#FF3D3D,#CC0000); }
-        .logo-pack-detail.green { background: linear-gradient(135deg,#00C853,#009624); }
-        .logo-pack-detail.blue { background: linear-gradient(135deg,#4A90D9,#2E6AAD); }
-
-        /* ==========================================
-           SPLASH SCREEN
-           ========================================== */
-        #splash-screen { position:fixed; top:0; left:0; width:100%; height:100%; background:#000; display:flex; align-items:center; justify-content:center; z-index:10000; transition:opacity 0.6s,visibility 0.6s; }
-        #splash-screen.hidden { opacity:0; visibility:hidden; }
-        .splash-content { text-align:center; animation:splashFadeIn 1s ease-out; }
-        .splash-logo-img { width:180px; height:auto; max-height:350px; object-fit:contain; filter:drop-shadow(0 0 40px rgba(255,215,0,0.15)); border-radius:30px; }
-        .splash-loader { margin-top:40px; display:flex; gap:8px; justify-content:center; }
-        .splash-loader span { width:8px; height:8px; background:var(--primary-yellow); border-radius:50%; animation:loaderBounce 1.4s ease infinite; }
-        .splash-loader span:nth-child(2) { animation-delay:0.2s; }
-        .splash-loader span:nth-child(3) { animation-delay:0.4s; }
-
-        @keyframes splashFadeIn { from{opacity:0; transform:scale(0.85);} to{opacity:1; transform:scale(1);} }
-        @keyframes loaderBounce { 0%,80%,100%{transform:scale(0.6); opacity:0.3;} 40%{transform:scale(1); opacity:1;} }
-
-        /* ==========================================
-           ÉCRAN DE CONNEXION PREMIUM (DESIGN FIXE)
-           ========================================== */
-        #login-screen {
-            position: fixed; inset: 0;
-            display: none; /* Masqué par défaut */
-            flex-direction: column; align-items: center; justify-content: flex-start;
-            z-index: 9000; overflow-y: auto; background: var(--black);
-            -webkit-overflow-scrolling: touch;
-        }
-        #login-screen.active { display: flex; }
-
-        /* Fond animé */
-        .bg-canvas { position: fixed; inset: 0; z-index: 0; background: linear-gradient(145deg, #1a1400 0%, #0D0D0D 50%, #001a0a 100%); pointer-events: none; }
-        
-        /* Grille hexagonale décorative */
-        .hex-grid { position: absolute; inset: 0; opacity: 0.07; }
-        .hex-grid svg { width: 100%; height: 100%; }
-
-        /* Orbes lumineux */
-        .bg-orb { position: absolute; border-radius: 50%; filter: blur(80px); animation: orbFloat 8s ease-in-out infinite; }
-        .bg-orb-1 { width: 420px; height: 420px; background: radial-gradient(circle, rgba(255,215,0,0.22) 0%, transparent 70%); top: -120px; left: -80px; }
-        .bg-orb-2 { width: 280px; height: 280px; background: radial-gradient(circle, rgba(0,200,83,0.12) 0%, transparent 70%); bottom: 80px; right: -60px; animation-delay: -3s; }
-        @keyframes orbFloat { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-30px) scale(1.05); } }
-
-        /* Conteneur principal connexion */
-        .login-content {
-            position: relative; z-index: 1; width: 100%; max-width: 420px;
-            padding: calc(60px + var(--safe-top)) 20px calc(40px + var(--safe-bottom));
-            display: flex; flex-direction: column; align-items: center; min-height: 100vh; justify-content: center;
-        }
-
-        /* En-tête Connexion (Logo sur fond blanc) */
-        .login-header { text-align: center; margin-bottom: 32px; animation: fadeSlideDown 0.7s cubic-bezier(0.23,1,0.32,1) both; }
-        
-        /* CORRECTION DU LOGO : FOND BLANC POUR SM NOIR */
-        .login-logo-wrap {
-            width: 80px; height: 80px;
-            background: var(--white); /* Fond passé en blanc */
-            border-radius: 24px;
-            display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 16px;
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.2), 0 8px 24px rgba(0,0,0,0.3);
-            animation: logoPulse 3s ease-in-out infinite;
-            overflow: hidden;
-        }
-        @keyframes logoPulse {
-            0%, 100% { box-shadow: 0 0 30px rgba(255, 255, 255, 0.2), 0 8px 24px rgba(0,0,0,0.3); }
-            50% { box-shadow: 0 0 50px rgba(255, 215, 0, 0.4), 0 8px 24px rgba(0,0,0,0.3); }
-        }
-        
-        .login-sub { font-size: 14px; color: var(--gray-mid); font-weight: 500; letter-spacing: 0.3px; margin-top: 10px; font-family: 'DM Sans', sans-serif;}
-
-        /* Carte de formulaire */
-        .login-card {
-            width: 100%; background: var(--white); border-radius: var(--radius-card); padding: 32px 28px 28px;
-            box-shadow: var(--shadow-card); animation: fadeSlideUp 0.7s cubic-bezier(0.23,1,0.32,1) 0.15s both;
-        }
-
-        /* Mode Switcher */
-        .mode-switcher { display: flex; background: var(--gray-light); border-radius: 12px; padding: 4px; margin-bottom: 28px; gap: 4px; }
-        .mode-btn {
-            flex: 1; padding: 10px; border: none; background: transparent; border-radius: 9px; font-family: 'DM Sans', sans-serif;
-            font-size: 13px; font-weight: 600; color: var(--gray-text); cursor: pointer; transition: all 0.3s ease;
-        }
-        .mode-btn.active { background: var(--white); color: var(--black); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-
-        /* Champs de saisie */
-        .field-group { margin-bottom: 16px; animation: fadeSlideUp 0.5s ease both; }
-        .field-label { font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--gray-text); margin-bottom: 8px; display: block; }
-        .field-wrap { position: relative; }
-        .field-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--gray-mid); font-size: 15px; pointer-events: none; transition: color 0.3s; }
-        
-        .login-input {
-            width: 100%; padding: 15px 44px 15px 44px; background: var(--gray-light); border: 1.5px solid transparent; border-radius: var(--radius-input);
-            color: var(--black); font-size: 14px; font-family: 'DM Sans', sans-serif; font-weight: 500; outline: none; transition: all 0.25s ease;
-        }
-        .login-input::placeholder { color: var(--gray-mid); font-weight: 400; }
-        .login-input:focus { border-color: var(--primary-yellow); background: var(--yellow-pale); box-shadow: 0 0 0 4px var(--yellow-glow); }
-        .login-input:focus + .field-icon, .field-wrap:focus-within .field-icon { color: var(--dark-yellow); }
-        
-        .toggle-pwd { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--gray-mid); font-size: 15px; cursor: pointer; background: none; border: none; padding: 4px; transition: color 0.2s; }
-        .toggle-pwd:hover { color: var(--black); }
-
-        /* Pseudo caché */
-        .field-hidden { overflow: hidden; max-height: 0; opacity: 0; transition: max-height 0.4s ease, opacity 0.3s, margin-bottom 0.4s; margin-bottom: 0; }
-        .field-hidden.visible { max-height: 90px; opacity: 1; margin-bottom: 16px; }
-
-        /* Bouton d'action principal */
-        .login-btn {
-            width: 100%; padding: 16px; background: var(--primary-yellow); color: var(--black); border: none; border-radius: var(--radius-input);
-            font-size: 15px; font-weight: 700; font-family: 'DM Sans', sans-serif; cursor: pointer; margin-top: 8px; position: relative; overflow: hidden;
-            transition: all 0.3s ease; box-shadow: 0 6px 20px rgba(255,215,0,0.4); display: flex; justify-content: center; align-items: center; height: 52px;
-        }
-        .login-btn::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 60%); opacity: 0; transition: opacity 0.3s; }
-        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(255,215,0,0.5); }
-        .login-btn:active { transform: scale(0.97) translateY(0); box-shadow: 0 4px 12px rgba(255,215,0,0.3); }
-        .login-btn.loading { pointer-events: none; opacity: 0.8; }
-        .login-btn.loading .btn-text { display: none; }
-        .login-btn.loading .btn-spinner { display: block; }
-        
-        .btn-text { transition: opacity 0.2s; }
-        .btn-spinner {
-            display: none; width: 20px; height: 20px; border: 2.5px solid rgba(0,0,0,0.2); border-top-color: var(--black); border-radius: 50%; animation: spin 0.7s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Erreur */
-        .login-error { display: none; align-items: center; gap: 8px; background: #FFF0F0; border: 1px solid #FFD0D0; color: var(--red); font-size: 12.5px; font-weight: 500; padding: 11px 14px; border-radius: 10px; margin-top: 14px; animation: shake 0.4s ease; }
-        .login-error.show { display: flex; }
-
-        /* Options du bas (Mot de passe oublié, se souvenir) */
-        .login-options { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
-        .forgot-password { font-size: 12px; font-weight: 600; color: var(--gray-text); text-decoration: none; transition: color 0.2s; font-family: 'DM Sans', sans-serif;}
-        .forgot-password:hover { color: var(--black); }
-        .remember-me { display: flex; align-items: center; gap: 8px; }
-        .remember-label { font-size: 12px; color: var(--gray-text); user-select: none; cursor: pointer; font-family: 'DM Sans', sans-serif;}
-        
-        /* Toggle Switch */
-        .toggle-switch { width: 40px; height: 22px; background: #E0E0E0; border-radius: 11px; position: relative; cursor: pointer; transition: background 0.3s; flex-shrink: 0; }
-        .toggle-switch.active { background: var(--primary-yellow); }
-        .toggle-switch::after { content: ''; width: 16px; height: 16px; background: #fff; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: transform 0.3s ease; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
-        .toggle-switch.active::after { transform: translateX(18px); }
-
-        /* Diviseur "OPTIONS" */
-        .divider { display: flex; align-items: center; gap: 12px; margin: 22px 0; }
-        .divider-line { flex: 1; height: 1px; background: #EDEDED; }
-        .divider-text { font-size: 11px; color: var(--gray-mid); font-weight: 500; letter-spacing: 0.5px; }
-
-        /* Badge API */
-        .api-badge { display: flex; align-items: center; gap: 8px; padding: 11px 16px; background: var(--black); border-radius: 12px; margin-top: 10px; font-family: 'DM Sans', sans-serif;}
-        .api-badge i { color: var(--primary-yellow); font-size: 13px; }
-        .api-badge-text { flex: 1; font-size: 12px; color: var(--gray-mid); font-weight: 500; }
-        .api-dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px rgba(0,200,83,0.6); animation: blink 2s ease-in-out infinite; }
-        .api-connected { font-size: 11px; color: var(--green); font-weight: 600; }
-
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-        @keyframes fadeSlideDown { from { opacity: 0; transform: translateY(-24px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
-
-        /* ==========================================
-           APP PRINCIPALE & COMPOSANTS
-           ========================================== */
+        @keyframes splashFadeIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+        @keyframes loaderBounce{0%,80%,100%{transform:scale(.6);opacity:.3}40%{transform:scale(1);opacity:1}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-        @keyframes glowPass{0%,100%{box-shadow: 0 0 5px rgba(0,200,83,0.3);} 50%{box-shadow: 0 0 15px rgba(0,200,83,0.7);}}
+        @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
         @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-        
-        .fade-in-up{animation:fadeInUp .5s ease forwards}
-        .delay-1{animation-delay:.1s;opacity:0}
-        .delay-2{animation-delay:.2s;opacity:0}
-        .delay-3{animation-delay:.3s;opacity:0}
-        .delay-4{animation-delay:.4s;opacity:0}
-        .delay-5{animation-delay:.5s;opacity:0}
+        @keyframes glowPass{0%,100%{box-shadow: 0 0 5px rgba(0,200,83,0.3);} 50%{box-shadow: 0 0 15px rgba(0,200,83,0.7);}}
 
+        .fade-in-up{animation:fadeInUp .5s ease forwards}
+        .delay-1{animation-delay:.1s;opacity:0}.delay-2{animation-delay:.2s;opacity:0}.delay-3{animation-delay:.3s;opacity:0}.delay-4{animation-delay:.4s;opacity:0}.delay-5{animation-delay:.5s;opacity:0}
+        
+        /* LOGIN CLAIR ET JAUNE */
+        #login-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,var(--primary-yellow) 0%,var(--primary-yellow) 35%,#FFFFFF 35%);z-index:9000;display:none;flex-direction:column;transition:opacity .4s}
+        #login-screen.active{display:flex}
+        .login-header{flex:0 0 auto;padding-top:calc(30px + var(--safe-top));padding-bottom:20px;text-align:center}
+        .login-logo-img{width:110px;height:auto;object-fit:contain;filter:drop-shadow(0 4px 15px rgba(0,0,0,0.1));border-radius:24px;}
+        .login-form-container{flex:1;background:#FFFFFF;border-radius:30px 30px 0 0;padding:35px 25px;padding-bottom:calc(30px + var(--safe-bottom));box-shadow: 0 -10px 30px rgba(0,0,0,0.05);}
+        .login-form-title{font-size:13px;color:#6C757D;margin-bottom:8px;font-weight:500}
+        .login-input{width:100%;padding:16px 16px;background:#F8F9FA;border:1px solid #E0E0E0;border-radius:12px;color:#1A1A1A;font-size:15px;font-family:'Inter',sans-serif;margin-bottom:20px;outline:none;transition:border-color .3s}
+        .login-input:focus{border-color:var(--primary-yellow); background:#FFFFFF;}
+        .login-input::placeholder{color:#ADB5BD}
+        .login-btn{width:100%;padding:16px;background:var(--primary-yellow);color:#000;border:none;border-radius:12px;font-size:16px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:10px;transition:all .3s;box-shadow: 0 4px 12px rgba(255,215,0,0.3);}
+        .login-btn:active{transform:scale(.98);background:var(--dark-yellow)}
+        .login-options{display:flex;justify-content:space-between;align-items:center;margin-top:20px}
+        .forgot-password{color:#1A1A1A;font-size:13px;text-decoration:none;font-weight:700}
+        .remember-me{display:flex;align-items:center;gap:8px;font-size:13px;color:#6C757D}
+        .toggle-switch{width:44px;height:24px;background:#E0E0E0;border-radius:12px;position:relative;cursor:pointer;transition:background .3s}
+        .toggle-switch.active{background:var(--primary-yellow)}
+        .toggle-switch::after{content:'';width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:transform .3s;box-shadow:0 2px 4px rgba(0,0,0,0.1)}
+        .toggle-switch.active::after{transform:translateX(20px)}
+        .login-error{color:var(--red);font-size:13px;text-align:center;margin-top:12px;display:none;animation:shake .5s ease}
+        .login-error.show{display:block}
+        .api-badge-login{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:40px;padding:12px 16px;background:#F8F9FA;border:1px solid #E0E0E0;border-radius:12px}
+        .api-badge-login i{color:#ADB5BD;font-size:14px}
+        .api-badge-login span{font-size:11px;color:#6C757D;font-weight:500}
+        .api-badge-login .api-status-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
+        
         #app{display:none;height:100%;width:100%;flex-direction:column}
         #app.active{display:flex}
         .pages-container{flex:1;overflow:hidden;position:relative;padding-top:var(--safe-top)}
-        
-        .page{position:absolute;top:0;left:0;width:100%;height:100%;overflow-y:auto;overflow-x:hidden;opacity:0;visibility:hidden;transition:opacity .3s,transform .3s;transform:translateY(10px);-webkit-overflow-scrolling:touch;padding-top:10px;padding-bottom:20px}
+        .page{position:absolute;top:0;left:0;width:100%;height:100%;overflow-y:auto;overflow-x:hidden;opacity:0;visibility:hidden;transition:opacity .3s,transform .3s;transform:translateY(10px);-webkit-overflow-scrolling:touch;padding-top:var(--safe-top);padding-bottom:20px}
         .page.active{opacity:1;visibility:visible;transform:translateY(0)}
-        
-        /* BOTTOM NAV */
-        .bottom-nav{height:calc(65px + var(--safe-bottom));background:#111;border-top:1px solid var(--border-color);display:flex;align-items:flex-start;justify-content:space-around;flex-shrink:0;padding-top:8px;padding-bottom:var(--safe-bottom);z-index:100;}
+        .bottom-nav{height:calc(65px + var(--safe-bottom));background:#111;border-top:1px solid var(--border-color);display:flex;align-items:flex-start;justify-content:space-around;flex-shrink:0;padding-top:8px;padding-bottom:var(--safe-bottom)}
         .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 12px;border-radius:12px;transition:all .3s}
         .nav-item i{font-size:20px;color:var(--text-gray);transition:color .3s}
-        .nav-item span{font-size:10px;color:var(--text-gray);font-weight:500;text-align:center;line-height:1.2;transition:color .3s;font-family: 'DM Sans', sans-serif;}
+        .nav-item span{font-size:10px;color:var(--text-gray);font-weight:500;text-align:center;line-height:1.2;transition:color .3s}
         .nav-item.active i{color:var(--primary-yellow)}
         .nav-item.active span{color:var(--primary-yellow)}
         .nav-item.vip.active i{color:var(--red)}
         .nav-item.vip.active span{color:var(--red)}
         
-        /* HOME COMPONENTS */
+        .logo-avatar{border-radius:50%;overflow:hidden;border:2px solid var(--primary-yellow);display:flex;align-items:center;justify-content:center;background:#1A1A1A;flex-shrink:0}
+        .logo-avatar img{width:100%;height:100%;object-fit:cover}
+        .logo-avatar.small{width:44px;height:44px}
+        .logo-avatar.medium{width:60px;height:60px}
+        .logo-pack-icon{width:55px;height:55px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
+        .logo-pack-icon img{width:100%;height:100%;object-fit:cover}
+        .logo-pack-icon.yellow{background:linear-gradient(135deg,var(--primary-yellow),var(--dark-yellow))}
+        .logo-pack-icon.red{background:linear-gradient(135deg,#FF3D3D,#CC0000)}
+        .logo-pack-icon.green{background:linear-gradient(135deg,#00C853,#009624)}
+        .logo-pack-icon.blue{background:linear-gradient(135deg,#4A90D9,#2E6AAD)}
+        .logo-pack-detail{width:60px;height:60px;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;padding:10px}
+        .logo-pack-detail img{width:100%;height:100%;object-fit:contain}
+        .logo-pack-detail.yellow{background:linear-gradient(135deg,var(--primary-yellow),var(--dark-yellow))}
+        .logo-pack-detail.red{background:linear-gradient(135deg,#FF3D3D,#CC0000)}
+        .logo-pack-detail.green{background:linear-gradient(135deg,#00C853,#009624)}
+        .logo-pack-detail.blue{background:linear-gradient(135deg,#4A90D9,#2E6AAD)}
+        
         .home-header{padding:15px 20px;display:flex;align-items:center;justify-content:space-between}
         .home-user{display:flex;align-items:center;gap:12px}
-        .home-greeting{font-size:12px;color:var(--text-gray);font-family: 'DM Sans', sans-serif;}
-        .home-username{font-size:16px;font-weight:700;display:flex;align-items:center;gap:5px;font-family: 'Montserrat', sans-serif;}
+        .home-greeting{font-size:12px;color:var(--text-gray)}
+        .home-username{font-size:16px;font-weight:700;display:flex;align-items:center;gap:5px}
         .home-notif{width:40px;height:40px;background:var(--bg-card);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
         .home-notif i{color:var(--text-white);font-size:18px}
         .home-notif .notif-dot{width:8px;height:8px;background:var(--red);border-radius:50%;position:absolute;top:10px;right:10px}
         
-        .api-banner{margin:5px 20px 15px;padding:10px 16px;background:linear-gradient(135deg,rgba(74,144,217,.15),rgba(74,144,217,.05));border:1px solid rgba(74,144,217,.25);border-radius:12px;display:flex;align-items:center;gap:10px;font-family: 'DM Sans', sans-serif;}
+        .api-banner{margin:5px 20px 15px;padding:10px 16px;background:linear-gradient(135deg,rgba(74,144,217,.15),rgba(74,144,217,.05));border:1px solid rgba(74,144,217,.25);border-radius:12px;display:flex;align-items:center;gap:10px}
         .api-banner .api-icon{width:32px;height:32px;background:rgba(74,144,217,.2);border-radius:8px;display:flex;align-items:center;justify-content:center}
         .api-banner .api-icon i{color:var(--blue);font-size:16px}
         .api-banner .api-info{flex:1}
@@ -301,35 +115,33 @@
         .api-banner .api-desc{font-size:10px;color:var(--text-gray);margin-top:2px}
         .betclic-badge{font-weight:800;font-size:11px;text-transform:uppercase;color:var(--red);background:rgba(255,61,61,.15);padding:5px 10px;border-radius:6px;letter-spacing:.5px; transition: all 0.3s;}
         
-        .section-header{display:flex;justify-content:space-between;align-items:center;padding:0 20px;margin-bottom:15px;font-family: 'Montserrat', sans-serif;}
+        .section-header{display:flex;justify-content:space-between;align-items:center;padding:0 20px;margin-bottom:15px}
         .section-title{font-size:17px;font-weight:700}
         .section-more{font-size:13px;color:var(--primary-yellow);font-weight:600;cursor:pointer}
-        
-        .packs-scroll{padding:0 20px;display:flex;flex-direction:column;gap:14px;margin-bottom:20px;font-family: 'DM Sans', sans-serif;}
+        .packs-scroll{padding:0 20px;display:flex;flex-direction:column;gap:14px;margin-bottom:20px}
         .pack-card{background:var(--bg-card);border-radius:16px;padding:18px;display:flex;align-items:center;gap:15px;cursor:pointer;transition:all .3s;border:1px solid var(--border-color)}
         .pack-card:active{transform:scale(.98);border-color:var(--primary-yellow)}
         .pack-card-info{flex:1}
-        .pack-card-name{font-size:15px;font-weight:700;margin-bottom:4px;color:var(--text-white);}
+        .pack-card-name{font-size:15px;font-weight:700;margin-bottom:4px}
         .pack-card-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--green);background:rgba(0,200,83,.1);padding:3px 8px;border-radius:6px;margin-bottom:6px}
         .pack-card-tag i{font-size:8px}
         .pack-card-btn{display:inline-block;padding:6px 16px;border-radius:8px;font-size:12px;font-weight:700}
         .pack-card .heart-icon{color:var(--text-gray);font-size:18px;cursor:pointer}
         .pack-card .heart-icon.liked{color:var(--red)}
         
-        .home-vip-section{margin:0 20px 20px;font-family: 'Montserrat', sans-serif;}
+        .home-vip-section{margin:0 20px 20px}
         .home-vip-section h3{font-size:17px;font-weight:700;margin-bottom:12px}
-        
-        /* COMBINED CARDS (Home & VIP) */
-        .combined-card{background:#1E1E2E;border-radius:16px;overflow:hidden;border:1px solid #2A2A3A; margin-bottom:15px;font-family: 'DM Sans', sans-serif;}
+        .combined-card{background:#1E1E2E;border-radius:16px;overflow:hidden;border:1px solid #2A2A3A}
         .combined-header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #2A2A3A}
         .combined-status{display:flex;align-items:center;gap:8px}
         .status-badge{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase}
         .status-badge.en-cours{background:rgba(0,200,83,.15);color:var(--green)}
         .status-badge.termine{background:rgba(0,200,83,.15);color:var(--green)}
         .status-badge.perdu{background:rgba(255,61,61,.15);color:var(--red)}
-        .combined-label{font-size:15px;font-weight:700;color:var(--text-white);}
+        .combined-label{font-size:15px;font-weight:700}
         .combined-count{display:flex;align-items:center;gap:4px;background:#2A2A3A;padding:4px 10px;border-radius:12px;font-size:12px;color:var(--text-light-gray)}
         .combined-count i{font-size:14px;color:var(--blue)}
+        .combined-more{color:var(--text-gray);font-size:18px}
         .combined-progress{height:3px;background:#2A2A3A}
         .combined-progress-fill{height:100%;border-radius:3px;transition:width .8s}
         .combined-matches-icons{padding:10px 16px;display:flex;align-items:center;gap:8px}
@@ -339,10 +151,10 @@
         .match-row{padding:14px 0;border-bottom:1px solid #2A2A3A}
         .match-row:last-child{border-bottom:none}
         .match-row-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
-        .match-type{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--text-white);}
+        .match-type{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600}
         .match-type i{color:var(--blue);font-size:14px}
         .match-score{color:var(--green);font-weight:700}
-        .match-odds{background:#2A2A3A;padding:4px 12px;border-radius:6px;font-size:14px;font-weight:700;color:var(--text-white);}
+        .match-odds{background:#2A2A3A;padding:4px 12px;border-radius:6px;font-size:14px;font-weight:700}
         .match-row-bottom{display:flex;align-items:center;justify-content:space-between}
         .match-teams{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-light-gray)}
         .match-teams i{font-size:12px;color:var(--text-gray)}
@@ -351,30 +163,31 @@
         .combined-footer-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
         .combined-footer-row:last-child{margin-bottom:0}
         .combined-footer-label{font-size:13px;color:var(--text-gray)}
-        .combined-footer-value{font-size:15px;font-weight:700;color:var(--text-white);}
+        .combined-footer-value{font-size:15px;font-weight:700}
         .combined-footer-value.gains{color:var(--green);font-size:18px}
-        
+        .watermark-img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80px;opacity:.07;pointer-events:none}
         .blurred-value{filter:blur(6px);user-select:none;-webkit-user-select:none;pointer-events:none}
-        .combined-cta-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:calc(100% - 32px);margin:0 16px 16px;padding:15px;background:linear-gradient(135deg,#0088cc,#006faa);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;cursor:pointer;text-decoration:none;text-align:center;box-shadow:0 6px 20px rgba(0,136,204,.35);transition:all .3s;position:relative;overflow:hidden;font-family: 'Montserrat', sans-serif;}
+        .combined-cta-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:calc(100% - 32px);margin:0 16px 16px;padding:15px;background:linear-gradient(135deg,#0088cc,#006faa);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;text-decoration:none;text-align:center;box-shadow:0 6px 20px rgba(0,136,204,.35);transition:all .3s;position:relative;overflow:hidden}
+        .combined-cta-btn i.tg-icon{font-size:20px}
         .combined-cta-btn .cta-lock{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.7}
+        .combined-cta-btn:active{transform:scale(.97);box-shadow:0 3px 10px rgba(0,136,204,.3)}
+        .combined-complete-btn{display:block;width:calc(100% - 32px);margin:0 16px 16px;padding:13px;background:var(--text-white);color:#000;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;text-align:center}
         
-        .no-combined-message{text-align:center;padding:40px 20px;color:var(--text-gray);font-size:14px;font-family: 'DM Sans', sans-serif;}
-        .no-combined-message i{font-size:40px;margin-bottom:15px;color:var(--border-color);display:block}
-        
-        /* GENERAL PAGE COMPONENTS */
-        .page-title-bar{padding:15px 20px 10px;display:flex;align-items:center;justify-content:space-between;font-family: 'Montserrat', sans-serif;flex-shrink:0;}
-        .page-title-bar h2{font-size:22px;font-weight:800;color:var(--text-white);}
-
-        .help-card{margin:15px 20px;padding:16px;background:var(--bg-card);border-radius:14px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1px solid var(--border-color);font-family: 'DM Sans', sans-serif;}
+        .help-card{margin:15px 20px;padding:16px;background:var(--bg-card);border-radius:14px;display:flex;align-items:center;gap:12px;cursor:pointer;border:1px solid var(--border-color)}
         .help-card-icon{width:40px;height:40px;background:var(--bg-input);border-radius:50%;display:flex;align-items:center;justify-content:center}
         .help-card-icon i{color:var(--text-gray);font-size:16px}
         .help-card-info{flex:1}
-        .help-card-title{font-size:14px;font-weight:600;color:var(--text-white);}
+        .help-card-title{font-size:14px;font-weight:600}
         .help-card-desc{font-size:12px;color:var(--text-gray)}
-
-        /* ===== NOS PACKS PAGE ===== */
-        .packs-page-list{padding:0 20px;font-family: 'DM Sans', sans-serif;}
-        .pack-detail-card{background:var(--bg-card);border-radius:16px;padding:20px;margin-bottom:14px;border:1px solid var(--border-color);opacity:1; animation:fadeInUp 0.6s ease-out;}
+        .help-card-arrow{color:var(--text-gray);font-size:16px}
+        .no-combined-message{text-align:center;padding:40px 20px;color:var(--text-gray);font-size:14px}
+        .no-combined-message i{font-size:40px;margin-bottom:15px;color:var(--border-color);display:block}
+        
+        .page-title-bar{padding:15px 20px;display:flex;align-items:center;justify-content:space-between}
+        .page-title-bar h2{font-size:22px;font-weight:800}
+        
+        .packs-page-list{padding:0 20px}
+        .pack-detail-card{background:var(--bg-card);border-radius:16px;padding:20px;margin-bottom:14px;border:1px solid var(--border-color)}
         .pack-detail-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
         .pack-detail-name{font-size:17px;font-weight:800;margin-bottom:4px; color:#fff;}
         .pack-detail-desc{font-size:12px;color:var(--text-gray);line-height:1.4}
@@ -384,171 +197,496 @@
         .pack-detail-bottom{display:flex;align-items:center;justify-content:space-between}
         .pack-price-container{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
         .price-old{font-size:14px;color:var(--red);text-decoration:line-through;font-weight:600}
-        .price-new{font-size:24px;font-weight:900;color:var(--text-white);}
+        .price-new{font-size:24px;font-weight:900}
         .price-label{font-size:13px;color:var(--text-gray);font-weight:400}
-        .pack-subscribe-btn{padding:10px 24px;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;transition:all .3s; box-shadow: 0 4px 10px rgba(0,0,0,0.2);font-family: 'Montserrat', sans-serif;}
+        .pack-subscribe-btn{padding:10px 24px;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;transition:all .3s; box-shadow: 0 4px 10px rgba(0,0,0,0.2);}
+        .pack-subscribe-btn:active{transform:scale(.95)}
         
-        .pack-info-btn {background:var(--bg-input); width:32px; height:32px; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; border: 1px solid var(--border-color); flex-shrink:0;}
+        .pack-info-btn {background:var(--bg-input); width:32px; height:32px; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; border: 1px solid var(--border-color); flex-shrink:0; transition:all 0.2s;}
+        .pack-info-btn:active {background:var(--border-color);}
+        
         .delivery-badge {color:#FF9800; font-weight:800; font-style:italic; font-size:12px; margin-top:8px; letter-spacing:0.5px;}
-
-        .urgency-bar { margin: 0 20px 15px; background: linear-gradient(135deg, #B71C1C, #D32F2F); border-radius: 12px; overflow: hidden; position: relative;font-family: 'DM Sans', sans-serif;}
-        .urgency-inner { padding: 12px 16px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 700; color: #fff; animation: urgencySlide 20s linear infinite; }
-        @keyframes urgencySlide { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-3px); } }
-
-        .pack-popular { border-color: rgba(255, 215, 0, 0.4) !important; background: linear-gradient(145deg, rgba(255, 215, 0, 0.08) 0%, var(--bg-card) 100%) !important; position: relative; overflow: visible; }
-        .popular-ribbon { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #FFD700, #E6C200); color: #000; padding: 6px 20px; border-radius: 20px; font-size: 11px; font-weight: 900; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); white-space: nowrap; z-index: 10; font-family: 'Montserrat', sans-serif;}
         
-        .pack-subscribers { font-size: 11px; color: var(--text-gray); margin-top: 2px; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
-        .pack-subscribers i { font-size: 10px; color: var(--green); }
-        .spots-container { margin: 12px 0; padding: 12px; background: var(--bg-input); border-radius: 10px; border: 1px solid var(--border-color); }
-        .spots-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .spots-text { font-size: 12px; color: var(--text-light-gray); }
-        .spots-text strong { color: #FF9800; }
-        .spots-percent { font-size: 11px; color: #FF9800; font-weight: 700; }
-        .spots-bar { height: 6px; background: var(--border-color); border-radius: 3px; overflow: hidden; }
-        .spots-fill { height: 100%; border-radius: 3px; transition: width 1s ease; animation: spotsPulse 2s ease infinite; }
-        @keyframes spotsPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-        .guarantee-badge { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: rgba(0, 200, 83, 0.05); border: 1px solid rgba(0, 200, 83, 0.2); border-radius: 10px; margin-bottom: 14px; font-size: 12px; color: var(--green); font-weight: 600; }
-        .economy-badge { display: inline-block; background: rgba(0, 200, 83, 0.15); color: var(--green); font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 6px; margin-left: 4px; }
-        .payment-methods { display: flex; align-items: center; justify-content: space-between; padding: 10px 0 0; margin-top: 10px; border-top: 1px solid var(--border-color); }
-        .payment-icons { display: flex; gap: 10px; font-size: 20px; color: var(--text-gray); }
-        .testimonial-inline { background: var(--bg-input); border-radius: 10px; padding: 14px; margin-bottom: 14px; border: 1px solid var(--border-color); border-left: 3px solid #FFD700; }
-        .testimonial-inline .testimonial-stars { color: #FFD700; font-size: 14px; margin-bottom: 6px; }
-        .testimonial-inline p { font-size: 13px; color: var(--text-light-gray); font-style: italic; line-height: 1.5; margin-bottom: 6px; }
-        .testimonial-inline .testimonial-author { font-size: 11px; color: var(--text-gray); }
-
-        .comparison-table { background: var(--bg-card); border-radius: 14px; overflow: hidden; border: 1px solid var(--border-color); margin-bottom:20px; font-family: 'DM Sans', sans-serif;}
-        .comp-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; border-bottom: 1px solid var(--border-color); }
-        .comp-row:last-child { border-bottom: none; }
-        .comp-row.comp-header { background: var(--bg-input); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .comp-cell { padding: 12px 10px; font-size: 12px; text-align: center; display: flex; align-items: center; justify-content: center; color: var(--text-light-gray); }
-        .comp-cell:first-child { text-align: left; justify-content: flex-start; color: var(--text-white); font-weight: 500; }
-
-        .testimonials-scroll { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; font-family: 'DM Sans', sans-serif;}
-        .testimonials-scroll::-webkit-scrollbar { display: none; }
-        .testimonial-card { min-width: 280px; max-width: 300px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 18px; scroll-snap-align: start; flex-shrink: 0; }
-        .testimonial-card .testimonial-stars { color: #FFD700; font-size: 14px; margin-bottom: 10px; }
-        .testimonial-card .testimonial-text { font-size: 13px; color: var(--text-light-gray); line-height: 1.5; font-style: italic; margin-bottom: 14px; }
-        .testimonial-footer { display: flex; align-items: center; gap: 10px; }
-        .testimonial-avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 14px; flex-shrink: 0; }
-        .testimonial-name { font-size: 13px; font-weight: 700; color: var(--text-white); display: block; }
-        .testimonial-pack { font-size: 11px; color: var(--text-gray); }
-        .testimonial-verified { margin-left: auto; font-size: 10px; color: var(--green); font-weight: 600; white-space: nowrap; }
-
-        .faq-item { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 10px; overflow: hidden; transition: all 0.3s; font-family: 'DM Sans', sans-serif;}
-        .faq-question { padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--text-white); }
-        .faq-icon { color: var(--text-gray); font-size: 12px; transition: transform 0.3s; }
-        .faq-item.open .faq-icon { transform: rotate(180deg); }
-        .faq-answer { max-height: 0; overflow: hidden; padding: 0 16px; font-size: 13px; color: var(--text-gray); line-height: 1.6; transition: all 0.4s ease; }
-        .faq-item.open .faq-answer { max-height: 200px; padding: 0 16px 16px; }
-
-        .final-cta { background: linear-gradient(145deg, #1E1E2E, #252540); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 20px; padding: 30px 24px; text-align: center; position: relative; overflow: hidden; font-family: 'Montserrat', sans-serif; }
-        .final-cta-glow { position: absolute; top: -50px; left: 50%; transform: translateX(-50%); width: 200px; height: 200px; background: radial-gradient(circle, rgba(255, 215, 0, 0.15) 0%, transparent 70%); pointer-events: none; }
-        .final-cta-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #FFD700, #E6C200); color: #000; border: none; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 25px rgba(255, 215, 0, 0.3); position: relative; overflow: hidden; }
-
-        /* ===== CONTACT PAGE ===== */
-        .contact-page{padding:0 20px;font-family: 'DM Sans', sans-serif;}
+        .contact-page{padding:0 20px}
         .contact-card{background:var(--bg-card);border-radius:16px;padding:20px;margin-bottom:14px;border:1px solid var(--border-color);display:flex;align-items:center;gap:14px;transition:all .3s}
+        .contact-card:active{border-color:var(--primary-yellow)}
         .contact-link{text-decoration:none;color:inherit;display:block}
         .contact-card-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
         .contact-card-icon.telegram{background:rgba(0,136,204,.15)}
         .contact-card-icon.telegram i{color:#0088cc;font-size:22px}
-        .contact-card-info h4{font-size:15px;font-weight:600;color:var(--text-white);}
+        .contact-card-icon.instagram{background:rgba(225,48,108,.15)}
+        .contact-card-icon.instagram i{color:#E1306C;font-size:22px}
+        .contact-card-icon.email{background:rgba(255,215,0,.15)}
+        .contact-card-icon.email i{color:var(--primary-yellow);font-size:22px}
+        .contact-card-icon.twitter{background:rgba(29,161,242,.15)}
+        .contact-card-icon.twitter i{color:#1DA1F2;font-size:22px}
+        .contact-card-info h4{font-size:15px;font-weight:600}
         .contact-card-info p{font-size:12px;color:var(--text-gray);margin-top:2px}
         .contact-card-arrow{margin-left:auto;color:var(--text-gray)}
-
-        /* ===== VIP / ADMIN PANELS ===== */
-        .vip-header{padding:15px 20px 10px;display:flex;align-items:center;justify-content:space-between;font-family: 'Montserrat', sans-serif;}
-        .vip-header h2 { font-size: 20px; font-weight: 800; color:var(--text-white); }
-        .vip-profile{padding:0 20px;display:flex;align-items:center;gap:14px;margin-bottom:20px;font-family: 'Montserrat', sans-serif;}
-        .vip-username-text { font-size: 18px; font-weight: 700; color:var(--text-white); }
-        .vip-modify-btn{padding:5px 14px;background:transparent;border:1px solid var(--red);color:var(--red);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;margin-left:auto}
-        .vip-notice{margin:0 20px 15px;padding:14px 16px;background:var(--bg-card);border-radius:12px;font-size:13px;color:var(--text-light-gray);line-height:1.5;text-align:center;font-family: 'DM Sans', sans-serif;}
         
+        .vip-header{padding:15px 20px;display:flex;align-items:center;justify-content:space-between}
+        .vip-header h2{font-size:20px;font-weight:800}
+        .vip-settings{width:36px;height:36px;background:var(--bg-card);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
+        .vip-settings i{color:var(--text-white);font-size:16px}
+        .vip-profile{padding:0 20px;display:flex;align-items:center;gap:14px;margin-bottom:20px}
+        .vip-user-info h3{font-size:18px;font-weight:700}
+        .vip-modify-btn{padding:5px 14px;background:transparent;border:1px solid var(--red);color:var(--red);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;margin-left:auto}
+        .vip-notice{margin:0 20px 15px;padding:14px 16px;background:var(--bg-card);border-radius:12px;font-size:13px;color:var(--text-light-gray);line-height:1.5;text-align:center}
+        
+        .vip-combined-container{padding:0 20px;margin-bottom:15px}
         #admin-page{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg-dark);z-index:8000;overflow-y:auto;-webkit-overflow-scrolling:touch}
         #admin-page.active{display:block}
-        .admin-header{padding:calc(15px + var(--safe-top)) 20px 15px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg-dark);z-index:10;font-family: 'Montserrat', sans-serif;}
-        .admin-header h2 { font-size: 18px; color:var(--text-white); }
-        .admin-header-logo { width: 24px; height: 24px; margin-right: 8px; vertical-align: middle; }
+        .admin-header{padding:calc(15px + var(--safe-top)) 20px 15px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg-dark);z-index:10}
+        .admin-header h2{font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px}
+        .admin-header-logo{width:30px;height:30px;object-fit:contain}
         .admin-close{width:36px;height:36px;background:var(--bg-card);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;color:var(--text-white);font-size:16px}
-        .admin-section{padding:0 20px;margin-bottom:20px;font-family: 'DM Sans', sans-serif;}
-        .admin-section-title{font-size:14px;font-weight:700;color:var(--primary-yellow);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:8px;font-family: 'Montserrat', sans-serif;}
+        .admin-section{padding:0 20px;margin-bottom:20px}
+        .admin-section-title{font-size:14px;font-weight:700;color:var(--primary-yellow);margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;display:flex;align-items:center;gap:8px}
+        .admin-section-title i{font-size:14px}
         .admin-card{background:var(--bg-card);border-radius:16px;padding:20px;border:1px solid var(--border-color);margin-bottom:12px}
         .admin-field{margin-bottom:16px}
+        .admin-field:last-child{margin-bottom:0}
         .admin-label{font-size:12px;color:var(--text-gray);margin-bottom:6px;font-weight:500;display:flex;align-items:center;gap:5px}
-        .admin-input{width:100%;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;color:var(--text-white);font-size:14px;font-family:'Inter',sans-serif;outline:none;}
+        .admin-label i{font-size:11px;color:var(--primary-yellow)}
+        .admin-input{width:100%;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;color:var(--text-white);font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color .3s}
+        .admin-input:focus{border-color:var(--primary-yellow)}
+        .admin-input::placeholder{color:#555}
         .admin-row{display:flex;gap:10px}
         .admin-row .admin-field{flex:1}
-        .admin-select{width:100%;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;color:var(--text-white);font-size:14px;outline:none;appearance:none;-webkit-appearance:none; font-family: 'Inter', sans-serif;}
+        .admin-select{width:100%;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;color:var(--text-white);font-size:14px;font-family:'Inter',sans-serif;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238A8A8A'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:24px}
+        .admin-select:focus{border-color:var(--primary-yellow)}
         .match-entry{background:var(--bg-card);border-radius:14px;padding:16px;border:1px solid var(--border-color);margin-bottom:12px}
-        .match-entry-remove { width: 28px; height: 28px; border-radius: 6px; background: rgba(255,61,61,0.1); color: var(--red); border: none; cursor: pointer; }
+        .match-entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+        .match-entry-number{font-size:13px;font-weight:700;color:var(--primary-yellow);display:flex;align-items:center;gap:6px}
+        .match-entry-number i{font-size:14px}
+        .match-entry-remove{width:28px;height:28px;background:rgba(255,61,61,.15);border:none;border-radius:8px;color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
+        .admin-add-match-btn{width:100%;padding:12px;background:transparent;border:2px dashed var(--border-color);border-radius:12px;color:var(--text-gray);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px}
         .admin-summary{background:linear-gradient(135deg,#1E1E2E,#252540);border-radius:16px;padding:18px;border:1px solid #2A2A3A}
         .admin-summary-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #2A2A3A}
-        .admin-submit-btn{width:100%;padding:16px;background:var(--primary-yellow);color:#000;border:none;border-radius:14px;font-size:16px;font-weight:800;cursor:pointer;margin-top:10px;margin-bottom:15px; font-family: 'Montserrat', sans-serif;}
+        .admin-summary-row:last-child{border-bottom:none}
+        .admin-summary-label{font-size:13px;color:var(--text-gray)}
+        .admin-summary-value{font-size:16px;font-weight:700}
+        .admin-summary-value.gains{color:var(--green);font-size:20px}
+        .admin-submit-btn{width:100%;padding:16px;background:var(--primary-yellow);color:#000;border:none;border-radius:14px;font-size:16px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:10px;margin-bottom:15px;display:flex;align-items:center;justify-content:center;gap:8px}
+        .admin-submit-btn:active{transform:scale(.98);background:var(--dark-yellow)}
+        .admin-delete-btn{width:100%;padding:14px;background:rgba(255,61,61,.1);color:var(--red);border:1px solid rgba(255,61,61,.3);border-radius:14px;font-size:14px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:calc(40px + var(--safe-bottom));display:flex;align-items:center;justify-content:center;gap:8px}
         .admin-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
         .admin-stat-card{background:var(--bg-card);border-radius:14px;padding:16px;text-align:center;border:1px solid var(--border-color)}
         .admin-stat-card i{font-size:24px;margin-bottom:8px}
-        .admin-stat-card .stat-value{font-size:22px;font-weight:800;display:block;color:var(--text-white);}
-        .admin-stat-card .stat-label { font-size: 11px; color: var(--text-gray); }
-        .admin-stat-card.yellow i { color: var(--primary-yellow); }
-        .admin-stat-card.green i { color: var(--green); }
-        .admin-stat-card.blue i { color: var(--blue); }
-        .admin-stat-card.red i { color: var(--red); }
-        
-        .admin-history-item { background:#2A2A2A; padding:12px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; }
-        .admin-history-item span { color: var(--text-white); font-size: 13px; }
-        .admin-history-item button { width: 28px; height: 28px; border-radius: 6px; background: rgba(255,255,255,0.05); color: var(--text-gray); border: none; cursor: pointer; margin-left: 6px; }
-
-        .admin-tabs { display: flex; gap: 10px; padding: 0 20px; margin-bottom: 20px; font-family: 'DM Sans', sans-serif;}
-        .admin-tab-btn { flex: 1; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-gray); border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .admin-tab-btn.active { background: rgba(255, 215, 0, 0.15); border-color: var(--primary-yellow); color: var(--primary-yellow); }
-        .admin-tab-content { display: none; }
-        .admin-tab-content.active { display: block; }
-        .btn-create-new { width: 100%; padding: 14px; margin-top: 10px; background: rgba(0, 200, 83, 0.15); border: 1px dashed var(--green); color: var(--green); border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px; font-family: 'Montserrat', sans-serif;}
-
-        .toast{position:fixed;top:calc(20px + var(--safe-top));left:50%;transform:translateX(-50%) translateY(-100px);background:var(--green);color:#000;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:700;z-index:99999;transition:transform .4s;display:flex;align-items:center;gap:8px;box-shadow:0 10px 30px rgba(0,200,83,.3);max-width:calc(100% - 40px); font-family: 'DM Sans', sans-serif;}
+        .admin-stat-card .stat-value{font-size:22px;font-weight:800;display:block}
+        .admin-stat-card .stat-label{font-size:11px;color:var(--text-gray);margin-top:4px}
+        .admin-stat-card.yellow i{color:var(--primary-yellow)}
+        .admin-stat-card.green i{color:var(--green)}
+        .admin-stat-card.blue i{color:var(--blue)}
+        .admin-stat-card.red i{color:var(--red)}
+        .toast{position:fixed;top:calc(20px + var(--safe-top));left:50%;transform:translateX(-50%) translateY(-100px);background:var(--green);color:#000;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:700;z-index:99999;transition:transform .4s;display:flex;align-items:center;gap:8px;box-shadow:0 10px 30px rgba(0,200,83,.3);max-width:calc(100% - 40px)}
         .toast.show{transform:translateX(-50%) translateY(0)}
         .toast.error{background:var(--red);color:#fff;box-shadow:0 10px 30px rgba(255,61,61,.3)}
+        .toast i{font-size:18px}
+        ::-webkit-scrollbar{width:0}
+        @media(min-width:500px){body{display:flex;align-items:center;justify-content:center;background:#000}#splash-screen,#login-screen,#app,#admin-page{max-width:420px;max-height:900px;border-radius:30px;overflow:hidden}#admin-page.active{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);max-width:420px;max-height:900px;border-radius:30px}}
         
-        ::-webkit-scrollbar { width: 0; background: transparent; }
+        .history-card { background:var(--bg-card); border:1px solid var(--border-color); border-radius:16px; padding:16px; margin-bottom:14px; display:flex; flex-direction:column; align-items:stretch; transition: all 0.3s; }
+        .history-card.termine { border-color: rgba(0, 200, 83, 0.4); background: linear-gradient(145deg, rgba(0,200,83,0.08) 0%, var(--bg-card) 100%); }
+        .history-card.perdu { border-color: rgba(255, 61, 61, 0.3); background: linear-gradient(145deg, rgba(255,61,61,0.05) 0%, var(--bg-card) 100%); }
+        .history-card .date { font-size:12px; color:var(--text-gray); margin-bottom:4px; font-weight:500; }
+        .history-card .status { font-weight:800; font-size:15px; text-transform:uppercase; letter-spacing:0.5px;}
+        .history-card .status.termine { color:var(--green); }
+        .history-card .status.perdu { color:var(--red); }
+        .admin-history-item { background:#2A2A2A; padding:12px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; }
+        .admin-history-item span { font-size:13px; color:#fff; }
+        .admin-history-item button { background:var(--primary-yellow); color:#000; border:none; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer; }
+        
+        /* STYLE DES ONGLETS ADMIN */
+        .admin-tabs { display: flex; gap: 10px; padding: 0 20px; margin-bottom: 20px; }
+        .admin-tab-btn { flex: 1; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-gray); border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .admin-tab-btn.active { background: rgba(255, 215, 0, 0.15); border-color: var(--primary-yellow); color: var(--primary-yellow); }
+        .admin-tab-content { display: none; animation: fadeInUp 0.4s ease; }
+        .admin-tab-content.active { display: block; }
+        .btn-create-new { width: 100%; padding: 14px; margin-top: 10px; background: rgba(0, 200, 83, 0.15); border: 1px dashed var(--green); color: var(--green); border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px; transition: all 0.2s;}
+        .btn-create-new:active { transform: scale(0.98); }
+
+        /* ===== PACKS AMÉLIORÉS ===== */
+        .pack-animated { animation: fadeInUp 0.6s ease forwards; opacity: 0; }
+
+        .urgency-bar {
+            margin: 0 20px 15px;
+            background: linear-gradient(135deg, #B71C1C, #D32F2F);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        .urgency-inner {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            animation: urgencySlide 20s linear infinite;
+        }
+        @keyframes urgencySlide {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(-3px); }
+        }
+
+        .pack-popular {
+            border-color: rgba(255, 215, 0, 0.4) !important;
+            background: linear-gradient(145deg, rgba(255, 215, 0, 0.08) 0%, var(--bg-card) 100%) !important;
+            position: relative;
+            overflow: visible;
+        }
+
+        .popular-ribbon {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #FFD700, #E6C200);
+            color: #000;
+            padding: 6px 20px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        .pack-subscribers {
+            font-size: 11px;
+            color: var(--text-gray);
+            margin-top: 2px;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .pack-subscribers i { font-size: 10px; color: var(--green); }
+
+        .spots-container {
+            margin: 12px 0;
+            padding: 12px;
+            background: var(--bg-input);
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+        .spots-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .spots-text { font-size: 12px; color: var(--text-light-gray); }
+        .spots-text strong { color: #FF9800; }
+        .spots-percent { font-size: 11px; color: #FF9800; font-weight: 700; }
+        .spots-bar {
+            height: 6px;
+            background: var(--border-color);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .spots-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1s ease;
+            animation: spotsPulse 2s ease infinite;
+        }
+        @keyframes spotsPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .guarantee-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background: rgba(0, 200, 83, 0.05);
+            border: 1px solid rgba(0, 200, 83, 0.2);
+            border-radius: 10px;
+            margin-bottom: 14px;
+            font-size: 12px;
+            color: var(--green);
+            font-weight: 600;
+        }
+        .guarantee-badge i { font-size: 16px; }
+
+        .economy-badge {
+            display: inline-block;
+            background: rgba(0, 200, 83, 0.15);
+            color: var(--green);
+            font-size: 11px;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: 6px;
+            margin-left: 4px;
+        }
+
+        .pack-btn-pulse {
+            animation: btnPulse 2s ease infinite;
+            position: relative;
+            overflow: hidden;
+        }
+        .pack-btn-pulse::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%);
+            animation: btnShine 3s ease infinite;
+        }
+        @keyframes btnPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+        @keyframes btnShine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .payment-methods {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0 0;
+            margin-top: 10px;
+            border-top: 1px solid var(--border-color);
+        }
+        .payment-icons {
+            display: flex;
+            gap: 10px;
+            font-size: 20px;
+            color: var(--text-gray);
+        }
+
+        .testimonial-inline {
+            background: var(--bg-input);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 14px;
+            border: 1px solid var(--border-color);
+            border-left: 3px solid #FFD700;
+        }
+        .testimonial-inline .testimonial-stars { color: #FFD700; font-size: 14px; margin-bottom: 6px; }
+        .testimonial-inline p { font-size: 13px; color: var(--text-light-gray); font-style: italic; line-height: 1.5; margin-bottom: 6px; }
+        .testimonial-inline .testimonial-author { font-size: 11px; color: var(--text-gray); }
+
+        /* COMPARISON TABLE */
+        .comparison-table {
+            background: var(--bg-card);
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        .comp-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .comp-row:last-child { border-bottom: none; }
+        .comp-row.comp-header {
+            background: var(--bg-input);
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .comp-cell {
+            padding: 12px 10px;
+            font-size: 12px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light-gray);
+        }
+        .comp-cell:first-child {
+            text-align: left;
+            justify-content: flex-start;
+            color: var(--text-white);
+            font-weight: 500;
+        }
+
+        /* TESTIMONIALS */
+        .testimonials-scroll {
+            display: flex;
+            gap: 14px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+        .testimonials-scroll::-webkit-scrollbar { display: none; }
+        .testimonial-card {
+            min-width: 280px;
+            max-width: 300px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 18px;
+            scroll-snap-align: start;
+            flex-shrink: 0;
+        }
+        .testimonial-card .testimonial-stars { color: #FFD700; font-size: 14px; margin-bottom: 10px; }
+        .testimonial-card .testimonial-text { font-size: 13px; color: var(--text-light-gray); line-height: 1.5; font-style: italic; margin-bottom: 14px; }
+        .testimonial-footer {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .testimonial-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 800;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .testimonial-name { font-size: 13px; font-weight: 700; color: var(--text-white); display: block; }
+        .testimonial-pack { font-size: 11px; color: var(--text-gray); }
+        .testimonial-verified {
+            margin-left: auto;
+            font-size: 10px;
+            color: var(--green);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* FAQ */
+        .faq-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .faq-question {
+            padding: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-white);
+        }
+        .faq-icon {
+            color: var(--text-gray);
+            font-size: 12px;
+            transition: transform 0.3s;
+        }
+        .faq-item.open .faq-icon { transform: rotate(180deg); }
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            padding: 0 16px;
+            font-size: 13px;
+            color: var(--text-gray);
+            line-height: 1.6;
+            transition: all 0.4s ease;
+        }
+        .faq-item.open .faq-answer {
+            max-height: 200px;
+            padding: 0 16px 16px;
+        }
+
+        /* FINAL CTA */
+        .final-cta {
+            background: linear-gradient(145deg, #1E1E2E, #252540);
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            border-radius: 20px;
+            padding: 30px 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .final-cta-glow {
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .final-cta-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #FFD700, #E6C200);
+            color: #000;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 6px 25px rgba(255, 215, 0, 0.3);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        .final-cta-btn:active { transform: scale(0.98); }
+        .final-cta-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%);
+            animation: btnShine 3s ease infinite;
+        }
     </style>
 </head>
 <body>
 
 <script>
-    // Configuration des Logos
-    const LOGO_DARK = "logo-dark.png";   // Logo SM noir (avec couronne jaune)
-    const LOGO_LIGHT = "logo-light.png"; // Logo SM blanc
-    const LOGO_SPLASH = "logo-splash.png"; // Logo pour Splash Screen
+    const LOGO_DARK = "logo-dark.png";
+    const LOGO_LIGHT = "logo-light.png";
+    const LOGO_SPLASH = "logo-splash.png";
     
     const TELEGRAM_LINK = "https://t.me/scoremasteroff";
     const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
     
-    // Initialisation Supabase
+    const FOOTBALL_DATA_API_KEY = '2620f835eb08886d508258550a5254a4'; 
+    
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Application des logos après chargement
     function setLogos() {
-        // Splash
         document.getElementById('img-splash').src = LOGO_SPLASH;
-        // Login (CORRECTION: On utilise le logo DARK sur fond blanc)
-        document.getElementById('img-login').src = LOGO_DARK; 
-        // App / Avatars
-        document.getElementById('avatar-home').innerHTML = `<img src="${LOGO_DARK}" alt="SM">`;
-        document.getElementById('avatar-vip').innerHTML = `<img src="${LOGO_DARK}" alt="SM">`;
-        // Admin
+        document.getElementById('img-login').src = LOGO_DARK;
         document.getElementById('img-admin').src = LOGO_DARK;
-        // Packs (Home)
-        document.getElementById('pack-icon-1').innerHTML = `<img src="${LOGO_DARK}" alt="SM">`;
-        document.getElementById('pack-icon-2').innerHTML = `<img src="${LOGO_DARK}" alt="SM">`;
-        // Packs (Page)
-        document.getElementById('pack-detail-1').innerHTML = `<img src="${LOGO_DARK}" alt="SM">`;
-        document.getElementById('pack-detail-2').innerHTML = `<img src="${LOGO_DARK}" alt="SM">`;
-        document.getElementById('pack-detail-3').innerHTML = `<img src="${LOGO_DARK}" alt="SM">`;
+        document.getElementById('avatar-home').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('avatar-vip').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-icon-1').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-icon-2').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-detail-1').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-detail-2').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+        document.getElementById('pack-detail-3').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
     }
 </script>
 
+<!-- SPLASH -->
 <div id="splash-screen">
     <div class="splash-content">
         <img id="img-splash" alt="ScoreMaster" class="splash-logo-img">
@@ -556,106 +694,50 @@
     </div>
 </div>
 
+<!-- LOGIN CLAIR & JAUNE -->
 <div id="login-screen">
-    <div class="bg-canvas">
-        <div class="bg-orb bg-orb-1"></div>
-        <div class="bg-orb bg-orb-2"></div>
-        <div class="hex-grid">
-            <svg viewBox="0 0 800 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <pattern id="hex" x="0" y="0" width="60" height="104" patternUnits="userSpaceOnUse">
-                        <polygon points="30,2 58,17 58,47 30,62 2,47 2,17" fill="none" stroke="#FFD700" stroke-width="1"/>
-                        <polygon points="30,54 58,69 58,99 30,114 2,99 2,69" fill="none" stroke="#FFD700" stroke-width="1"/>
-                        <polygon points="60,28 88,43 88,73 60,88 32,73 32,43" fill="none" stroke="#FFD700" stroke-width="1"/>
-                    </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#hex)"/>
-            </svg>
-        </div>
+    <div class="login-header">
+        <img id="img-login" alt="ScoreMaster" class="login-logo-img">
     </div>
+    <div class="login-form-container">
+        <div class="login-form-title" style="color: #6C757D;">Email</div>
+        <input type="email" class="login-input" id="login-email" placeholder="Votre email" style="background:#F8F9FA; border-color:#E0E0E0; color:#1A1A1A;">
 
-    <div class="login-content">
-        <div class="login-header">
-            <div class="login-logo-wrap">
-                <img id="img-login" alt="SM" style="width:75%;height:75%;object-fit:contain;">
-            </div>
-            <div class="login-sub" id="auth-subtitle">Connectez-vous pour continuer</div>
+        <div class="login-form-title" id="title-username" style="display:none; color: #6C757D;">Pseudo</div>
+        <input type="text" class="login-input" id="login-username" placeholder="Votre pseudo" style="display:none; background:#F8F9FA; border-color:#E0E0E0; color:#1A1A1A;">
+
+        <div class="login-form-title" style="color: #6C757D;">Mot de passe</div>
+        <div style="position:relative;width:100%;">
+            <input type="password" class="login-input" id="login-password" placeholder="••••••••••••" style="padding-right:45px;margin-bottom:20px;width:100%; background:#F8F9FA; border-color:#E0E0E0; color:#1A1A1A;">
+            <i class="fas fa-eye" id="togglePassword" style="position:absolute;right:15px;top:15px;color:#ADB5BD;cursor:pointer;font-size:16px;z-index:10;"></i>
         </div>
 
-        <div class="login-card">
-            <div class="mode-switcher">
-                <button class="mode-btn active" id="btn-login-mode" onclick="setMode(false)">Connexion</button>
-                <button class="mode-btn" id="btn-signup-mode" onclick="setMode(true)">Inscription</button>
-            </div>
+        <button class="login-btn" id="btn-action" onclick="handleAuth()">Connexion</button>
+        <div class="login-error" id="login-error"><i class="fas fa-exclamation-circle"></i> Identifiants incorrects</div>
 
-            <div class="field-group">
-                <label class="field-label" for="login-email">Adresse e-mail</label>
-                <div class="field-wrap">
-                    <i class="fas fa-envelope field-icon"></i>
-                    <input type="email" class="login-input" id="login-email" placeholder="vous@exemple.com" autocomplete="email">
-                </div>
+        <div class="login-options">
+            <a href="#" class="forgot-password" id="toggle-auth" onclick="toggleAuthMode(); return false;" style="color:#1A1A1A; font-weight:700;">Créer un compte</a>
+            <div class="remember-me" style="color:#6C757D;">
+                <div class="toggle-switch active" onclick="this.classList.toggle('active')" style="background:var(--primary-yellow);"></div>
+                <span>Se souvenir de moi</span>
             </div>
+        </div>
 
-            <div class="field-hidden" id="field-username">
-                <div class="field-group" style="margin-bottom:0">
-                    <label class="field-label" for="login-username">Pseudo</label>
-                    <div class="field-wrap">
-                        <i class="fas fa-user field-icon"></i>
-                        <input type="text" class="login-input" id="login-username" placeholder="Votre pseudo" autocomplete="username">
-                    </div>
-                </div>
-            </div>
-
-            <div class="field-group">
-                <label class="field-label" for="login-password">Mot de passe</label>
-                <div class="field-wrap">
-                    <i class="fas fa-lock field-icon"></i>
-                    <input type="password" class="login-input" id="login-password" placeholder="••••••••••" autocomplete="current-password">
-                    <button class="toggle-pwd" id="togglePassword" type="button" aria-label="Afficher le mot de passe">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                </div>
-            </div>
-
-            <button class="login-btn" id="btn-action" onclick="handleAuth()">
-                <span class="btn-text">Connexion</span>
-                <span class="btn-spinner"></span>
-            </button>
-
-            <div class="login-error" id="login-error">
-                <i class="fas fa-circle-exclamation"></i>
-                <span id="error-text">Identifiants incorrects</span>
-            </div>
-
-            <div class="divider">
-                <div class="divider-line"></div>
-                <span class="divider-text">OPTIONS</span>
-                <div class="divider-line"></div>
-            </div>
-
-            <div class="login-options">
-                <a href="#" class="forgot-password" id="forgot-link" onclick="showToast('Contactez le support Telegram pour réinitialiser.', true)">Mot de passe oublié ?</a>
-                <div class="remember-me" onclick="toggleRemember()">
-                    <div class="toggle-switch active" id="remember-toggle"></div>
-                    <span class="remember-label">Se souvenir</span>
-                </div>
-            </div>
-
-            <div class="api-badge">
-                <i class="fas fa-satellite-dish"></i>
-                <span class="api-badge-text">API sportifs</span>
-                <div class="api-dot"></div>
-                <span class="api-connected">Connecté</span>
-            </div>
+        <div class="api-badge-login" style="background:#F8F9FA; border-color:#E0E0E0;">
+            <i class="fas fa-plug" style="color:#ADB5BD;"></i>
+            <span style="color:#6C757D;">API sportifs connectés</span>
+            <div class="api-status-dot"></div>
         </div>
     </div>
 </div>
 
 <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toast-message"></span></div>
 
+<!-- APP -->
 <div id="app">
     <div class="pages-container">
 
+        <!-- HOME -->
         <div class="page active" id="page-home">
             <div class="home-header fade-in-up delay-1">
                 <div class="home-user">
@@ -727,20 +809,22 @@
                     <div class="help-card-title">Un problème, ou besoin d'aide ?</div>
                     <div class="help-card-desc">Pas de panique ! Contactez nous ici !</div>
                 </div>
-                <i class="fas fa-chevron-right help-card-arrow" style="color:var(--text-gray);"></i>
+                <i class="fas fa-chevron-right help-card-arrow"></i>
             </div>
             <div style="height:20px;"></div>
         </div>
 
+        <!-- PACKS PAGE AMÉLIORÉE -->
         <div class="page" id="page-packs">
             <div class="page-title-bar">
                 <h2>Nos Packs</h2>
                 <div style="display:flex; align-items:center; gap:8px;">
                     <div style="width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;"></div>
-                    <span style="font-size:12px; color:var(--green); font-weight:600;" id="online-count">127 en ligne</span>
+                    <span style="font-size:12px; color:var(--green); font-weight:600;" id="online-count">127 personnes en ligne</span>
                 </div>
             </div>
 
+            <!-- BARRE D'URGENCE -->
             <div class="urgency-bar">
                 <div class="urgency-inner">
                     <i class="fas fa-fire"></i>
@@ -751,127 +835,196 @@
 
             <div class="packs-page-list">
 
-                <div class="pack-detail-card">
+                <!-- ===== PACK 1 : JOURNALIER ===== -->
+                <div class="pack-detail-card pack-animated" style="animation-delay: 0.1s;">
                     <div class="pack-detail-top">
                         <div class="logo-pack-detail green" id="pack-detail-1"></div>
                         <div style="flex:1;">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                                 <div>
                                     <div class="pack-detail-name">SM Score Exact Journalier</div>
-                                    <div class="pack-subscribers"><i class="fas fa-users"></i> 342 abonnés</div>
+                                    <div class="pack-subscribers"><i class="fas fa-users"></i> 342 abonnés actifs</div>
                                 </div>
                                 <div class="pack-info-btn" onclick="showPackInfo('journalier')">
                                     <i class="fas fa-info" style="color:var(--text-gray); font-size:14px;"></i>
                                 </div>
                             </div>
-                            <div class="pack-detail-desc">1 Score exact unique sélectionné chaque jour par nos experts.</div>
+                            <div class="pack-detail-desc">Recevez votre pronostic en score exact unique avec une analyse détaillée.</div>
                             <div class="delivery-badge"><i class="fas fa-bolt" style="margin-right:4px;"></i>Livraison instantanée</div>
                         </div>
                     </div>
 
                     <div class="pack-detail-features">
-                        <div class="pack-feature"><i class="fas fa-check"></i> 1 score exact / jour</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> 1 score exact seulement</div>
                         <div class="pack-feature"><i class="fas fa-check"></i> Analyse détaillée</div>
-                        <div class="pack-feature"><i class="fas fa-check"></i> 87% de réussite</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Support 7j/7</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Notification push</div>
                     </div>
 
+                    <!-- BARRE DE PROGRESSION DES PLACES -->
                     <div class="spots-container">
                         <div class="spots-header">
-                            <span class="spots-text">Plus que <strong id="spots-1">7</strong> places !</span>
-                            <span class="spots-percent">86%</span>
+                            <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:#FF9800;"></i> Plus que <strong id="spots-1">7</strong> places à ce prix !</span>
+                            <span class="spots-percent">86% vendus</span>
                         </div>
-                        <div class="spots-bar"><div class="spots-fill" style="width:86%; background:linear-gradient(90deg, #FF9800, #FF5722);"></div></div>
+                        <div class="spots-bar">
+                            <div class="spots-fill" style="width:86%; background:linear-gradient(90deg, #FF9800, #FF5722);"></div>
+                        </div>
+                    </div>
+
+                    <!-- GARANTIE -->
+                    <div class="guarantee-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Satisfait ou remboursé sous 48h</span>
                     </div>
 
                     <div class="pack-detail-bottom">
                         <div class="pack-price-container">
                             <span class="price-old">89,99€</span>
                             <span class="price-new" style="color:var(--green);">50€</span>
-                            <span class="price-label">/mois</span>
+                            <span class="price-label">unique</span>
+                            <div class="economy-badge">-44% 🎉</div>
                         </div>
-                        <button class="pack-subscribe-btn" style="background:var(--green);color:#fff;" onclick="openCheckout('journalier', 50)">
+                        <button class="pack-subscribe-btn pack-btn-pulse" style="background:var(--green);color:#fff;" onclick="openCheckout('journalier', 50)">
                             <i class="fas fa-lock" style="margin-right:6px;"></i> S'abonner
                         </button>
                     </div>
+
+                    <!-- MÉTHODES DE PAIEMENT -->
+                    <div class="payment-methods">
+                        <span style="font-size:11px; color:var(--text-gray);">Paiement sécurisé</span>
+                        <div class="payment-icons">
+                            <i class="fab fa-cc-visa"></i>
+                            <i class="fab fa-cc-mastercard"></i>
+                            <i class="fab fa-cc-paypal"></i>
+                            <i class="fab fa-apple-pay"></i>
+                            <i class="fab fa-bitcoin"></i>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="pack-detail-card pack-popular">
-                    <div class="popular-ribbon"><i class="fas fa-crown"></i> PLUS POPULAIRE</div>
+                <!-- ===== PACK 2 : VIP+ (POPULAIRE) ===== -->
+                <div class="pack-detail-card pack-popular pack-animated" style="animation-delay: 0.2s;">
+                    <!-- BADGE POPULAIRE -->
+                    <div class="popular-ribbon">
+                        <i class="fas fa-crown"></i> LE PLUS POPULAIRE
+                    </div>
 
                     <div class="pack-detail-top" style="margin-top:10px;">
                         <div class="logo-pack-detail red" id="pack-detail-2"></div>
                         <div style="flex:1;">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                                 <div>
-                                    <div class="pack-detail-name" style="color:#FFD700;">SM VIP+ <i class="fas fa-crown"></i></div>
-                                    <div class="pack-subscribers"><i class="fas fa-users"></i> 1,247 membres</div>
+                                    <div class="pack-detail-name" style="color:#FFD700;">SM VIP+ (à vie) <i class="fas fa-crown" style="color:#FFD700; font-size:14px;"></i></div>
+                                    <div class="pack-subscribers"><i class="fas fa-users"></i> 1,247 membres VIP+</div>
                                 </div>
                                 <div class="pack-info-btn" onclick="showPackInfo('vip')">
                                     <i class="fas fa-info" style="color:var(--text-gray); font-size:14px;"></i>
                                 </div>
                             </div>
-                            <div class="pack-detail-desc">Accès illimité à tous nos pronostics S.E et combinés.</div>
+                            <div class="pack-detail-desc">Accès illimité et à vie à tous nos pronostics, combinés exclusifs et espace membre VIP+.</div>
                             <div class="delivery-badge"><i class="fas fa-bolt" style="margin-right:4px;"></i>Livraison instantanée</div>
                         </div>
                     </div>
 
                     <div class="pack-detail-features">
                         <div class="pack-feature"><i class="fas fa-check"></i> Accès à vie</div>
-                        <div class="pack-feature"><i class="fas fa-check"></i> 4-5 Combinés / sem.</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> 4 à 5 combinés S.E / sem.</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Espace membre VIP+</div>
                         <div class="pack-feature"><i class="fas fa-check"></i> Canal Telegram VIP</div>
-                        <div class="pack-feature" style="background:rgba(255,215,0,0.15); color:#FFD700;"><i class="fas fa-crown"></i> VIP+</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Priorité support</div>
+                        <div class="pack-feature" style="background:rgba(255,215,0,0.15); color:#FFD700; font-weight:700;"><i class="fas fa-star" style="color:#FFD700;"></i> Accès fondateurs</div>
                     </div>
 
+                    <!-- BARRE DE PROGRESSION DES PLACES -->
                     <div class="spots-container">
                         <div class="spots-header">
-                            <span class="spots-text">Plus que <strong id="spots-2" style="color:var(--red);">3</strong> places !</span>
-                            <span class="spots-percent" style="color:var(--red);">94%</span>
+                            <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:var(--red);"></i> Plus que <strong id="spots-2" style="color:var(--red);">3</strong> places à ce prix !</span>
+                            <span class="spots-percent" style="color:var(--red);">94% vendus</span>
                         </div>
-                        <div class="spots-bar"><div class="spots-fill" style="width:94%; background:linear-gradient(90deg, var(--red), #B71C1C);"></div></div>
+                        <div class="spots-bar">
+                            <div class="spots-fill" style="width:94%; background:linear-gradient(90deg, var(--red), #B71C1C);"></div>
+                        </div>
+                    </div>
+
+                    <!-- TÉMOIGNAGE INTÉGRÉ -->
+                    <div class="testimonial-inline">
+                        <div class="testimonial-stars">★★★★★</div>
+                        <p>"J'ai récupéré ma mise x47 dès la première semaine. Le VIP+ est incroyable !"</p>
+                        <span class="testimonial-author">— Kévin M. <span style="color:var(--green);">✓ Achat vérifié</span></span>
+                    </div>
+
+                    <!-- GARANTIE -->
+                    <div class="guarantee-badge" style="border-color:rgba(255,215,0,0.3); background:rgba(255,215,0,0.05);">
+                        <i class="fas fa-shield-alt" style="color:#FFD700;"></i>
+                        <span style="color:#FFD700;">Garantie satisfait ou remboursé 7 jours</span>
                     </div>
 
                     <div class="pack-detail-bottom">
                         <div class="pack-price-container">
                             <span class="price-old">179,99€</span>
                             <span class="price-new" style="color:#FFD700;">99,99€</span>
-                            <span class="price-label">unique</span>
+                            <span class="price-label">unique • à vie</span>
+                            <div class="economy-badge" style="background:rgba(255,215,0,0.15); color:#FFD700;">-44% 🔥</div>
                         </div>
-                        <button class="pack-subscribe-btn" style="background:linear-gradient(135deg, #FFD700, #E6C200);color:#000;" onclick="openCheckout('vip', 99.99)">
-                            <i class="fas fa-crown" style="margin-right:6px;"></i> Rejoindre
+                        <button class="pack-subscribe-btn pack-btn-pulse" style="background:linear-gradient(135deg, #FFD700, #E6C200);color:#000; font-size:15px; padding:12px 28px;" onclick="openCheckout('vip', 99.99)">
+                            <i class="fas fa-crown" style="margin-right:6px;"></i> Rejoindre le VIP+
                         </button>
+                    </div>
+
+                    <!-- MÉTHODES DE PAIEMENT -->
+                    <div class="payment-methods">
+                        <span style="font-size:11px; color:var(--text-gray);">Paiement sécurisé 🔒</span>
+                        <div class="payment-icons">
+                            <i class="fab fa-cc-visa"></i>
+                            <i class="fab fa-cc-mastercard"></i>
+                            <i class="fab fa-cc-paypal"></i>
+                            <i class="fab fa-apple-pay"></i>
+                            <i class="fab fa-google-pay"></i>
+                            <i class="fab fa-bitcoin"></i>
+                        </div>
                     </div>
                 </div>
 
-                <div class="pack-detail-card">
+                <!-- ===== PACK 3 : HEBDO ===== -->
+                <div class="pack-detail-card pack-animated" style="animation-delay: 0.3s;">
                     <div class="pack-detail-top">
                         <div class="logo-pack-detail blue" id="pack-detail-3"></div>
                         <div style="flex:1;">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                                 <div>
                                     <div class="pack-detail-name">SM Combiné Hebdo</div>
-                                    <div class="pack-subscribers"><i class="fas fa-users"></i> 589 abonnés</div>
+                                    <div class="pack-subscribers"><i class="fas fa-users"></i> 589 abonnés actifs</div>
                                 </div>
                                 <div class="pack-info-btn" onclick="showPackInfo('hebdo')">
                                     <i class="fas fa-info" style="color:var(--text-gray); font-size:14px;"></i>
                                 </div>
                             </div>
-                            <div class="pack-detail-desc">1 Combiné Score Exact explosif sélectionné chaque week-end.</div>
+                            <div class="pack-detail-desc">Chaque semaine, recevez un combiné score exact soigneusement sélectionné avec des cotes élevées.</div>
                             <div class="delivery-badge"><i class="fas fa-bolt" style="margin-right:4px;"></i>Livraison instantanée</div>
                         </div>
                     </div>
 
                     <div class="pack-detail-features">
-                        <div class="pack-feature"><i class="fas fa-check"></i> 1 combiné / sem.</div>
-                        <div class="pack-feature"><i class="fas fa-check"></i> Cotes élevées (50+)</div>
-                        <div class="pack-feature"><i class="fas fa-check"></i> Analyse complète</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> 5 combinés S.E / semaine</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Cotes élevées</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Suivi en direct</div>
+                        <div class="pack-feature"><i class="fas fa-check"></i> Récap hebdomadaire</div>
                     </div>
 
                     <div class="spots-container">
                         <div class="spots-header">
-                            <span class="spots-text">Plus que <strong id="spots-3">12</strong> places !</span>
-                            <span class="spots-percent">76%</span>
+                            <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:#FF9800;"></i> Plus que <strong id="spots-3">12</strong> places à ce prix !</span>
+                            <span class="spots-percent">76% vendus</span>
                         </div>
-                        <div class="spots-bar"><div class="spots-fill" style="width:76%; background:linear-gradient(90deg, var(--blue), #2E6AAD);"></div></div>
+                        <div class="spots-bar">
+                            <div class="spots-fill" style="width:76%; background:linear-gradient(90deg, var(--blue), #2E6AAD);"></div>
+                        </div>
+                    </div>
+
+                    <div class="guarantee-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Satisfait ou remboursé sous 48h</span>
                     </div>
 
                     <div class="pack-detail-bottom">
@@ -879,30 +1032,174 @@
                             <span class="price-old">129,99€</span>
                             <span class="price-new" style="color:var(--blue);">69,99€</span>
                             <span class="price-label">unique</span>
+                            <div class="economy-badge" style="background:rgba(74,144,217,0.15); color:var(--blue);">-46% 💎</div>
                         </div>
-                        <button class="pack-subscribe-btn" style="background:var(--blue);color:#fff;" onclick="openCheckout('hebdo', 69.99)">
+                        <button class="pack-subscribe-btn pack-btn-pulse" style="background:var(--blue);color:#fff;" onclick="openCheckout('hebdo', 69.99)">
                             <i class="fas fa-lock" style="margin-right:6px;"></i> S'abonner
                         </button>
+                    </div>
+
+                    <div class="payment-methods">
+                        <span style="font-size:11px; color:var(--text-gray);">Paiement sécurisé</span>
+                        <div class="payment-icons">
+                            <i class="fab fa-cc-visa"></i>
+                            <i class="fab fa-cc-mastercard"></i>
+                            <i class="fab fa-cc-paypal"></i>
+                            <i class="fab fa-bitcoin"></i>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div style="padding: 0 20px; margin-bottom:25px; font-family: 'DM Sans', sans-serif;">
-                <h3 style="font-size:17px; font-weight:800; margin-bottom:15px; text-align:center; color:var(--text-white);">❓ Questions fréquentes</h3>
+            <!-- ===== TABLEAU COMPARATIF ===== -->
+            <div style="padding: 0 20px; margin-bottom:25px;">
+                <h3 style="font-size:17px; font-weight:800; margin-bottom:15px; text-align:center;">📊 Comparer les packs</h3>
+                <div class="comparison-table">
+                    <div class="comp-row comp-header">
+                        <div class="comp-cell">Fonctionnalité</div>
+                        <div class="comp-cell" style="color:var(--green);">Journalier</div>
+                        <div class="comp-cell" style="color:#FFD700;">VIP+ ★</div>
+                        <div class="comp-cell" style="color:var(--blue);">Hebdo</div>
+                    </div>
+                    <div class="comp-row">
+                        <div class="comp-cell">Scores exacts</div>
+                        <div class="comp-cell">1/jour</div>
+                        <div class="comp-cell" style="color:#FFD700; font-weight:700;">Illimité</div>
+                        <div class="comp-cell">5/sem.</div>
+                    </div>
+                    <div class="comp-row">
+                        <div class="comp-cell">Canal Telegram</div>
+                        <div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div>
+                        <div class="comp-cell"><i class="fas fa-check" style="color:var(--green);"></i></div>
+                        <div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div>
+                    </div>
+                    <div class="comp-row">
+                        <div class="comp-cell">Support prioritaire</div>
+                        <div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div>
+                        <div class="comp-cell"><i class="fas fa-check" style="color:var(--green);"></i></div>
+                        <div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div>
+                    </div>
+                    <div class="comp-row">
+                        <div class="comp-cell">Durée</div>
+                        <div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div>
+                        <div class="comp-cell" style="color:#FFD700; font-weight:700;">À VIE</div>
+                        <div class="comp-cell">7 jours</div>
+                    </div>
+                    <div class="comp-row">
+                        <div class="comp-cell">Accès fondateurs</div>
+                        <div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div>
+                        <div class="comp-cell"><i class="fas fa-crown" style="color:#FFD700;"></i></div>
+                        <div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== SECTION TÉMOIGNAGES ===== -->
+            <div style="padding: 0 20px; margin-bottom:25px;">
+                <h3 style="font-size:17px; font-weight:800; margin-bottom:15px; text-align:center;">💬 Ce que disent nos membres</h3>
+                <div class="testimonials-scroll" id="testimonials-container">
+                    <div class="testimonial-card">
+                        <div class="testimonial-stars">★★★★★</div>
+                        <p class="testimonial-text">"Premier mois, déjà 3 combinés gagnants. Le score exact est une vraie mine d'or !"</p>
+                        <div class="testimonial-footer">
+                            <div class="testimonial-avatar" style="background:var(--green);">A</div>
+                            <div>
+                                <span class="testimonial-name">Alexandre D.</span>
+                                <span class="testimonial-pack">Pack VIP+</span>
+                            </div>
+                            <span class="testimonial-verified"><i class="fas fa-check-circle"></i> Vérifié</span>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="testimonial-stars">★★★★★</div>
+                        <p class="testimonial-text">"J'étais sceptique au début mais les résultats parlent d'eux-mêmes. 470€ de gains en 2 semaines."</p>
+                        <div class="testimonial-footer">
+                            <div class="testimonial-avatar" style="background:var(--blue);">S</div>
+                            <div>
+                                <span class="testimonial-name">Sofiane K.</span>
+                                <span class="testimonial-pack">Pack Hebdo</span>
+                            </div>
+                            <span class="testimonial-verified"><i class="fas fa-check-circle"></i> Vérifié</span>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="testimonial-stars">★★★★★</div>
+                        <p class="testimonial-text">"Le meilleur investissement que j'ai fait. Le canal Telegram VIP est incroyable, les analyses sont ultra précises."</p>
+                        <div class="testimonial-footer">
+                            <div class="testimonial-avatar" style="background:var(--red);">M</div>
+                            <div>
+                                <span class="testimonial-name">Mehdi B.</span>
+                                <span class="testimonial-pack">Pack VIP+</span>
+                            </div>
+                            <span class="testimonial-verified"><i class="fas fa-check-circle"></i> Vérifié</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== FAQ ===== -->
+            <div style="padding: 0 20px; margin-bottom:25px;">
+                <h3 style="font-size:17px; font-weight:800; margin-bottom:15px; text-align:center;">❓ Questions fréquentes</h3>
                 
                 <div class="faq-item" onclick="toggleFaq(this)">
-                    <div class="faq-question"><span>Comment fonctionne le paiement ?</span><i class="fas fa-chevron-down faq-icon"></i></div>
-                    <div class="faq-answer">Le paiement est sécurisé via Stripe/PayPal. Pas d'abonnement caché.</div>
+                    <div class="faq-question">
+                        <span>Comment fonctionne le paiement ?</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
+                    </div>
+                    <div class="faq-answer">
+                        Le paiement est 100% sécurisé via Stripe/PayPal. Vous recevez un accès instantané après le paiement. Aucun abonnement caché, c'est un paiement unique.
+                    </div>
                 </div>
+
                 <div class="faq-item" onclick="toggleFaq(this)">
-                    <div class="faq-question"><span>Comment je reçois les pronostics ?</span><i class="fas fa-chevron-down faq-icon"></i></div>
-                    <div class="faq-answer">Directement dans l'espace VIP de l'app ou sur le canal Telegram pour le VIP+.</div>
+                    <div class="faq-question">
+                        <span>Puis-je être remboursé ?</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
+                    </div>
+                    <div class="faq-answer">
+                        Oui ! Si vous n'êtes pas satisfait, contactez-nous dans les 48h (7 jours pour le VIP+) et nous vous remboursons intégralement, sans condition.
+                    </div>
+                </div>
+
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-question">
+                        <span>Comment je reçois les pronostics ?</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
+                    </div>
+                    <div class="faq-answer">
+                        Dès votre achat confirmé, vous accédez directement à l'espace VIP+ dans l'application. Pour le pack VIP+, vous êtes aussi ajouté à notre canal Telegram exclusif.
+                    </div>
+                </div>
+
+                <div class="faq-item" onclick="toggleFaq(this)">
+                    <div class="faq-question">
+                        <span>Quel est le taux de réussite ?</span>
+                        <i class="fas fa-chevron-down faq-icon"></i>
+                    </div>
+                    <div class="faq-answer">
+                        Nos combinés affichent un taux de réussite moyen de 87% sur les scores exacts. Nos analystes travaillent avec des données d'API sportifs en temps réel pour maximiser les chances.
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== CTA FINAL ===== -->
+            <div style="padding: 0 20px; margin-bottom:30px;">
+                <div class="final-cta">
+                    <div class="final-cta-glow"></div>
+                    <i class="fas fa-crown" style="font-size:30px; color:#FFD700; margin-bottom:12px;"></i>
+                    <h3 style="font-size:18px; font-weight:800; margin-bottom:8px;">Prêt à passer au niveau supérieur ?</h3>
+                    <p style="font-size:13px; color:var(--text-gray); margin-bottom:18px;">Rejoignez les 1,247 membres qui gagnent déjà</p>
+                    <button class="final-cta-btn" onclick="openCheckout('vip', 99.99)">
+                        <i class="fas fa-crown"></i> Devenir VIP+ maintenant — 99,99€
+                    </button>
+                    <span style="font-size:11px; color:var(--text-gray); margin-top:10px; display:block;">🔒 Paiement sécurisé • Satisfait ou remboursé</span>
                 </div>
             </div>
 
             <div style="height:30px;"></div>
         </div>
 
+        <!-- CONTACT -->
         <div class="page" id="page-contact">
             <div class="page-title-bar"><h2>Contact</h2></div>
             <div class="contact-page">
@@ -913,57 +1210,86 @@
                         <i class="fas fa-chevron-right contact-card-arrow"></i>
                     </div>
                 </a>
+                <div class="contact-card">
+                    <div class="contact-card-icon instagram"><i class="fab fa-instagram"></i></div>
+                    <div class="contact-card-info"><h4>Instagram</h4><p>@scoremaster.fr</p></div>
+                    <i class="fas fa-chevron-right contact-card-arrow"></i>
                 </div>
+                <div class="contact-card">
+                    <div class="contact-card-icon twitter"><i class="fab fa-x-twitter"></i></div>
+                    <div class="contact-card-info"><h4>X (Twitter)</h4><p>@ScoreMasterFR</p></div>
+                    <i class="fas fa-chevron-right contact-card-arrow"></i>
+                </div>
+                <div class="contact-card">
+                    <div class="contact-card-icon email"><i class="fas fa-envelope"></i></div>
+                    <div class="contact-card-info"><h4>Email</h4><p>contact@scoremaster.fr</p></div>
+                    <i class="fas fa-chevron-right contact-card-arrow"></i>
+                </div>
+            </div>
         </div>
 
+        <!-- VIP -->
         <div class="page" id="page-vip">
             <div class="vip-header"><h2>Espace SM VIP+</h2></div>
             <div class="vip-profile">
                 <div class="logo-avatar medium" id="avatar-vip"></div>
                 <div class="vip-user-info">
-                    <div class="vip-username-text">Admin SM</div>
+                    <h3 style="display:flex; align-items:center; gap:6px;">
+                        <span class="vip-username-text">Admin SM</span>
+                        <i class="fas fa-cog" onclick="openProfileSettings()" style="color:var(--text-gray); font-size:14px; cursor:pointer;"></i>
+                    </h3>
                     <div id="role-vip" style="font-size: 12px; font-weight: 700; margin-top: 4px;"></div>
                 </div>
                 <button class="vip-modify-btn" onclick="promptAdminCode()" style="border-color:transparent;color:transparent;">Modifier</button>
             </div>
-            <div class="vip-notice">Le prochain combiné apparaîtra ci-dessous une fois disponible !</div>
-            
+            <div class="vip-notice">Le prochain combiné apparaîtra ci-dessous une fois disponible ! (activez vos notifs !)</div>
+            <div class="api-banner" style="margin:0 20px 15px;">
+                <div class="api-icon"><i class="fas fa-plug"></i></div>
+                <div class="api-info">
+                    <div class="api-title">API sportifs connectés <div class="live-dot"></div></div>
+                    <div class="api-desc">Données en temps réel • Cotes actualisées</div>
+                </div>
+                <span class="betclic-badge platform-badge-display">BETCLIC</span>
+            </div>
             <div id="vip-combined-status-bar"></div>
-            <div class="vip-combined-container" id="vip-combined-container" style="padding:0 20px;">
+            <div class="vip-combined-container" id="vip-combined-container">
                 <div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.<br><span style="font-size:12px;color:var(--text-gray);">Revenez bientôt !</span></div>
             </div>
-            
-            <div class="help-card" style="margin:20px 20px 20px;">
+            <div class="help-card" style="margin:0 20px 20px;">
                 <div class="help-card-icon"><i class="fas fa-comment-dots"></i></div>
                 <div class="help-card-info">
-                    <div class="help-card-title">Besoin d'aide ?</div>
-                    <div class="help-card-desc">Contactez nous sur Telegram !</div>
+                    <div class="help-card-title">Un problème, ou besoin d'aide ?</div>
+                    <div class="help-card-desc">Pas de panique ! Contactez nous ici !</div>
                 </div>
-                <i class="fas fa-chevron-right help-card-arrow" style="color:var(--text-gray);"></i>
+                <i class="fas fa-chevron-right help-card-arrow"></i>
             </div>
         </div>
 
     </div>
 
+    <!-- BOTTOM NAV -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="navigateTo('home')"><i class="fas fa-home"></i><span>Accueil</span></div>
         <div class="nav-item" onclick="navigateTo('packs')"><i class="fas fa-clone"></i><span>Nos packs</span></div>
         <div class="nav-item" onclick="navigateTo('contact')"><i class="fas fa-envelope"></i><span>Contact</span></div>
-        <div class="nav-item vip" onclick="navigateTo('vip')"><i class="fas fa-user-shield"></i><span>Espace<br>VIP+</span></div>
+        <div class="nav-item vip" onclick="navigateTo('vip')"><i class="fas fa-user-shield"></i><span>Espace<br>SM VIP+</span></div>
     </div>
 </div>
 
+<!-- ADMIN PANEL AVEC ONGLETS -->
 <div id="admin-page">
     <div class="admin-header">
         <h2><img id="img-admin" alt="SM" class="admin-header-logo"> Panel Admin</h2>
         <button class="admin-close" onclick="closeAdmin()"><i class="fas fa-times"></i></button>
     </div>
     
+    <!-- ONGLETS DE NAVIGATION -->
     <div class="admin-tabs">
         <button class="admin-tab-btn active" id="btn-tab-dashboard" onclick="switchAdminTab('dashboard')"><i class="fas fa-chart-pie"></i> Vue d'ensemble</button>
         <button class="admin-tab-btn" id="btn-tab-editor" onclick="switchAdminTab('editor')"><i class="fas fa-edit"></i> Éditeur</button>
     </div>
 
+    <!-- ONGLET 1 : DASHBOARD (Stats & Historique) -->
     <div class="admin-tab-content active" id="admin-tab-dashboard">
         <div class="admin-section">
             <div class="admin-stats">
@@ -975,21 +1301,24 @@
         </div>
         
         <div class="admin-section">
+            <!-- Combinés en cours -->
             <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-clock" style="color:var(--primary-yellow);"></i> Combinés En Cours</div>
             <div id="admin-history-active" style="max-height: 200px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color); margin-bottom:20px;"></div>
             
+            <!-- Historique (Terminés) -->
             <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-history" style="color:var(--primary-yellow);"></i> Déjà Terminés</div>
             <div id="admin-history-past" style="max-height: 200px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color);"></div>
             
             <button class="btn-create-new" onclick="resetEditor()">
-                <i class="fas fa-plus-circle"></i> Créer un combiné
+                <i class="fas fa-plus-circle"></i> Créer un NOUVEAU combiné
             </button>
         </div>
     </div>
 
+    <!-- ONGLET 2 : ÉDITEUR (Création & Modification) -->
     <div class="admin-tab-content" id="admin-tab-editor">
         <div class="admin-section">
-            <div class="admin-section-title" id="editor-title"><i class="fas fa-edit"></i> Éditeur</div>
+            <div class="admin-section-title" id="editor-title"><i class="fas fa-edit"></i> Éditeur de combiné</div>
             <div class="admin-card">
                 <div class="admin-row">
                     <div class="admin-field">
@@ -999,147 +1328,803 @@
                     <div class="admin-field">
                         <div class="admin-label"><i class="fas fa-flag"></i> Statut</div>
                         <select class="admin-select" id="admin-status">
-                            <option value="en-cours">En cours</option>
-                            <option value="termine">Gagné ✅</option>
-                            <option value="perdu">Perdu ❌</option>
+                            <option value="en-cours">En cours (Bleu)</option>
+                            <option value="termine">Gagné ✅ (Vert)</option>
+                            <option value="perdu">Perdu ❌ (Rouge)</option>
                         </select>
                     </div>
                 </div>
             </div>
         </div>
+
         <div class="admin-section">
-            <button class="admin-submit-btn" id="btn-publish" onclick="publishCombined()"><span id="btn-publish-text"><i class="fas fa-paper-plane"></i> Publier</span></button>
+            <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs du combiné</div>
+            <button id="btn-fetch-api" onclick="fetchMatchesFromAPI()" style="width:100%; padding:12px; background:rgba(74, 144, 217, 0.15); color:var(--blue); border:1px solid rgba(74, 144, 217, 0.3); border-radius:10px; cursor:pointer; margin-bottom:15px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
+                <i class="fas fa-plug"></i> Charger les matchs du jour (API)
+            </button>
+            <div id="api-matches-container"></div>
+            <div id="admin-matches"></div>
+            <button class="admin-add-match-btn" onclick="addMatchEntry()"><i class="fas fa-plus"></i> Ajouter un match manuellement</button>
+        </div>
+
+        <div class="admin-section">
+            <div class="admin-section-title"><i class="fas fa-coins"></i> Mise & Gain</div>
+            <div class="admin-card" style="margin-bottom:10px;">
+                <div class="admin-field" style="margin-bottom:0;">
+                    <!-- Remplacement par un inputmode decimal pour contrer le bug de la virgule sur certains navigateurs -->
+                    <input type="text" inputmode="decimal" class="admin-input" id="admin-mise" placeholder="Mise en € (ex: 100)" oninput="calculateGains()">
+                </div>
+            </div>
+            <div class="admin-summary">
+                <div class="admin-summary-row"><span class="admin-summary-label">Cote totale</span><span class="admin-summary-value" id="summary-odds" style="color:var(--primary-yellow);">0.00</span></div>
+                <div class="admin-summary-row"><span class="admin-summary-label">Gains potentiels</span><span class="admin-summary-value gains" id="summary-gains">0,00 €</span></div>
+            </div>
+        </div>
+
+        <div class="admin-section">
+            <button class="admin-submit-btn" id="btn-publish" onclick="publishCombined()"><span id="btn-publish-text"><i class="fas fa-paper-plane"></i> Publier le combiné</span></button>
         </div>
     </div>
 </div>
 
-<div id="profile-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);font-family:'Montserrat',sans-serif;">
-    <div style="background:var(--bg-card);padding:30px;border-radius:24px;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;">
+<!-- POPUP NON-VIP -->
+<div id="vip-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+    <div style="background:var(--bg-card);padding:40px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);">
+        <div style="position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:120px;height:120px;background:var(--red);border-radius:50%;filter:blur(40px);opacity:0.6;z-index:-1;"></div>
+        <div style="width:70px;height:70px;background:rgba(239,83,80,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 25px auto;">
+            <i class="fas fa-lock" style="font-size:35px;color:var(--red);"></i>
+        </div>
+        <h3 style="font-size:22px;font-weight:700;margin-bottom:12px;color:#fff;font-family:'Montserrat',sans-serif;">Accès Réservé</h3>
+        <p style="font-size:14px;color:var(--text-gray);margin-bottom:30px;line-height:1.6;font-family:'Montserrat',sans-serif;">Vous n'avez pas accès à l'espace SM VIP+ :( <br><br>Passez au niveau supérieur pour débloquer tous les scores exacts, les cotes exclusives et décupler vos gains !</p>
+        <button onclick="document.getElementById('vip-popup').style.display='none'; navigateTo('packs');" style="width:100%;padding:16px;background:linear-gradient(135deg,var(--red) 0%,#B71C1C 100%);color:#fff;border:none;border-radius:14px;font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:12px;box-shadow:0 4px 15px rgba(239,83,80,0.3);border:1px solid rgba(255,255,255,0.1);">🔥 Découvrir les packs VIP+</button>
+        <button onclick="document.getElementById('vip-popup').style.display='none'" style="width:100%;padding:12px;background:transparent;color:var(--text-gray);border:none;font-size:13px;font-family:'Montserrat',sans-serif;cursor:pointer;font-weight:500;">Plus tard</button>
+    </div>
+</div>
+
+<!-- POPUP PARAMETRES PROFIL -->
+<div id="profile-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+    <div style="background:var(--bg-card);padding:30px;border-radius:24px;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h3 style="font-size:18px;font-weight:700;color:#fff;">Paramètres</h3>
+            <h3 style="font-size:18px;font-weight:700;color:#fff;font-family:'Montserrat',sans-serif;">Paramètres</h3>
             <i class="fas fa-times" onclick="closeProfileSettings()" style="color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
         </div>
-        <button onclick="saveProfileSettings()" style="width:100%;padding:14px;background:var(--primary-yellow);color:#000;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:20px;">Enregistrer</button>
+        <div class="admin-field">
+            <div class="admin-label" style="color:var(--text-gray); margin-bottom:8px;"><i class="fas fa-gamepad" style="color:var(--primary-yellow)"></i> Plateforme de paris favorite</div>
+            <select class="admin-select" id="user-platform-select" style="background:var(--bg-input); color:var(--text-white); border:1px solid var(--border-color); padding:14px; border-radius:12px;">
+                <option value="BETCLIC">Betclic</option>
+                <option value="WINAMAX">Winamax</option>
+                <option value="UNIBET">Unibet</option>
+            </select>
+        </div>
+        <button onclick="saveProfileSettings()" style="width:100%;padding:14px;background:var(--primary-yellow);color:#000;border:none;border-radius:12px;font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:20px;">Enregistrer</button>
+    </div>
+</div>
+
+<!-- POPUP INFO DES PACKS -->
+<div id="info-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+    <div style="background:var(--bg-card);padding:30px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);position:relative;">
+        <i class="fas fa-times" onclick="closeInfoPopup()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
+        <div id="info-popup-icon" style="width:65px;height:65px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px auto;font-size:26px;"></div>
+        <h3 id="info-popup-title" style="font-size:20px;font-weight:800;margin-bottom:12px;color:#fff;font-family:'Montserrat',sans-serif;">Titre</h3>
+        <p id="info-popup-desc" style="font-size:14px;color:var(--text-gray);margin-bottom:20px;line-height:1.6;">Description détaillée...</p>
+        <div id="info-popup-extra" style="background:var(--bg-input); padding:18px; border-radius:12px; font-size:13px; color:var(--text-white); font-weight:600; margin-bottom:20px; border:1px solid var(--border-color);"></div>
+        <button onclick="closeInfoPopup()" style="width:100%;padding:14px;background:var(--primary-yellow);color:#000;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;">D'accord !</button>
     </div>
 </div>
 
 <script>
-    // Variables d'état
     var allCombineds = [];
     var currentCombined = null; 
     var editingId = null; 
     var matchEntryCount = 0, appStats = { total: 0, wins: 0, losses: 0, pending: 0 };
+    var userPlatform = 'BETCLIC'; 
+
+    function loadState() {
+        var s = localStorage.getItem('scoreMasterData');
+        if (s) { 
+            var d = JSON.parse(s); 
+            appStats = d.stats || { total: 0, wins: 0, losses: 0, pending: 0 }; 
+            userPlatform = d.platform || 'BETCLIC';
+        }
+    }
     
-    // Chargement initial
+    function saveState() { 
+        localStorage.setItem('scoreMasterData', JSON.stringify({ stats: appStats, platform: userPlatform })); 
+    }
+
+    function openProfileSettings() {
+        document.getElementById('user-platform-select').value = userPlatform;
+        var popup = document.getElementById('profile-popup');
+        popup.style.display = 'flex';
+        setTimeout(function () { popup.style.opacity = '1'; popup.firstElementChild.style.transform = 'scale(1)'; }, 10);
+    }
+    
+    function closeProfileSettings() {
+        var popup = document.getElementById('profile-popup');
+        popup.style.opacity = '0';
+        popup.firstElementChild.style.transform = 'scale(0.9)';
+        setTimeout(function () { popup.style.display = 'none'; }, 300);
+    }
+    
+    function saveProfileSettings() {
+        userPlatform = document.getElementById('user-platform-select').value;
+        saveState();
+        updatePlatformDisplay();
+        closeProfileSettings();
+        showToast('Profil mis à jour !');
+    }
+
+    function updatePlatformDisplay() {
+        document.querySelectorAll('.platform-badge-display').forEach(function(el) {
+            el.textContent = userPlatform;
+            if(userPlatform === 'WINAMAX') {
+                el.style.color = '#fff';
+                el.style.background = 'rgba(255, 0, 0, 0.5)';
+            } else if(userPlatform === 'UNIBET') {
+                el.style.color = '#00e676';
+                el.style.background = 'rgba(0, 230, 118, 0.15)';
+            } else {
+                el.style.color = 'var(--red)';
+                el.style.background = 'rgba(255,61,61,.15)';
+            }
+        });
+    }
+
+    function showPackInfo(packType) {
+        var popup = document.getElementById('info-popup');
+        var title = document.getElementById('info-popup-title');
+        var desc = document.getElementById('info-popup-desc');
+        var icon = document.getElementById('info-popup-icon');
+        var extra = document.getElementById('info-popup-extra');
+
+        if (packType === 'journalier') {
+            icon.innerHTML = '<i class="fas fa-calendar-check"></i>';
+            icon.style.background = 'rgba(0, 200, 83, 0.15)';
+            icon.style.color = 'var(--green)';
+            title.textContent = 'SM Score Exact Journalier';
+            desc.textContent = 'Notre algorithme et nos experts analysent quotidiennement des dizaines de paramètres pour dénicher LE match le plus fiable de la journée.';
+            extra.innerHTML = '<ul style="text-align:left; padding-left:20px; color:var(--text-light-gray);"><li style="margin-bottom:8px">Cotes moyennes : <span style="color:var(--green)">12.00 à 50.00</span></li><li style="margin-bottom:8px">Publié chaque jour avant 12h</li><li>Parfait pour faire monter sa bankroll</li></ul>';
+        } else if (packType === 'vip') {
+            icon.innerHTML = '<i class="fas fa-crown"></i>';
+            icon.style.background = 'rgba(255, 61, 61, 0.15)';
+            icon.style.color = 'var(--red)';
+            title.textContent = 'SM VIP+ (à vie)';
+            desc.textContent = 'Le Saint Graal du parieur. Rejoignez l\'élite et accédez à l\'intégralité de nos services pour toujours, sans aucun abonnement caché.';
+            extra.innerHTML = '<ul style="text-align:left; padding-left:20px; color:var(--text-light-gray);"><li style="margin-bottom:8px">Accès direct aux <span style="color:var(--red)">fondateurs</span></li><li style="margin-bottom:8px">Canal Telegram Secret inclus</li><li>Une seule transaction, à vie</li></ul>';
+        } else if (packType === 'hebdo') {
+            icon.innerHTML = '<i class="fas fa-rocket"></i>';
+            icon.style.background = 'rgba(74, 144, 217, 0.15)';
+            icon.style.color = 'var(--blue)';
+            title.textContent = 'SM Combiné Hebdo';
+            desc.textContent = 'Le coup de maître du week-end. Un combiné explosif soigneusement étudié pour maximiser le potentiel de gains sur plusieurs matchs.';
+            extra.innerHTML = '<ul style="text-align:left; padding-left:20px; color:var(--text-light-gray);"><li style="margin-bottom:8px">Cotes très élevées <span style="color:var(--blue)">(+ de 50.00)</span></li><li style="margin-bottom:8px">Le rendez-vous du vendredi</li><li>Pour les amateurs de sensations fortes</li></ul>';
+        }
+
+        popup.style.display = 'flex';
+        setTimeout(function () { popup.style.opacity = '1'; popup.firstElementChild.style.transform = 'scale(1)'; }, 10);
+    }
+
+    function closeInfoPopup() {
+        var popup = document.getElementById('info-popup');
+        popup.style.opacity = '0';
+        popup.firstElementChild.style.transform = 'scale(0.9)';
+        setTimeout(function () { popup.style.display = 'none'; }, 300);
+    }
+
+    // --- GESTION DES ONGLETS DU PANEL ADMIN ---
+    function switchAdminTab(tabName) {
+        document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.admin-tab-btn').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById('admin-tab-' + tabName).classList.add('active');
+        document.getElementById('btn-tab-' + tabName).classList.add('active');
+    }
+
+    // --- REQUÊTE API-SPORTS.IO (AVEC FILTRES AVANCÉS) ---
+    async function fetchMatchesFromAPI() {
+        var date = document.getElementById('admin-date').value;
+        if (!date) {
+            showToast('Choisis une date d\'abord', true);
+            return;
+        }
+
+        const API_KEY = '2620f835eb08886d508258550a5254a4';
+
+        var btn = document.getElementById('btn-fetch-api');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche des matchs...';
+
+        try {
+            var response = await fetch(`https://v3.football.api-sports.io/fixtures?date=${date}`, {
+                method: 'GET',
+                headers: {
+                    'x-apisports-key': API_KEY
+                }
+            });
+            
+            if (!response.ok) throw new Error(`Erreur réseau: HTTP ${response.status}`);
+            var data = await response.json();
+            if (data.errors && Object.keys(data.errors).length > 0) throw new Error(Object.values(data.errors)[0]); 
+
+            if (data.response && data.response.length > 0) {
+                
+                var filteredMatches = data.response.filter(function(match) {
+                    if (match.fixture.status.short !== 'NS' && match.fixture.status.short !== 'TBD') return false;
+                    var matchDate = new Date(match.fixture.date);
+                    if (matchDate.getHours() < 18) return false;
+                    return true;
+                });
+
+                var topLeagues = [2, 3, 848, 39, 61, 140, 135, 78]; 
+                filteredMatches.sort(function(a, b) {
+                    var aTop = topLeagues.includes(a.league.id) ? 1 : 0;
+                    var bTop = topLeagues.includes(b.league.id) ? 1 : 0;
+                    if (aTop !== bTop) return bTop - aTop; 
+                    return new Date(a.fixture.date) - new Date(b.fixture.date); 
+                });
+
+                if (filteredMatches.length === 0) {
+                    showToast('Aucun match majeur à venir après 18h.', true);
+                    document.getElementById('api-matches-container').innerHTML = '';
+                    btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs du jour (API)';
+                    return;
+                }
+
+                var matchesHtml = '<div style="background:#2A2A2A; padding:10px; border-radius:8px; margin-bottom:10px; max-height:300px; overflow-y:auto;">';
+                matchesHtml += `<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px; display:flex; justify-content:space-between;">
+                    <span>Matchs trouvés (${filteredMatches.length})</span>
+                    <span style="color:var(--primary-yellow); cursor:pointer;" onclick="document.getElementById('api-matches-container').innerHTML=''">Fermer <i class="fas fa-times"></i></span>
+                </div>`;
+
+                var limit = Math.min(filteredMatches.length, 50); 
+                var today = new Date();
+                var tomorrow = new Date();
+                tomorrow.setDate(today.getDate() + 1);
+
+                for(var i=0; i<limit; i++) {
+                    var match = filteredMatches[i];
+                    var matchDate = new Date(match.fixture.date);
+                    
+                    var teamHome = match.teams.home.name || 'Dom.';
+                    var teamAway = match.teams.away.name || 'Ext.';
+                    var timeStr = matchDate.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+                    
+                    var prefix = "";
+                    if (matchDate.toDateString() === today.toDateString()) {
+                        prefix = "Auj. ";
+                    } else if (matchDate.toDateString() === tomorrow.toDateString()) {
+                        prefix = "Dem. ";
+                    }
+                    var displayTime = prefix + timeStr;
+
+                    var leagueName = match.league.name || '';
+                    var flagUrl = match.league.flag || match.league.logo || '';
+                    var safeMatchString = `${teamHome} - ${teamAway}`.replace(/'/g, "\\'");
+
+                    matchesHtml += `<button type="button" onclick="addMatchFromAPI('${safeMatchString}', '${displayTime}', '${flagUrl}')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer; transition:border-color 0.2s;">
+                        <div style="font-size:10px; color:var(--text-gray); margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+                            ${flagUrl ? `<img src="${flagUrl}" style="width:14px; height:10px; object-fit:cover; border-radius:2px;">` : ''}
+                            ${leagueName}
+                        </div>
+                        <div style="font-size:13px; font-weight:600; display:flex; align-items:center;">
+                            <span style="color:var(--primary-yellow); margin-right:8px; width:75px;"><i class="fas fa-clock" style="font-size:11px;"></i> ${displayTime}</span> 
+                            <span>${safeMatchString}</span>
+                        </div>
+                    </button>`;
+                }
+                matchesHtml += '</div>';
+
+                document.getElementById('api-matches-container').innerHTML = matchesHtml;
+                showToast('Matchs chargés avec succès !');
+            } else {
+                showToast('Aucun match programmé à cette date.', true);
+                document.getElementById('api-matches-container').innerHTML = '';
+            }
+        } catch (error) {
+            console.error("Détail de l'erreur :", error);
+            showToast('Erreur: ' + error.message, true);
+        }
+
+        btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs du jour (API)';
+    }
+
+    function addMatchFromAPI(teams, time, logo) {
+        addMatchEntry({ teams: teams, score: '2 - 1', odds: '7.00', time: time, logo: logo });
+        showToast('Match ajouté !');
+    }
+
     window.addEventListener('load', function () {
         setLogos();
+        loadState();
+        updatePlatformDisplay(); 
         
-        // Simuler le Splash Screen
+        document.getElementById('role-home').innerHTML = '<span style="color:var(--blue);">Visiteur</span>';
+        document.getElementById('role-vip').innerHTML = '<span style="color:var(--blue);">Visiteur</span>';
+        
+        // Initialisation des animations pour la page Packs
+        startCountdown();
+        animateOnlineCount();
+        
         setTimeout(function () {
             document.getElementById('splash-screen').classList.add('hidden');
             setTimeout(function () { document.getElementById('login-screen').classList.add('active'); }, 300);
         }, 2500);
-        
-        // Initialisations
-        startCountdown();
-        animateOnlineCount();
     });
 
-    // --- FONCTIONS UI GLOBALES ---
-    
+    document.getElementById('togglePassword').addEventListener('click', function () {
+        var pwd = document.getElementById('login-password');
+        pwd.setAttribute('type', pwd.getAttribute('type') === 'password' ? 'text' : 'password');
+        this.classList.toggle('fa-eye');
+        this.classList.toggle('fa-eye-slash');
+    });
+
+    var isSignUpMode = false;
+    function toggleAuthMode() {
+        isSignUpMode = !isSignUpMode;
+        document.getElementById('title-username').style.display = isSignUpMode ? 'block' : 'none';
+        document.getElementById('login-username').style.display = isSignUpMode ? 'block' : 'none';
+        document.getElementById('btn-action').textContent = isSignUpMode ? "S'inscrire" : 'Connexion';
+        document.getElementById('toggle-auth').textContent = isSignUpMode ? 'Déjà un compte ? Connexion' : 'Créer un compte';
+    }
+
+    document.getElementById('login-password').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') handleAuth();
+    });
+
+    async function handleAuth() {
+        var email = document.getElementById('login-email').value;
+        var password = document.getElementById('login-password').value;
+        var username = document.getElementById('login-username').value;
+
+        if (!email || !password || (isSignUpMode && !username)) {
+            showToast('Veuillez remplir tous les champs', true);
+            return;
+        }
+
+        try {
+            var result;
+            if (isSignUpMode) {
+                result = await supabaseClient.auth.signUp({ email, password });
+                if (result.error) throw result.error;
+                await supabaseClient.from('profiles').insert([{ id: result.data.user.id, email: email, username: username, is_vip: false, is_admin: false }]);
+                showToast('Compte créé ! Connectez-vous.');
+                toggleAuthMode();
+                return;
+            } else {
+                result = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (result.error) throw result.error;
+            }
+
+            var profile = null;
+            var profileRes = await supabaseClient.from('profiles').select('is_vip, is_admin, username').eq('id', result.data.user.id).single();
+            profile = profileRes.data;
+
+            window.isUserVip = profile ? profile.is_vip : false;
+            window.isAdmin = profile ? profile.is_admin : false;
+
+            var finalUsername = (profile && profile.username) ? profile.username : 'Utilisateur';
+            
+            var homeName = document.querySelector('.home-username-text');
+            if (homeName) homeName.textContent = finalUsername;
+            var vipName = document.querySelector('.vip-username-text');
+            if (vipName) vipName.textContent = finalUsername;
+            
+            var roleText = window.isUserVip ? 'SM VIP+' : 'Visiteur';
+            var roleColor = window.isUserVip ? 'var(--red)' : 'var(--blue)';
+            var roleHtml = `<span style="color:${roleColor};">${roleText}</span>`;
+            document.getElementById('role-home').innerHTML = roleHtml;
+            document.getElementById('role-vip').innerHTML = roleHtml;
+
+            document.getElementById('login-screen').style.opacity = '0';
+            setTimeout(function () {
+                document.getElementById('login-screen').classList.remove('active');
+                document.getElementById('app').classList.add('active');
+                chargerDonnees();
+            }, 400);
+
+        } catch (err) {
+            showToast(err.message || "Erreur d'authentification", true);
+        }
+    }
+
+    async function chargerDonnees() {
+        try {
+            var publicRes = await supabaseClient.from('combineds_public').select('*').order('date', { ascending: false }).order('id', { ascending: false }).limit(10);
+            var publicData = publicRes.data;
+
+            if (publicRes.error || !publicData || publicData.length === 0) {
+                allCombineds = [];
+                currentCombined = null;
+                renderCombined();
+                renderHistory();
+                return;
+            }
+
+            if (window.isUserVip) {
+                var ids = publicData.map(function(c) { return c.id; });
+                var vipRes = await supabaseClient.from('combineds_vip').select('*').in('id', ids);
+                if (vipRes.data && !vipRes.error) {
+                    publicData = publicData.map(function(pub) {
+                        var vipMatch = vipRes.data.find(function(v) { return v.id === pub.id; });
+                        return vipMatch ? Object.assign({}, pub, vipMatch) : pub;
+                    });
+                }
+            }
+            
+            allCombineds = publicData;
+            currentCombined = allCombineds.find(function(c) { return c.status === 'en-cours'; }) || allCombineds[0]; 
+
+        } catch (e) {
+            console.error('Erreur lors du chargement des données :', e);
+            allCombineds = [];
+            currentCombined = null;
+        }
+        renderCombined();
+        renderHistory();
+    }
+
     function navigateTo(page) {
         if (page === 'vip' && !window.isUserVip) {
-            showToast("Accès réservé SM VIP+.", true);
+            var popup = document.getElementById('vip-popup');
+            popup.style.display = 'flex';
+            setTimeout(function () { popup.style.opacity = '1'; popup.firstElementChild.style.transform = 'scale(1)'; }, 10);
             return;
         }
         document.querySelectorAll('.page').forEach(function (p) { p.classList.remove('active'); });
         document.getElementById('page-' + page).classList.add('active');
         document.querySelectorAll('.nav-item').forEach(function (n) { n.classList.remove('active'); });
-        // Activer l'item de nav correspondant
-        const navItem = Array.from(document.querySelectorAll('.nav-item')).find(item => item.getAttribute('onclick').includes(page));
-        if (navItem) navItem.classList.add('active');
+        var target = Array.from(document.querySelectorAll('.nav-item')).find(function (item) {
+            return item.getAttribute('onclick') === "navigateTo('" + page + "')";
+        });
+        if (target) target.classList.add('active');
     }
-
-    function toggleRemember() {
-        document.getElementById('remember-toggle').classList.toggle('active');
-    }
-
-    function toggleFaq(el) {
-        el.classList.toggle('open');
-    }
-
-    // --- AUTHENTIFICATION SIMPLIFIÉE (POUR TEST UI) ---
     
-    function setMode(signUp) {
-        isSignUpMode = signUp;
-        document.getElementById('btn-login-mode').classList.toggle('active', !signUp);
-        document.getElementById('btn-signup-mode').classList.toggle('active', signUp);
-        document.getElementById('field-username').classList.toggle('visible', signUp);
-        document.querySelector('#btn-action .btn-text').textContent = signUp ? "Créer mon compte" : "Connexion";
-        document.getElementById('forgot-link').style.visibility = signUp ? 'hidden' : 'visible';
-        document.getElementById('auth-subtitle').textContent = signUp ? 'Créez votre compte VIP' : 'Connectez-vous pour continuer';
-    }
-
-    function handleAuth() {
-        // Simulation de connexion réussie pour tester l'UI
-        const btn = document.getElementById('btn-action');
-        btn.classList.add('loading');
+    function resetEditor() {
+        editingId = null;
+        document.getElementById('admin-date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('admin-status').value = 'en-cours';
+        document.getElementById('admin-mise').value = '100';
+        document.getElementById('admin-matches').innerHTML = '';
+        document.getElementById('api-matches-container').innerHTML = '';
+        matchEntryCount = 0;
+        calculateGains();
+        document.getElementById('btn-publish-text').innerHTML = '<i class="fas fa-paper-plane"></i> Publier le combiné';
+        document.getElementById('editor-title').innerHTML = '<i class="fas fa-plus-circle"></i> Créer un combiné';
         
-        setTimeout(function() {
-            btn.classList.remove('loading');
-            document.getElementById('login-screen').classList.remove('active');
-            document.getElementById('app').classList.add('active');
-            showToast("Connexion réussie !");
-            // Configurer données factices
-            window.isUserVip = true; 
-            chargerDonneesFactices();
-        }, 1500);
+        switchAdminTab('editor');
     }
 
-    // --- CHARGEMENT DONNÉES FACTICES (TEST UI) ---
+    function loadIntoEditor(id) {
+        var c = allCombineds.find(function(x) { return x.id == id; });
+        if(!c) return;
+        editingId = c.id; 
+        document.getElementById('admin-date').value = c.date || '';
+        document.getElementById('admin-status').value = c.status || 'en-cours';
+        document.getElementById('admin-mise').value = c.mise || '';
+        document.getElementById('admin-matches').innerHTML = '';
+        document.getElementById('api-matches-container').innerHTML = '';
+        matchEntryCount = 0;
+        if(c.matches) c.matches.forEach(function(m) { addMatchEntry(m); });
+        calculateGains();
+        document.getElementById('btn-publish-text').innerHTML = '<i class="fas fa-save"></i> Mettre à jour';
+        document.getElementById('editor-title').innerHTML = '<i class="fas fa-edit"></i> Modification en cours...';
+        
+        switchAdminTab('editor');
+    }
+
+    function openAdmin() {
+        document.getElementById('admin-page').classList.add('active');
+        switchAdminTab('dashboard'); 
+        renderAdminHistory();
+        updateStats();
+    }
     
-    function chargerDonneesFactices() {
-        // Utilisateur
-        document.querySelectorAll('.home-username-text').forEach(el => el.textContent = "TestUser");
-        document.getElementById('role-home').innerHTML = '<span style="color:var(--red);">SM VIP+</span>';
-        document.getElementById('role-vip').innerHTML = '<span style="color:var(--red);">SM VIP+</span>';
-        
-        // Combiné factice
-        currentCombined = {
-            id: '1', date: '2023-10-27', time: '21:00', status: 'en-cours', mise: 100, gains: 750, totalOdds: 7.5,
-            matches: [
-                { teams: 'Paris SG - Milan AC', score: '2 - 1', odds: 7.5, time: '21:00', logo: LOGO_DARK }
-            ]
-        };
-        renderCombined();
+    function closeAdmin() { document.getElementById('admin-page').classList.remove('active'); }
+
+    function addMatchEntry(data) {
+        data = data || null;
+        matchEntryCount++;
+        var c = document.getElementById('admin-matches');
+        var e = document.createElement('div');
+        e.className = 'match-entry';
+        e.innerHTML = '<div class="match-entry-header"><span class="match-entry-number"><i class="fas fa-futbol"></i> Match ' + matchEntryCount + '</span><button type="button" class="match-entry-remove" onclick="removeMatchEntry(this)"><i class="fas fa-trash"></i></button></div>'
+            + '<input type="hidden" class="match-logo-input" value="' + (data && data.logo ? data.logo : '') + '">'
+            + '<div class="admin-field"><div class="admin-label"><i class="fas fa-users"></i> Équipes</div><input type="text" class="admin-input match-teams-input" placeholder="Équipe A - Équipe B" value="' + (data ? data.teams : '') + '" oninput="calculateGains()"></div>'
+            + '<div class="admin-row"><div class="admin-field"><div class="admin-label"><i class="fas fa-bullseye"></i> Score exact</div><input type="text" class="admin-input match-score-input" placeholder="2 - 1" value="' + (data ? data.score : '') + '" oninput="calculateGains()"></div>'
+            + '<div class="admin-field"><div class="admin-label"><i class="fas fa-chart-line"></i> Cote</div><input type="text" inputmode="decimal" class="admin-input match-odds-input" placeholder="7.00" value="' + (data ? data.odds : '') + '" oninput="calculateGains()"></div></div>'
+            + '<div class="admin-field"><div class="admin-label"><i class="fas fa-clock"></i> Horaire</div><input type="text" class="admin-input match-time-input" placeholder="Dem. 21:00" value="' + (data ? data.time : '') + '"></div>';
+        c.appendChild(e);
+        calculateGains();
     }
 
-    // --- FONCTIONS D'AFFICHAGE ---
+    function removeMatchEntry(btn) {
+        var e = btn.closest('.match-entry');
+        e.style.opacity = '0'; e.style.transform = 'scale(0.95)'; e.style.transition = 'all .3s';
+        setTimeout(function () { e.remove(); renumberMatches(); calculateGains(); }, 300);
+    }
+    
+    function renumberMatches() {
+        var entries = document.querySelectorAll('.match-entry');
+        matchEntryCount = entries.length;
+        entries.forEach(function (e, i) { e.querySelector('.match-entry-number').innerHTML = '<i class="fas fa-futbol"></i> Match ' + (i + 1); });
+    }
+
+    function calculateGains() {
+        var entries = document.querySelectorAll('.match-entry');
+        var miseVal = document.getElementById('admin-mise').value.replace(',', '.');
+        var mise = parseFloat(miseVal) || 0;
+        var tot = 1, cnt = 0;
+        entries.forEach(function (e) { 
+            var oVal = e.querySelector('.match-odds-input').value.replace(',', '.');
+            var o = parseFloat(oVal) || 0; 
+            if (o > 0) { tot *= o; cnt++; } 
+        });
+        if (cnt === 0) tot = 0;
+        document.getElementById('summary-matches').textContent = entries.length;
+        document.getElementById('summary-odds').textContent = tot.toFixed(2);
+        document.getElementById('summary-mise').textContent = fmtC(mise);
+        document.getElementById('summary-gains').textContent = fmtC(mise * tot);
+    }
+
+    function fmtC(v) { return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(v); }
+
+    async function publishCombined() {
+        var entries = document.querySelectorAll('.match-entry');
+        var date = document.getElementById('admin-date').value;
+        var status = document.getElementById('admin-status').value;
+        var miseVal = document.getElementById('admin-mise').value.replace(',', '.');
+        var mise = parseFloat(miseVal) || 0;
+
+        if (!entries.length) { showToast('Ajoutez au moins un match !', true); return; }
+        if (mise <= 0) { showToast('Saisissez une mise !', true); return; }
+
+        var matches = [], publicMatches = [], valid = true;
+        var earliestTime = '23:59'; 
+        var isFinished = (status === 'termine' || status === 'perdu');
+        
+        entries.forEach(function (e) {
+            var t = e.querySelector('.match-teams-input').value.trim();
+            var s = e.querySelector('.match-score-input').value.trim();
+            var oVal = e.querySelector('.match-odds-input').value.replace(',', '.');
+            var o = parseFloat(oVal) || 0;
+            var ti = e.querySelector('.match-time-input').value.trim();
+            var l = e.querySelector('.match-logo-input').value; 
+            
+            if (!t || !s || o <= 0) valid = false;
+            
+            matches.push({ teams: t, score: s, odds: o, time: ti, logo: l });
+            publicMatches.push({ teams: t, time: ti, score: isFinished ? s : '?-?', odds: isFinished ? o : 0, logo: l });
+            
+            var extracted = ti.match(/\d{2}:\d{2}/);
+            if (extracted && extracted[0] < earliestTime) { earliestTime = extracted[0]; }
+        });
+
+        if (!valid) { showToast('Remplissez tous les champs (Cote/Score manquants) !', true); return; }
+
+        var tot = 1;
+        matches.forEach(function (m) { tot *= m.odds; });
+        var gains = mise * tot;
+
+        if (editingId) {
+            var updatePub = await supabaseClient.from('combineds_public').update({ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }).eq('id', editingId);
+            if (updatePub.error) { showToast('Erreur Update', true); return; }
+            
+            var updateVip = await supabaseClient.from('combineds_vip').update({ matches: matches, mise: mise, gains: gains, total_odds: tot }).eq('id', editingId);
+            if (updateVip.error) { showToast('Erreur Update VIP', true); return; }
+            
+            showToast('Combiné mis à jour !');
+        } else {
+            var pubRes = await supabaseClient.from('combineds_public').insert([{ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }]).select().single();
+            if (pubRes.error) { showToast('Erreur Création', true); return; }
+    
+            var vipRes = await supabaseClient.from('combineds_vip').insert([{ id: pubRes.data.id, matches: matches, mise: mise, gains: gains, total_odds: tot }]);
+            if (vipRes.error) { showToast('Erreur Création VIP', true); return; }
+            
+            if (status === 'en-cours') appStats.pending++;
+            else if (status === 'termine') appStats.wins++;
+            else appStats.losses++;
+            appStats.total++;
+            saveState();
+            
+            showToast('Combiné créé avec succès !');
+        }
+
+        await chargerDonnees();
+        
+        switchAdminTab('dashboard');
+        renderAdminHistory();
+    }
+    
+    async function deleteSpecificCombined(id) {
+        if(confirm("Es-tu sûr de vouloir supprimer ce combiné définitivement ?")) {
+            await supabaseClient.from('combineds_vip').delete().eq('id', id);
+            await supabaseClient.from('combineds_public').delete().eq('id', id);
+            if (editingId == id) {
+                resetEditor();
+            }
+            showToast('Combiné supprimé !', true);
+            await chargerDonnees();
+            renderAdminHistory();
+        }
+    }
+
+    function updateStats() {
+        document.getElementById('stat-total').textContent = appStats.total;
+        document.getElementById('stat-wins').textContent = appStats.wins;
+        document.getElementById('stat-pending').textContent = appStats.pending;
+        document.getElementById('stat-losses').textContent = appStats.losses;
+    }
 
     function renderCombined() {
         var vc = document.getElementById('vip-combined-container');
         var hc = document.getElementById('home-combined-container');
+        var sb = document.getElementById('vip-combined-status-bar');
         
-        if (!currentCombined) return;
+        if (!currentCombined) {
+            var empty = '<div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div>';
+            if (vc) vc.innerHTML = empty; 
+            if (hc) hc.innerHTML = empty; 
+            if (sb) sb.innerHTML = '';
+            return;
+        }
+        var df = fmtD(currentCombined.date), sc = currentCombined.status;
+        var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
+        var pw = '50%';
+        if (sc === 'termine' || sc === 'perdu') pw = '100%';
+        
+        if (vc) vc.innerHTML = buildCC(currentCombined, sc, sl, pw, false);
+        if (hc) hc.innerHTML = buildCC(currentCombined, sc, sl, pw, true);
+        
+        if (sc === 'en-cours' && sb) {
+            sb.innerHTML = '<div style="background:var(--primary-yellow); color:#000; padding:14px; border-radius:12px; text-align:center; font-weight:800; font-size:15px; margin:0 20px 15px;">Combiné à venir ! 🔥</div>';
+        } else if (sb) {
+            sb.innerHTML = '';
+        }
+    }
+    
+    function renderHistory() {
+        var hc = document.getElementById('history-container');
+        if (!hc) return;
+        
+        var historyData = allCombineds.filter(function(c) { return currentCombined ? c.id !== currentCombined.id : true; });
+        
+        if (historyData.length === 0) {
+            hc.innerHTML = '<div class="no-combined-message"><i class="fas fa-history"></i>Aucun historique pour le moment.</div>';
+            return;
+        }
+        var html = '';
+        var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
+        
+        historyData.forEach(function(c) {
+            var sc = c.status;
+            var statusColor = sc === 'termine' ? 'var(--green)' : (sc === 'perdu' ? 'var(--red)' : 'var(--primary-yellow)');
+            var odds = c.total_odds ? c.total_odds.toFixed(2) : (window.isUserVip ? '?' : '***');
+            
+            var matchesHtml = '';
+            if(c.matches && c.matches.length > 0) {
+                matchesHtml = '<div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.1);">';
+                c.matches.forEach(function(m) {
+                    var scoreColor = sc === 'termine' ? 'var(--green)' : 'var(--text-white)';
+                    
+                    var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:12px;height:12px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<i class="fas fa-shield-alt" style="font-size:10px; margin-right:6px; color:var(--text-gray);"></i>`;
+                    
+                    matchesHtml += `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; align-items:center;">
+                        <span style="color:var(--text-light-gray);">${logoDisplay}${m.teams || 'Équipes'}</span>
+                        <span style="font-weight:700; color:${scoreColor}; background:rgba(255,255,255,0.05); padding:3px 8px; border-radius:6px;">${m.score}</span>
+                    </div>`;
+                });
+                matchesHtml += '</div>';
+            }
+
+            html += `<div class="history-card ${sc}">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div class="date"><i class="fas fa-calendar-alt"></i> Combiné du ${fmtD(c.date)}</div>
+                        <div class="status ${sc}" style="color:${statusColor};">${sl[sc] || sc}</div>
+                    </div>
+                    <div style="text-align:right; background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:10px;">
+                        <div style="font-size:11px; color:var(--text-gray); margin-bottom:2px;">Cote</div>
+                        <div style="font-weight:800; font-size:16px; color:var(--text-white);">${odds}</div>
+                    </div>
+                </div>
+                ${matchesHtml}
+            </div>`;
+        });
+        hc.innerHTML = html;
+    }
+    
+    function renderAdminHistory() {
+        var containerActive = document.getElementById('admin-history-active');
+        var containerPast = document.getElementById('admin-history-past');
+        if(!containerActive || !containerPast) return;
+        
+        var htmlActive = '';
+        var htmlPast = '';
         
         var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
-        var pw = currentCombined.status === 'en-cours' ? '50%' : '100%';
-        var pc = currentCombined.status === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : currentCombined.status === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
-
-        var matchesHtml = '';
-        currentCombined.matches.forEach(function (m) {
-            matchesHtml += `<div class="match-row"><div class="match-row-top"><div class="match-type"><i class="fas fa-futbol"></i> Score exact <span class="match-score">${m.score}</span></div><div class="match-odds">${m.odds.toFixed(2)}</div></div><div class="match-row-bottom"><div class="match-teams"><img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">${m.teams}</div><div class="match-time">${m.time}</div></div></div>`;
+        
+        allCombineds.forEach(function(c) {
+            var itemHtml = `<div class="admin-history-item">
+                <span>Le ${fmtD(c.date)} - ${sl[c.status]}</span>
+                <div style="display:flex; gap:8px;">
+                    <button onclick="loadIntoEditor('${c.id}')"><i class="fas fa-edit"></i></button>
+                    <button onclick="deleteSpecificCombined('${c.id}')" style="background:var(--red); color:#fff;"><i class="fas fa-trash"></i></button>
+                </div>
+            </div>`;
+            
+            if (c.status === 'en-cours') {
+                htmlActive += itemHtml;
+            } else {
+                htmlPast += itemHtml;
+            }
         });
-
-        var cardHtml = `<div class="combined-card"><div class="combined-header"><div class="combined-status"><span class="status-badge ${currentCombined.status}">${sl[currentCombined.status]}</span><span class="combined-label">Combiné</span></div></div><div class="combined-progress"><div class="combined-progress-fill" style="width:${pw};${pc}"></div></div><div class="combined-body">${matchesHtml}</div><div class="combined-footer"><div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span><span class="combined-footer-value">${currentCombined.totalOdds.toFixed(2)}</span></div><div class="combined-footer-row"><span class="combined-footer-label">Mise</span><span class="combined-footer-value">${currentCombined.mise} €</span></div><div class="combined-footer-row"><span class="combined-footer-label">Gains potentiels</span><span class="combined-footer-value gains">${currentCombined.gains} €</span></div></div><a href="${TELEGRAM_LINK}" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> Parier sur Telegram !</a></div>`;
-
-        if (vc) vc.innerHTML = cardHtml;
-        if (hc) hc.innerHTML = cardHtml;
+        
+        containerActive.innerHTML = htmlActive || '<span style="color:var(--text-gray); font-size:12px;">Aucun combiné en cours</span>';
+        containerPast.innerHTML = htmlPast || '<span style="color:var(--text-gray); font-size:12px;">Aucun historique précédent</span>';
     }
 
-    // --- UTILITAIRES (Toast, Countdown) ---
+    function buildCC(c, sc, sl, pw, isHome) {
+        var mH = '';
+        var matchesToDisplay = c.matches ? c.matches : Array(c.nombre_matchs || 2).fill({ teams: 'Match en attente', time: '--:--', odds: 0 });
+        var isObscured = isHome && sc === 'en-cours';
+
+        matchesToDisplay.forEach(function (m) {
+            var displayScore = isObscured ? '?-?' : m.score;
+            var displayOdds = isObscured ? '***' : m.odds.toFixed(2);
+            var scoreHtml = isObscured ? '<span class="match-score blurred-value">' + displayScore + '</span>' : '<span class="match-score">' + displayScore + '</span>';
+            var oddsHtml = isObscured ? '<div class="match-odds blurred-value">' + displayOdds + '</div>' : '<div class="match-odds">' + displayOdds + '</div>';
+            
+            var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<i class="fas fa-shield-alt"></i> `;
+            
+            mH += '<div class="match-row"><div class="match-row-top"><div class="match-type"><i class="fas fa-futbol"></i> Score exact ' + scoreHtml + '</div>' + oddsHtml + '</div><div class="match-row-bottom"><div class="match-teams">' + logoDisplay + (m.teams || 'Équipes') + '</div><div class="match-time">' + (m.time || '') + '</div></div></div>';
+        });
+
+        var ic = '';
+        matchesToDisplay.forEach(function (m, i) { ic += '<div class="match-icon-circle ' + (i === matchesToDisplay.length - 1 ? 'highlight' : '') + '"><i class="fas fa-futbol" style="font-size:14px;color:' + (i === matchesToDisplay.length - 1 ? 'white' : 'var(--text-gray)') + '"></i></div>'; });
+
+        var pc = sc === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : sc === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
+
+        var displayGains = isObscured ? '***,** €' : fmtC(c.gains || 0);
+        var displayTotalOdds = isObscured ? '***.**' : (c.total_odds || c.totalOdds || 0).toFixed(2);
+        var displayMise = isObscured ? '***,** €' : fmtC(c.mise || 0);
+
+        let isLocked = false;
+        let timeMessage = '';
+
+        if (sc === 'en-cours' && c.date && c.time) {
+            const matchDateTime = new Date(`${c.date}T${c.time}:00`);
+            const lockoutDateTime = new Date(matchDateTime.getTime() - 15 * 60000); 
+            const now = new Date();
+
+            if (now >= lockoutDateTime) {
+                isLocked = true; 
+                timeMessage = `<div style="color: var(--red); font-size: 13px; font-weight: 800; margin: 12px 16px; text-align: center; background: rgba(255,61,61,0.1); padding: 10px; border-radius: 8px;"><i class="fas fa-lock"></i> Les paris sont fermés (Match imminent)</div>`;
+            } else {
+                const hrs = String(lockoutDateTime.getHours()).padStart(2, '0');
+                const mins = String(lockoutDateTime.getMinutes()).padStart(2, '0');
+                timeMessage = `<div style="color: #fff; font-size: 13px; font-weight: 800; margin: 12px 16px; text-align: center; background: linear-gradient(90deg, #00C853, #009624); padding: 10px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,200,83,0.3); animation: glowPass 2s infinite;"><i class="fas fa-stopwatch"></i> Disponible jusqu'à ${hrs}:${mins}</div>`;
+            }
+        }
+
+        var ctaBtn = '';
+        if (isHome) {
+            if (isLocked && sc === 'en-cours') {
+                ctaBtn = `<button class="combined-cta-btn" style="background: var(--bg-input); color: var(--text-gray); box-shadow: none; cursor: not-allowed;"><i class="fas fa-lock"></i> Trop tard, match commencé !</button>`;
+            } else if (sc === 'en-cours') {
+                ctaBtn = `<a href="${TELEGRAM_LINK}" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>`;
+            }
+        }
+
+        return '<div class="combined-card"><div class="combined-header"><div class="combined-status"><span class="status-badge ' + sc + '">' + sl[sc] + '</span><span class="combined-label">Combiné</span><div class="combined-count"><i class="fas fa-futbol"></i> ' + matchesToDisplay.length + '</div></div><i class="fas fa-ellipsis-h combined-more"></i></div><div class="combined-progress"><div class="combined-progress-fill" style="width:' + pw + ';' + pc + '"></div></div><div class="combined-matches-icons">' + ic + '<span style="font-size:12px;color:var(--text-gray);margin-left:4px;">' + matchesToDisplay.length + '</span></div><div class="combined-body">' + mH + '</div><div class="combined-footer"><div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span><span class="combined-footer-value '+(isObscured?'blurred-value':'')+'">' + displayTotalOdds + '</span></div><div class="combined-footer-row"><span class="combined-footer-label">Mise</span><span class="combined-footer-value">' + displayMise + '</span></div><div class="combined-footer-row"><span class="combined-footer-label">Gains potentiels</span><span class="combined-footer-value gains '+(isObscured?'blurred-value':'')+'">' + displayGains + '</span></div></div>' + ctaBtn + timeMessage + '</div>';
+    }
+
+    function fmtD(d) {
+        if (!d) return '';
+        var dt = new Date(d);
+        return String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getMonth() + 1).padStart(2, '0');
+    }
 
     function showToast(msg, err) {
+        err = err || false;
         var t = document.getElementById('toast');
         document.getElementById('toast-message').textContent = msg;
         t.querySelector('i').className = err ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
@@ -1148,29 +2133,65 @@
         setTimeout(function () { t.classList.remove('show'); }, 3000);
     }
 
+    function promptAdminCode() {
+        if (window.isAdmin === true) {
+            openAdmin();
+        } else {
+            showToast("Accès refusé. Vous n'êtes pas administrateur.", true);
+        }
+    }
+
+    // ===== COUNTDOWN TIMER =====
     function startCountdown() {
         var el = document.getElementById('countdown-timer');
         if (!el) return;
-        setInterval(function () {
+        
+        var end = new Date();
+        end.setHours(23, 59, 59, 999);
+        
+        function update() {
             var now = new Date();
-            var h = String(23 - now.getHours()).padStart(2, '0');
-            var m = String(59 - now.getMinutes()).padStart(2, '0');
-            var s = String(59 - now.getSeconds()).padStart(2, '0');
-            el.textContent = h + ':' + m + ':' + s;
-        }, 1000);
+            var diff = end - now;
+            
+            if (diff <= 0) {
+                end = new Date();
+                end.setDate(end.getDate() + 1);
+                end.setHours(23, 59, 59, 999);
+                diff = end - now;
+            }
+            
+            var h = Math.floor(diff / 3600000);
+            var m = Math.floor((diff % 3600000) / 60000);
+            var s = Math.floor((diff % 60000) / 1000);
+            el.textContent = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+        }
+        
+        update();
+        setInterval(update, 1000);
     }
 
+    // ===== ONLINE COUNT ANIMATION =====
     function animateOnlineCount() {
         var el = document.getElementById('online-count');
         if (!el) return;
+        
         setInterval(function () {
-            el.textContent = (110 + Math.floor(Math.random() * 40)) + ' en ligne';
+            var base = 115 + Math.floor(Math.random() * 35);
+            el.textContent = base + ' personnes en ligne';
         }, 8000);
     }
 
+    // ===== FAQ TOGGLE =====
+    function toggleFaq(el) {
+        el.classList.toggle('open');
+    }
+
+    // ===== CHECKOUT (À PERSONNALISER AVEC TON SYSTÈME DE PAIEMENT) =====
     function openCheckout(pack, price) {
-        showToast("Redirection paiement...");
-        setTimeout(() => { window.open(TELEGRAM_LINK, '_blank'); }, 1000);
+        showToast('Redirection vers le paiement...');
+        setTimeout(function() {
+            window.open(TELEGRAM_LINK, '_blank');
+        }, 1000);
     }
 
 </script>
