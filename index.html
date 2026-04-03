@@ -866,8 +866,7 @@
         setTimeout(function () { popup.style.display = 'none'; }, 300);
     }
 
-    // --- REQUÊTE API FOOTBALL-DATA.ORG ---
-   // --- REQUÊTE API FOOTBALL-DATA.ORG (Avec Proxy CORS avancé) ---
+   // --- REQUÊTE API-SPORTS.IO (NOUVEAU MOTEUR) ---
     async function fetchMatchesFromAPI() {
         var date = document.getElementById('admin-date').value;
         if (!date) {
@@ -875,61 +874,74 @@
             return;
         }
 
-        if (!FOOTBALL_DATA_API_KEY || FOOTBALL_DATA_API_KEY === 'TA_NOUVELLE_CLE_ICI') {
-            showToast('N\'oublie pas de mettre ta clé football-data.org !', true);
-            return;
-        }
+        // Ta nouvelle clé issue de api-sports.io
+        const API_KEY = '2620f835eb08886d508258550a5254a4';
 
         var btn = document.getElementById('btn-fetch-api');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Chargement...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche des matchs...';
 
         try {
-            // L'URL cible de l'API
-            var targetUrl = `https://api.football-data.org/v4/matches?dateFrom=${date}&dateTo=${date}`;
-            
-            // Utilisation d'un Proxy CORS (corsproxy.io) qui accepte de faire passer les Headers de sécurité
-            var proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(targetUrl);
-            
-            var response = await fetch(proxyUrl, {
+            // Requête vers l'API-Football (v3)
+            var response = await fetch(`https://v3.football.api-sports.io/fixtures?date=${date}`, {
                 method: 'GET',
                 headers: {
-                    'X-Auth-Token': FOOTBALL_DATA_API_KEY
+                    'x-apisports-key': API_KEY
                 }
             });
             
             if (!response.ok) {
-                if(response.status === 403) throw new Error("Clé API invalide ou non autorisée (403).");
-                if(response.status === 429) throw new Error("Tu as cliqué trop vite (Erreur 429).");
-                if(response.status === 404) throw new Error("Ressource introuvable.");
-                throw new Error(`Le proxy ou l'API bloque (HTTP ${response.status})`);
+                throw new Error(`Erreur réseau: HTTP ${response.status}`);
             }
 
             var data = await response.json();
 
-            // football-data range les matchs dans un tableau "matches"
-            if (data.matches && data.matches.length > 0) {
-                var matchesHtml = '<div style="background:#2A2A2A; padding:10px; border-radius:8px; margin-bottom:10px; max-height:200px; overflow-y:auto;">';
-                matchesHtml += '<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px;">Matchs trouvés (' + data.matches.length + ') :</div>';
+            if (data.errors && Object.keys(data.errors).length > 0) {
+                throw new Error(Object.values(data.errors)[0]); 
+            }
 
-                var limit = Math.min(data.matches.length, 30); 
+            // data.response contient tous les matchs
+            if (data.response && data.response.length > 0) {
+                
+                // On trie les matchs par heure de début
+                var sortedMatches = data.response.sort((a, b) => new Date(a.fixture.date) - new Date(b.fixture.date));
+
+                var matchesHtml = '<div style="background:#2A2A2A; padding:10px; border-radius:8px; margin-bottom:10px; max-height:250px; overflow-y:auto;">';
+                matchesHtml += `<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px; display:flex; justify-content:space-between;">
+                    <span>Matchs trouvés (${data.response.length})</span>
+                    <span style="color:var(--primary-yellow); cursor:pointer;" onclick="document.getElementById('api-matches-container').innerHTML=''">Fermer <i class="fas fa-times"></i></span>
+                </div>`;
+
+                // On affiche les 50 premiers matchs pour ne pas surcharger
+                var limit = Math.min(sortedMatches.length, 50); 
                 for(var i=0; i<limit; i++) {
-                    var match = data.matches[i];
+                    var match = sortedMatches[i];
                     
-                    var teamHome = match.homeTeam ? (match.homeTeam.shortName || match.homeTeam.name) : 'Dom.';
-                    var teamAway = match.awayTeam ? (match.awayTeam.shortName || match.awayTeam.name) : 'Ext.';
-                    var time = match.utcDate ? new Date(match.utcDate).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'}) : '00:00';
+                    var teamHome = match.teams.home.name || 'Dom.';
+                    var teamAway = match.teams.away.name || 'Ext.';
+                    var time = new Date(match.fixture.date).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+                    var leagueName = match.league.name || '';
+                    var flagUrl = match.league.flag || match.league.logo || '';
+                    
                     var safeMatchString = `${teamHome} - ${teamAway}`.replace(/'/g, "\\'");
 
-                    matchesHtml += `<button onclick="addMatchFromAPI('${safeMatchString}', '${time}')" style="display:block; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; font-size:13px; font-weight:600; cursor:pointer;">
-                        <span style="color:var(--primary-yellow); margin-right:8px;"><i class="fas fa-clock"></i> ${time}</span> ${safeMatchString}
+                    matchesHtml += `<button onclick="addMatchFromAPI('${safeMatchString}', '${time}')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer; transition:border-color 0.2s;">
+                        <div style="font-size:10px; color:var(--text-gray); margin-bottom:4px; display:flex; align-items:center; gap:6px;">
+                            ${flagUrl ? `<img src="${flagUrl}" style="width:14px; height:10px; object-fit:cover; border-radius:2px;">` : ''}
+                            ${leagueName}
+                        </div>
+                        <div style="font-size:13px; font-weight:600; display:flex; align-items:center;">
+                            <span style="color:var(--primary-yellow); margin-right:8px; width:45px;"><i class="fas fa-clock" style="font-size:11px;"></i> ${time}</span> 
+                            <span>${safeMatchString}</span>
+                        </div>
                     </button>`;
                 }
                 matchesHtml += '</div>';
 
                 document.getElementById('api-matches-container').innerHTML = matchesHtml;
-                showToast('Matchs majeurs chargés !');
+                showToast('Matchs chargés !');
             } else {
-                showToast('Aucun match majeur à cette date.', true);
+                showToast('Aucun match programmé à cette date.', true);
+                document.getElementById('api-matches-container').innerHTML = '';
             }
         } catch (error) {
             console.error("Détail de l'erreur :", error);
