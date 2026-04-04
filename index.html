@@ -571,6 +571,12 @@
         document.getElementById('pack-detail-2').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
         document.getElementById('pack-detail-3').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
     }
+    function closeSuccessPopup() {
+        var popup = document.getElementById('success-popup');
+        popup.style.opacity = '0';
+        popup.firstElementChild.style.transform = 'scale(0.9)';
+        setTimeout(function () { popup.style.display = 'none'; }, 300);
+    }
 </script>
 
 <!-- SPLASH -->
@@ -1898,25 +1904,26 @@
             const botToken = '8602776375:AAEuhWYNqb26IG8igWDTUI5iUaqSW0plj9I'; 
             const chatId = '905424902'; 
 
-            // Si tu as bien mis ton token, on envoie la notification
-            if (botToken !== '8602776375:AAEuhWYNqb26IG8igWDTUI5iUaqSW0plj9I') {
-                const textMessage = `🚨 *Nouvelle Demande VIP !*\n\n` +
-                                    `📦 *Pack* : ${packType}\n` +
-                                    `📱 *Réseau* : ${contactMethod}\n` +
-                                    `📞 *Contact* : \`${contactInfo}\`\n` +
-                                    `💬 *Message* : ${message || 'Aucun'}`;
+            // On utilise un fetch asynchrone qui ne bloque pas l'utilisateur
+            const textMessage = `🚨 *Nouvelle Demande VIP !*\n\n` +
+                                `📦 *Pack* : ${packType}\n` +
+                                `📱 *Réseau* : ${contactMethod}\n` +
+                                `📞 *Contact* : \`${contactInfo}\`\n` +
+                                `💬 *Message* : ${message || 'Aucun'}`;
 
-                // On utilise un fetch asynchrone qui ne bloque pas l'utilisateur
-                fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: chatId,
-                        text: textMessage,
-                        parse_mode: 'Markdown'
-                    })
-                }).catch(err => console.error("Erreur notif Telegram:", err));
-            }
+            fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: textMessage,
+                    parse_mode: 'Markdown'
+                })
+            }).then(response => {
+                if (!response.ok) {
+                    console.error("Erreur HTTP Telegram :", response.status);
+                }
+            }).catch(err => console.error("Erreur notif Telegram:", err));
 
             // 3. Succès : affichage de la popup pour le client
             closeSubscribePopup();
