@@ -226,13 +226,15 @@
         .combined-footer-value.gains{color:var(--green);font-size:18px}
         .watermark-img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80px;opacity:.07;pointer-events:none}
         .blurred-value {
-    /* Garde le texte légèrement visible pour conserver la forme des caractères */
-    color: rgba(255, 255, 255, 0.15) !important; 
-    /* Crée l'effet de flou par halo autour de la forme des lettres */
-    text-shadow: 0 0 6px rgba(255, 255, 255, 0.8) !important;
+    color: transparent !important; /* Rend le texte/étoiles invisibles */
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.95) !important; /* Crée un nuage blanc intense */
+    filter: blur(8px) !important; /* Double sécurité pour l'écran */
     user-select: none;
     pointer-events: none;
     display: inline-block;
+}
+        .blurred-value.gains {
+    text-shadow: 0 0 15px rgba(0, 200, 83, 0.95) !important;
 }
         .combined-cta-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:calc(100% - 32px);margin:0 16px 16px;padding:15px;background:linear-gradient(135deg,#0088cc,#006faa);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;text-decoration:none;text-align:center;box-shadow:0 6px 20px rgba(0,136,204,.35);transition:all .3s;position:relative;overflow:hidden}
         .combined-cta-btn i.tg-icon{font-size:20px}
@@ -2051,7 +2053,7 @@
         var displayOdds = isMatchObscured ? '**.**' : m.odds.toFixed(2);
         
         var blurClass = isMatchObscured ? 'blurred-value' : '';
-        // "crossorigin" est crucial pour que html2canvas voit les drapeaux
+        // "crossorigin" permet à la capture de voir le drapeau
         var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;" crossorigin="anonymous">` : `<i class="fas fa-shield-alt"></i> `;
         
         let cleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : "--:--";
@@ -2066,8 +2068,8 @@
                     <div class="match-odds ${blurClass}">${displayOdds}</div>
                 </div>
                 <div class="match-row-bottom">
-                    <div class="match-teams">${logoDisplay} ${m.teams || 'Équipes'}</div>
-                    <div class="match-time">${finalTimeDisplay}</div>
+                    <div class="match-teams" style="color:#fff;">${logoDisplay}${m.teams || 'Équipes'}</div>
+                    <div class="match-time" style="color:var(--text-gray);">${finalTimeDisplay}</div>
                 </div>
                </div>`;
     });
