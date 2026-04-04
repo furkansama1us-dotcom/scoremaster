@@ -571,6 +571,12 @@
         document.getElementById('pack-detail-2').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
         document.getElementById('pack-detail-3').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
     }
+    function closeSuccessPopup() {
+        var popup = document.getElementById('success-popup');
+        popup.style.opacity = '0';
+        popup.firstElementChild.style.transform = 'scale(0.9)';
+        setTimeout(function () { popup.style.display = 'none'; }, 300);
+    }
 </script>
 
 <!-- SPLASH -->
@@ -1878,7 +1884,7 @@
             return; 
         }
 
-        try {
+try {
             // Insertion des données dans Supabase
             const { data, error } = await supabaseClient
                 .from('subscription_requests')
@@ -1906,6 +1912,15 @@
             console.error("Erreur Supabase:", error);
         }
     }
+
+    // NOUVELLE FONCTION AJOUTÉE ICI :
+    function closeSuccessPopup() {
+        var popup = document.getElementById('success-popup');
+        popup.style.opacity = '0'; 
+        popup.firstElementChild.style.transform = 'scale(0.9)';
+        setTimeout(function () { popup.style.display = 'none'; }, 300);
+    }
+
 </script>
 
 </body>
