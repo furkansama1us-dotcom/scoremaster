@@ -12,11 +12,9 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0D0D0D">
     
-    <!-- Icônes pour l'écran d'accueil (iOS et Android) -->
     <link rel="apple-touch-icon" href="logo-dark.png">
     <link rel="icon" type="image/png" href="logo-dark.png">
     
-    <!-- Manifest encodé (Nom : Score Master + Icone) -->
     <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiU2NvcmUgTWFzdGVyIiwic2hvcnRfbmFtZSI6IlNjb3JlIE1hc3RlciIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3ciOiIjMEQwRDBEIiwidGhlbWVfY29sb3IiOiIjMEQwRDBEIiwib3JpZW50YXRpb24iOiJwb3J0cmFpdCIsImljb25zIjpbeyJzcmMiOiJsb2dvLWRhcmsucG5nIiwic2l6ZXMiOiIxOTJ4MTkyIDUxMng1MTIiLCJ0eXBlIjoiaW1hZ2UvcG5nIiwicHVycG9zZSI6ImFueSBtYXNrYWJsZSJ9XX0=">
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -27,7 +25,34 @@
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
         
         :root{--primary-yellow:#FFD700;--dark-yellow:#E6C200;--bg-dark:#0D0D0D;--bg-card:#1A1A1A;--bg-input:#2A2A2A;--text-white:#FFFFFF;--text-gray:#8A8A8A;--text-light-gray:#B0B0B0;--green:#00C853;--red:#FF3D3D;--blue:#4A90D9;--border-color:#333333;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
-        html,body{font-family:'Inter','Montserrat',sans-serif;background:var(--bg-dark);color:var(--text-white);overflow:hidden;height:100%;width:100%;position:fixed;top:0;left:0}
+        
+        html, body {
+            height: 100%; width: 100%; overflow: hidden; position: fixed; top: 0; left: 0; background: #000; font-family: 'Inter', 'Montserrat', sans-serif; color: var(--text-white);
+        }
+
+        #app { 
+            display: none; width: 100vw; height: 100svh; flex-direction: column; background: var(--bg-dark); position: relative;
+        }
+        #app.active { display: flex; }
+        
+        .pages-container { flex: 1; position: relative; width: 100%; height: 100%; overflow: hidden; }
+        
+        .page { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            overflow-y: auto; overflow-x: hidden; opacity: 0; visibility: hidden; 
+            transition: opacity .3s, transform .3s; transform: translateY(10px); 
+            padding-top: var(--safe-top); padding-bottom: 20px; 
+        }
+        .page.active { opacity: 1; visibility: visible; transform: translateY(0); }
+        
+        .bottom-nav { 
+            width: 100%; height: calc(65px + env(safe-area-inset-bottom, 0px)); 
+            background: #111; border-top: 1px solid var(--border-color); display: flex; align-items: flex-start; justify-content: space-between; 
+            padding-top: 8px; padding-bottom: env(safe-area-inset-bottom, 0px); flex-shrink: 0; z-index: 9999; 
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; padding: 6px 0; border-radius: 12px; transition: all .3s; flex: 1; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+        }
         
         #splash-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;z-index:10000;transition:opacity .6s,visibility .6s}
         #splash-screen.hidden{opacity:0;visibility:hidden}
@@ -65,12 +90,8 @@
         /* LE NOUVEAU CONTENEUR DU FORMULAIRE : NOIR & OR */
         .login-form-container {
             flex:1; width: 100%;
-            background: #111111; /* Gris extrêmement foncé pour le contraste */
-            border-top: 1px solid rgba(255, 215, 0, 0.2); /* Ligne dorée subtile en haut */
-            border-radius: 30px 30px 0 0;
-            padding: 35px 25px; padding-bottom: calc(30px + var(--safe-bottom));
-            box-shadow: 0 -10px 40px rgba(255, 215, 0, 0.05); /* Ombre dorée légère */
-            position: relative; z-index: 2; overflow: hidden;
+            background: #111111; border-top: 1px solid rgba(255, 215, 0, 0.2); border-radius: 30px 30px 0 0;
+            padding: 35px 25px; padding-bottom: calc(30px + var(--safe-bottom)); box-shadow: 0 -10px 40px rgba(255, 215, 0, 0.05); position: relative; z-index: 2; overflow: hidden;
         }
         
         .pattern-bg-form { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.04; pointer-events: none; z-index: 0; }
@@ -79,13 +100,7 @@
         .login-form-title { font-size:13px; color:#A0A0A0; margin-bottom:8px; font-weight:600; position: relative; z-index: 1; }
         
         .login-input {
-            width:100%; padding:16px 16px;
-            background: rgba(255, 255, 255, 0.05); 
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px; color: var(--text-white);
-            font-size: 15px; font-family: 'Inter', sans-serif;
-            margin-bottom: 20px; outline: none; transition: border-color 0.3s;
-            position: relative; z-index: 1;
+            width:100%; padding:16px 16px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; color: var(--text-white); font-size: 15px; font-family: 'Inter', sans-serif; margin-bottom: 20px; outline: none; transition: border-color 0.3s; position: relative; z-index: 1;
         }
         .login-input:focus { border-color: var(--primary-yellow); background: rgba(255, 215, 0, 0.05); }
         .login-input::placeholder { color: #666666; }
@@ -94,10 +109,7 @@
         #togglePassword:hover { color: var(--primary-yellow) !important; }
 
         .login-btn {
-            width:100%; padding:16px; background:var(--primary-yellow); color:#000;
-            border:none; border-radius:12px; font-size:16px; font-weight:800; font-family:'Montserrat',sans-serif;
-            cursor:pointer; margin-top:10px; transition:all .3s;
-            box-shadow: 0 4px 15px rgba(255,215,0,0.25); position: relative; z-index: 1;
+            width:100%; padding:16px; background:var(--primary-yellow); color:#000; border:none; border-radius:12px; font-size:16px; font-weight:800; font-family:'Montserrat',sans-serif; cursor:pointer; margin-top:10px; transition:all .3s; box-shadow: 0 4px 15px rgba(255,215,0,0.25); position: relative; z-index: 1;
         }
         .login-btn:active { transform:scale(.98); background:var(--dark-yellow); }
         
@@ -121,66 +133,7 @@
         .api-badge-login i { color: var(--primary-yellow); font-size:14px; }
         .api-badge-login span { font-size:11px; color:#A0A0A0; font-weight:600; text-transform: uppercase; letter-spacing: 0.5px;}
         .api-badge-login .api-status-dot { width:6px; height:6px; background:var(--green); border-radius:50%; animation:pulse 2s infinite; box-shadow: 0 0 5px var(--green); }
-
-        /* STRUCTURE APP - MÉTHODE FLEXBOX STRICTE (Infaillible sur iOS) */
-        /* Le body est bloqué, il ne peut pas défiler */
-        html, body {
-            height: 100%; 
-            width: 100%; 
-            overflow: hidden; 
-            position: fixed; 
-            top: 0; left: 0;
-            background: #000; /* Force le fond noir pour masquer les débordements iOS */
-        }
-
-        #app { 
-            display: none; 
-            width: 100vw; 
-            /* Utilisation de svh (small viewport height) qui gère parfaitement iOS */
-            height: 100svh; 
-            flex-direction: column; 
-            background: var(--bg-dark);
-            position: relative; /* App devient le référentiel */
-        }
-        #app.active { display: flex; }
         
-        /* Conteneur des pages qui prend tout l'espace RESTANT */
-        .pages-container { 
-            flex: 1; /* Prend toute la place au-dessus du menu */
-            position: relative; 
-            width: 100%;
-            height: 100%; /* S'assure de ne pas dépasser */
-            overflow: hidden; /* Empêche le conteneur lui-même de défiler */
-        }
-        
-        /* La page elle-même gère son propre défilement interne */
-        .page { 
-            position: absolute; top: 0; left: 0; 
-            width: 100%; height: 100%; 
-            overflow-y: auto; 
-            overflow-x: hidden; 
-            opacity: 0; visibility: hidden; 
-            transition: opacity .3s, transform .3s; 
-            transform: translateY(10px); 
-            /* SUPPRESSION de -webkit-overflow-scrolling pour éviter le gel des clics iOS */
-            padding-top: var(--safe-top); 
-            padding-bottom: 20px; 
-        }
-        .page.active { opacity: 1; visibility: visible; transform: translateY(0); }
-        
-        /* Le menu n'est plus en absolute, il est simplement le dernier bloc du flexbox #app */
-        .bottom-nav { 
-            width: 100%;
-            height: calc(65px + env(safe-area-inset-bottom, 0px)); 
-            background: #111; 
-            border-top: 1px solid var(--border-color); 
-            display: flex; align-items: flex-start; justify-content: space-around; 
-            padding-top: 8px; 
-            padding-bottom: env(safe-area-inset-bottom, 0px);
-            flex-shrink: 0; /* Empêche le menu d'être écrasé */
-            z-index: 1000; 
-        }
-        .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:6px 12px;border-radius:12px;transition:all .3s}
         .nav-item i{font-size:20px;color:var(--text-gray);transition:color .3s}
         .nav-item span{font-size:10px;color:var(--text-gray);font-weight:500;text-align:center;line-height:1.2;transition:color .3s}
         .nav-item.active i{color:var(--primary-yellow)}
@@ -362,7 +315,7 @@
         .admin-row .admin-field{flex:1}
         .admin-select{width:100%;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;color:var(--text-white);font-size:14px;font-family:'Inter',sans-serif;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238A8A8A'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:24px}
         .admin-select:focus{border-color:var(--primary-yellow)}
-        .match-entry{background:var(--bg-card);border-radius:14px;padding:16px;border:1px solid var(--border-color);margin-bottom:12px}
+        .match-entry{background:var(--bg-card);border-radius:14px;padding:16px;border:1px solid var(--border-color);margin-bottom:12px; transition:all 0.3s;}
         .match-entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
         .match-entry-number{font-size:13px;font-weight:700;color:var(--primary-yellow);display:flex;align-items:center;gap:6px}
         .match-entry-number i{font-size:14px}
@@ -386,18 +339,13 @@
         .admin-stat-card.green i{color:var(--green)}
         .admin-stat-card.blue i{color:var(--blue)}
         .admin-stat-card.red i{color:var(--red)}
-
-        /* NOTIFICATION TOAST CORRIGÉE (Hors de l'écran par défaut) */
+        
         .toast{position:fixed;top:-150px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:700;z-index:99999;transition:top .4s;display:flex;align-items:center;gap:8px;box-shadow:0 10px 30px rgba(0,200,83,.3);max-width:calc(100% - 40px)}
         .toast.show{top:calc(20px + var(--safe-top))}
         .toast.error{background:var(--red);color:#fff;box-shadow:0 10px 30px rgba(255,61,61,.3)}
         .toast i{font-size:18px}
         ::-webkit-scrollbar{width:0}
         
-        /* Sécurité pour que le formulaire prenne bien toute la largeur sur mobile */
-        .login-form-container { width: 100%; }
-        
-        /* Correction de l'affichage pour les tablettes/PC (Centrage parfait) */
         @media(min-width:768px){
             body { display:flex; align-items:center; justify-content:center; background:#000; }
             #splash-screen, #login-screen, #app, #admin-page {
@@ -419,7 +367,6 @@
         .admin-history-item span { font-size:13px; color:#fff; }
         .admin-history-item button { background:var(--primary-yellow); color:#000; border:none; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer; }
         
-        /* STYLE DES ONGLETS ADMIN */
         .admin-tabs { display: flex; gap: 10px; padding: 0 20px; margin-bottom: 20px; }
         .admin-tab-btn { flex: 1; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-gray); border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .admin-tab-btn.active { background: rgba(255, 215, 0, 0.15); border-color: var(--primary-yellow); color: var(--primary-yellow); }
@@ -428,393 +375,81 @@
         .btn-create-new { width: 100%; padding: 14px; margin-top: 10px; background: rgba(0, 200, 83, 0.15); border: 1px dashed var(--green); color: var(--green); border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px; transition: all 0.2s;}
         .btn-create-new:active { transform: scale(0.98); }
 
-        /* ===== PACKS AMÉLIORÉS ===== */
         .pack-animated { animation: fadeInUp 0.6s ease forwards; opacity: 0; }
 
-        .urgency-bar {
-            margin: 0 20px 15px;
-            background: linear-gradient(135deg, #B71C1C, #D32F2F);
-            border-radius: 12px;
-            overflow: hidden;
-            position: relative;
-        }
-        .urgency-inner {
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 13px;
-            font-weight: 700;
-            color: #fff;
-            animation: urgencySlide 20s linear infinite;
-        }
-        @keyframes urgencySlide {
-            0%, 100% { transform: translateX(0); }
-            50% { transform: translateX(-3px); }
-        }
+        .urgency-bar { margin: 0 20px 15px; background: linear-gradient(135deg, #B71C1C, #D32F2F); border-radius: 12px; overflow: hidden; position: relative; }
+        .urgency-inner { padding: 12px 16px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 700; color: #fff; animation: urgencySlide 20s linear infinite; }
+        @keyframes urgencySlide { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-3px); } }
 
-        .pack-popular {
-            border-color: rgba(255, 215, 0, 0.4) !important;
-            background: linear-gradient(145deg, rgba(255, 215, 0, 0.08) 0%, var(--bg-card) 100%) !important;
-            position: relative;
-            overflow: visible;
-        }
-
-        .popular-ribbon {
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, #FFD700, #E6C200);
-            color: #000;
-            padding: 6px 20px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 900;
-            letter-spacing: 0.5px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
-            white-space: nowrap;
-            z-index: 10;
-        }
-
-        .pack-subscribers {
-            font-size: 11px;
-            color: var(--text-gray);
-            margin-top: 2px;
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
+        .pack-popular { border-color: rgba(255, 215, 0, 0.4) !important; background: linear-gradient(145deg, rgba(255, 215, 0, 0.08) 0%, var(--bg-card) 100%) !important; position: relative; overflow: visible; }
+        .popular-ribbon { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #FFD700, #E6C200); color: #000; padding: 6px 20px; border-radius: 20px; font-size: 11px; font-weight: 900; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); white-space: nowrap; z-index: 10; }
+        .pack-subscribers { font-size: 11px; color: var(--text-gray); margin-top: 2px; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
         .pack-subscribers i { font-size: 10px; color: var(--green); }
 
-        .spots-container {
-            margin: 12px 0;
-            padding: 12px;
-            background: var(--bg-input);
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-        }
-        .spots-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
+        .spots-container { margin: 12px 0; padding: 12px; background: var(--bg-input); border-radius: 10px; border: 1px solid var(--border-color); }
+        .spots-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .spots-text { font-size: 12px; color: var(--text-light-gray); }
         .spots-text strong { color: #FF9800; }
         .spots-percent { font-size: 11px; color: #FF9800; font-weight: 700; }
-        .spots-bar {
-            height: 6px;
-            background: var(--border-color);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-        .spots-fill {
-            height: 100%;
-            border-radius: 3px;
-            transition: width 1s ease;
-            animation: spotsPulse 2s ease infinite;
-        }
-        @keyframes spotsPulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
+        .spots-bar { height: 6px; background: var(--border-color); border-radius: 3px; overflow: hidden; }
+        .spots-fill { height: 100%; border-radius: 3px; transition: width 1s ease; animation: spotsPulse 2s ease infinite; }
+        @keyframes spotsPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 
-        .guarantee-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 14px;
-            background: rgba(0, 200, 83, 0.05);
-            border: 1px solid rgba(0, 200, 83, 0.2);
-            border-radius: 10px;
-            margin-bottom: 14px;
-            font-size: 12px;
-            color: var(--green);
-            font-weight: 600;
-        }
+        .guarantee-badge { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: rgba(0, 200, 83, 0.05); border: 1px solid rgba(0, 200, 83, 0.2); border-radius: 10px; margin-bottom: 14px; font-size: 12px; color: var(--green); font-weight: 600; }
         .guarantee-badge i { font-size: 16px; }
 
-        .economy-badge {
-            display: inline-block;
-            background: rgba(0, 200, 83, 0.15);
-            color: var(--green);
-            font-size: 11px;
-            font-weight: 800;
-            padding: 3px 10px;
-            border-radius: 6px;
-            margin-left: 4px;
-        }
+        .economy-badge { display: inline-block; background: rgba(0, 200, 83, 0.15); color: var(--green); font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 6px; margin-left: 4px; }
 
-        .pack-btn-pulse {
-            animation: btnPulse 2s ease infinite;
-            position: relative;
-            overflow: hidden;
-        }
-        .pack-btn-pulse::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%);
-            animation: btnShine 3s ease infinite;
-        }
-        @keyframes btnPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-        }
-        @keyframes btnShine {
-            0% { transform: translateX(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) rotate(45deg); }
-        }
+        .pack-btn-pulse { animation: btnPulse 2s ease infinite; position: relative; overflow: hidden; }
+        .pack-btn-pulse::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%); animation: btnShine 3s ease infinite; }
+        @keyframes btnPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+        @keyframes btnShine { 0% { transform: translateX(-100%) rotate(45deg); } 100% { transform: translateX(100%) rotate(45deg); } }
 
-        .payment-methods {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 0 0;
-            margin-top: 10px;
-            border-top: 1px solid var(--border-color);
-        }
-        .payment-icons {
-            display: flex;
-            gap: 10px;
-            font-size: 20px;
-            color: var(--text-gray);
-        }
+        .payment-methods { display: flex; align-items: center; justify-content: space-between; padding: 10px 0 0; margin-top: 10px; border-top: 1px solid var(--border-color); }
+        .payment-icons { display: flex; gap: 10px; font-size: 20px; color: var(--text-gray); }
 
-        .testimonial-inline {
-            background: var(--bg-input);
-            border-radius: 10px;
-            padding: 14px;
-            margin-bottom: 14px;
-            border: 1px solid var(--border-color);
-            border-left: 3px solid #FFD700;
-        }
+        .testimonial-inline { background: var(--bg-input); border-radius: 10px; padding: 14px; margin-bottom: 14px; border: 1px solid var(--border-color); border-left: 3px solid #FFD700; }
         .testimonial-inline .testimonial-stars { color: #FFD700; font-size: 14px; margin-bottom: 6px; }
         .testimonial-inline p { font-size: 13px; color: var(--text-light-gray); font-style: italic; line-height: 1.5; margin-bottom: 6px; }
         .testimonial-inline .testimonial-author { font-size: 11px; color: var(--text-gray); }
 
-        /* COMPARISON TABLE */
-        .comparison-table {
-            background: var(--bg-card);
-            border-radius: 14px;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-        }
-        .comp-row {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            border-bottom: 1px solid var(--border-color);
-        }
+        .comparison-table { background: var(--bg-card); border-radius: 14px; overflow: hidden; border: 1px solid var(--border-color); }
+        .comp-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; border-bottom: 1px solid var(--border-color); }
         .comp-row:last-child { border-bottom: none; }
-        .comp-row.comp-header {
-            background: var(--bg-input);
-            font-weight: 700;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .comp-cell {
-            padding: 12px 10px;
-            font-size: 12px;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-light-gray);
-        }
-        .comp-cell:first-child {
-            text-align: left;
-            justify-content: flex-start;
-            color: var(--text-white);
-            font-weight: 500;
-        }
+        .comp-row.comp-header { background: var(--bg-input); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .comp-cell { padding: 12px 10px; font-size: 12px; text-align: center; display: flex; align-items: center; justify-content: center; color: var(--text-light-gray); }
+        .comp-cell:first-child { text-align: left; justify-content: flex-start; color: var(--text-white); font-weight: 500; }
 
-        /* TESTIMONIALS */
-        .testimonials-scroll {
-            display: flex;
-            gap: 14px;
-            overflow-x: auto;
-            padding-bottom: 10px;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-        }
+        .testimonials-scroll { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
         .testimonials-scroll::-webkit-scrollbar { display: none; }
-        .testimonial-card {
-            min-width: 280px;
-            max-width: 300px;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 18px;
-            scroll-snap-align: start;
-            flex-shrink: 0;
-        }
+        .testimonial-card { min-width: 280px; max-width: 300px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 18px; scroll-snap-align: start; flex-shrink: 0; }
         .testimonial-card .testimonial-stars { color: #FFD700; font-size: 14px; margin-bottom: 10px; }
         .testimonial-card .testimonial-text { font-size: 13px; color: var(--text-light-gray); line-height: 1.5; font-style: italic; margin-bottom: 14px; }
-        .testimonial-footer {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .testimonial-avatar {
-            width: 34px;
-            height: 34px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-weight: 800;
-            font-size: 14px;
-            flex-shrink: 0;
-        }
+        .testimonial-footer { display: flex; align-items: center; gap: 10px; }
+        .testimonial-avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 14px; flex-shrink: 0; }
         .testimonial-name { font-size: 13px; font-weight: 700; color: var(--text-white); display: block; }
         .testimonial-pack { font-size: 11px; color: var(--text-gray); }
-        .testimonial-verified {
-            margin-left: auto;
-            font-size: 10px;
-            color: var(--green);
-            font-weight: 600;
-            white-space: nowrap;
-        }
+        .testimonial-verified { margin-left: auto; font-size: 10px; color: var(--green); font-weight: 600; white-space: nowrap; }
 
-        /* FAQ */
-        .faq-item {
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            margin-bottom: 10px;
-            overflow: hidden;
-            transition: all 0.3s;
-        }
-        .faq-question {
-            padding: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-white);
-        }
-        .faq-icon {
-            color: var(--text-gray);
-            font-size: 12px;
-            transition: transform 0.3s;
-        }
+        .faq-item { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 10px; overflow: hidden; transition: all 0.3s; }
+        .faq-question { padding: 16px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 14px; font-weight: 600; color: var(--text-white); }
+        .faq-icon { color: var(--text-gray); font-size: 12px; transition: transform 0.3s; }
         .faq-item.open .faq-icon { transform: rotate(180deg); }
-        .faq-answer {
-            max-height: 0;
-            overflow: hidden;
-            padding: 0 16px;
-            font-size: 13px;
-            color: var(--text-gray);
-            line-height: 1.6;
-            transition: all 0.4s ease;
-        }
-        .faq-item.open .faq-answer {
-            max-height: 200px;
-            padding: 0 16px 16px;
-        }
+        .faq-answer { max-height: 0; overflow: hidden; padding: 0 16px; font-size: 13px; color: var(--text-gray); line-height: 1.6; transition: all 0.4s ease; }
+        .faq-item.open .faq-answer { max-height: 200px; padding: 0 16px 16px; }
 
-        /* FINAL CTA */
-        .final-cta {
-            background: linear-gradient(145deg, #1E1E2E, #252540);
-            border: 1px solid rgba(255, 215, 0, 0.2);
-            border-radius: 20px;
-            padding: 30px 24px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        .final-cta-glow {
-            position: absolute;
-            top: -50px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 200px;
-            height: 200px;
-            background: radial-gradient(circle, rgba(255, 215, 0, 0.15) 0%, transparent 70%);
-            pointer-events: none;
-        }
-        .final-cta-btn {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #FFD700, #E6C200);
-            color: #000;
-            border: none;
-            border-radius: 14px;
-            font-size: 15px;
-            font-weight: 800;
-            cursor: pointer;
-            font-family: 'Montserrat', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-shadow: 0 6px 25px rgba(255, 215, 0, 0.3);
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
+        .final-cta { background: linear-gradient(145deg, #1E1E2E, #252540); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 20px; padding: 30px 24px; text-align: center; position: relative; overflow: hidden; }
+        .final-cta-glow { position: absolute; top: -50px; left: 50%; transform: translateX(-50%); width: 200px; height: 200px; background: radial-gradient(circle, rgba(255, 215, 0, 0.15) 0%, transparent 70%); pointer-events: none; }
+        .final-cta-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #FFD700, #E6C200); color: #000; border: none; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 25px rgba(255, 215, 0, 0.3); transition: all 0.3s; position: relative; overflow: hidden; }
         .final-cta-btn:active { transform: scale(0.98); }
-        .final-cta-btn::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%);
-            animation: btnShine 3s ease infinite;
-        }
+        .final-cta-btn::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%); animation: btnShine 3s ease infinite; }
 
-        /* Styles pour les boutons radio de contact dans le popup */
-        .contact-pref-container {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-        
-        .contact-pref-label {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 10px;
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            color: var(--text-gray);
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .contact-pref-label input[type="radio"] {
-            display: none;
-        }
-        
-        .contact-pref-label.selected {
-            background: rgba(255, 215, 0, 0.1);
-            border-color: var(--primary-yellow);
-            color: var(--primary-yellow);
-        }
-        
-        .contact-pref-label i {
-            font-size: 16px;
-        }
+        .contact-pref-container { display: flex; gap: 10px; margin-bottom: 12px; }
+        .contact-pref-label { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; color: var(--text-gray); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .contact-pref-label input[type="radio"] { display: none; }
+        .contact-pref-label.selected { background: rgba(255, 215, 0, 0.1); border-color: var(--primary-yellow); color: var(--primary-yellow); }
+        .contact-pref-label i { font-size: 16px; }
+
         /* STYLES DYNAMIQUES POUR L'ÉDITEUR (VERT/ROUGE) */
         .match-entry.status-termine { border-color: rgba(0, 200, 83, 0.5); background: linear-gradient(145deg, rgba(0,200,83,0.05) 0%, var(--bg-card) 100%); }
         .match-entry.status-perdu { border-color: rgba(255, 61, 61, 0.5); background: linear-gradient(145deg, rgba(255,61,61,0.05) 0%, var(--bg-card) 100%); }
@@ -842,7 +477,6 @@
     function setLogos() {
         document.getElementById('img-splash').src = LOGO_SPLASH;
         
-        // On utilise LOGO_DARK partout (c'est le logo qui contient le noir/or pour s'afficher sur fond clair/sombre)
         document.getElementById('img-login').src = LOGO_DARK;
         document.getElementById('img-admin').src = LOGO_DARK;
         document.getElementById('avatar-home').innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
@@ -863,10 +497,8 @@
     </div>
 </div>
 
-<!-- LOGIN GOLD & NOIR - TOTAL DARK PREMIUM -->
+<!-- LOGIN GOLD & NOIR -->
 <div id="login-screen">
-    
-    <!-- FOND HAUT : HEXAGONES OR & NOIR -->
     <div class="hex-grid-login">
         <svg viewBox="0 0 800 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -885,7 +517,6 @@
     </div>
     
     <div class="login-form-container">
-        <!-- FOND BAS : NOUVEAU MOTIF GEOMETRIQUE OR & NOIR -->
         <div class="pattern-bg-form">
             <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
                 <defs>
@@ -897,7 +528,6 @@
             </svg>
         </div>
 
-        <!-- CHAMPS DU FORMULAIRE -->
         <div class="login-form-title">Email</div>
         <input type="email" class="login-input" id="login-email" placeholder="Votre email">
 
@@ -1009,7 +639,6 @@
                 </div>
                 <i class="fas fa-chevron-right help-card-arrow"></i>
             </div>
-            <div style="height:20px;"></div>
         </div>
 
         <!-- PACKS PAGE AMÉLIORÉE -->
@@ -1022,7 +651,6 @@
                 </div>
             </div>
 
-            <!-- BARRE D'URGENCE -->
             <div class="urgency-bar">
                 <div class="urgency-inner">
                     <i class="fas fa-fire"></i>
@@ -1033,7 +661,6 @@
 
             <div class="packs-page-list">
 
-                <!-- ===== PACK 1 : JOURNALIER ===== -->
                 <div class="pack-detail-card pack-animated" style="animation-delay: 0.1s;">
                     <div class="pack-detail-top">
                         <div class="logo-pack-detail green" id="pack-detail-1"></div>
@@ -1059,7 +686,6 @@
                         <div class="pack-feature"><i class="fas fa-check"></i> Notification push</div>
                     </div>
 
-                    <!-- BARRE DE PROGRESSION DES PLACES -->
                     <div class="spots-container">
                         <div class="spots-header">
                             <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:#FF9800;"></i> Plus que <strong id="spots-1">7</strong> places à ce prix !</span>
@@ -1070,7 +696,6 @@
                         </div>
                     </div>
 
-                    <!-- GARANTIE -->
                     <div class="guarantee-badge">
                         <i class="fas fa-shield-alt"></i>
                         <span>Satisfait ou remboursé sous 48h</span>
@@ -1088,7 +713,6 @@
                         </button>
                     </div>
 
-                    <!-- MÉTHODES DE PAIEMENT -->
                     <div class="payment-methods">
                         <span style="font-size:11px; color:var(--text-gray);">Paiement sécurisé</span>
                         <div class="payment-icons">
@@ -1101,9 +725,7 @@
                     </div>
                 </div>
 
-                <!-- ===== PACK 2 : VIP+ (POPULAIRE) ===== -->
                 <div class="pack-detail-card pack-popular pack-animated" style="animation-delay: 0.2s;">
-                    <!-- BADGE POPULAIRE -->
                     <div class="popular-ribbon">
                         <i class="fas fa-crown"></i> LE PLUS POPULAIRE
                     </div>
@@ -1134,7 +756,6 @@
                         <div class="pack-feature" style="background:rgba(255,215,0,0.15); color:#FFD700; font-weight:700;"><i class="fas fa-star" style="color:#FFD700;"></i> Accès fondateurs</div>
                     </div>
 
-                    <!-- BARRE DE PROGRESSION DES PLACES -->
                     <div class="spots-container">
                         <div class="spots-header">
                             <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:var(--red);"></i> Plus que <strong id="spots-2" style="color:var(--red);">3</strong> places à ce prix !</span>
@@ -1145,14 +766,12 @@
                         </div>
                     </div>
 
-                    <!-- TÉMOIGNAGE INTÉGRÉ -->
                     <div class="testimonial-inline">
                         <div class="testimonial-stars">★★★★★</div>
                         <p>"J'ai récupéré ma mise x47 dès la première semaine. Le VIP+ est incroyable !"</p>
                         <span class="testimonial-author">— Kévin M. <span style="color:var(--green);">✓ Achat vérifié</span></span>
                     </div>
 
-                    <!-- GARANTIE -->
                     <div class="guarantee-badge" style="border-color:rgba(255,215,0,0.3); background:rgba(255,215,0,0.05);">
                         <i class="fas fa-shield-alt" style="color:#FFD700;"></i>
                         <span style="color:#FFD700;">Garantie satisfait ou remboursé 7 jours</span>
@@ -1170,7 +789,6 @@
                         </button>
                     </div>
 
-                    <!-- MÉTHODES DE PAIEMENT -->
                     <div class="payment-methods">
                         <span style="font-size:11px; color:var(--text-gray);">Paiement sécurisé 🔒</span>
                         <div class="payment-icons">
@@ -1184,7 +802,6 @@
                     </div>
                 </div>
 
-                <!-- ===== PACK 3 : HEBDO ===== -->
                 <div class="pack-detail-card pack-animated" style="animation-delay: 0.3s;">
                     <div class="pack-detail-top">
                         <div class="logo-pack-detail blue" id="pack-detail-3"></div>
@@ -1393,8 +1010,6 @@
                     <span style="font-size:11px; color:var(--text-gray); margin-top:10px; display:block;">🔒 Paiement sécurisé • Satisfait ou remboursé</span>
                 </div>
             </div>
-
-            <div style="height:30px;"></div>
         </div>
 
         <!-- CONTACT -->
@@ -1525,7 +1140,8 @@
                         <input type="date" class="admin-input" id="admin-date">
                     </div>
                     <div class="admin-field">
-                        <div class="admin-label"><i class="fas fa-flag"></i> Statut</div>
+                        <div class="admin-label"><i class="fas fa-flag"></i> Statut global</div>
+                        <!-- Modifié pour appliquer le changement à tous les matchs d'un coup -->
                         <select class="admin-select" id="admin-status">
                             <option value="en-cours">En cours (Bleu)</option>
                             <option value="termine">Gagné ✅ (Vert)</option>
@@ -1550,7 +1166,6 @@
             <div class="admin-section-title"><i class="fas fa-coins"></i> Mise & Gain</div>
             <div class="admin-card" style="margin-bottom:10px;">
                 <div class="admin-field" style="margin-bottom:0;">
-                    <!-- Remplacement par un inputmode decimal pour contrer le bug de la virgule sur certains navigateurs -->
                     <input type="text" inputmode="decimal" class="admin-input" id="admin-mise" placeholder="Mise en € (ex: 100)" oninput="calculateGains()">
                 </div>
             </div>
@@ -1621,7 +1236,6 @@
         
         <input type="hidden" id="subscribe-pack-type">
         
-        <!-- Sélection du mode de contact -->
         <div class="admin-field" style="margin-bottom:16px;">
             <div class="admin-label" style="color:var(--text-gray); margin-bottom:8px; font-family:'Inter',sans-serif;"><i class="fas fa-headset" style="color:var(--primary-yellow)"></i> Mode de contact souhaité</div>
             <div class="contact-pref-container">
@@ -2068,11 +1682,14 @@
         document.getElementById('admin-matches').innerHTML = '';
         document.getElementById('api-matches-container').innerHTML = '';
         matchEntryCount = 0;
-        if(c.matches) c.matches.forEach(function(m) { addMatchEntry(m); });
+        if(c.matches) {
+            c.matches.forEach(function(m) { addMatchEntry(m); });
+        }
         calculateGains();
         document.getElementById('btn-publish-text').innerHTML = '<i class="fas fa-save"></i> Mettre à jour';
         document.getElementById('editor-title').innerHTML = '<i class="fas fa-edit"></i> Modification en cours...';
         
+        updateMatchVisuals(); // Mettre à jour le design tout de suite
         switchAdminTab('editor');
     }
 
@@ -2085,17 +1702,26 @@
     
     function closeAdmin() { document.getElementById('admin-page').classList.remove('active'); }
 
-function updateMatchVisuals() {
-        var status = document.getElementById('admin-status').value;
+    // On écoute le menu de Statut Global pour tout mettre à jour d'un coup si on le souhaite
+    document.getElementById('admin-status').addEventListener('change', function(e) {
+        var globalStatus = e.target.value;
+        var selects = document.querySelectorAll('.match-status-select');
+        selects.forEach(function(sel) {
+            sel.value = globalStatus;
+        });
+        updateMatchVisuals();
+    });
+
+    // Fonction d'animation visuelle des matchs
+    function updateMatchVisuals() {
         var entries = document.querySelectorAll('.match-entry');
-        
         entries.forEach(function(entry) {
-            // Retire les anciennes classes
+            var select = entry.querySelector('.match-status-select');
+            var status = select ? select.value : 'en-cours';
+            
             entry.classList.remove('status-termine', 'status-perdu', 'status-en-cours');
-            // Ajoute la classe correspondante au statut actuel
             entry.classList.add('status-' + status);
             
-            // Gère le badge à côté du "Match X"
             var badge = entry.querySelector('.match-status-badge');
             if (badge) {
                 badge.className = 'match-status-badge ' + status;
@@ -2106,9 +1732,6 @@ function updateMatchVisuals() {
         });
     }
 
-    // On écoute les changements sur le menu déroulant du statut pour mettre à jour en temps réel
-    document.getElementById('admin-status').addEventListener('change', updateMatchVisuals);
-
     function addMatchEntry(data) {
         data = data || null;
         matchEntryCount++;
@@ -2116,8 +1739,20 @@ function updateMatchVisuals() {
         var e = document.createElement('div');
         e.className = 'match-entry';
         
-        // Ajout du conteneur pour le petit badge visuel (match-status-badge)
-        e.innerHTML = '<div class="match-entry-header"><span class="match-entry-number"><i class="fas fa-futbol"></i> Match ' + matchEntryCount + '<span class="match-status-badge"></span></span><button type="button" class="match-entry-remove" onclick="removeMatchEntry(this)"><i class="fas fa-trash"></i></button></div>'
+        // On vérifie s'il y a un statut individuel enregistré, sinon c'est en-cours
+        var matchStatus = data && data.match_status ? data.match_status : 'en-cours';
+
+        e.innerHTML = '<div class="match-entry-header">' + 
+            '<span class="match-entry-number"><i class="fas fa-futbol"></i> Match ' + matchEntryCount + '<span class="match-status-badge"></span></span>' +
+            '<div style="display:flex; gap:8px;">' +
+                '<select class="admin-select match-status-select" style="padding:4px 8px; width:auto; font-size:11px; height:28px; background-position:right 4px center;" onchange="updateMatchVisuals()">' +
+                    '<option value="en-cours" '+(matchStatus==='en-cours'?'selected':'')+'>En cours</option>' +
+                    '<option value="termine" '+(matchStatus==='termine'?'selected':'')+'>Gagné</option>' +
+                    '<option value="perdu" '+(matchStatus==='perdu'?'selected':'')+'>Perdu</option>' +
+                '</select>' +
+                '<button type="button" class="match-entry-remove" onclick="removeMatchEntry(this)"><i class="fas fa-trash"></i></button>' +
+            '</div>' +
+            '</div>'
             + '<input type="hidden" class="match-logo-input" value="' + (data && data.logo ? data.logo : '') + '">'
             + '<div class="admin-field"><div class="admin-label"><i class="fas fa-users"></i> Équipes</div><input type="text" class="admin-input match-teams-input" placeholder="Équipe A - Équipe B" value="' + (data ? data.teams : '') + '" oninput="calculateGains()"></div>'
             + '<div class="admin-row"><div class="admin-field"><div class="admin-label"><i class="fas fa-bullseye"></i> Score exact</div><input type="text" class="admin-input match-score-input" placeholder="2 - 1" value="' + (data ? data.score : '') + '" oninput="calculateGains()"></div>'
@@ -2126,7 +1761,7 @@ function updateMatchVisuals() {
         
         c.appendChild(e);
         calculateGains();
-        updateMatchVisuals(); // On met à jour le design dès qu'un match est ajouté
+        updateMatchVisuals();
     }
 
     function removeMatchEntry(btn) {
@@ -2138,10 +1773,14 @@ function updateMatchVisuals() {
     function renumberMatches() {
         var entries = document.querySelectorAll('.match-entry');
         matchEntryCount = entries.length;
-        entries.forEach(function (e, i) { e.querySelector('.match-entry-number').innerHTML = '<i class="fas fa-futbol"></i> Match ' + (i + 1); });
+        entries.forEach(function (e, i) { 
+            var numberSpan = e.querySelector('.match-entry-number');
+            var badgeHTML = e.querySelector('.match-status-badge').outerHTML;
+            numberSpan.innerHTML = '<i class="fas fa-futbol"></i> Match ' + (i + 1) + badgeHTML;
+        });
     }
 
-function calculateGains() {
+    function calculateGains() {
         var entries = document.querySelectorAll('.match-entry');
         var miseVal = document.getElementById('admin-mise').value.replace(',', '.');
         var mise = parseFloat(miseVal) || 0;
@@ -2155,7 +1794,6 @@ function calculateGains() {
         
         if (cnt === 0) tot = 0;
         
-        // On vérifie que les éléments existent avant de modifier le texte pour éviter les plantages
         var sumOdds = document.getElementById('summary-odds');
         if (sumOdds) sumOdds.textContent = tot.toFixed(2);
         
@@ -2177,7 +1815,6 @@ function calculateGains() {
 
         var matches = [], publicMatches = [], valid = true;
         var earliestTime = '23:59'; 
-        var isFinished = (status === 'termine' || status === 'perdu');
         
         entries.forEach(function (e) {
             var t = e.querySelector('.match-teams-input').value.trim();
@@ -2187,10 +1824,16 @@ function calculateGains() {
             var ti = e.querySelector('.match-time-input').value.trim();
             var l = e.querySelector('.match-logo-input').value; 
             
+            var mStatus = e.querySelector('.match-status-select').value;
+            
             if (!t || !s || o <= 0) valid = false;
             
-            matches.push({ teams: t, score: s, odds: o, time: ti, logo: l });
-            publicMatches.push({ teams: t, time: ti, score: isFinished ? s : '?-?', odds: isFinished ? o : 0, logo: l });
+            // On sauvegarde le statut du match
+            matches.push({ teams: t, score: s, odds: o, time: ti, logo: l, match_status: mStatus });
+            
+            // Un match révèle son score seulement s'il est individuellement Gagné/Perdu
+            var isMatchFinished = (mStatus === 'termine' || mStatus === 'perdu');
+            publicMatches.push({ teams: t, time: ti, score: isMatchFinished ? s : '?-?', odds: isMatchFinished ? o : 0, logo: l, match_status: mStatus });
             
             var extracted = ti.match(/\d{2}:\d{2}/);
             if (extracted && extracted[0] < earliestTime) { earliestTime = extracted[0]; }
@@ -2216,12 +1859,6 @@ function calculateGains() {
     
             var vipRes = await supabaseClient.from('combineds_vip').insert([{ id: pubRes.data.id, matches: matches, mise: mise, gains: gains, total_odds: tot }]);
             if (vipRes.error) { showToast('Erreur Création VIP', true); return; }
-            
-            if (status === 'en-cours') appStats.pending++;
-            else if (status === 'termine') appStats.wins++;
-            else appStats.losses++;
-            appStats.total++;
-            saveState();
             
             showToast('Combiné créé avec succès !');
         }
@@ -2251,18 +1888,16 @@ function calculateGains() {
         var losses = 0;
         var pending = 0;
 
-        // On recompte tout en temps réel basé sur la vraie base de données
         allCombineds.forEach(function(c) {
             if (c.status === 'termine') {
                 wins++;
             } else if (c.status === 'perdu') {
                 losses++;
             } else {
-                pending++; // "en-cours"
+                pending++; 
             }
         });
 
-        // On met à jour l'affichage
         document.getElementById('stat-total').textContent = total;
         document.getElementById('stat-wins').textContent = wins;
         document.getElementById('stat-pending').textContent = pending;
@@ -2318,7 +1953,9 @@ function calculateGains() {
             if(c.matches && c.matches.length > 0) {
                 matchesHtml = '<div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.1);">';
                 c.matches.forEach(function(m) {
-                    var scoreColor = sc === 'termine' ? 'var(--green)' : 'var(--text-white)';
+                    // On gère la couleur selon le statut INDIVIDUEL du match, s'il existe
+                    var mStatus = m.match_status || (sc === 'en-cours' ? 'en-cours' : sc);
+                    var scoreColor = mStatus === 'termine' ? 'var(--green)' : (mStatus === 'perdu' ? 'var(--red)' : 'var(--text-white)');
                     
                     var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:12px;height:12px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<i class="fas fa-shield-alt" style="font-size:10px; margin-right:6px; color:var(--text-gray);"></i>`;
                     
@@ -2380,13 +2017,15 @@ function calculateGains() {
     function buildCC(c, sc, sl, pw, isHome) {
         var mH = '';
         var matchesToDisplay = c.matches ? c.matches : Array(c.nombre_matchs || 2).fill({ teams: 'Match en attente', time: '--:--', odds: 0 });
-        var isObscured = isHome && sc === 'en-cours';
 
         matchesToDisplay.forEach(function (m) {
-            var displayScore = isObscured ? '?-?' : m.score;
-            var displayOdds = isObscured ? '***' : m.odds.toFixed(2);
-            var scoreHtml = isObscured ? '<span class="match-score blurred-value">' + displayScore + '</span>' : '<span class="match-score">' + displayScore + '</span>';
-            var oddsHtml = isObscured ? '<div class="match-odds blurred-value">' + displayOdds + '</div>' : '<div class="match-odds">' + displayOdds + '</div>';
+            var mStatus = m.match_status || (sc === 'en-cours' ? 'en-cours' : sc);
+            var isMatchObscured = isHome && mStatus === 'en-cours';
+
+            var displayScore = isMatchObscured ? '?-?' : m.score;
+            var displayOdds = isMatchObscured ? '***' : m.odds.toFixed(2);
+            var scoreHtml = isMatchObscured ? '<span class="match-score blurred-value">' + displayScore + '</span>' : '<span class="match-score">' + displayScore + '</span>';
+            var oddsHtml = isMatchObscured ? '<div class="match-odds blurred-value">' + displayOdds + '</div>' : '<div class="match-odds">' + displayOdds + '</div>';
             
             var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<i class="fas fa-shield-alt"></i> `;
             
@@ -2398,9 +2037,9 @@ function calculateGains() {
 
         var pc = sc === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : sc === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
 
-        var displayGains = isObscured ? '***,** €' : fmtC(c.gains || 0);
-        var displayTotalOdds = isObscured ? '***.**' : (c.total_odds || c.totalOdds || 0).toFixed(2);
-        var displayMise = isObscured ? '***,** €' : fmtC(c.mise || 0);
+        var displayGains = (isHome && sc === 'en-cours') ? '***,** €' : fmtC(c.gains || 0);
+        var displayTotalOdds = (isHome && sc === 'en-cours') ? '***.**' : (c.total_odds || c.totalOdds || 0).toFixed(2);
+        var displayMise = (isHome && sc === 'en-cours') ? '***,** €' : fmtC(c.mise || 0);
 
         let isLocked = false;
         let timeMessage = '';
@@ -2429,7 +2068,7 @@ function calculateGains() {
             }
         }
 
-        return '<div class="combined-card"><div class="combined-header"><div class="combined-status"><span class="status-badge ' + sc + '">' + sl[sc] + '</span><span class="combined-label">Combiné</span><div class="combined-count"><i class="fas fa-futbol"></i> ' + matchesToDisplay.length + '</div></div><i class="fas fa-ellipsis-h combined-more"></i></div><div class="combined-progress"><div class="combined-progress-fill" style="width:' + pw + ';' + pc + '"></div></div><div class="combined-matches-icons">' + ic + '<span style="font-size:12px;color:var(--text-gray);margin-left:4px;">' + matchesToDisplay.length + '</span></div><div class="combined-body">' + mH + '</div><div class="combined-footer"><div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span><span class="combined-footer-value '+(isObscured?'blurred-value':'')+'">' + displayTotalOdds + '</span></div><div class="combined-footer-row"><span class="combined-footer-label">Mise</span><span class="combined-footer-value">' + displayMise + '</span></div><div class="combined-footer-row"><span class="combined-footer-label">Gains potentiels</span><span class="combined-footer-value gains '+(isObscured?'blurred-value':'')+'">' + displayGains + '</span></div></div>' + ctaBtn + timeMessage + '</div>';
+        return '<div class="combined-card"><div class="combined-header"><div class="combined-status"><span class="status-badge ' + sc + '">' + sl[sc] + '</span><span class="combined-label">Combiné</span><div class="combined-count"><i class="fas fa-futbol"></i> ' + matchesToDisplay.length + '</div></div><i class="fas fa-ellipsis-h combined-more"></i></div><div class="combined-progress"><div class="combined-progress-fill" style="width:' + pw + ';' + pc + '"></div></div><div class="combined-matches-icons">' + ic + '<span style="font-size:12px;color:var(--text-gray);margin-left:4px;">' + matchesToDisplay.length + '</span></div><div class="combined-body">' + mH + '</div><div class="combined-footer"><div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span><span class="combined-footer-value '+((isHome && sc === 'en-cours')?'blurred-value':'')+'">' + displayTotalOdds + '</span></div><div class="combined-footer-row"><span class="combined-footer-label">Mise</span><span class="combined-footer-value">' + displayMise + '</span></div><div class="combined-footer-row"><span class="combined-footer-label">Gains potentiels</span><span class="combined-footer-value gains '+((isHome && sc === 'en-cours')?'blurred-value':'')+'">' + displayGains + '</span></div></div>' + ctaBtn + timeMessage + '</div>';
     }
 
     function fmtD(d) {
@@ -2456,7 +2095,6 @@ function calculateGains() {
         }
     }
 
-    // ===== COUNTDOWN TIMER =====
     function startCountdown() {
         var el = document.getElementById('countdown-timer');
         if (!el) return;
@@ -2485,58 +2123,43 @@ function calculateGains() {
         setInterval(update, 1000);
     }
 
-    // ===== ONLINE COUNT ANIMATION =====
     function animateOnlineCount() {
         var el = document.getElementById('online-count');
         if (!el) return;
         
         setInterval(function () {
-            // Logique de trafic basée sur l'heure de la journée (Paris - CEST)
             var now = new Date();
             var hour = now.getHours();
             var minOnline, maxOnline;
 
             if (hour >= 19 && hour <= 23) {
-                // Heure de pointe (19h - 00h) : monte jusqu'à ~500
-                minOnline = 380;
-                maxOnline = 500;
+                minOnline = 380; maxOnline = 500;
             } else if (hour >= 0 && hour < 11) {
-                // Heure creuse (00h - 11h) : autour de 70
-                minOnline = 50;
-                maxOnline = 90;
+                minOnline = 50; maxOnline = 90;
             } else if (hour >= 11 && hour < 17) {
-                // Journée (11h - 17h) : entre 150 et 250
-                minOnline = 150;
-                maxOnline = 250;
+                minOnline = 150; maxOnline = 250;
             } else {
-                // Fin d'aprèm (17h - 19h) : entre 350 et 410
-                minOnline = 350;
-                maxOnline = 410;
+                minOnline = 350; maxOnline = 410;
             }
 
             var range = maxOnline - minOnline + 1;
             var currentOnline = minOnline + Math.floor(Math.random() * range);
             
             el.textContent = currentOnline + ' personnes en ligne';
-        }, 8000); // Mise à jour toutes les 8 secondes
+        }, 8000);
     }
 
-    // ===== FAQ TOGGLE =====
     function toggleFaq(el) {
         el.classList.toggle('open');
     }
 
-    // ===== GESTION DES PREFERENCES DE CONTACT =====
     function selectContactPref(type) {
-        // Enlever la classe 'selected' de tous les labels
         document.querySelectorAll('.contact-pref-label').forEach(function(label) {
             label.classList.remove('selected');
         });
         
-        // Ajouter la classe 'selected' au label cliqué
         document.getElementById('label-' + type).classList.add('selected');
         
-        // Mettre à jour le label du champ de saisie
         var inputLabel = document.getElementById('contact-input-label');
         if (type === 'whatsapp') {
             inputLabel.innerHTML = '<i class="fas fa-phone" style="color:var(--primary-yellow)"></i> Numéro WhatsApp *';
@@ -2547,7 +2170,6 @@ function calculateGains() {
         }
     }
 
-    // ===== GESTION DE LA SOUSCRIPTION =====
     function openCheckout(packType, price) {
         var packNames = {
             'journalier': 'SM Score Exact Journalier',
@@ -2556,18 +2178,14 @@ function calculateGains() {
         };
         var packName = packNames[packType] || 'Pack ScoreMaster';
         
-        // Mettre à jour le titre du popup
         document.getElementById('subscribe-pack-title').textContent = 'Souscrire au ' + packName;
         document.getElementById('subscribe-pack-type').value = packType;
         
-        // Réinitialiser les champs et préférences
         document.getElementById('sub-contact-info').value = '';
         document.getElementById('sub-message').value = '';
         
-        // Rétablir WhatsApp par défaut
         document.getElementById('label-whatsapp').click(); 
         
-        // Afficher le popup
         var popup = document.getElementById('subscribe-popup');
         popup.style.display = 'flex';
         setTimeout(function () { popup.style.opacity = '1'; popup.firstElementChild.style.transform = 'scale(1)'; }, 10);
@@ -2585,28 +2203,16 @@ function calculateGains() {
         var message = document.getElementById('sub-message').value.trim();
         var packType = document.getElementById('subscribe-pack-type').value;
         
-        // Déterminer la méthode de contact sélectionnée
         var contactMethod = document.querySelector('input[name="contact-pref"]:checked').value;
         
-        // Vérification obligatoire de l'info de contact
         if (!contactInfo) {
             var msg = contactMethod === 'whatsapp' ? 'Le numéro de téléphone est obligatoire.' : 'Le pseudo Instagram est obligatoire.';
             showToast(msg, true);
             return;
         }
 
-        /* 
-         * ICI : Envoyer la demande à Supabase.
-         * contactMethod ('whatsapp' ou 'instagram')
-         * contactInfo (le numéro ou le pseudo)
-         * message (le message optionnel)
-         * packType (le pack choisi)
-         */
-        
-        // Ferme le formulaire
         closeSubscribePopup();
         
-        // Ouvre le popup de confirmation après un petit délai fluide
         setTimeout(function() {
             var successPopup = document.getElementById('success-popup');
             successPopup.style.display = 'flex';
