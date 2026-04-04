@@ -2201,7 +2201,156 @@
         setTimeout(function () { popup.style.display = 'none'; }, 300);
     }
 
+    // === GESTION DE L'INTERFACE BETCLIC ===
+
+    // 1. Mettre à jour le texte du bouton dans le profil
+    function updateBettingBtnText() {
+        var plat = document.getElementById('profile-platform-select').value;
+        var platName = plat.charAt(0).toUpperCase() + plat.slice(1).toLowerCase();
+        document.getElementById('open-betting-ui-text').textContent = "Ouvrir l'interface " + platName;
+    }
+
+    // 2. Ouvrir l'interface et générer les cartes
+    function openBettingInterface() {
+        var platform = document.getElementById('profile-platform-select').value;
+        
+        if (platform === 'BETCLIC') {
+            renderBetclicHistory();
+            document.getElementById('betclic-ui').style.display = 'block';
+            closeProfileModal(); // On ferme le profil pour laisser place à Betclic
+        } else {
+            showToast("L'interface " + platform + " est en cours de développement !", true);
+        }
+    }
+
+    // 3. Fermer l'interface
+    function closeBetclicInterface() {
+        document.getElementById('betclic-ui').style.display = 'none';
+    }
+
+    // 4. Créer les cartes visuelles Betclic à partir de tes combinés "Terminés"
+    function renderBetclicHistory() {
+        var container = document.getElementById('betclic-cards-container');
+        // On récupère uniquement les combinés gagnés
+        var termineCombineds = allCombineds.filter(c => c.status === 'termine');
+        
+        if (termineCombineds.length === 0) {
+            container.innerHTML = '<div style="color:#8A8A93; text-align:center; font-weight:bold; margin-top:50px;">Aucun combiné gagnant pour le moment.</div>';
+            return;
+        }
+
+        var html = '';
+        var totalGainsSum = 0; // Pour calculer la solde en haut
+
+        termineCombineds.forEach(c => {
+            var nbMatches = c.nombre_matchs || (c.matches ? c.matches.length : 2);
+            var cote = (c.total_odds || c.totalOdds || 0).toFixed(2).replace('.00', ''); // On enlève les .00 si chiffre rond
+            var mise = (c.mise || 0).toFixed(2).replace('.', ',');
+            var gains = (c.gains || 0);
+            totalGainsSum += gains;
+            var gainsStr = gains.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+            
+            // Format de la date (ex: 07/02/2026 23:57)
+            var d = new Date(c.date);
+            // On ajoute une heure fixe réaliste pour le soir
+            var dateStr = String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth()+1).padStart(2, '0') + '/' + d.getFullYear() + ' 23:4' + Math.floor(Math.random() * 9);
+            
+            // Génération d'une fausse référence de ticket
+            var refStr = 'Réf 687' + Math.random().toString(16).substring(2, 10) + 'a13f1cffd2' + Math.random().toString(16).substring(2, 8);
+
+            // Génération des petites pastilles vertes (visuel match gagné)
+            var pastillesHtml = '';
+            for(var i=0; i<nbMatches; i++) {
+                pastillesHtml += '<div style="width:14px; height:14px; background:#A8D173; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; margin-right:2px;"><i class="fas fa-check" style="color:#1C1C28; font-size:9px;"></i></div>';
+            }
+
+            html += `
+            <div style="background:#1C1C28; border-radius:12px; margin-bottom:16px; overflow:hidden; border: 1px solid #2A2A3A;">
+                
+                <!-- En-tête de la carte -->
+                <div style="padding:14px 16px; border-bottom:1px solid #2A2A3A; display:flex; justify-content:space-between; align-items:flex-start;">
+                    <div>
+                        <div style="color:#D5D5D8; font-weight:800; font-size:14px; margin-bottom:6px;">Combiné (${nbMatches})</div>
+                        <div style="display:flex; align-items:center;">
+                            ${pastillesHtml}
+                            <i class="fas fa-chevron-down" style="color:#8A8A93; font-size:12px; margin-left:6px;"></i>
+                        </div>
+                    </div>
+                    <div style="background:#315A27; color:#A8D173; font-size:12px; font-weight:800; padding:5px 8px; border-radius:6px; letter-spacing:0.5px;">Gagné</div>
+                </div>
+                
+                <!-- Corps de la carte -->
+                <div style="padding:16px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <span style="color:#E5E5E7; font-size:14px; font-weight:800;">Cote totale</span>
+                        <span style="background:#FCE300; color:#000; font-weight:800; padding:5px 12px; border-radius:8px; font-size:14px;">${cote}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <span style="color:#E5E5E7; font-size:14px; font-weight:800;">Mise</span>
+                        <span style="color:#fff; font-weight:700; font-size:14px;">${mise} €</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+                        <span style="color:#E5E5E7; font-size:14px; font-weight:800;">Gains</span>
+                        <span style="color:#A8D173; font-weight:900; font-size:20px; font-style:italic; transform: skewX(-5deg);">${gainsStr}</span>
+                    </div>
+                    <button style="width:100%; background:rgba(255,255,255,0.12); color:#E5E5E7; border:none; padding:14px; border-radius:10px; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;">
+                        <i class="fas fa-share-alt"></i> Partager
+                    </button>
+                </div>
+                
+                <!-- Pied de la carte (Réf) -->
+                <div style="background:#13131A; padding:12px 16px; display:flex; justify-content:space-between; font-size:11px; color:#8A8A93; font-weight:600;">
+                    <span>${refStr}</span>
+                    <span>${dateStr}</span>
+                </div>
+            </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+        
+        // Optionnel : Mettre à jour la solde en haut (on prend la somme des gains)
+        if(totalGainsSum > 0) {
+           document.getElementById('betclic-balance').textContent = totalGainsSum.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+        }
+    }
+
 </script>
 
+<div id="betclic-ui" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#0A0A0F; z-index:10000; overflow-y:auto; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+    <!-- Header -->
+    <div style="display:flex; justify-content:space-between; align-items:center; padding: 15px 20px; padding-top: calc(15px + var(--safe-top)); position:sticky; top:0; background:#0A0A0F; z-index:10;">
+        <i class="fas fa-times" style="color:#fff; font-size:20px; cursor:pointer;" onclick="closeBetclicInterface()"></i>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <div style="background:#D3141F; color:#fff; font-weight:800; padding:6px 12px; border-radius:20px; font-size:13px; display:flex; align-items:center; gap:6px;">
+                <div style="width:14px; height:14px; border-radius:50%; background:rgba(255,255,255,0.3); display:flex; align-items:center; justify-content:center;"><i class="fas fa-plus" style="font-size:9px;"></i></div> 
+                <span id="betclic-balance">14 670,40 €</span>
+            </div>
+            <div style="background:#D3141F; width:30px; height:30px; border-radius:8px; display:flex; align-items:center; justify-content:center; position:relative;">
+                <i class="fas fa-check" style="color:#fff; font-size:16px;"></i>
+                <div style="position:absolute; top:-5px; right:-5px; background:#fff; color:#D3141F; width:16px; height:16px; border-radius:50%; font-size:10px; font-weight:bold; display:flex; align-items:center; justify-content:center; border:2px solid #0A0A0F;">1</div>
+            </div>
+            <div style="width:30px; height:30px; background:#fff; border-radius:50%; overflow:hidden;">
+                <img src="logo-dark.png" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tabs -->
+    <div style="display:flex; justify-content:space-around; color:#8A8A93; font-weight:700; font-size:13px; padding-bottom:0; border-bottom:1px solid #1C1C28; margin-top:10px;">
+        <div style="padding-bottom:12px;">En cours (1)</div>
+        <div style="color:#fff; border-bottom:3px solid #fff; padding-bottom:12px;">Terminés</div>
+        <div style="padding-bottom:12px;">Gagnés</div>
+    </div>
+    
+    <!-- Cards Container -->
+    <div id="betclic-cards-container" style="padding: 15px;">
+        <!-- Les cartes seront injectées ici par le Javascript -->
+    </div>
+    
+    <!-- Footer -->
+    <div style="text-align:center; color:#5A5A63; font-size:13px; padding:20px; font-weight:700; margin-bottom: 20px;">betclic.fr</div>
+</div>
+    
 </body>
 </html>
