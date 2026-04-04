@@ -1821,14 +1821,14 @@
         var gains = mise * tot;
         
         if (editingId) {
-            // Mise à jour d'un combiné existant
+            // Mise à jour
             var updatePub = await supabaseClient.from('combineds_public').update({ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }).eq('id', editingId);
             if (updatePub.error) { showToast('Erreur Update', true); return; }
             var updateVip = await supabaseClient.from('combineds_vip').update({ matches: matches, mise: mise, gains: gains, total_odds: tot }).eq('id', editingId);
             if (updateVip.error) { showToast('Erreur Update VIP', true); return; }
             showToast('Combiné mis à jour !');
         } else {
-            // Création d'un NOUVEAU combiné
+            // Création
             var pubRes = await supabaseClient.from('combineds_public').insert([{ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }]).select().single();
             if (pubRes.error) { showToast('Erreur Création', true); return; }
             var vipRes = await supabaseClient.from('combineds_vip').insert([{ id: pubRes.data.id, matches: matches, mise: mise, gains: gains, total_odds: tot }]);
@@ -1837,13 +1837,12 @@
             showToast('Combiné créé avec succès !');
 
             // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            // GÉNÉRATION DU BROUILLON TELEGRAM (Envoyé en privé à l'Admin)
+            // GÉNÉRATION DU BROUILLON TELEGRAM
             // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
             
             const TELEGRAM_BOT_TOKEN = '8602776375:AAEuhWYNqb26IG8igWDTUI5iUaqSW0plj9I';
             const TELEGRAM_CHAT_ID   = '905424902';
 
-            // 1. Calcul de l'heure limite (15 min avant earliestTime)
             let deadlineStr = "Indéfini";
             if (earliestTime !== '23:59') {
                 let matchDateTime = new Date(`${date}T${earliestTime}:00`);
@@ -1851,39 +1850,26 @@
                 deadlineStr = String(deadlineDateTime.getHours()).padStart(2, '0') + ':' + String(deadlineDateTime.getMinutes()).padStart(2, '0');
             }
 
-            // 2. Formatage du jour (Aujourd'hui, Demain ou date)
             let today = new Date();
             let tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
             let dayContext = "le " + new Date(date).toLocaleDateString('fr-FR');
             if (date === today.toISOString().split('T')[0]) dayContext = "aujourd'hui";
             else if (date === tomorrow.toISOString().split('T')[0]) dayContext = "demain";
 
-            // 3. Liste des matchs (SANS les scores)
             let matchLines = "";
             matches.forEach(m => { matchLines += `⚽️ ${m.teams}\n`; });
 
-            // 4. Textes aléatoires ULTRA ENTHOUSIASTES
             const intros = [
                 "Salut l’équipe ! 🔥 L'analyse est tombée, et elle est incroyable ! Le nouveau combiné est officiellement disponible dans votre espace VIP+.",
-                "BOOM ! 💥 Nos experts ont encore frappé ! Le ticket du jour est validé avec une confiance absolue. Filez vite sur l'app !",
-                "Alerte générale ! 🚨 Le nouveau combiné VIP+ vient d'être posté. Une dinguerie en préparation, ne passez pas à côté de ça !",
-                "Vous l'attendiez avec impatience, le voilà ! 👑 Le combiné ultra-sécurisé du jour est en ligne. On va tout casser aujourd'hui !",
-                "C'est l'heure d'encaisser ! 💸 Nos analystes ont déniché LA pépite du jour. Le combiné est disponible, go sécuriser vos places !",
-                "🚀 Prêts pour le décollage ? Le ticket VIP+ est officiellement lancé ! Une masterclass nous attend, connectez-vous vite."
+                "BOOM ! 💥 Nos experts ont encore frappé ! Le ticket du jour est validé avec une confiance absolue. Filez vite sur l'app !"
             ];
             const outros = [
                 "C’est le moment parfait pour prendre de l’avance. Ne laissez pas passer cette occasion en or, foncez ! 🙌⚡️",
-                "Faites très vite avant que les cotes ne s'effondrent ! L'horloge tourne, on encaisse ensemble ce soir. 💰⏱️",
-                "Rejoignez l'élite VIP+ et validez ça avant la fermeture stricte des portes. Tic-tac... ⏳🚀",
-                "La confiance est au max aujourd'hui. Sécurisez votre ticket avant qu'il ne soit trop tard ! 🎯💸",
-                "Ne restez pas sur la touche ! Validez votre place immédiatement et préparons-nous à encaisser. 💶🔥",
-                "Les portes se ferment bientôt. Prenez votre VIP+ maintenant et rejoignez le camp des gagnants ! 🏆🚨"
+                "Faites très vite avant que les cotes ne s'effondrent ! L'horloge tourne, on encaisse ensemble ce soir. 💰⏱️"
             ];
-            
             let randomIntro = intros[Math.floor(Math.random() * intros.length)];
             let randomOutro = outros[Math.floor(Math.random() * outros.length)];
 
-            // 5. Construction du message final avec les liens ajoutés
             let telegramDraft = 
                 `📝 *BROUILLON CANAL PUBLIC :*\n` +
                 `_(À copier/coller sur votre canal)_\n\n` +
@@ -1899,53 +1885,87 @@
                 `📸 Instagram : https://www.instagram.com/scoremaster.fr/\n` +
                 `➡️ Telegram : @ScoreMasterOfficiel`;
 
-            // 6. Prise de photo du combiné et Envoi au Bot avec l'image
-            
-            // A. On crée un objet "combiné" temporaire pour générer le visuel de l'accueil (flouté)
-            let tempCombined = {
-                matches: matches,
-                nombre_matchs: matches.length,
-                total_odds: tot,
-                mise: mise,
-                gains: gains,
-                date: date,
-                time: earliestTime
-            };
-            
-            // B. On génère le HTML du combiné version "Accueil" (isHome = true)
+            // 6. PRISE DE PHOTO - LE FIX ULTIME
+            let tempCombined = { matches: matches, nombre_matchs: matches.length, total_odds: tot, mise: mise, gains: gains, date: date, time: earliestTime };
             let slipHtml = buildCC(tempCombined, 'en-cours', { 'en-cours': 'En cours' }, '50%', true);
             
-            // C. On crée un conteneur invisible sur la page pour y placer le combiné
             let captureDiv = document.createElement('div');
             captureDiv.style.position = 'absolute';
             captureDiv.style.left = '-9999px';
-            captureDiv.style.width = '380px'; // Largeur mobile standard
+            captureDiv.style.width = '380px';
             captureDiv.style.background = 'var(--bg-dark)';
             captureDiv.style.padding = '15px';
             captureDiv.innerHTML = slipHtml;
             document.body.appendChild(captureDiv);
 
-            // D. On prend la photo avec html2canvas
-            html2canvas(captureDiv, { backgroundColor: '#0D0D0D' }).then(canvas => {
-                canvas.toBlob(blob => {
-                    // On prépare le colis pour Telegram (Image + Texte en légende)
-                    let formData = new FormData();
-                    formData.append('chat_id', TELEGRAM_CHAT_ID);
-                    formData.append('photo', blob, 'apercu_combine.png');
-                    formData.append('caption', telegramDraft);
-                    formData.append('parse_mode', 'Markdown');
+            // ---> A. LE FIX FLOU : On remplace le texte par des IMAGES SVG floues
+            let blurredElements = captureDiv.querySelectorAll('.blurred-value');
+            blurredElements.forEach(el => {
+                let text = el.innerText || '***';
+                let color = el.classList.contains('gains') ? '#00C853' : '#FFFFFF';
+                
+                // SVG avec filtre de flou natif (html2canvas le gère parfaitement comme une image)
+                let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="24">
+                    <defs><filter id="f"><feGaussianBlur stdDeviation="2.5"/></filter></defs>
+                    <text x="0" y="18" fill="${color}" font-family="sans-serif" font-weight="bold" font-size="15px" filter="url(#f)">${text}</text>
+                </svg>`;
+                
+                let img = document.createElement('img');
+                img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+                img.style.verticalAlign = 'middle';
+                
+                el.innerHTML = ''; // On vide le texte normal
+                el.appendChild(img); // On met l'image floue à la place
+                el.style.filter = 'none'; // On désactive le CSS de l'app pour éviter les conflits
+                el.style.textShadow = 'none';
+                el.style.color = 'transparent';
+            });
 
-                    // E. Envoi via l'API sendPhoto
-                    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(() => {
-                        // On nettoie la page en supprimant le combiné invisible
-                        document.body.removeChild(captureDiv);
-                    })
-                    .catch(err => console.error("Erreur envoi photo Telegram:", err));
-                });
+            // ---> B. LE FIX DRAPEAUX : Utilisation d'un Proxy public
+            const images = captureDiv.getElementsByTagName('img');
+            const imagePromises = Array.from(images).map(async (img) => {
+                // Si l'image est déjà en Base64 (comme nos SVG), on passe
+                if (!img.src || img.src.startsWith('data:')) return Promise.resolve();
+                try {
+                    // On force le téléchargement via un proxy pour contourner la sécurité CORS
+                    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(img.src);
+                    const response = await fetch(proxyUrl);
+                    const blob = await response.blob();
+                    return new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => { img.src = reader.result; resolve(); };
+                        reader.readAsDataURL(blob);
+                    });
+                } catch (e) {
+                    console.error("Proxy drapeau échoué:", e);
+                    return Promise.resolve();
+                }
+            });
+
+            // On attend que TOUTES les images (drapeaux + svg flous) soient chargées
+            Promise.all(imagePromises).then(() => {
+                setTimeout(() => {
+                    html2canvas(captureDiv, { 
+                        backgroundColor: '#0D0D0D',
+                        scale: 2,
+                        logging: false
+                    }).then(canvas => {
+                        canvas.toBlob(blob => {
+                            let formData = new FormData();
+                            formData.append('chat_id', TELEGRAM_CHAT_ID);
+                            formData.append('photo', blob, 'apercu_combine.png');
+                            formData.append('caption', telegramDraft);
+                            formData.append('parse_mode', 'Markdown');
+
+                            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
+                                method: 'POST',
+                                body: formData
+                            }).then(() => {
+                                document.body.removeChild(captureDiv);
+                            }).catch(err => console.error("Erreur Telegram:", err));
+                        });
+                    });
+                }, 500); // 500ms de sécurité pour être sûr
             });
         }
         
