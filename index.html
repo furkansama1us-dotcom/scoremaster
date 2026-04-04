@@ -226,10 +226,13 @@
         .combined-footer-value.gains{color:var(--green);font-size:18px}
         .watermark-img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80px;opacity:.07;pointer-events:none}
         .blurred-value {
-    color: transparent !important; /* Rend le texte/étoiles invisibles */
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8) !important; /* Crée le flou par ombre */
+    /* Garde le texte légèrement visible pour conserver la forme des caractères */
+    color: rgba(255, 255, 255, 0.15) !important; 
+    /* Crée l'effet de flou par halo autour de la forme des lettres */
+    text-shadow: 0 0 6px rgba(255, 255, 255, 0.8) !important;
     user-select: none;
     pointer-events: none;
+    display: inline-block;
 }
         .combined-cta-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:calc(100% - 32px);margin:0 16px 16px;padding:15px;background:linear-gradient(135deg,#0088cc,#006faa);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;text-decoration:none;text-align:center;box-shadow:0 6px 20px rgba(0,136,204,.35);transition:all .3s;position:relative;overflow:hidden}
         .combined-cta-btn i.tg-icon{font-size:20px}
@@ -2028,89 +2031,89 @@
     }
 
     function buildCC(c, sc, sl, pw, isHome) {
-        var mH = '';
-        var matchesToDisplay = c.matches ? c.matches : Array(c.nombre_matchs || 2).fill({ teams: 'Match en attente', time: '--:--', odds: 0 });
-        
-        let today = new Date();
-        let tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
-        let combinDate = new Date(c.date);
-        
-        let smartPrefix = "";
-        if (combinDate.toDateString() === today.toDateString()) smartPrefix = "Auj. ";
-        else if (combinDate.toDateString() === tomorrow.toDateString()) smartPrefix = "Dem. ";
-        else smartPrefix = fmtD(c.date) + " ";
+    var mH = '';
+    var matchesToDisplay = c.matches ? c.matches : Array(c.nombre_matchs || 2).fill({ teams: 'Match en attente', time: '--:--', odds: 0 });
+    
+    let today = new Date();
+    let tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
+    let combinDate = new Date(c.date);
+    
+    let smartPrefix = "";
+    if (combinDate.toDateString() === today.toDateString()) smartPrefix = "Auj. ";
+    else if (combinDate.toDateString() === tomorrow.toDateString()) smartPrefix = "Dem. ";
+    else smartPrefix = fmtD(c.date) + " ";
 
-        matchesToDisplay.forEach(function (m) {
-            var mStatus = m.match_status || (sc === 'en-cours' ? 'en-cours' : sc);
-            var isMatchObscured = isHome && mStatus === 'en-cours';
-            
-            var displayScore = isMatchObscured ? '** - **' : m.score;
-            var displayOdds = isMatchObscured ? '**.**' : m.odds.toFixed(2);
-            
-            var blurClass = isMatchObscured ? 'blurred-value' : '';
-            // Ajout de crossorigin="anonymous" pour les drapeaux
-            var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;" crossorigin="anonymous">` : `<i class="fas fa-shield-alt"></i> `;
-            
-            let cleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : "--:--";
-            let finalTimeDisplay = smartPrefix + (cleanTime ? cleanTime[0] : "");
+    matchesToDisplay.forEach(function (m) {
+        var mStatus = m.match_status || (sc === 'en-cours' ? 'en-cours' : sc);
+        var isMatchObscured = isHome && mStatus === 'en-cours';
+        
+        var displayScore = isMatchObscured ? '*** - ***' : m.score;
+        var displayOdds = isMatchObscured ? '**.**' : m.odds.toFixed(2);
+        
+        var blurClass = isMatchObscured ? 'blurred-value' : '';
+        // "crossorigin" est crucial pour que html2canvas voit les drapeaux
+        var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;" crossorigin="anonymous">` : `<i class="fas fa-shield-alt"></i> `;
+        
+        let cleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : "--:--";
+        let finalTimeDisplay = smartPrefix + (cleanTime ? cleanTime[0] : "");
 
-            mH += `<div class="match-row">
-                    <div class="match-row-top">
-                        <div class="match-type">
-                            <i class="fas fa-futbol" style="color: #fff; margin-right: 6px; font-size: 14px;"></i> 
-                            Score exact <span class="${blurClass}" style="margin-left:5px; font-weight:700;">${displayScore}</span>
-                        </div>
-                        <div class="match-odds ${blurClass}">${displayOdds}</div>
+        mH += `<div class="match-row">
+                <div class="match-row-top">
+                    <div class="match-type">
+                        <i class="fas fa-futbol" style="color: #fff; margin-right: 6px; font-size: 14px;"></i> 
+                        Score exact <span class="${blurClass}" style="margin-left:5px; font-weight:700;">${displayScore}</span>
                     </div>
-                    <div class="match-row-bottom">
-                        <div class="match-teams">${logoDisplay} ${m.teams || 'Équipes'}</div>
-                        <div class="match-time">${finalTimeDisplay}</div>
-                    </div>
-                   </div>`;
-        });
-        
-        var pc = sc === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : sc === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
-        var isObscured = (isHome && sc === 'en-cours');
-        var blurClass = isObscured ? 'blurred-value' : '';
-        
-        var displayGains = isObscured ? '***,** €' : fmtC(c.gains || 0);
-        var displayMise = isObscured ? '***,** €' : fmtC(c.mise || 0);
-        var displayTotalOdds = isObscured ? '***.**' : (c.total_odds || 0).toFixed(2);
+                    <div class="match-odds ${blurClass}">${displayOdds}</div>
+                </div>
+                <div class="match-row-bottom">
+                    <div class="match-teams">${logoDisplay} ${m.teams || 'Équipes'}</div>
+                    <div class="match-time">${finalTimeDisplay}</div>
+                </div>
+               </div>`;
+    });
+    
+    var pc = sc === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : sc === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
+    var isObscured = (isHome && sc === 'en-cours');
+    var blurClass = isObscured ? 'blurred-value' : '';
+    
+    var displayGains = isObscured ? '***,** €' : fmtC(c.gains || 0);
+    var displayMise = isObscured ? '***,** €' : fmtC(c.mise || 0);
+    var displayTotalOdds = isObscured ? '***.**' : (c.total_odds || 0).toFixed(2);
 
-        let isLocked = false; let timeMessage = '';
-        if (sc === 'en-cours' && c.date && c.time) {
-            const matchDateTime = new Date(`${c.date}T${c.time}:00`);
-            const lockoutDateTime = new Date(matchDateTime.getTime() - 15 * 60000);
-            if (new Date() >= lockoutDateTime) {
-                isLocked = true;
-                timeMessage = `<div style="color: var(--red); font-size: 13px; font-weight: 800; margin: 12px 16px; text-align: center; background: rgba(255,61,61,0.1); padding: 10px; border-radius: 8px;"><i class="fas fa-lock"></i> Les paris sont fermés (Match imminent)</div>`;
-            } else {
-                const hrs = String(lockoutDateTime.getHours()).padStart(2, '0');
-                const mins = String(lockoutDateTime.getMinutes()).padStart(2, '0');
-                timeMessage = `<div style="color: #fff; font-size: 13px; font-weight: 800; margin: 12px 16px; text-align: center; background: linear-gradient(90deg, #00C853, #009624); padding: 10px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,200,83,0.3); animation: glowPass 2s infinite;"><i class="fas fa-stopwatch"></i> Disponible jusqu'à ${hrs}:${mins}</div>`;
-            }
+    let isLocked = false; let timeMessage = '';
+    if (sc === 'en-cours' && c.date && c.time) {
+        const matchDateTime = new Date(`${c.date}T${c.time}:00`);
+        const lockoutDateTime = new Date(matchDateTime.getTime() - 15 * 60000);
+        if (new Date() >= lockoutDateTime) {
+            isLocked = true;
+            timeMessage = `<div style="color: var(--red); font-size: 13px; font-weight: 800; margin: 12px 16px; text-align: center; background: rgba(255,61,61,0.1); padding: 10px; border-radius: 8px;"><i class="fas fa-lock"></i> Les paris sont fermés (Match imminent)</div>`;
+        } else {
+            const hrs = String(lockoutDateTime.getHours()).padStart(2, '0');
+            const mins = String(lockoutDateTime.getMinutes()).padStart(2, '0');
+            timeMessage = `<div style="color: #fff; font-size: 13px; font-weight: 800; margin: 12px 16px; text-align: center; background: linear-gradient(90deg, #00C853, #009624); padding: 10px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,200,83,0.3); animation: glowPass 2s infinite;"><i class="fas fa-stopwatch"></i> Disponible jusqu'à ${hrs}:${mins}</div>`;
         }
-        
-        var ctaBtn = (isHome && !isLocked && sc === 'en-cours') ? `<a href="${TELEGRAM_LINK}" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>` : '';
-        if (isHome && isLocked && sc === 'en-cours') ctaBtn = `<button class="combined-cta-btn" style="background: var(--bg-input); color: var(--text-gray); cursor: not-allowed;"><i class="fas fa-lock"></i> Trop tard, match commencé !</button>`;
-
-        return `
-        <div class="combined-card">
-            <div class="combined-header">
-                <div class="combined-status"><span class="status-badge ${sc}">${sl[sc]}</span><span class="combined-label">Combiné</span></div>
-                <i class="fas fa-ellipsis-h combined-more"></i>
-            </div>
-            <div class="combined-progress"><div class="combined-progress-fill" style="width:${pw};${pc}"></div></div>
-            <div class="combined-body" style="padding-top: 10px;">${mH}</div>
-            <div class="combined-footer" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
-                <div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span><span class="combined-footer-value ${blurClass}">${displayTotalOdds}</span></div>
-                <div class="combined-footer-row" style="margin-bottom: 16px;"><span class="combined-footer-label">Mise</span><span class="combined-footer-value ${blurClass}">${displayMise}</span></div>
-                <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 0 -16px 16px -16px;"></div>
-                <div class="combined-footer-row"><span class="combined-footer-label" style="font-size:14px;">Gains potentiels</span><span class="combined-footer-value gains ${blurClass}">${displayGains}</span></div>
-            </div>
-            ${ctaBtn} ${timeMessage}
-        </div>`;
     }
+    
+    var ctaBtn = (isHome && !isLocked && sc === 'en-cours') ? `<a href="${TELEGRAM_LINK}" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>` : '';
+    if (isHome && isLocked && sc === 'en-cours') ctaBtn = `<button class="combined-cta-btn" style="background: var(--bg-input); color: var(--text-gray); cursor: not-allowed;"><i class="fas fa-lock"></i> Trop tard, match commencé !</button>`;
+
+    return `
+    <div class="combined-card">
+        <div class="combined-header">
+            <div class="combined-status"><span class="status-badge ${sc}">${sl[sc]}</span><span class="combined-label">Combiné</span></div>
+            <i class="fas fa-ellipsis-h combined-more"></i>
+        </div>
+        <div class="combined-progress"><div class="combined-progress-fill" style="width:${pw};${pc}"></div></div>
+        <div class="combined-body" style="padding-top: 10px;">${mH}</div>
+        <div class="combined-footer" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
+            <div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span><span class="combined-footer-value ${blurClass}">${displayTotalOdds}</span></div>
+            <div class="combined-footer-row" style="margin-bottom: 16px;"><span class="combined-footer-label">Mise</span><span class="combined-footer-value ${blurClass}">${displayMise}</span></div>
+            <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 0 -16px 16px -16px;"></div>
+            <div class="combined-footer-row"><span class="combined-footer-label" style="font-size:14px;">Gains potentiels</span><span class="combined-footer-value gains ${blurClass}">${displayGains}</span></div>
+        </div>
+        ${ctaBtn} ${timeMessage}
+    </div>`;
+}
     function showToast(msg, err) {
         err = err || false;
         var t = document.getElementById('toast');
