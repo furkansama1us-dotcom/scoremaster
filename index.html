@@ -815,6 +815,13 @@
         .contact-pref-label i {
             font-size: 16px;
         }
+        /* STYLES DYNAMIQUES POUR L'ÉDITEUR (VERT/ROUGE) */
+        .match-entry.status-termine { border-color: rgba(0, 200, 83, 0.5); background: linear-gradient(145deg, rgba(0,200,83,0.05) 0%, var(--bg-card) 100%); }
+        .match-entry.status-perdu { border-color: rgba(255, 61, 61, 0.5); background: linear-gradient(145deg, rgba(255,61,61,0.05) 0%, var(--bg-card) 100%); }
+        .match-status-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: 800; text-transform: uppercase; }
+        .match-status-badge.termine { background: rgba(0,200,83,0.15); color: var(--green); }
+        .match-status-badge.perdu { background: rgba(255,61,61,0.15); color: var(--red); }
+        .match-status-badge.en-cours { display: none; }
     </style>
 </head>
 <body>
@@ -2078,20 +2085,48 @@
     
     function closeAdmin() { document.getElementById('admin-page').classList.remove('active'); }
 
+function updateMatchVisuals() {
+        var status = document.getElementById('admin-status').value;
+        var entries = document.querySelectorAll('.match-entry');
+        
+        entries.forEach(function(entry) {
+            // Retire les anciennes classes
+            entry.classList.remove('status-termine', 'status-perdu', 'status-en-cours');
+            // Ajoute la classe correspondante au statut actuel
+            entry.classList.add('status-' + status);
+            
+            // Gère le badge à côté du "Match X"
+            var badge = entry.querySelector('.match-status-badge');
+            if (badge) {
+                badge.className = 'match-status-badge ' + status;
+                if (status === 'termine') badge.innerHTML = 'Gagné <i class="fas fa-check"></i>';
+                else if (status === 'perdu') badge.innerHTML = 'Perdu <i class="fas fa-times"></i>';
+                else badge.innerHTML = '';
+            }
+        });
+    }
+
+    // On écoute les changements sur le menu déroulant du statut pour mettre à jour en temps réel
+    document.getElementById('admin-status').addEventListener('change', updateMatchVisuals);
+
     function addMatchEntry(data) {
         data = data || null;
         matchEntryCount++;
         var c = document.getElementById('admin-matches');
         var e = document.createElement('div');
         e.className = 'match-entry';
-        e.innerHTML = '<div class="match-entry-header"><span class="match-entry-number"><i class="fas fa-futbol"></i> Match ' + matchEntryCount + '</span><button type="button" class="match-entry-remove" onclick="removeMatchEntry(this)"><i class="fas fa-trash"></i></button></div>'
+        
+        // Ajout du conteneur pour le petit badge visuel (match-status-badge)
+        e.innerHTML = '<div class="match-entry-header"><span class="match-entry-number"><i class="fas fa-futbol"></i> Match ' + matchEntryCount + '<span class="match-status-badge"></span></span><button type="button" class="match-entry-remove" onclick="removeMatchEntry(this)"><i class="fas fa-trash"></i></button></div>'
             + '<input type="hidden" class="match-logo-input" value="' + (data && data.logo ? data.logo : '') + '">'
             + '<div class="admin-field"><div class="admin-label"><i class="fas fa-users"></i> Équipes</div><input type="text" class="admin-input match-teams-input" placeholder="Équipe A - Équipe B" value="' + (data ? data.teams : '') + '" oninput="calculateGains()"></div>'
             + '<div class="admin-row"><div class="admin-field"><div class="admin-label"><i class="fas fa-bullseye"></i> Score exact</div><input type="text" class="admin-input match-score-input" placeholder="2 - 1" value="' + (data ? data.score : '') + '" oninput="calculateGains()"></div>'
             + '<div class="admin-field"><div class="admin-label"><i class="fas fa-chart-line"></i> Cote</div><input type="text" inputmode="decimal" class="admin-input match-odds-input" placeholder="7.00" value="' + (data ? data.odds : '') + '" oninput="calculateGains()"></div></div>'
             + '<div class="admin-field"><div class="admin-label"><i class="fas fa-clock"></i> Horaire</div><input type="text" class="admin-input match-time-input" placeholder="Dem. 21:00" value="' + (data ? data.time : '') + '"></div>';
+        
         c.appendChild(e);
         calculateGains();
+        updateMatchVisuals(); // On met à jour le design dès qu'un match est ajouté
     }
 
     function removeMatchEntry(btn) {
