@@ -1884,8 +1884,8 @@
             return; 
         }
 
-try {
-            // Insertion des données dans Supabase
+        try {
+            // 1. Sauvegarde dans Supabase
             const { data, error } = await supabaseClient
                 .from('subscription_requests')
                 .insert([
@@ -1899,7 +1899,32 @@ try {
 
             if (error) throw error;
 
-            // Succès : affichage de la popup
+            // 2. Envoi de la notification Telegram à l'Admin
+            // Remplace par tes vraies informations récupérées à l'Étape 1
+            const botToken = 'COLLE_TON_TOKEN_ICI'; 
+            const chatId = 'COLLE_TON_ID_ICI'; 
+
+            // Si tu as bien mis ton token, on envoie la notification
+            if (botToken !== 'COLLE_TON_TOKEN_ICI') {
+                const textMessage = `🚨 *Nouvelle Demande VIP !*\n\n` +
+                                    `📦 *Pack* : ${packType}\n` +
+                                    `📱 *Réseau* : ${contactMethod}\n` +
+                                    `📞 *Contact* : \`${contactInfo}\`\n` +
+                                    `💬 *Message* : ${message || 'Aucun'}`;
+
+                // On utilise un fetch asynchrone qui ne bloque pas l'utilisateur
+                fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: textMessage,
+                        parse_mode: 'Markdown'
+                    })
+                }).catch(err => console.error("Erreur notif Telegram:", err));
+            }
+
+            // 3. Succès : affichage de la popup pour le client
             closeSubscribePopup();
             setTimeout(function() {
                 var successPopup = document.getElementById('success-popup');
