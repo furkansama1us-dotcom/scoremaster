@@ -1851,7 +1851,7 @@
             let randomIntro = intros[Math.floor(Math.random() * intros.length)];
             let randomOutro = outros[Math.floor(Math.random() * outros.length)];
 
-            // 5. Construction du message final (Horaires en gras et insistance sur la deadline)
+            // 5. Construction du message final avec les liens ajoutés
             let telegramDraft = 
                 `📝 *BROUILLON CANAL PUBLIC :*\n` +
                 `_(À copier/coller sur votre canal)_\n\n` +
@@ -1862,8 +1862,10 @@
                 `⚠️ Début des matchs : ${dayContext} à *${earliestTime}*\n` +
                 `⛔️ *FERMETURE STRICTE DES ACCÈS :* *${deadlineStr}* ❗️\n\n` +
                 `${randomOutro}\n\n` +
-                `Pour les nouveaux, contactez-nous dès maintenant :\n` +
-                `➡️ @ScoreMasterOfficiel`;
+                `📱 *Nous rejoindre / Nous contacter :*\n` +
+                `🌐 Site Web : https://scoremaster.fr/\n` +
+                `📸 Instagram : https://www.instagram.com/scoremaster.fr/\n` +
+                `➡️ Telegram : @ScoreMasterOfficiel`;
 
             // 6. Envoi au Bot (qui te le transmettra en privé)
             fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
