@@ -227,16 +227,13 @@
         .watermark-img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80px;opacity:.07;pointer-events:none}
         /* À mettre dans ta balise <style> en haut du fichier */
 .blurred-value {
-    color: rgba(255, 255, 255, 0.2) !important;
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.8) !important;
-    filter: blur(4px) !important;
+    filter: blur(5px) !important;
+    opacity: 0.9;
     user-select: none;
     pointer-events: none;
-    display: inline-block; /* Garde le texte sur la même ligne */
-}
-.blurred-value.gains {
-    color: rgba(0, 200, 83, 0.2) !important;
-    text-shadow: 0 0 8px rgba(0, 200, 83, 0.8) !important;
+    /* On force l'affichage inline-block pour éviter que ça ne prenne toute la largeur (les carrés gris) */
+    display: inline-block; 
+    min-width: 30px;
 }
         .combined-cta-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:calc(100% - 32px);margin:0 16px 16px;padding:15px;background:linear-gradient(135deg,#0088cc,#006faa);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;text-decoration:none;text-align:center;box-shadow:0 6px 20px rgba(0,136,204,.35);transition:all .3s;position:relative;overflow:hidden}
         .combined-cta-btn i.tg-icon{font-size:20px}
@@ -2075,14 +2072,15 @@
             var displayOdds = isMatchObscured ? '**.**' : m.odds.toFixed(2);
             
             var blurClass = isMatchObscured ? 'blurred-value' : '';
+            // L'ajout du crossorigin="anonymous" est OBLIGATOIRE ici
             var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;" crossorigin="anonymous">` : `<i class="fas fa-shield-alt"></i> `;
             
             let cleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : "--:--";
             let finalTimeDisplay = smartPrefix + (cleanTime ? cleanTime[0] : "");
 
             mH += `<div class="match-row">
-                    <div class="match-row-top">
-                        <div class="match-type">
+                    <div class="match-row-top" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div class="match-type" style="white-space:nowrap;">
                             <i class="fas fa-futbol" style="color: #fff; margin-right: 6px; font-size: 14px;"></i> 
                             Score exact <span class="${blurClass}" style="margin-left:5px; font-weight:700; color:var(--green);">${displayScore}</span>
                         </div>
@@ -2096,7 +2094,6 @@
         });
         
         var pc = sc === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : sc === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
-        
         var isObscured = (isHome && sc === 'en-cours');
         var blurClass = isObscured ? 'blurred-value' : '';
         
@@ -2122,7 +2119,7 @@
         if (isHome && isLocked && sc === 'en-cours') ctaBtn = `<button class="combined-cta-btn" style="background: var(--bg-input); color: var(--text-gray); cursor: not-allowed;"><i class="fas fa-lock"></i> Trop tard, match commencé !</button>`;
 
         return `
-        <div class="combined-card">
+        <div class="combined-card" style="width:100%;">
             <div class="combined-header">
                 <div class="combined-status"><span class="status-badge ${sc}">${sl[sc]}</span><span class="combined-label">Combiné</span></div>
                 <i class="fas fa-ellipsis-h combined-more"></i>
@@ -2133,7 +2130,7 @@
                 <div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span><span class="combined-footer-value ${blurClass}">${displayTotalOdds}</span></div>
                 <div class="combined-footer-row" style="margin-bottom: 16px;"><span class="combined-footer-label">Mise</span><span class="combined-footer-value ${blurClass}">${displayMise}</span></div>
                 <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 0 -16px 16px -16px;"></div>
-                <div class="combined-footer-row"><span class="combined-footer-label" style="font-size:14px;">Gains potentiels</span><span class="combined-footer-value gains ${blurClass}">${displayGains}</span></div>
+                <div class="combined-footer-row"><span class="combined-footer-label" style="font-size:14px;">Gains potentiels</span><span class="combined-footer-value gains ${blurClass}" style="color:var(--green);">${displayGains}</span></div>
             </div>
             ${ctaBtn} ${timeMessage}
         </div>`;
