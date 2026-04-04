@@ -2246,10 +2246,27 @@ function calculateGains() {
     }
 
     function updateStats() {
-        document.getElementById('stat-total').textContent = appStats.total;
-        document.getElementById('stat-wins').textContent = appStats.wins;
-        document.getElementById('stat-pending').textContent = appStats.pending;
-        document.getElementById('stat-losses').textContent = appStats.losses;
+        var total = allCombineds.length;
+        var wins = 0;
+        var losses = 0;
+        var pending = 0;
+
+        // On recompte tout en temps réel basé sur la vraie base de données
+        allCombineds.forEach(function(c) {
+            if (c.status === 'termine') {
+                wins++;
+            } else if (c.status === 'perdu') {
+                losses++;
+            } else {
+                pending++; // "en-cours"
+            }
+        });
+
+        // On met à jour l'affichage
+        document.getElementById('stat-total').textContent = total;
+        document.getElementById('stat-wins').textContent = wins;
+        document.getElementById('stat-pending').textContent = pending;
+        document.getElementById('stat-losses').textContent = losses;
     }
 
     function renderCombined() {
