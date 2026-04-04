@@ -1477,7 +1477,11 @@
     }
 
     function addMatchFromAPI(teams, time, logo) {
-        addMatchEntry({ teams: teams, score: '2 - 1', odds: '7.00', time: time, logo: logo });
+        // On extrait uniquement l'heure (ex: "21:00") du texte "Auj. 21:00"
+        let onlyTime = time.match(/\d{2}:\d{2}/);
+        let cleanTime = onlyTime ? onlyTime[0] : time;
+        
+        addMatchEntry({ teams: teams, score: '2 - 1', odds: '7.00', time: cleanTime, logo: logo });
         showToast('Match ajouté !');
     }
 
@@ -2022,6 +2026,21 @@
         var mH = '';
         var matchesToDisplay = c.matches ? c.matches : Array(c.nombre_matchs || 2).fill({ teams: 'Match en attente', time: '--:--', odds: 0 });
         
+        // --- LOGIQUE DE DATE INTELLIGENTE ---
+        let today = new Date();
+        let tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
+        let combinDate = new Date(c.date);
+        
+        let smartPrefix = "";
+        if (combinDate.toDateString() === today.toDateString()) {
+            smartPrefix = "Auj. ";
+        } else if (combinDate.toDateString() === tomorrow.toDateString()) {
+            smartPrefix = "Dem. ";
+        } else {
+            smartPrefix = fmtD(c.date) + " "; // Affiche "04/04 " si c'est plus lointain
+        }
+        // ------------------------------------
+
         matchesToDisplay.forEach(function (m) {
             var mStatus = m.match_status || (sc === 'en-cours' ? 'en-cours' : sc);
             var isMatchObscured = isHome && mStatus === 'en-cours';
@@ -2031,10 +2050,14 @@
             var oddsHtml = isMatchObscured ? '<div class="match-odds blurred-value">' + displayOdds + '</div>' : '<div class="match-odds">' + displayOdds + '</div>';
             var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<i class="fas fa-shield-alt"></i> `;
             
-            // Retour du ballon de foot blanc et noir classique à la place de l'horloge
-            mH += '<div class="match-row"><div class="match-row-top"><div class="match-type"><i class="fas fa-futbol" style="color: #fff; margin-right: 6px; font-size: 14px;"></i> Score exact ' + scoreHtml + '</div>' + oddsHtml + '</div><div class="match-row-bottom"><div class="match-teams">' + logoDisplay + (m.teams || 'Équipes') + '</div><div class="match-time">' + (m.time || '') + '</div></div></div>';
+            // On nettoie l'heure pour ne garder que "HH:MM" au cas où il y aurait encore "Auj." stocké en base
+            let cleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : "--:--";
+            let finalTimeDisplay = smartPrefix + (cleanTime ? cleanTime[0] : "");
+
+            mH += '<div class="match-row"><div class="match-row-top"><div class="match-type"><i class="fas fa-futbol" style="color: #fff; margin-right: 6px; font-size: 14px;"></i> Score exact ' + scoreHtml + '</div>' + oddsHtml + '</div><div class="match-row-bottom"><div class="match-teams">' + logoDisplay + (m.teams || 'Équipes') + '</div><div class="match-time">' + finalTimeDisplay + '</div></div></div>';
         });
         
+        // ... (le reste du code de la fonction buildCC reste identique au précédent)
         var pc = sc === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : sc === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
         var displayGains = (isHome && sc === 'en-cours') ? '***,** €' : fmtC(c.gains || 0);
         var displayTotalOdds = (isHome && sc === 'en-cours') ? '***.**' : (c.total_odds || c.totalOdds || 0).toFixed(2);
@@ -2074,11 +2097,7 @@
             <div class="combined-progress">
                 <div class="combined-progress-fill" style="width:${pw};${pc}"></div>
             </div>
-            
-            <div class="combined-body" style="padding-top: 10px;">
-                ${mH}
-            </div>
-            
+            <div class="combined-body" style="padding-top: 10px;">${mH}</div>
             <div class="combined-footer" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
                 <div class="combined-footer-row">
                     <span class="combined-footer-label">Cote totale</span>
@@ -2088,20 +2107,16 @@
                     <span class="combined-footer-label">Mise</span>
                     <span class="combined-footer-value">${displayMise}</span>
                 </div>
-                
                 <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 0 -16px 16px -16px;"></div>
-                
                 <div class="combined-footer-row">
                     <span class="combined-footer-label" style="font-size:14px;">Gains potentiels</span>
                     <span class="combined-footer-value gains ${((isHome && sc === 'en-cours')?'blurred-value':'')}">${displayGains}</span>
                 </div>
             </div>
-            
             ${ctaBtn}
             ${timeMessage}
         </div>`;
     }
-
     function showToast(msg, err) {
         err = err || false;
         var t = document.getElementById('toast');
