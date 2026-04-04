@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -1869,59 +1868,44 @@
     }
 
    async function submitSubscription() {
-    var contactInfo = document.getElementById('sub-contact-info').value.trim();
-    var contactMethod = document.querySelector('input[name="contact-pref"]:checked').value;
-    var packType = document.getElementById('subscribe-pack-type').value;
-    var message = document.getElementById('sub-message').value.trim();
+        var contactInfo = document.getElementById('sub-contact-info').value.trim();
+        var contactMethod = document.querySelector('input[name="contact-pref"]:checked').value;
+        var packType = document.getElementById('subscribe-pack-type').value;
+        var message = document.getElementById('sub-message').value.trim();
 
-    if (!contactInfo) { 
-        showToast(contactMethod === 'whatsapp' ? 'Le numéro de téléphone est obligatoire.' : 'Le pseudo Instagram est obligatoire.', true); 
-        return; 
+        if (!contactInfo) { 
+            showToast(contactMethod === 'whatsapp' ? 'Le numéro de téléphone est obligatoire.' : 'Le pseudo Instagram est obligatoire.', true); 
+            return; 
+        }
+
+        try {
+            // Insertion des données dans Supabase
+            const { data, error } = await supabaseClient
+                .from('subscription_requests')
+                .insert([
+                    { 
+                        pack_type: packType, 
+                        contact_method: contactMethod, 
+                        contact_info: contactInfo, 
+                        message: message 
+                    }
+                ]);
+
+            if (error) throw error;
+
+            // Succès : affichage de la popup
+            closeSubscribePopup();
+            setTimeout(function() {
+                var successPopup = document.getElementById('success-popup');
+                successPopup.style.display = 'flex';
+                setTimeout(function () { successPopup.style.opacity = '1'; successPopup.firstElementChild.style.transform = 'scale(1)'; }, 10);
+            }, 300);
+
+        } catch (error) {
+            showToast("Erreur lors de la sauvegarde de la demande.", true);
+            console.error("Erreur Supabase:", error);
+        }
     }
-
-    try {
-        // Insertion des données dans Supabase
-        const { data, error } = await supabaseClient
-            .from('subscription_requests')
-            .insert([
-                { 
-                    pack_type: packType, 
-                    contact_method: contactMethod, 
-                    contact_info: contactInfo, 
-                    message: message 
-                }
-            ]);
-
-        if (error) throw error;
-
-        // Succès : affichage de la popup
-        closeSubscribePopup();
-        setTimeout(function() {
-            var successPopup = document.getElementById('success-popup');
-            successPopup.style.display = 'flex';
-            setTimeout(function () { successPopup.style.opacity = '1'; successPopup.firstElementChild.style.transform = 'scale(1)'; }, 10);
-        }, 300);
-
-    } catch (error) {
-        showToast("Erreur lors de la sauvegarde de la demande.", true);
-        console.error("Erreur Supabase:", error);
-    }
-}
-        if (!response.ok) throw new Error("Erreur réseau");
-
-        // Si l'envoi réussit, on ferme la popup et on affiche le succès
-        closeSubscribePopup();
-        setTimeout(function() {
-            var successPopup = document.getElementById('success-popup');
-            successPopup.style.display = 'flex';
-            setTimeout(function () { successPopup.style.opacity = '1'; successPopup.firstElementChild.style.transform = 'scale(1)'; }, 10);
-        }, 300);
-
-    } catch (error) {
-        showToast("Erreur lors de l'envoi. Veuillez réessayer.", true);
-        console.error("Erreur Telegram:", error);
-    }
-}
 </script>
 
 </body>
