@@ -2017,8 +2017,8 @@
             var oddsHtml = isMatchObscured ? '<div class="match-odds blurred-value">' + displayOdds + '</div>' : '<div class="match-odds">' + displayOdds + '</div>';
             var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<i class="fas fa-shield-alt"></i> `;
             
-            // Modification ici : L'icône de la petite horloge grise
-            mH += '<div class="match-row"><div class="match-row-top"><div class="match-type"><div style="width:20px;height:20px;border-radius:50%;border:1px solid #555;display:flex;align-items:center;justify-content:center;margin-right:6px;"><i class="fas fa-clock" style="color:var(--text-gray);font-size:10px;"></i></div> Score exact ' + scoreHtml + '</div>' + oddsHtml + '</div><div class="match-row-bottom"><div class="match-teams">' + logoDisplay + (m.teams || 'Équipes') + '</div><div class="match-time">' + (m.time || '') + '</div></div></div>';
+            // Retour du ballon de foot blanc et noir classique à la place de l'horloge
+            mH += '<div class="match-row"><div class="match-row-top"><div class="match-type"><i class="fas fa-futbol" style="color: #fff; margin-right: 6px; font-size: 14px;"></i> Score exact ' + scoreHtml + '</div>' + oddsHtml + '</div><div class="match-row-bottom"><div class="match-teams">' + logoDisplay + (m.teams || 'Équipes') + '</div><div class="match-time">' + (m.time || '') + '</div></div></div>';
         });
         
         var pc = sc === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : sc === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
@@ -2042,16 +2042,9 @@
         }
         
         var ctaBtn = '';
-        var completerBtn = '';
-
         if (isHome) {
             if (isLocked && sc === 'en-cours') ctaBtn = `<button class="combined-cta-btn" style="background: var(--bg-input); color: var(--text-gray); box-shadow: none; cursor: not-allowed;"><i class="fas fa-lock"></i> Trop tard, match commencé !</button>`;
             else if (sc === 'en-cours') ctaBtn = `<a href="${TELEGRAM_LINK}" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>`;
-        }
-        
-        // Ajout du bouton "Compléter" uniquement si le combiné est en cours
-        if (sc === 'en-cours') {
-             completerBtn = `<button style="display:block;width:calc(100% - 32px);margin:10px 16px 16px;padding:12px;background:#fff;color:#000;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;text-align:center;">Compléter</button>`;
         }
 
         return `
@@ -2072,7 +2065,6 @@
                 ${mH}
             </div>
             
-            <!-- Nouvelle section Footer réorganisée -->
             <div class="combined-footer" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
                 <div class="combined-footer-row">
                     <span class="combined-footer-label">Cote totale</span>
@@ -2083,7 +2075,6 @@
                     <span class="combined-footer-value">${displayMise}</span>
                 </div>
                 
-                <!-- Ligne de séparation pour les gains -->
                 <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 0 -16px 16px -16px;"></div>
                 
                 <div class="combined-footer-row">
@@ -2092,7 +2083,6 @@
                 </div>
             </div>
             
-            ${completerBtn}
             ${ctaBtn}
             ${timeMessage}
         </div>`;
