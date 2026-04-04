@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
@@ -1867,17 +1868,54 @@
                 `📸 Instagram : https://www.instagram.com/scoremaster.fr/\n` +
                 `➡️ Telegram : @ScoreMasterOfficiel`;
 
-            // 6. Envoi au Bot (qui te le transmettra en privé)
-            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    chat_id: TELEGRAM_CHAT_ID,
-                    text: telegramDraft,
-                    parse_mode: 'Markdown'
-                })
-            }).catch(err => console.error("Erreur brouillon Telegram:", err));
-        }
+// 6. Prise de photo du combiné et Envoi au Bot avec l'image
+            
+            // A. On crée un objet "combiné" temporaire pour générer le visuel de l'accueil (flouté)
+            let tempCombined = {
+                matches: matches,
+                nombre_matchs: matches.length,
+                total_odds: tot,
+                mise: mise,
+                gains: gains,
+                date: date,
+                time: earliestTime
+            };
+            
+            // B. On génère le HTML du combiné version "Accueil" (isHome = true)
+            let slipHtml = buildCC(tempCombined, 'en-cours', { 'en-cours': 'En cours' }, '50%', true);
+            
+            // C. On crée un conteneur invisible sur la page pour y placer le combiné
+            let captureDiv = document.createElement('div');
+            captureDiv.style.position = 'absolute';
+            captureDiv.style.left = '-9999px';
+            captureDiv.style.width = '380px'; // Largeur mobile standard
+            captureDiv.style.background = 'var(--bg-dark)';
+            captureDiv.style.padding = '15px';
+            captureDiv.innerHTML = slipHtml;
+            document.body.appendChild(captureDiv);
+
+            // D. On prend la photo avec html2canvas
+            html2canvas(captureDiv, { backgroundColor: '#0D0D0D' }).then(canvas => {
+                canvas.toBlob(blob => {
+                    // On prépare le colis pour Telegram (Image + Texte en légende)
+                    let formData = new FormData();
+                    formData.append('chat_id', TELEGRAM_CHAT_ID);
+                    formData.append('photo', blob, 'apercu_combine.png');
+                    formData.append('caption', telegramDraft);
+                    formData.append('parse_mode', 'Markdown');
+
+                    // E. Envoi via l'API sendPhoto
+                    fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(() => {
+                        // On nettoie la page en supprimant le combiné invisible
+                        document.body.removeChild(captureDiv);
+                    })
+                    .catch(err => console.error("Erreur envoi photo Telegram:", err));
+                });
+            });
         
         await chargerDonnees();
         switchAdminTab('dashboard');
