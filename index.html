@@ -1417,7 +1417,7 @@
         var email = document.getElementById('login-email').value;
         var password = document.getElementById('login-password').value;
         var username = document.getElementById('login-username').value;
-        if (!email || !password || (isSignUpMode && !username)) { showToast('Veuillez remplir tous les champs', true); return; }
+        if (!email || !password || (isSignUpMode && !username)) { showToast('Veuillez remplir tous champs', true); return; }
         try {
             var result;
             if (isSignUpMode) {
@@ -1885,7 +1885,7 @@
         }
 
         try {
-            // 1. Sauvegarde dans Supabase
+            // Insertion des données dans Supabase
             const { data, error } = await supabaseClient
                 .from('subscription_requests')
                 .insert([
