@@ -1868,7 +1868,7 @@
                 `📸 Instagram : https://www.instagram.com/scoremaster.fr/\n` +
                 `➡️ Telegram : @ScoreMasterOfficiel`;
 
-// 6. Prise de photo du combiné et Envoi au Bot avec l'image
+            // 6. Prise de photo du combiné et Envoi au Bot avec l'image
             
             // A. On crée un objet "combiné" temporaire pour générer le visuel de l'accueil (flouté)
             let tempCombined = {
@@ -1916,6 +1916,7 @@
                     .catch(err => console.error("Erreur envoi photo Telegram:", err));
                 });
             });
+        } // FIN DU ELSE (NOUVEAU COMBINÉ)
         
         await chargerDonnees();
         switchAdminTab('dashboard');
