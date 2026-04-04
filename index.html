@@ -2106,21 +2106,26 @@
         entries.forEach(function (e, i) { e.querySelector('.match-entry-number').innerHTML = '<i class="fas fa-futbol"></i> Match ' + (i + 1); });
     }
 
-    function calculateGains() {
+function calculateGains() {
         var entries = document.querySelectorAll('.match-entry');
         var miseVal = document.getElementById('admin-mise').value.replace(',', '.');
         var mise = parseFloat(miseVal) || 0;
         var tot = 1, cnt = 0;
+        
         entries.forEach(function (e) { 
             var oVal = e.querySelector('.match-odds-input').value.replace(',', '.');
             var o = parseFloat(oVal) || 0; 
             if (o > 0) { tot *= o; cnt++; } 
         });
+        
         if (cnt === 0) tot = 0;
-        document.getElementById('summary-matches').textContent = entries.length;
-        document.getElementById('summary-odds').textContent = tot.toFixed(2);
-        document.getElementById('summary-mise').textContent = fmtC(mise);
-        document.getElementById('summary-gains').textContent = fmtC(mise * tot);
+        
+        // On vérifie que les éléments existent avant de modifier le texte pour éviter les plantages
+        var sumOdds = document.getElementById('summary-odds');
+        if (sumOdds) sumOdds.textContent = tot.toFixed(2);
+        
+        var sumGains = document.getElementById('summary-gains');
+        if (sumGains) sumGains.textContent = fmtC(mise * tot);
     }
 
     function fmtC(v) { return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(v); }
