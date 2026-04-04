@@ -1143,12 +1143,17 @@
         <!-- Plateforme -->
         <div class="profile-platform-section">
             <span class="profile-platform-label"><i class="fas fa-gamepad" style="color:var(--primary-yellow); margin-right:5px;"></i> Plateforme de paris favorite</span>
-            <select class="profile-platform-select" id="profile-platform-select">
+            <select class="profile-platform-select" id="profile-platform-select" onchange="updateBettingBtnText()">
                 <option value="BETCLIC">Betclic</option>
                 <option value="WINAMAX">Winamax</option>
                 <option value="UNIBET">Unibet</option>
             </select>
         </div>
+        
+        <!-- LE BOUTON MAGIQUE EST ICI -->
+        <button id="open-betting-ui-btn" onclick="openBettingInterface()" style="width: 100%; padding: 12px; background: #2A2A3A; color: #fff; border: 1px solid #444; border-radius: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 15px; margin-bottom: 10px; font-family: 'Montserrat', sans-serif; display:flex; align-items:center; justify-content:center; gap:8px; transition: all 0.2s;">
+            <i class="fas fa-external-link-alt"></i> <span id="open-betting-ui-text">Ouvrir l'interface Betclic</span>
+        </button>
         <!-- Boutons -->
         <button class="profile-save-btn" onclick="saveProfileFromModal()">
             <i class="fas fa-save" style="margin-right:6px;"></i> Enregistrer
