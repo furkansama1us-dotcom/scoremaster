@@ -293,7 +293,21 @@
         .vip-notice{margin:0 20px 15px;padding:14px 16px;background:var(--bg-card);border-radius:12px;font-size:13px;color:var(--text-light-gray);line-height:1.5;text-align:center}
         
         .vip-combined-container{padding:0 20px;margin-bottom:15px}
-        #admin-page{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg-dark);z-index:8000;overflow-y:auto;-webkit-overflow-scrolling:touch}
+        #admin-page {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-dark);
+    /* On passe le z-index à 10001 pour être AU-DESSUS du menu (qui est à 9999) */
+    z-index: 10001; 
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    /* On ajoute un espace en bas pour que le bouton ne colle pas au bord de l'écran */
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
         #admin-page.active{display:block}
         .admin-header{padding:calc(15px + var(--safe-top)) 20px 15px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg-dark);z-index:10}
         .admin-header h2{font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px}
