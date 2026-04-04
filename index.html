@@ -1497,7 +1497,7 @@
     async function finalizeLogin(user) {
         var profile = null;
         try {
-            var profileRes = await supabaseClient.from('profiles').select('is_vip, is_admin, username, created_at').eq('id', user.id).single();
+            var profileRes = await supabaseClient.from('profiles').select('is_vip, is_admin, username').eq('id', user.id).single();
             profile = profileRes.data;
         } catch(e) {}
 
