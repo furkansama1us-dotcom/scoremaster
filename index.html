@@ -1767,6 +1767,7 @@
         if (mise <= 0) { showToast('Saisissez une mise !', true); return; }
         var matches = [], publicMatches = [], valid = true;
         var earliestTime = '23:59';
+        
         entries.forEach(function (e) {
             var t = e.querySelector('.match-teams-input').value.trim();
             var s = e.querySelector('.match-score-input').value.trim();
@@ -1783,21 +1784,89 @@
             if (extracted && extracted[0] < earliestTime) earliestTime = extracted[0];
         });
         if (!valid) { showToast('Remplissez tous champs (Cote/Score manquants) !', true); return; }
+        
         var tot = 1; matches.forEach(function (m) { tot *= m.odds; });
         var gains = mise * tot;
+        
         if (editingId) {
+            // Mise à jour d'un combiné existant
             var updatePub = await supabaseClient.from('combineds_public').update({ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }).eq('id', editingId);
             if (updatePub.error) { showToast('Erreur Update', true); return; }
             var updateVip = await supabaseClient.from('combineds_vip').update({ matches: matches, mise: mise, gains: gains, total_odds: tot }).eq('id', editingId);
             if (updateVip.error) { showToast('Erreur Update VIP', true); return; }
             showToast('Combiné mis à jour !');
         } else {
+            // Création d'un NOUVEAU combiné
             var pubRes = await supabaseClient.from('combineds_public').insert([{ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }]).select().single();
             if (pubRes.error) { showToast('Erreur Création', true); return; }
             var vipRes = await supabaseClient.from('combineds_vip').insert([{ id: pubRes.data.id, matches: matches, mise: mise, gains: gains, total_odds: tot }]);
             if (vipRes.error) { showToast('Erreur Création VIP', true); return; }
+            
             showToast('Combiné créé avec succès !');
+
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            // GÉNÉRATION DU BROUILLON TELEGRAM (Envoyé en privé à l'Admin)
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            
+            // 1. Calcul de l'heure limite (15 min avant earliestTime)
+            let matchDateTime = new Date(`${date}T${earliestTime}:00`);
+            let deadlineDateTime = new Date(matchDateTime.getTime() - 15 * 60000);
+            let deadlineStr = String(deadlineDateTime.getHours()).padStart(2, '0') + ':' + String(deadlineDateTime.getMinutes()).padStart(2, '0');
+
+            // 2. Formatage du jour (Aujourd'hui, Demain ou date)
+            let today = new Date();
+            let tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
+            let dayContext = "le " + new Date(date).toLocaleDateString('fr-FR');
+            if (date === today.toISOString().split('T')[0]) dayContext = "aujourd'hui";
+            else if (date === tomorrow.toISOString().split('T')[0]) dayContext = "demain";
+
+            // 3. Liste des matchs (SANS les scores)
+            let matchLines = "";
+            matches.forEach(m => { matchLines += `⚽️ ${m.teams}\n`; });
+
+            // 4. Textes aléatoires pour varier les messages
+            const intros = [
+                "Salut l’équipe ! 🔥\nPetit rappel important : le nouveau combiné est officiellement disponible ! Vous pouvez le retrouver dès maintenant sur l'application.",
+                "BOOM ! 💥 L'analyse est bouclée ! Le nouveau combiné VIP+ est en ligne et vous attend dans l'espace membre.",
+                "Alerte VIP ! 🚨 Nos experts ont tranché. Le ticket du jour est validé et posté sur l'app.",
+                "Vous l'attendiez, le voilà ! 👑 Le combiné ultra-sécurisé vient de tomber sur Score Master."
+            ];
+            const outros = [
+                "C’est le moment parfait pour prendre de l’avance et placer votre pari avant tout le monde. N’attendez pas, foncez ! 🙌⚡️",
+                "Faites vite avant que les cotes ne chutent ! On encaisse ensemble. 💸",
+                "Rejoignez l'élite VIP+ et validez ça avant l'heure limite. ⏳🚀",
+                "La confiance est maximale. Ne laissez pas passer ce ticket ! 🎯💰"
+            ];
+            
+            let randomIntro = intros[Math.floor(Math.random() * intros.length)];
+            let randomOutro = outros[Math.floor(Math.random() * outros.length)];
+
+            // 5. Construction du message final
+            let telegramDraft = 
+                `📝 *BROUILLON CANAL PUBLIC :*\n` +
+                `_(À copier/coller sur votre canal)_\n\n` +
+                `---\n\n` +
+                `${randomIntro}\n\n` +
+                `🏆 *AU PROGRAMME :*\n` +
+                `${matchLines}\n` +
+                `⚠️ *Début des matchs :* ${dayContext} à ${earliestTime} !\n` +
+                `⏳ *Fermeture des accès :* ${deadlineStr} (15min avant le coup d'envoi)\n\n` +
+                `${randomOutro}\n\n` +
+                `Pour les nouveaux, contactez-nous dès maintenant :\n` +
+                `➡️ @ScoreMasterOfficiel`;
+
+            // 6. Envoi au Bot (qui te le transmettra en privé)
+            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: TELEGRAM_CHAT_ID,
+                    text: telegramDraft,
+                    parse_mode: 'Markdown'
+                })
+            }).catch(err => console.error("Erreur brouillon Telegram:", err));
         }
+        
         await chargerDonnees();
         switchAdminTab('dashboard');
         renderAdminHistory();
