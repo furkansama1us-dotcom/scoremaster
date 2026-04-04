@@ -2000,10 +2000,10 @@
     }
 
    async function submitSubscription() {
-        var contactInfo   = document.getElementById('sub-contact-info').value.trim();
+        var contactInfo = document.getElementById('sub-contact-info').value.trim();
         var contactMethod = document.querySelector('input[name="contact-pref"]:checked').value;
-        var packType      = document.getElementById('subscribe-pack-type').value;
-        var message       = document.getElementById('sub-message').value.trim();
+        var packType = document.getElementById('subscribe-pack-type').value;
+        var message = document.getElementById('sub-message').value.trim();
 
         if (!contactInfo) { 
             showToast(contactMethod === 'whatsapp' ? 'Le numéro de téléphone est obligatoire.' : 'Le pseudo Instagram est obligatoire.', true); 
@@ -2011,40 +2011,19 @@
         }
 
         try {
-            // 1. Sauvegarde Supabase
+            // Insertion des données dans Supabase (C'est tout ce que fait le site web maintenant !)
             const { error } = await supabaseClient
                 .from('subscription_requests')
-                .insert([{ pack_type: packType, contact_method: contactMethod, contact_info: contactInfo, message: message }]);
+                .insert([{ 
+                    pack_type: packType, 
+                    contact_method: contactMethod, 
+                    contact_info: contactInfo, 
+                    message: message 
+                }]);
+
             if (error) throw error;
 
-            // 2. Notification Telegram enrichie avec profil complet
-            var p = window.currentUserProfile;
-            var memberSince = (p && p.created_at)
-                ? new Date(p.created_at).toLocaleDateString('fr-FR')
-                : 'Inconnu';
-
-            var textMessage =
-                `🚨 *Nouvelle Demande VIP !*\n\n` +
-                `━━━━━━━━━━━━━━━━━━\n` +
-                `👤 *PROFIL CLIENT*\n` +
-                `• Pseudo : \`${p ? p.pseudo : 'N/A'}\`\n` +
-                `• Email  : \`${p ? p.email : 'N/A'}\`\n` +
-                `• Rôle   : *${p ? p.role.toUpperCase() : 'N/A'}*\n` +
-                `• Inscrit le : ${memberSince}\n` +
-                `━━━━━━━━━━━━━━━━━━\n\n` +
-                `📦 *Pack* : ${packType}\n` +
-                `📱 *Contact* : ${contactMethod}\n` +
-                `📞 *Info* : \`${contactInfo}\`\n` +
-                `💬 *Message* : ${message || 'Aucun'}\n\n` +
-                `🕐 ${new Date().toLocaleString('fr-FR')}`;
-
-            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: textMessage, parse_mode: 'Markdown' })
-            }).catch(function(err) { console.error("Erreur notif Telegram:", err); });
-
-            // 3. Popup succès
+            // Succès : affichage de la popup pour le client
             closeSubscribePopup();
             setTimeout(function() {
                 var successPopup = document.getElementById('success-popup');
