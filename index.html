@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <script src="[unpkg.com](https://unpkg.com/@supabase/supabase-js@2)"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
@@ -17,8 +17,8 @@
     
     <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiU2NvcmUgTWFzdGVyIiwic2hvcnRfbmFtZSI6IlNjb3JlIE1hc3RlciIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMEQwRDBEIiwidGhlbWVfY29sb3IiOiIjMEQwRDBEIiwib3JpZW50YXRpb24iOiJwb3J0cmFpdCIsImljb25zIjpbeyJzcmMiOiJsb2dvLWRhcmsucG5nIiwic2l6ZXMiOiIxOTJ4MTkyIDUxMng1MTIiLCJ0eXBlIjoiaW1hZ2UvcG5nIiwicHVycG9zZSI6ImFueSBtYXNrYWJsZSJ9XX0=">
     
-    <link href="[fonts.googleapis.com](https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap)" rel="stylesheet">
-    <link rel="stylesheet" href="[cdnjs.cloudflare.com](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css)">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
     <style>
         .combined-card { display: flex; flex-direction: column; }
@@ -311,7 +311,7 @@
         .admin-input::placeholder{color:#555}
         .admin-row{display:flex;gap:10px}
         .admin-row .admin-field{flex:1}
-        .admin-select{width:100%;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;color:var(--text-white);font-size:14px;font-family:'Inter',sans-serif;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='[w3.org](http://www.w3.org/2000/svg)' viewBox='0 0 24 24' fill='%238A8A8A'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:24px}
+        .admin-select{width:100%;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;color:var(--text-white);font-size:14px;font-family:'Inter',sans-serif;outline:none;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%238A8A8A'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:24px}
         .admin-select:focus{border-color:var(--primary-yellow)}
         .match-entry{background:var(--bg-card);border-radius:14px;padding:16px;border:1px solid var(--border-color);margin-bottom:12px; transition:all 0.3s;}
         .match-entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
@@ -542,14 +542,14 @@
     const LOGO_LIGHT = "logo-light.png";
     const LOGO_SPLASH = "logo-splash.png";
     
-    const TELEGRAM_LINK = "[t.me](https://t.me/scoremasteroff)";
-    const SUPABASE_URL = '[pytqquerlktxnfnohwmg.supabase.co](https://pytqquerlktxnfnohwmg.supabase.co)';
+    const TELEGRAM_LINK = "https://t.me/scoremasteroff";
+    const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
     
     const FOOTBALL_DATA_API_KEY = '2620f835eb08886d508258550a5254a4';
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // TELEGRAM BOT — REMPLACE CES VALEURS
+    // TELEGRAM BOT
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     const TELEGRAM_BOT_TOKEN = '8602776375:AAEuhWYNqb26IG8igWDTUI5iUaqSW0plj9I';
     const TELEGRAM_CHAT_ID   = '905424902';
@@ -590,7 +590,7 @@
 <!-- LOGIN -->
 <div id="login-screen">
     <div class="hex-grid-login">
-        <svg viewBox="0 0 800 900" preserveAspectRatio="xMidYMid slice" xmlns="[w3.org](http://www.w3.org/2000/svg)">
+        <svg viewBox="0 0 800 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
             <defs>
                 <pattern id="hex-login" x="0" y="0" width="60" height="104" patternUnits="userSpaceOnUse">
                     <polygon points="30,2 58,17 58,47 30,62 2,47 2,17" fill="none" stroke="#FFD700" stroke-width="1"/>
@@ -606,7 +606,7 @@
     </div>
     <div class="login-form-container">
         <div class="pattern-bg-form">
-            <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" xmlns="[w3.org](http://www.w3.org/2000/svg)">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <pattern id="diamonds" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
                         <path d="M20,0 L40,20 L20,40 L0,20 Z" fill="none" stroke="#FFD700" stroke-width="0.5"/>
@@ -941,7 +941,7 @@
         <div class="page" id="page-contact">
             <div class="page-title-bar"><h2>Contact</h2></div>
             <div class="contact-page">
-                <a href="[t.me](https://t.me/scoremasteroff)" target="_blank" rel="noopener" class="contact-link">
+                <a href="https://t.me/scoremasteroff" target="_blank" rel="noopener" class="contact-link">
                     <div class="contact-card"><div class="contact-card-icon telegram"><i class="fab fa-telegram-plane"></i></div><div class="contact-card-info"><h4>Telegram</h4><p>Rejoignez notre canal officiel</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
                 </a>
                 <div class="contact-card"><div class="contact-card-icon instagram"><i class="fab fa-instagram"></i></div><div class="contact-card-info"><h4>Instagram</h4><p>@scoremaster.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
@@ -1053,6 +1053,10 @@
 
         <div class="admin-section">
             <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs du combiné</div>
+
+            <!-- =====================================================
+                 BARRE DE FILTRES DES MATCHS
+                 ===================================================== -->
             <div class="match-filter-bar" id="match-filter-bar">
                 <button class="match-filter-btn f-active-all" id="filter-btn-all" onclick="filterMatches('all', this)">
                     <i class="fas fa-list"></i> Tous
@@ -1071,6 +1075,7 @@
                     <span class="filter-count" id="count-perdu" style="background:rgba(255,61,61,0.2);color:var(--red);">0</span>
                 </button>
             </div>
+            <!-- Message si aucun match pour le filtre actif -->
             <div id="no-filter-result">
                 <i class="fas fa-search"></i>
                 Aucun match pour ce filtre
@@ -1406,7 +1411,7 @@
         var btn = document.getElementById('btn-fetch-api');
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche des matchs...';
         try {
-            var response = await fetch(`[v3.football.api-sports.io](https://v3.football.api-sports.io/fixtures?date=${date})`, { method: 'GET', headers: { 'x-apisports-key': API_KEY } });
+            var response = await fetch(`https://v3.football.api-sports.io/fixtures?date=${date}`, { method: 'GET', headers: { 'x-apisports-key': API_KEY } });
             if (!response.ok) throw new Error(`Erreur réseau: HTTP ${response.status}`);
             var data = await response.json();
             if (data.errors && Object.keys(data.errors).length > 0) throw new Error(Object.values(data.errors)[0]);
@@ -1994,7 +1999,7 @@
         setTimeout(function () { popup.style.display = 'none'; }, 300);
     }
 
-    async function submitSubscription() {
+   async function submitSubscription() {
         var contactInfo   = document.getElementById('sub-contact-info').value.trim();
         var contactMethod = document.querySelector('input[name="contact-pref"]:checked').value;
         var packType      = document.getElementById('subscribe-pack-type').value;
@@ -2033,7 +2038,7 @@
                 `💬 *Message* : ${message || 'Aucun'}\n\n` +
                 `🕐 ${new Date().toLocaleString('fr-FR')}`;
 
-            fetch(`[api.telegram.org](https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage)`, {
+            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: textMessage, parse_mode: 'Markdown' })
