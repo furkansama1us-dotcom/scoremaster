@@ -227,17 +227,16 @@
         .watermark-img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80px;opacity:.07;pointer-events:none}
         /* À mettre dans ta balise <style> en haut du fichier */
 .blurred-value {
-    color: rgba(255, 255, 255, 0.4) !important; /* Le texte reste visible mais atténué */
-    text-shadow: 0 0 6px rgba(255, 255, 255, 0.6) !important; /* Petit halo lumineux */
-    filter: blur(4px) !important; /* Le vrai flou, ajusté à 4px pour qu'on devine l'écriture */
+    color: rgba(255, 255, 255, 0.2) !important;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.8) !important;
+    filter: blur(4px) !important;
     user-select: none;
     pointer-events: none;
+    display: inline-block; /* Garde le texte sur la même ligne */
 }
-
-/* Version verte pour les gains potentiels */
 .blurred-value.gains {
-    color: rgba(0, 200, 83, 0.4) !important;
-    text-shadow: 0 0 6px rgba(0, 200, 83, 0.6) !important;
+    color: rgba(0, 200, 83, 0.2) !important;
+    text-shadow: 0 0 8px rgba(0, 200, 83, 0.8) !important;
 }
         .combined-cta-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:calc(100% - 32px);margin:0 16px 16px;padding:15px;background:linear-gradient(135deg,#0088cc,#006faa);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;text-decoration:none;text-align:center;box-shadow:0 6px 20px rgba(0,136,204,.35);transition:all .3s;position:relative;overflow:hidden}
         .combined-cta-btn i.tg-icon{font-size:20px}
@@ -2072,7 +2071,6 @@
             var mStatus = m.match_status || (sc === 'en-cours' ? 'en-cours' : sc);
             var isMatchObscured = isHome && mStatus === 'en-cours';
             
-            // On affiche clairement des astérisques qui seront floutés
             var displayScore = isMatchObscured ? '*** - ***' : m.score;
             var displayOdds = isMatchObscured ? '**.**' : m.odds.toFixed(2);
             
@@ -2086,7 +2084,7 @@
                     <div class="match-row-top">
                         <div class="match-type">
                             <i class="fas fa-futbol" style="color: #fff; margin-right: 6px; font-size: 14px;"></i> 
-                            Score exact <span class="${blurClass}" style="margin-left:5px; font-weight:700;">${displayScore}</span>
+                            Score exact <span class="${blurClass}" style="margin-left:5px; font-weight:700; color:var(--green);">${displayScore}</span>
                         </div>
                         <div class="match-odds ${blurClass}">${displayOdds}</div>
                     </div>
