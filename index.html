@@ -2215,6 +2215,23 @@
         setTimeout(function () { popup.style.display = 'none'; }, 300);
     }
 
+    // === FONCTIONS OUTILS (FORMATAGE) ===
+
+    // Formate les dates (ex: 2026-04-04 -> 04/04)
+    function fmtD(d) {
+        if (!d) return '';
+        var dt = new Date(d);
+        return String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getMonth() + 1).padStart(2, '0');
+    }
+
+    // Formate les prix en Euros (ex: 100 -> 100,00 €)
+    function fmtC(v) { 
+        return new Intl.NumberFormat('fr-FR', { 
+            style: 'currency', 
+            currency: 'EUR', 
+            minimumFractionDigits: 2 
+        }).format(v); 
+    }
 </script>
 
 </body>
