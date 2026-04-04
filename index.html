@@ -225,7 +225,14 @@
         .combined-footer-value{font-size:15px;font-weight:700}
         .combined-footer-value.gains{color:var(--green);font-size:18px}
         .watermark-img{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:80px;opacity:.07;pointer-events:none}
-        .blurred-value{filter:blur(6px);user-select:none;-webkit-user-select:none;pointer-events:none}
+        ..blurred-value {
+    filter: blur(6px) !important; /* Flou plus intense */
+    user-select: none;
+    pointer-events: none;
+    opacity: 0.8;
+    /* On retire les bordures ou ombres qui pourraient trahir les chiffres */
+    text-shadow: none !important;
+}
         .combined-cta-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:calc(100% - 32px);margin:0 16px 16px;padding:15px;background:linear-gradient(135deg,#0088cc,#006faa);color:#fff;border:none;border-radius:14px;font-size:14px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;text-decoration:none;text-align:center;box-shadow:0 6px 20px rgba(0,136,204,.35);transition:all .3s;position:relative;overflow:hidden}
         .combined-cta-btn i.tg-icon{font-size:20px}
         .combined-cta-btn .cta-lock{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.7}
@@ -2026,49 +2033,58 @@
         var mH = '';
         var matchesToDisplay = c.matches ? c.matches : Array(c.nombre_matchs || 2).fill({ teams: 'Match en attente', time: '--:--', odds: 0 });
         
-        // --- LOGIQUE DE DATE INTELLIGENTE ---
         let today = new Date();
         let tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
         let combinDate = new Date(c.date);
         
         let smartPrefix = "";
-        if (combinDate.toDateString() === today.toDateString()) {
-            smartPrefix = "Auj. ";
-        } else if (combinDate.toDateString() === tomorrow.toDateString()) {
-            smartPrefix = "Dem. ";
-        } else {
-            smartPrefix = fmtD(c.date) + " "; // Affiche "04/04 " si c'est plus lointain
-        }
-        // ------------------------------------
+        if (combinDate.toDateString() === today.toDateString()) smartPrefix = "Auj. ";
+        else if (combinDate.toDateString() === tomorrow.toDateString()) smartPrefix = "Dem. ";
+        else smartPrefix = fmtD(c.date) + " ";
 
         matchesToDisplay.forEach(function (m) {
             var mStatus = m.match_status || (sc === 'en-cours' ? 'en-cours' : sc);
             var isMatchObscured = isHome && mStatus === 'en-cours';
-            var displayScore = isMatchObscured ? '?-?' : m.score;
-            var displayOdds = isMatchObscured ? '***' : m.odds.toFixed(2);
-            var scoreHtml = isMatchObscured ? '<span class="match-score blurred-value">' + displayScore + '</span>' : '<span class="match-score">' + displayScore + '</span>';
-            var oddsHtml = isMatchObscured ? '<div class="match-odds blurred-value">' + displayOdds + '</div>' : '<div class="match-odds">' + displayOdds + '</div>';
-            var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<i class="fas fa-shield-alt"></i> `;
             
-            // On nettoie l'heure pour ne garder que "HH:MM" au cas où il y aurait encore "Auj." stocké en base
+            // On utilise des valeurs génériques sous le flou au lieu des astérisques
+            var displayScore = isMatchObscured ? '0 - 0' : m.score;
+            var displayOdds = isMatchObscured ? '00.00' : m.odds.toFixed(2);
+            
+            var scoreClass = isMatchObscured ? 'match-score blurred-value' : 'match-score';
+            var oddsClass = isMatchObscured ? 'match-odds blurred-value' : 'match-odds';
+            
+            var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;" crossorigin="anonymous">` : `<i class="fas fa-shield-alt"></i> `;
+            
             let cleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : "--:--";
             let finalTimeDisplay = smartPrefix + (cleanTime ? cleanTime[0] : "");
 
-            mH += '<div class="match-row"><div class="match-row-top"><div class="match-type"><i class="fas fa-futbol" style="color: #fff; margin-right: 6px; font-size: 14px;"></i> Score exact ' + scoreHtml + '</div>' + oddsHtml + '</div><div class="match-row-bottom"><div class="match-teams">' + logoDisplay + (m.teams || 'Équipes') + '</div><div class="match-time">' + finalTimeDisplay + '</div></div></div>';
+            mH += `<div class="match-row">
+                    <div class="match-row-top">
+                        <div class="match-type"><i class="fas fa-futbol" style="color: #fff; margin-right: 6px; font-size: 14px;"></i> Score exact <span class="${scoreClass}">${displayScore}</span></div>
+                        <div class="${oddsClass}">${displayOdds}</div>
+                    </div>
+                    <div class="match-row-bottom">
+                        <div class="match-teams">${logoDisplay} ${m.teams || 'Équipes'}</div>
+                        <div class="match-time">${finalTimeDisplay}</div>
+                    </div>
+                   </div>`;
         });
         
-        // ... (le reste du code de la fonction buildCC reste identique au précédent)
         var pc = sc === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : sc === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
-        var displayGains = (isHome && sc === 'en-cours') ? '***,** €' : fmtC(c.gains || 0);
-        var displayTotalOdds = (isHome && sc === 'en-cours') ? '***.**' : (c.total_odds || c.totalOdds || 0).toFixed(2);
-        var displayMise = (isHome && sc === 'en-cours') ? '***,** €' : fmtC(c.mise || 0);
         
+        // Gestion du flou pour Mise et Gains
+        var isObscured = (isHome && sc === 'en-cours');
+        var displayGains = isObscured ? '000,00 €' : fmtC(c.gains || 0);
+        var displayMise = isObscured ? '00,00 €' : fmtC(c.mise || 0);
+        var displayTotalOdds = isObscured ? '00.00' : (c.total_odds || 0).toFixed(2);
+        
+        var blurClass = isObscured ? 'blurred-value' : '';
+
         let isLocked = false; let timeMessage = '';
         if (sc === 'en-cours' && c.date && c.time) {
             const matchDateTime = new Date(`${c.date}T${c.time}:00`);
             const lockoutDateTime = new Date(matchDateTime.getTime() - 15 * 60000);
-            const now = new Date();
-            if (now >= lockoutDateTime) {
+            if (new Date() >= lockoutDateTime) {
                 isLocked = true;
                 timeMessage = `<div style="color: var(--red); font-size: 13px; font-weight: 800; margin: 12px 16px; text-align: center; background: rgba(255,61,61,0.1); padding: 10px; border-radius: 8px;"><i class="fas fa-lock"></i> Les paris sont fermés (Match imminent)</div>`;
             } else {
@@ -2078,11 +2094,8 @@
             }
         }
         
-        var ctaBtn = '';
-        if (isHome) {
-            if (isLocked && sc === 'en-cours') ctaBtn = `<button class="combined-cta-btn" style="background: var(--bg-input); color: var(--text-gray); box-shadow: none; cursor: not-allowed;"><i class="fas fa-lock"></i> Trop tard, match commencé !</button>`;
-            else if (sc === 'en-cours') ctaBtn = `<a href="${TELEGRAM_LINK}" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>`;
-        }
+        var ctaBtn = (isHome && !isLocked && sc === 'en-cours') ? `<a href="${TELEGRAM_LINK}" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>` : '';
+        if (isHome && isLocked && sc === 'en-cours') ctaBtn = `<button class="combined-cta-btn" style="background: var(--bg-input); color: var(--text-gray); cursor: not-allowed;"><i class="fas fa-lock"></i> Trop tard, match commencé !</button>`;
 
         return `
         <div class="combined-card">
@@ -2094,27 +2107,24 @@
                 </div>
                 <i class="fas fa-ellipsis-h combined-more"></i>
             </div>
-            <div class="combined-progress">
-                <div class="combined-progress-fill" style="width:${pw};${pc}"></div>
-            </div>
+            <div class="combined-progress"><div class="combined-progress-fill" style="width:${pw};${pc}"></div></div>
             <div class="combined-body" style="padding-top: 10px;">${mH}</div>
             <div class="combined-footer" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
                 <div class="combined-footer-row">
                     <span class="combined-footer-label">Cote totale</span>
-                    <span class="combined-footer-value ${((isHome && sc === 'en-cours')?'blurred-value':'')}">${displayTotalOdds}</span>
+                    <span class="combined-footer-value ${blurClass}">${displayTotalOdds}</span>
                 </div>
                 <div class="combined-footer-row" style="margin-bottom: 16px;">
                     <span class="combined-footer-label">Mise</span>
-                    <span class="combined-footer-value">${displayMise}</span>
+                    <span class="combined-footer-value ${blurClass}">${displayMise}</span>
                 </div>
                 <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 0 -16px 16px -16px;"></div>
                 <div class="combined-footer-row">
                     <span class="combined-footer-label" style="font-size:14px;">Gains potentiels</span>
-                    <span class="combined-footer-value gains ${((isHome && sc === 'en-cours')?'blurred-value':'')}">${displayGains}</span>
+                    <span class="combined-footer-value gains ${blurClass}">${displayGains}</span>
                 </div>
             </div>
-            ${ctaBtn}
-            ${timeMessage}
+            ${ctaBtn} ${timeMessage}
         </div>`;
     }
     function showToast(msg, err) {
