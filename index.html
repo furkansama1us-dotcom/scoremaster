@@ -1881,88 +1881,18 @@
                 `📸 Instagram : https://www.instagram.com/scoremaster.fr/\n` +
                 `➡️ Telegram : @ScoreMasterOfficiel`;
 
-            // 6. PRISE DE PHOTO - LE FIX ULTIME
-            let tempCombined = { matches: matches, nombre_matchs: matches.length, total_odds: tot, mise: mise, gains: gains, date: date, time: earliestTime };
-            let slipHtml = buildCC(tempCombined, 'en-cours', { 'en-cours': 'En cours' }, '50%', true);
-            
-            let captureDiv = document.createElement('div');
-            captureDiv.style.position = 'absolute';
-            captureDiv.style.left = '-9999px';
-            captureDiv.style.width = '380px';
-            captureDiv.style.background = 'var(--bg-dark)';
-            captureDiv.style.padding = '15px';
-            captureDiv.innerHTML = slipHtml;
-            document.body.appendChild(captureDiv);
-
-            // ---> A. LE FIX FLOU : On remplace le texte par des IMAGES SVG floues
-            let blurredElements = captureDiv.querySelectorAll('.blurred-value');
-            blurredElements.forEach(el => {
-                let text = el.innerText || '***';
-                let color = el.classList.contains('gains') ? '#00C853' : '#FFFFFF';
-                
-                // SVG avec filtre de flou natif (html2canvas le gère parfaitement comme une image)
-                let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100" height="24">
-                    <defs><filter id="f"><feGaussianBlur stdDeviation="2.5"/></filter></defs>
-                    <text x="0" y="18" fill="${color}" font-family="sans-serif" font-weight="bold" font-size="15px" filter="url(#f)">${text}</text>
-                </svg>`;
-                
-                let img = document.createElement('img');
-                img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-                img.style.verticalAlign = 'middle';
-                
-                el.innerHTML = ''; // On vide le texte normal
-                el.appendChild(img); // On met l'image floue à la place
-                el.style.filter = 'none'; // On désactive le CSS de l'app pour éviter les conflits
-                el.style.textShadow = 'none';
-                el.style.color = 'transparent';
-            });
-
-            // ---> B. LE FIX DRAPEAUX : Utilisation d'un Proxy public
-            const images = captureDiv.getElementsByTagName('img');
-            const imagePromises = Array.from(images).map(async (img) => {
-                // Si l'image est déjà en Base64 (comme nos SVG), on passe
-                if (!img.src || img.src.startsWith('data:')) return Promise.resolve();
-                try {
-                    // On force le téléchargement via un proxy pour contourner la sécurité CORS
-                    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(img.src);
-                    const response = await fetch(proxyUrl);
-                    const blob = await response.blob();
-                    return new Promise((resolve) => {
-                        const reader = new FileReader();
-                        reader.onloadend = () => { img.src = reader.result; resolve(); };
-                        reader.readAsDataURL(blob);
-                    });
-                } catch (e) {
-                    console.error("Proxy drapeau échoué:", e);
-                    return Promise.resolve();
-                }
-            });
-
-            // On attend que TOUTES les images (drapeaux + svg flous) soient chargées
-            Promise.all(imagePromises).then(() => {
-                setTimeout(() => {
-                    html2canvas(captureDiv, { 
-                        backgroundColor: '#0D0D0D',
-                        scale: 2,
-                        logging: false
-                    }).then(canvas => {
-                        canvas.toBlob(blob => {
-                            let formData = new FormData();
-                            formData.append('chat_id', TELEGRAM_CHAT_ID);
-                            formData.append('photo', blob, 'apercu_combine.png');
-                            formData.append('caption', telegramDraft);
-                            formData.append('parse_mode', 'Markdown');
-
-                            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendPhoto`, {
-                                method: 'POST',
-                                body: formData
-                            }).then(() => {
-                                document.body.removeChild(captureDiv);
-                            }).catch(err => console.error("Erreur Telegram:", err));
-                        });
-                    });
-                }, 500); // 500ms de sécurité pour être sûr
-            });
+            // 6. ENVOI DU MESSAGE TEXTE SEUL SUR TELEGRAM
+            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chat_id: TELEGRAM_CHAT_ID,
+                    text: telegramDraft,
+                    parse_mode: 'Markdown'
+                })
+            }).catch(err => console.error("Erreur envoi Telegram:", err));
         }
         
         await chargerDonnees();
