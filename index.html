@@ -1681,25 +1681,57 @@
         switchAdminTab('editor');
     }
 
+    function handleGlobalStatusChange() {
+        var globalStatus = document.getElementById('admin-status').value;
+        
+        // 1. Met à jour tous les petits statuts de matchs automatiquement
+        var selects = document.querySelectorAll('.match-status-select');
+        selects.forEach(function(sel) { sel.value = globalStatus; });
+        updateMatchVisuals();
+        updateFilterCounts();
+
+        // 2. Change le texte du gros bouton de publication en bas
+        var btnText = document.getElementById('btn-publish-text');
+        if (globalStatus === 'en-cours') {
+            btnText.innerHTML = editingId ? '<i class="fas fa-save"></i> Mettre à jour (Toujours en cours)' : '<i class="fas fa-paper-plane"></i> Créer le combiné';
+        } else if (globalStatus === 'termine') {
+            btnText.innerHTML = '<i class="fas fa-check-circle"></i> Valider et Publier (GAGNÉ ✅)';
+        } else if (globalStatus === 'perdu') {
+            btnText.innerHTML = '<i class="fas fa-times-circle"></i> Valider et Publier (PERDU ❌)';
+        }
+    }
+    
+    // On écoute les changements sur le menu déroulant principal
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('admin-status').addEventListener('change', handleGlobalStatusChange);
+    });
+    
     function loadIntoEditor(id) {
         var c = allCombineds.find(function(x) { return x.id == id; });
         if(!c) return;
         editingId = c.id;
         activeMatchFilter = 'all';
+
         document.getElementById('admin-date').value = c.date || '';
         document.getElementById('admin-status').value = c.status || 'en-cours';
         document.getElementById('admin-mise').value = c.mise || '';
+
         document.getElementById('admin-matches').innerHTML = '';
         document.getElementById('api-matches-container').innerHTML = '';
         matchEntryCount = 0;
+
         if(c.matches) { c.matches.forEach(function(m) { addMatchEntry(m); }); }
+
         calculateGains();
         document.querySelectorAll('.match-filter-btn').forEach(function(b) { b.classList.remove('f-active-all','f-active-en-cours','f-active-termine','f-active-perdu'); });
         document.getElementById('filter-btn-all').classList.add('f-active-all');
         filterMatches('all', document.getElementById('filter-btn-all'));
         updateMatchVisuals();
-        document.getElementById('btn-publish-text').innerHTML = '<i class="fas fa-save"></i> Mettre à jour';
-        document.getElementById('editor-title').innerHTML = '<i class="fas fa-edit"></i> Modification en cours...';
+
+        // On appelle la nouvelle fonction pour mettre à jour le bouton
+        handleGlobalStatusChange(); 
+
+        document.getElementById('editor-title').innerHTML = '<i class="fas fa-edit"></i> Validation du combiné...';
         switchAdminTab('editor');
     }
 
