@@ -2024,6 +2024,67 @@ function sendTelegramFinalResult(matches, allFixtures) {
         body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID_LIVE, text: text, parse_mode: 'Markdown' })
     }).catch(err => console.error('Erreur Telegram résultats:', err));
 }
+
+    async function fetchApiScore(combinedId, combinedDate) {
+    const c = allCombineds.find(x => x.id == combinedId);
+    if (!c || !c.matches) return;
+
+    showToast('Récupération des scores API...');
+
+    const dateStr = combinedDate || new Date().toISOString().split('T')[0];
+    let allFixtures = [];
+
+    try {
+        const res = await fetch(
+            `https://v3.football.api-sports.io/fixtures?date=${dateStr}`,
+            { headers: { 'x-apisports-key': '4701f5578e916e856d15735fb8079032' } }
+        );
+        const data = await res.json();
+        allFixtures = data.response || [];
+    } catch(e) {
+        showToast('Erreur API Football', true); return;
+    }
+
+    // Pour chaque match du combiné, on cherche le score réel
+    let resultHtml = '';
+    c.matches.forEach(function(m) {
+        const parts = (m.teams || '').split(' - ');
+        const homeTeam = (parts[0] || '').trim().toLowerCase();
+        const awayTeam = (parts[1] || '').trim().toLowerCase();
+
+        const fixture = allFixtures.find(function(f) {
+            const fHome = f.teams.home.name.toLowerCase();
+            const fAway = f.teams.away.name.toLowerCase();
+            return (fHome.includes(homeTeam.split(' ')[0]) || homeTeam.includes(fHome.split(' ')[0]))
+                && (fAway.includes(awayTeam.split(' ')[0]) || awayTeam.includes(fAway.split(' ')[0]));
+        });
+
+        const realScore = fixture ? `${fixture.goals.home}-${fixture.goals.away}` : '?-?';
+        const won = realScore === m.score;
+        const icon = won ? '✅' : '❌';
+
+        resultHtml += `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
+            <span style="font-size:12px; color:var(--text-light-gray);">${m.teams}</span>
+            <span style="font-size:13px; font-weight:800; color:var(--red);">${icon} ${realScore}</span>
+        </div>`;
+    });
+
+    // On injecte le résultat sous la carte concernée
+    const existingResult = document.getElementById(`api-score-result-${combinedId}`);
+    if (existingResult) {
+        existingResult.remove();
+    }
+
+    const card = document.querySelector(`[data-combined-id="${combinedId}"]`);
+    if (card) {
+        const div = document.createElement('div');
+        div.id = `api-score-result-${combinedId}`;
+        div.style.cssText = 'background:rgba(255,61,61,0.08); border:1px solid rgba(255,61,61,0.25); border-radius:10px; padding:10px 12px; margin-top:8px;';
+        div.innerHTML = `<div style="font-size:10px; color:var(--red); font-weight:700; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;"><i class="fas fa-satellite-dish"></i> Scores réels (API)</div>${resultHtml}`;
+        card.appendChild(div);
+    }
+}
 // ============================================================
 // FIN LIVE SCORES
 // ============================================================
@@ -2632,8 +2693,8 @@ function sendTelegramFinalResult(matches, allFixtures) {
                 }
             } else {
                 // SI DÉJÀ TERMINÉ -> Ouvre l'ÉDITION RAPIDE (Bouton Bleu) pour pouvoir corriger une erreur
-                let btns = `<button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
-                htmlPast += cardBaseHtml(displayStatus, btns);
+                let btns = `<button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(255,61,61,0.15); color:var(--red); border:1px solid rgba(255,61,61,0.4);"><i class="fas fa-satellite-dish"></i> Score API</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
+htmlPast += cardBaseHtml(displayStatus, btns);
             }
         });
 
