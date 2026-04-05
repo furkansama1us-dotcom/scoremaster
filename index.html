@@ -2126,8 +2126,40 @@
 
         allCombineds.forEach(function(c) {
             let displayStatus = sl[c.status];
+            
+            // --- NOUVEAU : Création de la liste des matchs (Équipes + Logos + Scores) ---
+            let matchesDetailsHtml = '';
+            if (c.matches && c.matches.length > 0) {
+                matchesDetailsHtml = '<div style="margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px;">';
+                c.matches.forEach(m => {
+                    let logoImg = m.logo ? `<img src="${m.logo}" style="width:14px; height:14px; object-fit:contain; border-radius:2px; margin-right:6px; vertical-align:middle;" crossorigin="anonymous">` : `<i class="fas fa-shield-alt" style="font-size:10px; margin-right:6px; color:var(--text-gray);"></i>`;
+                    
+                    // Si le combiné est terminé, on affiche aussi le score final
+                    let scoreDisplay = '';
+                    if (c.status === 'termine' || c.status === 'perdu') {
+                        let color = c.status === 'termine' ? 'var(--green)' : 'var(--text-white)';
+                        scoreDisplay = `<span style="float:right; font-weight:bold; color:${color}">${m.score}</span>`;
+                    }
+                    
+                    matchesDetailsHtml += `<div style="font-size: 12px; color: var(--text-light-gray); margin-bottom: 4px;">${logoImg} ${m.teams || 'Équipes'} ${scoreDisplay}</div>`;
+                });
+                matchesDetailsHtml += '</div>';
+            }
+            // ----------------------------------------------------------------------------
+
             let itemHtml;
             
+            // Structure de la carte (Date + Statut + Boutons + Détails des matchs)
+            let cardBaseHtml = function(statusText, btnHtml) {
+                return `<div class="admin-history-item" style="flex-direction:column; align-items:stretch;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span>Le ${fmtD(c.date)} - ${statusText}</span>
+                                <div style="display:flex; gap:8px;">${btnHtml}</div>
+                            </div>
+                            ${matchesDetailsHtml}
+                        </div>`;
+            };
+
             if (c.status === 'en-cours') {
                 let latestTime = "00:00"; 
                 if (c.matches && c.matches.length > 0) {
@@ -2144,16 +2176,18 @@
                 finishTime = new Date(finishTime.getTime() + (2 * 60 * 60 * 1000));
 
                 if (now >= finishTime) {
-                    itemHtml = `<div class="admin-history-item"><span>Le ${fmtD(c.date)} - <span style="color:#FF9800; font-weight:bold;">À vérifier ⚠️</span></span><div style="display:flex; gap:8px;"><button onclick="openValidationScreen('${c.id}')" style="background:#FF9800; color:#000;"><i class="fas fa-check-double"></i> Valider</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button></div></div>`;
-                    htmlPending += itemHtml;
+                    // SI EXPIRÉ ("À Confirmer")
+                    let btns = `<button onclick="openValidationScreen('${c.id}')" style="background:#FF9800; color:#000;"><i class="fas fa-check-double"></i> Valider</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
+                    htmlPending += cardBaseHtml('<span style="color:#FF9800; font-weight:bold;">À vérifier ⚠️</span>', btns);
                 } else {
-                    itemHtml = `<div class="admin-history-item"><span>Le ${fmtD(c.date)} - ${displayStatus}</span><div style="display:flex; gap:8px;"><button onclick="loadIntoEditor('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button></div></div>`;
-                    htmlActive += itemHtml;
+                    // SI VRAIMENT EN COURS
+                    let btns = `<button onclick="loadIntoEditor('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
+                    htmlActive += cardBaseHtml(displayStatus, btns);
                 }
             } else {
-                // SI TERMINÉ : On remet le bouton Éditer (bleu) à côté de la poubelle (rouge)
-                itemHtml = `<div class="admin-history-item"><span>Le ${fmtD(c.date)} - ${displayStatus}</span><div style="display:flex; gap:8px;"><button onclick="loadIntoEditor('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button></div></div>`;
-                htmlPast += itemHtml;
+                // SI TERMINÉ
+                let btns = `<button onclick="loadIntoEditor('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
+                htmlPast += cardBaseHtml(displayStatus, btns);
             }
         });
 
