@@ -1045,14 +1045,20 @@ ${matchLines}
         <div class="page" id="page-contact">
             <div class="page-title-bar"><h2>Contact</h2></div>
             <div class="contact-page">
+                <!-- TELEGRAM -->
                 <a href="https://t.me/scoremasteroff" target="_blank" rel="noopener" class="contact-link">
                     <div class="contact-card"><div class="contact-card-icon telegram"><i class="fab fa-telegram-plane"></i></div><div class="contact-card-info"><h4>Telegram</h4><p>Rejoignez notre canal officiel</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
                 </a>
-                <div class="contact-card"><div class="contact-card-icon instagram"><i class="fab fa-instagram"></i></div><div class="contact-card-info"><h4>Instagram</h4><p>@scoremaster.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
-                <div class="contact-card"><div class="contact-card-icon twitter"><i class="fab fa-x-twitter"></i></div><div class="contact-card-info"><h4>X (Twitter)</h4><p>@ScoreMasterFR</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
+                
+                <!-- INSTAGRAM -->
+                <a href="https://instagram.com/scoremaster.fr/" target="_blank" rel="noopener" class="contact-link">
+                    <div class="contact-card"><div class="contact-card-icon instagram"><i class="fab fa-instagram"></i></div><div class="contact-card-info"><h4>Instagram</h4><p>@scoremaster.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
+                </a>
+                
+                <!-- EMAIL -->
                 <div class="contact-card"><div class="contact-card-icon email"><i class="fas fa-envelope"></i></div><div class="contact-card-info"><h4>Email</h4><p>contact@scoremaster.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
                 
-                <!-- NOUVEAU : FORMULAIRE DE CONTACT -->
+                <!-- FORMULAIRE DE CONTACT -->
                 <div style="margin-top: 15px; margin-bottom: 30px; background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color);">
                     <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 15px; color: #fff;"><i class="fas fa-paper-plane" style="color:var(--primary-yellow); margin-right:6px;"></i> Laissez-nous un message</h3>
                     
@@ -1070,6 +1076,23 @@ ${matchLines}
                             </label>
                         </div>
                     </div>
+
+                    <div class="admin-field" style="margin-bottom:15px; text-align:left;">
+                        <div class="admin-label" id="contact-page-input-label" style="color:var(--text-gray); margin-bottom:6px; font-family:'Inter',sans-serif;">Numéro WhatsApp *</div>
+                        <input type="text" id="contact-page-info" class="admin-input" placeholder="06 12 34 56 78" style="background:var(--bg-input); border:1px solid var(--border-color); color:#fff;" required>
+                    </div>
+
+                    <div class="admin-field" style="margin-bottom:20px; text-align:left;">
+                        <div class="admin-label" style="color:var(--text-gray); margin-bottom:6px; font-family:'Inter',sans-serif;">Votre message *</div>
+                        <textarea id="contact-page-message" class="admin-input" rows="4" placeholder="Comment pouvons-nous vous aider ?" style="background:var(--bg-input); border:1px solid var(--border-color); color:#fff; resize:none; font-family:'Inter',sans-serif; padding:12px 14px; border-radius:10px; width:100%; outline:none; transition:border-color .3s;" required></textarea>
+                    </div>
+
+                    <button onclick="submitContactForm()" style="width:100%;padding:14px;background:var(--primary-yellow);color:#000;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer; display:flex; justify-content:center; align-items:center; gap:8px;">
+                        <i class="fas fa-paper-plane"></i> Envoyer le message
+                    </button>
+                </div>
+            </div>
+        </div>
 
                     <div class="admin-field" style="margin-bottom:15px; text-align:left;">
                         <div class="admin-label" id="contact-page-input-label" style="color:var(--text-gray); margin-bottom:6px; font-family:'Inter',sans-serif;">Numéro WhatsApp *</div>
