@@ -2031,12 +2031,10 @@ function sendTelegramFinalResult(matches, allFixtures) {
 
     showToast('Récupération des scores API...');
 
-    const dateStr = combinedDate || new Date().toISOString().split('T')[0];
     let allFixtures = [];
-
     try {
         const res = await fetch(
-            `https://v3.football.api-sports.io/fixtures?date=${dateStr}`,
+            `https://v3.football.api-sports.io/fixtures?date=${combinedDate}&status=FT-AET-PEN`,
             { headers: { 'x-apisports-key': '4701f5578e916e856d15735fb8079032' } }
         );
         const data = await res.json();
@@ -2045,7 +2043,10 @@ function sendTelegramFinalResult(matches, allFixtures) {
         showToast('Erreur API Football', true); return;
     }
 
-    // Pour chaque match du combiné, on cherche le score réel
+    if (!allFixtures.length) {
+        showToast('Aucun match terminé trouvé pour cette date', true); return;
+    }
+
     let resultHtml = '';
     c.matches.forEach(function(m) {
         const parts = (m.teams || '').split(' - ');
@@ -2055,26 +2056,28 @@ function sendTelegramFinalResult(matches, allFixtures) {
         const fixture = allFixtures.find(function(f) {
             const fHome = f.teams.home.name.toLowerCase();
             const fAway = f.teams.away.name.toLowerCase();
-            return (fHome.includes(homeTeam.split(' ')[0]) || homeTeam.includes(fHome.split(' ')[0]))
-                && (fAway.includes(awayTeam.split(' ')[0]) || awayTeam.includes(fAway.split(' ')[0]));
+            // Matching plus souple : on teste chaque mot
+            const homeWords = homeTeam.split(' ');
+            const awayWords = awayTeam.split(' ');
+            const homeMatch = homeWords.some(w => w.length > 2 && fHome.includes(w));
+            const awayMatch = awayWords.some(w => w.length > 2 && fAway.includes(w));
+            return homeMatch && awayMatch;
         });
 
-        const realScore = fixture ? `${fixture.goals.home}-${fixture.goals.away}` : '?-?';
+        const realScore = fixture ? `${fixture.goals.home}-${fixture.goals.away}` : 'Non trouvé';
         const won = realScore === m.score;
-        const icon = won ? '✅' : '❌';
+        const icon = realScore === 'Non trouvé' ? '⚠️' : (won ? '✅' : '❌');
+        const scoreColor = realScore === 'Non trouvé' ? '#FF9800' : 'var(--red)';
 
         resultHtml += `
         <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05);">
             <span style="font-size:12px; color:var(--text-light-gray);">${m.teams}</span>
-            <span style="font-size:13px; font-weight:800; color:var(--red);">${icon} ${realScore}</span>
+            <span style="font-size:13px; font-weight:800; color:${scoreColor};">${icon} ${realScore}</span>
         </div>`;
     });
 
-    // On injecte le résultat sous la carte concernée
     const existingResult = document.getElementById(`api-score-result-${combinedId}`);
-    if (existingResult) {
-        existingResult.remove();
-    }
+    if (existingResult) existingResult.remove();
 
     const card = document.querySelector(`[data-combined-id="${combinedId}"]`);
     if (card) {
