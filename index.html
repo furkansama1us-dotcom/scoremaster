@@ -2007,25 +2007,49 @@
     
     function renderHistory() {
         var hc = document.getElementById('history-container'); if (!hc) return;
-        var historyData = allCombineds.filter(function(c) { return currentCombined ? c.id !== currentCombined.id : true; });
-        if (historyData.length === 0) { hc.innerHTML = '<div class="no-combined-message"><i class="fas fa-history"></i>Aucun historique pour le moment.</div>'; return; }
-        var html = ''; var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
+        
+        // CORRECTION : On filtre pour NE GARDER QUE les combinés validés (Gagné ou Perdu)
+        var historyData = allCombineds.filter(function(c) { 
+            // On exclut le combiné "actif" actuel, ET on exige que le statut soit terminé/perdu
+            return (currentCombined ? c.id !== currentCombined.id : true) && (c.status === 'termine' || c.status === 'perdu'); 
+        });
+        
+        if (historyData.length === 0) { 
+            hc.innerHTML = '<div class="no-combined-message"><i class="fas fa-history"></i>Aucun historique pour le moment.</div>'; 
+            return; 
+        }
+        
+        var html = ''; var sl = { 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
         historyData.forEach(function(c) {
             var sc = c.status;
-            var statusColor = sc === 'termine' ? 'var(--green)' : (sc === 'perdu' ? 'var(--red)' : 'var(--primary-yellow)');
+            var statusColor = sc === 'termine' ? 'var(--green)' : 'var(--red)';
             var odds = c.total_odds ? c.total_odds.toFixed(2) : (window.isUserVip ? '?' : '***');
             var matchesHtml = '';
+            
             if(c.matches && c.matches.length > 0) {
                 matchesHtml = '<div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.1);">';
                 c.matches.forEach(function(m) {
-                    var mStatus = m.match_status || (sc === 'en-cours' ? 'en-cours' : sc);
+                    var mStatus = m.match_status || sc;
                     var scoreColor = mStatus === 'termine' ? 'var(--green)' : (mStatus === 'perdu' ? 'var(--red)' : 'var(--text-white)');
                     var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:12px;height:12px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<i class="fas fa-shield-alt" style="font-size:10px; margin-right:6px; color:var(--text-gray);"></i>`;
                     matchesHtml += `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; align-items:center;"><span style="color:var(--text-light-gray);">${logoDisplay}${m.teams || 'Équipes'}</span><span style="font-weight:700; color:${scoreColor}; background:rgba(255,255,255,0.05); padding:3px 8px; border-radius:6px;">${m.score}</span></div>`;
                 });
                 matchesHtml += '</div>';
             }
-            html += `<div class="history-card ${sc}"><div style="display:flex; justify-content:space-between; align-items:center;"><div><div class="date"><i class="fas fa-calendar-alt"></i> Combiné du ${fmtD(c.date)}</div><div class="status ${sc}" style="color:${statusColor};">${sl[sc] || sc}</div></div><div style="text-align:right; background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:10px;"><div style="font-size:11px; color:var(--text-gray); margin-bottom:2px;">Cote</div><div style="font-weight:800; font-size:16px; color:var(--text-white);">${odds}</div></div></div>${matchesHtml}</div>`;
+            
+            html += `<div class="history-card ${sc}">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <div class="date"><i class="fas fa-calendar-alt"></i> Combiné du ${fmtD(c.date)}</div>
+                                <div class="status ${sc}" style="color:${statusColor};">${sl[sc] || sc}</div>
+                            </div>
+                            <div style="text-align:right; background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:10px;">
+                                <div style="font-size:11px; color:var(--text-gray); margin-bottom:2px;">Cote</div>
+                                <div style="font-weight:800; font-size:16px; color:var(--text-white);">${odds}</div>
+                            </div>
+                        </div>
+                        ${matchesHtml}
+                    </div>`;
         });
         hc.innerHTML = html;
     }
