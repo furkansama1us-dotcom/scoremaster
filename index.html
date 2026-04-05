@@ -2658,7 +2658,7 @@ function sendTelegramFinalResult(matches, allFixtures) {
             
             // Structure de la carte (Date + Statut + Boutons + Détails des matchs)
             let cardBaseHtml = function(statusText, btnHtml) {
-                return `<div class="admin-history-item" style="flex-direction:column; align-items:stretch;">
+                return `<div class="admin-history-item" data-combined-id="${c.id}" style="flex-direction:column; align-items:stretch;">
                             <div style="display:flex; justify-content:space-between; align-items:center;">
                                 <span>Le ${fmtD(c.date)} - ${statusText}</span>
                                 <div style="display:flex; gap:8px;">${btnHtml}</div>
