@@ -737,6 +737,18 @@ ${matchLines}
                 <span>Se souvenir de moi</span>
             </div>
         </div>
+
+        <!-- NOUVEAU : BOUTON GOOGLE -->
+        <div style="display:flex; align-items:center; margin: 25px 0 10px 0; position:relative; z-index:1;">
+            <div style="flex:1; height:1px; background:rgba(255,255,255,0.1);"></div>
+            <span style="color:var(--text-gray); font-size:12px; padding:0 10px; font-weight:500;">Ou continuer avec</span>
+            <div style="flex:1; height:1px; background:rgba(255,255,255,0.1);"></div>
+        </div>
+        <button onclick="showGooglePopup()" style="width:100%; padding:14px; background:rgba(255,255,255,0.05); color:#fff; border:1px solid rgba(255,255,255,0.1); border-radius:12px; font-size:14px; font-weight:600; font-family:'Inter',sans-serif; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:10px; position:relative; z-index:1; transition:all 0.3s;">
+            <i class="fab fa-google" style="color:#EA4335; font-size:16px;"></i> Google
+        </button>
+        <!-- FIN DU BOUTON GOOGLE -->
+
         <div class="api-badge-login">
             <i class="fas fa-plug"></i>
             <span>API sportifs connectés</span>
@@ -1387,6 +1399,7 @@ ${matchLines}
     </div>
 </div>
 
+<!-- POPUP SUCCESS -->
 <div id="success-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
     <div style="background:var(--bg-card);padding:40px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);">
         <div style="width:80px;height:80px;background:rgba(0, 200, 83, 0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px auto;"><i class="fas fa-check" style="font-size:40px;color:var(--green);"></i></div>
@@ -1395,6 +1408,23 @@ ${matchLines}
         <button onclick="closeSuccessPopup()" style="width:100%;padding:14px;background:var(--bg-input);color:#fff;border:1px solid var(--border-color);border-radius:12px;font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;">Fermer</button>
     </div>
 </div>
+<!-- FIN DU POPUP SUCCESS -->
+
+<!-- POPUP GOOGLE EN ATTENTE (Doit être placé JUSTE ICI, après la fermeture du précédent) -->
+<div id="google-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+    <div style="background:var(--bg-card);padding:30px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);position:relative;">
+        <i class="fas fa-times" onclick="closeGooglePopup()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
+        <div style="width:70px;height:70px;background:rgba(234, 67, 53, 0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px auto;">
+            <i class="fab fa-google" style="font-size:30px;color:#EA4335;"></i>
+        </div>
+        <h3 style="font-size:20px;font-weight:800;margin-bottom:12px;color:#fff;font-family:'Montserrat',sans-serif;">Bientôt disponible !</h3>
+        <p style="font-size:14px;color:var(--text-gray);margin-bottom:25px;line-height:1.6;font-family:'Inter',sans-serif;">Désolé, les API Google arrivent très prochainement. En attendant, veuillez créer votre compte de manière classique !</p>
+        <button onclick="goToSignupFromGoogle()" style="width:100%;padding:14px;background:var(--primary-yellow);color:#000;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;">
+            Créer un compte
+        </button>
+    </div>
+</div>
+<!-- FIN DU POPUP GOOGLE -->
 
 <script>
     var allCombineds = [];
@@ -2782,6 +2812,26 @@ let quickEditCombinedId = null;
             console.error("Erreur Telegram:", err);
             showToast("Erreur réseau Telegram", true);
         });
+    }
+// --- GESTION DU BOUTON GOOGLE ---
+    function showGooglePopup() {
+        var popup = document.getElementById('google-popup');
+        popup.style.display = 'flex';
+        setTimeout(function () { popup.style.opacity = '1'; popup.firstElementChild.style.transform = 'scale(1)'; }, 10);
+    }
+
+    function closeGooglePopup() {
+        var popup = document.getElementById('google-popup');
+        popup.style.opacity = '0'; popup.firstElementChild.style.transform = 'scale(0.9)';
+        setTimeout(function () { popup.style.display = 'none'; }, 300);
+    }
+
+    function goToSignupFromGoogle() {
+        closeGooglePopup();
+        // Si l'utilisateur n'est pas déjà sur la vue "Création de compte", on l'y met
+        if (!isSignUpMode) {
+            toggleAuthMode();
+        }
     }
     
 </script>
