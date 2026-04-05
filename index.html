@@ -1752,6 +1752,8 @@
         var e = document.createElement('div');
         e.className = 'match-entry';
         var matchStatus = data && data.match_status ? data.match_status : 'en-cours';
+        
+        // On remet bien le select "match-status-select"
         e.innerHTML = '<div class="match-entry-header">' + 
             '<span class="match-entry-number"><i class="fas fa-futbol"></i> Match ' + matchEntryCount + '<span class="match-status-badge"></span></span>' +
             '<div style="display:flex; gap:8px;">' +
@@ -1768,6 +1770,7 @@
             + '<div class="admin-row"><div class="admin-field"><div class="admin-label"><i class="fas fa-bullseye"></i> Score exact</div><input type="text" class="admin-input match-score-input" placeholder="2 - 1" value="' + (data ? data.score : '') + '" oninput="calculateGains()"></div>'
             + '<div class="admin-field"><div class="admin-label"><i class="fas fa-chart-line"></i> Cote</div><input type="text" inputmode="decimal" class="admin-input match-odds-input" placeholder="7.00" value="' + (data ? data.odds : '') + '" oninput="calculateGains()"></div></div>'
             + '<div class="admin-field"><div class="admin-label"><i class="fas fa-clock"></i> Horaire</div><input type="text" class="admin-input match-time-input" placeholder="Dem. 21:00" value="' + (data ? data.time : '') + '"></div>';
+        
         c.appendChild(e);
         calculateGains();
         updateMatchVisuals();
