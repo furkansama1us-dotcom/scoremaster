@@ -1900,10 +1900,10 @@
 
     function fmtC(v) { return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(v); }
 
-  async function publishCombined() {
+    async function publishCombined() {
         var entries = document.querySelectorAll('.match-entry');
         var date = document.getElementById('admin-date').value;
-        var status = document.getElementById('admin-status').value;
+        var status = document.getElementById('admin-status').value; // C'est le champ caché 'en-cours'
         var miseVal = document.getElementById('admin-mise').value.replace(',', '.');
         var mise = parseFloat(miseVal) || 0;
 
@@ -1920,92 +1920,86 @@
             var o = parseFloat(oVal) || 0;
             var ti = e.querySelector('.match-time-input').value.trim();
             var l = e.querySelector('.match-logo-input').value;
-            var mStatus = e.querySelector('.match-status-select').value;
+            
+            // CORRECTIF : On ne cherche plus le menu déroulant, on force "en-cours" !
+            var mStatus = 'en-cours';
             
             if (!t || !s || o <= 0) valid = false;
 
             matches.push({ teams: t, score: s, odds: o, time: ti, logo: l, match_status: mStatus });
 
-            var isMatchFinished = (mStatus === 'termine' || mStatus === 'perdu');
-            publicMatches.push({ teams: t, time: ti, score: isMatchFinished ? s : '?-?', odds: isMatchFinished ? o : 0, logo: l, match_status: mStatus });
+            // Puisqu'on ne fait que créer, on masque toujours le score et la cote pour le public au départ
+            publicMatches.push({ teams: t, time: ti, score: '?-?', odds: 0, logo: l, match_status: mStatus });
 
             var extracted = ti.match(/\d{2}:\d{2}/);
             if (extracted && extracted[0] < earliestTime) earliestTime = extracted[0];
         });
 
-        if (!valid) { showToast('Remplissez tous champs (Cote/Score manquants) !', true); return; }
+        if (!valid) { showToast('Remplissez tous les champs !', true); return; }
 
         var tot = 1; matches.forEach(function (m) { tot *= m.odds; });
         var gains = mise * tot;
 
-        if (editingId) {
-            var updatePub = await supabaseClient.from('combineds_public').update({ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }).eq('id', editingId);
-            if (updatePub.error) { showToast('Erreur Update', true); return; }
-            var updateVip = await supabaseClient.from('combineds_vip').update({ matches: matches, mise: mise, gains: gains, total_odds: tot }).eq('id', editingId);
-            if (updateVip.error) { showToast('Erreur Update VIP', true); return; }
+        // === CRÉATION DU NOUVEAU COMBINÉ EN BASE DE DONNÉES ===
+        var pubRes = await supabaseClient.from('combineds_public').insert([{ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }]).select().single();
+        if (pubRes.error) { showToast('Erreur Création', true); return; }
+        
+        var vipRes = await supabaseClient.from('combineds_vip').insert([{ id: pubRes.data.id, matches: matches, mise: mise, gains: gains, total_odds: tot }]);
+        if (vipRes.error) { showToast('Erreur Création VIP', true); return; }
 
-            if (status === 'termine' || status === 'perdu') {
-                showToast('Combiné validé et rendu public !');
-            } else {
-                showToast('Combiné mis à jour (Toujours en cours) !');
-            }
+        showToast('Combiné créé avec succès !');
 
-        } else {
-            var pubRes = await supabaseClient.from('combineds_public').insert([{ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }]).select().single();
-            if (pubRes.error) { showToast('Erreur Création', true); return; }
-            var vipRes = await supabaseClient.from('combineds_vip').insert([{ id: pubRes.data.id, matches: matches, mise: mise, gains: gains, total_odds: tot }]);
-            if (vipRes.error) { showToast('Erreur Création VIP', true); return; }
+        // === ENVOI DU MESSAGE TELEGRAM ===
+        const TELEGRAM_BOT_TOKEN = '8602776375:AAEuhWYNqb26IG8igWDTUI5iUaqSW0plj9I';
+        const TELEGRAM_CHAT_ID   = '905424902';
 
-            showToast('Combiné créé avec succès !');
-
-            const TELEGRAM_BOT_TOKEN = '8602776375:AAEuhWYNqb26IG8igWDTUI5iUaqSW0plj9I';
-            const TELEGRAM_CHAT_ID   = '905424902';
-
-            let deadlineStr = "Indéfini";
-            if (earliestTime !== '23:59') {
-                let matchDateTime = new Date(`${date}T${earliestTime}:00`);
-                let deadlineDateTime = new Date(matchDateTime.getTime() - 15 * 60000);
-                deadlineStr = String(deadlineDateTime.getHours()).padStart(2, '0') + ':' + String(deadlineDateTime.getMinutes()).padStart(2, '0');
-            }
-
-            let today = new Date();
-            let tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
-            let dayContext = "le " + new Date(date).toLocaleDateString('fr-FR');
-            if (date === today.toISOString().split('T')[0]) dayContext = "aujourd'hui";
-            else if (date === tomorrow.toISOString().split('T')[0]) dayContext = "demain";
-
-            let matchLines = "";
-            matches.forEach(m => { matchLines += `⚽️ ${m.teams}\n`; });
-
-            const intros = [
-                "Salut l’équipe ! 🔥 L'analyse est tombée, et elle est incroyable ! Le nouveau combiné est officiellement disponible dans votre espace VIP+.",
-                "BOOM ! 💥 Nos experts ont encore frappé ! Le ticket du jour est validé avec une confiance absolue. Filez vite sur l'app !"
-            ];
-            const outros = [
-                "C’est le moment parfait pour prendre de l’avance. Ne laissez pas passer cette occasion en or, foncez ! 🙌⚡️",
-                "Faites très vite avant que les cotes ne s'effondrent ! L'horloge tourne, on encaisse ensemble ce soir. 💰⏱️"
-            ];
-            
-            let telegramDraft =
-                `📝 *BROUILLON CANAL PUBLIC :*\n` +
-                `_(À copier/coller sur votre canal)_\n\n` +
-                `---\n\n` +
-                `${intros[Math.floor(Math.random() * intros.length)]}\n\n` +
-                `🏆 *AU PROGRAMME :*\n` +
-                `${matchLines}\n` +
-                `⚠️ Début des matchs : ${dayContext} à *${earliestTime}*\n` +
-                `⛔️ *FERMETURE STRICTE DES ACCÈS :* *${deadlineStr}* ❗️\n\n` +
-                `${outros[Math.floor(Math.random() * outros.length)]}\n\n` +
-                `📱 *Nous rejoindre / Nous contacter :*\n` +
-                `🌐 Site Web : https://scoremaster.fr/\n` +
-                `➡️ Telegram : @ScoreMasterOfficiel`;
-
-            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: telegramDraft, parse_mode: 'Markdown' })
-            }).catch(err => console.error("Erreur Telegram:", err));
+        let deadlineStr = "Indéfini";
+        if (earliestTime !== '23:59') {
+            let matchDateTime = new Date(`${date}T${earliestTime}:00`);
+            let deadlineDateTime = new Date(matchDateTime.getTime() - 15 * 60000);
+            deadlineStr = String(deadlineDateTime.getHours()).padStart(2, '0') + ':' + String(deadlineDateTime.getMinutes()).padStart(2, '0');
         }
+
+        let today = new Date();
+        let tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
+        let dayContext = "le " + new Date(date).toLocaleDateString('fr-FR');
+        if (date === today.toISOString().split('T')[0]) dayContext = "aujourd'hui";
+        else if (date === tomorrow.toISOString().split('T')[0]) dayContext = "demain";
+
+        let matchLines = "";
+        matches.forEach(m => { matchLines += `⚽️ ${m.teams}\n`; });
+
+        const intros = [
+            "Salut l’équipe ! 🔥 L'analyse est tombée, et elle est incroyable ! Le nouveau combiné est officiellement disponible dans votre espace VIP+.",
+            "BOOM ! 💥 Nos experts ont encore frappé ! Le ticket du jour est validé avec une confiance absolue. Filez vite sur l'app !"
+        ];
+        const outros = [
+            "C’est le moment parfait pour prendre de l’avance. Ne laissez pas passer cette occasion en or, foncez ! 🙌⚡️",
+            "Faites très vite avant que les cotes ne s'effondrent ! L'horloge tourne, on encaisse ensemble ce soir. 💰⏱️"
+        ];
+        
+        let telegramDraft =
+            `📝 *BROUILLON CANAL PUBLIC :*\n` +
+            `_(À copier/coller sur votre canal)_\n\n` +
+            `---\n\n` +
+            `${intros[Math.floor(Math.random() * intros.length)]}\n\n` +
+            `🏆 *AU PROGRAMME :*\n` +
+            `${matchLines}\n` +
+            `⚠️ Début des matchs : ${dayContext} à *${earliestTime}*\n` +
+            `⛔️ *FERMETURE STRICTE DES ACCÈS :* *${deadlineStr}* ❗️\n\n` +
+            `${outros[Math.floor(Math.random() * outros.length)]}\n\n` +
+            `📱 *Nous rejoindre / Nous contacter :*\n` +
+            `🌐 Site Web : https://scoremaster.fr/\n` +
+            `➡️ Telegram : @ScoreMasterOfficiel`;
+
+        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: telegramDraft, parse_mode: 'Markdown' })
+        }).catch(err => console.error("Erreur Telegram:", err));
+
+        // On nettoie l'éditeur après publication
+        resetEditor();
 
         await chargerDonnees();
         switchAdminTab('dashboard');
