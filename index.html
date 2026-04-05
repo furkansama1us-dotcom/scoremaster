@@ -1181,7 +1181,7 @@ ${matchLines}
         <div class="admin-section">
             <button class="admin-submit-btn" id="btn-publish" onclick="publishCombined()"><span id="btn-publish-text"><i class="fas fa-paper-plane"></i> Publier le combiné</span></button>
         </div>
-    </div>
+    </div> <!-- ATTENTION : C'est ce /div qui ferme l'onglet Éditeur ! -->
 
     <!-- ONGLET 3 : VALIDATION (Masqué par défaut) -->
     <div class="admin-tab-content" id="admin-tab-validation">
@@ -1272,7 +1272,9 @@ ${matchLines}
             </div>
         </div>
     </div>
-</div> <!-- FIN DU PANEL ADMIN -->
+
+</div> <!-- FIN DU PANEL ADMIN (C'est lui qui ferme la grosse boite noire) -->
+
 <!-- =====================================================
      POPUP PROFIL ENRICHI
      ===================================================== -->
