@@ -1815,8 +1815,11 @@ ${matchLines}
             console.error('Erreur:', e); showToast('Erreur de chargement des données', true); 
         }
         
-        renderCombined(); 
+        renderCombined();
         renderHistory();
+        liveFinalNotifSent = false;
+        liveLastScores = {};
+        startLiveScores();
     }
 
     // ============================================================
