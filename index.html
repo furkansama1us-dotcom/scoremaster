@@ -601,6 +601,49 @@
         popup.firstElementChild.style.transform = 'scale(0.9)';
         setTimeout(function () { popup.style.display = 'none'; }, 300);
     }
+
+    // --- NOUVELLE FONCTION : ENVOI DE RELANCES TELEGRAM ---
+    function sendTelegramReminder(id) {
+        var c = allCombineds.find(x => x.id == id);
+        if (!c || c.status !== 'en-cours') {
+            showToast("Ce combiné n'est plus en cours !", true);
+            return;
+        }
+
+        const TELEGRAM_BOT_TOKEN = '8602776375:AAEuhWYNqb26IG8igWDTUI5iUaqSW0plj9I';
+        const TELEGRAM_CHAT_ID   = '905424902';
+
+        let matchLines = "";
+        c.matches.forEach(m => { matchLines += `⚽️ ${m.teams}\n`; });
+
+        // Modèles de relance (Inspirés de Maverick Pronos)
+        const reminders = [
+            `⏳ *TICK TOCK... Le temps presse !*\n\nPlus que quelques heures avant le coup d'envoi de notre combiné 100% Confiance.\n\nChez ScoreMaster tout est professionnel :\n- Tu payes l'accès 💳\n- Tu as les scores dans les 5 minutes 📲\n- Tu encaisses ce soir ⏳\n\nTu comptes continuer à regarder les autres gagner ? 🥇\n\n👉 Contact : @ScoreMasterOfficiel`,
+            
+            `🚨 *ALERTE DERNIÈRE MINUTE !*\n\nLe combiné du jour est toujours disponible, mais les accès ferment BIENTÔT ! 🔒\n\n${matchLines}\n\n💣 COTE SUPÉRIEURE À ${Math.floor(c.total_odds)}\n💯 CONFIANCE 100%\n🎁 Satisfait ou remboursé\n\nNe rate pas le train pour encaisser ce soir 🚂🚂🚂\n\n👉 Contact : @ScoreMasterOfficiel`,
+            
+            `⚠️ *PLACES LIMITÉES !*\n\nUn grand merci aux nouveaux VIP qui nous ont rejoint aujourd'hui ✅\n\nSI TOI AUSSI, TU VEUX ENCAISSER 🤑 C'EST LE MOMENT ! C'EST CADEAU 🎁\n\nLes bookmakers vont trembler ce soir.\n\n❗️ CLIQUE ICI : @ScoreMasterOfficiel 👈 ET ENVOIE MOI UN MESSAGE !`,
+            
+            `⏰ *DERNIER APPEL AVANT FERMETURE !*\n\nLa validation approche à grands pas. Nos experts ont déniché la faille parfaite sur ces matchs :\n\n${matchLines}\n\nRejoins l'élite et encaisse ton salaire du mois en une soirée 💸.\n\n👉 Pour nous rejoindre : @ScoreMasterOfficiel`
+        ];
+
+        let telegramText = reminders[Math.floor(Math.random() * reminders.length)];
+
+        if (confirm("Veux-tu envoyer un message de relance sur Telegram pour ce combiné ?")) {
+            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: telegramText, parse_mode: 'Markdown' })
+            }).then(response => {
+                if (response.ok) showToast("Relance Telegram envoyée !");
+                else showToast("Erreur lors de l'envoi", true);
+            }).catch(err => {
+                console.error("Erreur Telegram:", err);
+                showToast("Erreur réseau Telegram", true);
+            });
+        }
+    }
+    
 </script>
 
 <!-- SPLASH -->
@@ -1971,11 +2014,47 @@
 
         const intros = [
             "Salut l’équipe ! 🔥 L'analyse est tombée, et elle est incroyable ! Le nouveau combiné est officiellement disponible dans votre espace VIP+.",
-            "BOOM ! 💥 Nos experts ont encore frappé ! Le ticket du jour est validé avec une confiance absolue. Filez vite sur l'app !"
+            "BOOM ! 💥 Nos experts ont encore frappé ! Le ticket du jour est validé avec une confiance absolue. Filez vite sur l'app !",
+            "💎 LE TICKET SCORE EXACT D'AUJOURD'HUI EST EN LIGNE !\n\nLe combiné du jour est prêt à vous faire encaisser lourd.",
+            "🚨 ALERTE ! Le système a détecté une faille massive aujourd'hui. Le combiné est en ligne dans l'espace VIP+.",
+            "🤑 Vous voulez encaisser ? C'est 100% GAGNANT aujourd'hui ! Les informations sont sûres, le combiné est prêt.",
+            "✅ VALIDATION IMMINENTE ! L'équipe a travaillé toute la nuit sur ces rencontres. C'est du caviar.",
+            "👑 Réservé à l'élite ! Le combiné exclusif du jour vient d'être publié. On va plumer les bookmakers ce soir.",
+            "⚡️ FLASH INFO : Le combiné VIP+ est disponible. Fiabilité maximale sur ces scores exacts.",
+            "🚂 Le train de l'encaissement va bientôt démarrer ! Montez à bord, le ticket est dispo sur l'application.",
+            "🎁 C'EST CADEAU ! La confiance est tellement haute aujourd'hui qu'on a failli le jouer tout seuls.",
+            "💵 Objectif : Gros bénéfices ! Le ticket du jour est en ligne. L'algorithme est formel.",
+            "🎯 Précision chirurgicale aujourd'hui. Les scores exacts sont publiés dans votre espace membre.",
+            "🚀 On décolle ! Le combiné à très haute cote est officiellement accessible.",
+            "🤫 Information confidentielle confirmée. Le combiné vient d'être uploadé sur l'application.",
+            "🔥 Ça va être une boucherie ce soir ! Ticket en ligne, foncez avant la baisse des cotes.",
+            "💯 Confiance 100% sur ce ticket. On ne rigole plus, on passe aux choses sérieuses.",
+            "💳 Préparez vos comptes en banque. Le combiné Score Exact est disponible.",
+            "🌟 Le bijou du jour est là. Une analyse parfaite pour des gains colossaux ce soir.",
+            "🛑 STOP ! Arrêtez tout ce que vous faites. Le combiné VIP+ est en ligne et il est magnifique.",
+            "🏆 L'équipe de gagnants est prête ? Le nouveau ticket vient de tomber."
         ];
         const outros = [
             "C’est le moment parfait pour prendre de l’avance. Ne laissez pas passer cette occasion en or, foncez ! 🙌⚡️",
-            "Faites très vite avant que les cotes ne s'effondrent ! L'horloge tourne, on encaisse ensemble ce soir. 💰⏱️"
+            "Faites très vite avant que les cotes ne s'effondrent ! L'horloge tourne, on encaisse ensemble ce soir. 💰⏱️",
+            "💣 COTE SUPÉRIEURE À 50 !\n💯 CONFIANCE 100%\n🎁 Satisfait ou remboursé\n\nPrêt à faire partie de l'équipe ?",
+            "Chez ScoreMaster tout est professionnel :\n- Tu payes l'accès 💳\n- Scores en 5 minutes 📲\n- Tu encaisses le soir même ⏳",
+            "⚠️ PLACES LIMITÉES ! Ne sois pas celui qui regarde les autres gagner demain matin.",
+            "Un grand merci à vous les VIP, vous êtes ma meilleure pub. Pour les autres, il n'est pas trop tard ! 🚀",
+            "SI TOI AUSSI TU VEUX ENCAISSER 💸 ENVOIE MOI UN MESSAGE MAINTENANT !",
+            "Le nombre d'accès est restreint pour protéger les cotes. Premier arrivé, premier servi ! 🏃‍♂️💨",
+            "Rendez-vous à la caisse ce soir. Laissez parler les ignorants, nous on encaisse. 🤫💶",
+            "Ne rate pas le train pour encaisser ce soir 🚂🚂🚂",
+            "Fais confiance aux professionnels. Ce ticket va changer ton week-end. 🏝️",
+            "Arrête de perdre ton argent avec des pronos au hasard. Passe aux scores exacts garantis. 🛡️",
+            "C'est maintenant ou jamais. Demain matin, on affichera les tickets gagnants. 📸",
+            "Sécurise ta place tout de suite. La billetterie ferme très bientôt ! 🔒",
+            "Rejoins ceux qui gagnent VRAIMENT aux paris sportifs. 📈",
+            "Tu doutes encore ? Regarde notre historique. On se retrouve après le match pour fêter ça ! 🎉",
+            "L'information a fuité, les cotes risquent de chuter. Fonce. 📉",
+            "On prend l'argent des bookmakers et on se le partage. C'est aussi simple que ça. 🤝💸",
+            "Dernier rappel. Si tu rates ça, tu ne pourras t'en prendre qu'à toi-même. ⏰",
+            "Fais le bon choix. Rejoins le VIP+ et encaisse avec nous ce soir. 👑"
         ];
         
         let telegramDraft =
@@ -2160,8 +2239,8 @@
                     let btns = `<button onclick="openValidationScreen('${c.id}')" style="background:#FF9800; color:#000;"><i class="fas fa-check-double"></i> Valider</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
                     htmlPending += cardBaseHtml('<span style="color:#FF9800; font-weight:bold;">À vérifier ⚠️</span>', btns);
                 } else {
-                    // SI VRAIMENT EN COURS -> Ouvre l'ÉDITION RAPIDE (Bouton Bleu)
-                    let btns = `<button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
+                    // SI VRAIMENT EN COURS -> Ajout du bouton RELANCER
+                    let btns = `<button onclick="sendTelegramReminder('${c.id}')" style="background:var(--primary-yellow); color:#000; font-weight:bold;"><i class="fas fa-bell"></i> Relancer</button><button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
                     htmlActive += cardBaseHtml(displayStatus, btns);
                 }
             } else {
