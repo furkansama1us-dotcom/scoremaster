@@ -2419,49 +2419,62 @@ ${matchLines}
     function buildCC(c, sc, sl, pw, isHome) {
         var mH = '';
         var matchesToDisplay = c.matches ? c.matches : Array(c.nombre_matchs || 2).fill({ teams: 'Match en attente', time: '--:--', odds: 0 });
+        
+        let today = new Date();
+        let tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
+        let combinDate = new Date(c.date);
+        
+        let smartPrefix = "";
+        if (combinDate.toDateString() === today.toDateString()) smartPrefix = "Auj. ";
+        else if (combinDate.toDateString() === tomorrow.toDateString()) smartPrefix = "Dem. ";
+        else smartPrefix = fmtD(c.date) + " ";
 
-        // Variables pour recalculer la cote globale si elle n'est pas fournie
-        var calcOdds = 1;
-        var hasValidOdds = false;
+        // Détection du lieu d'affichage
+        var isHomeObscured = (isHome && sc === 'en-cours');
+        var isVipObscured = (!isHome && sc === 'en-cours');
 
         matchesToDisplay.forEach(function (m) {
             var mStatus = m.match_status || (sc === 'en-cours' ? 'en-cours' : sc);
-            var isMatchObscured = isHome && mStatus === 'en-cours';
+            
+            // Sécurité : l'accueil a des étoiles, le VIP a le vrai score mais flouté
+            var displayScore = isHomeObscured ? '*** - ***' : m.score;
+            var displayOdds = isHomeObscured ? '**.**' : m.odds.toFixed(2);
+            
+            var blurClass = (isHomeObscured || isVipObscured) ? 'blurred-value' : '';
+            var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;" crossorigin="anonymous">` : `<i class="fas fa-shield-alt"></i> `;
+            
+            let cleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : "--:--";
+            let finalTimeDisplay = smartPrefix + (cleanTime ? cleanTime[0] : "");
 
-            var displayScore = isMatchObscured ? '?-?' : m.score;
-            var displayOdds = isMatchObscured ? '***' : (m.odds ? m.odds.toFixed(2) : '0.00');
-            var scoreHtml = isMatchObscured ? '<span class="match-score blurred-value">' + displayScore + '</span>' : '<span class="match-score">' + displayScore + '</span>';
-            var oddsHtml = isMatchObscured ? '<div class="match-odds blurred-value">' + displayOdds + '</div>' : '<div class="match-odds">' + displayOdds + '</div>';
-            
-            var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<i class="fas fa-shield-alt"></i> `;
-            
-            mH += '<div class="match-row"><div class="match-row-top"><div class="match-type"><i class="fas fa-futbol"></i> Score exact ' + scoreHtml + '</div>' + oddsHtml + '</div><div class="match-row-bottom"><div class="match-teams">' + logoDisplay + (m.teams || 'Équipes') + '</div><div class="match-time">' + (m.time || '') + '</div></div></div>';
-            
-            if (m.odds && m.odds > 0) {
-                calcOdds *= m.odds;
-                hasValidOdds = true;
-            }
+            mH += `<div class="match-row">
+                    <div class="match-row-top" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div class="match-type" style="white-space:nowrap;">
+                            <i class="fas fa-futbol" style="color: #fff; margin-right: 6px; font-size: 14px;"></i> 
+                            Score exact <span class="${blurClass}" style="margin-left:5px; font-weight:700; color:var(--green); transition: filter 0.5s ease;">${displayScore}</span>
+                        </div>
+                        <div class="match-odds ${blurClass}" style="transition: filter 0.5s ease;">${displayOdds}</div>
+                    </div>
+                    <div class="match-row-bottom">
+                        <div class="match-teams" style="color:#fff;">${logoDisplay} ${m.teams || 'Équipes'}</div>
+                        <div class="match-time" style="color:var(--text-gray);">${finalTimeDisplay}</div>
+                    </div>
+                   </div>`;
         });
-
-        var ic = '';
-        matchesToDisplay.forEach(function (m, i) { ic += '<div class="match-icon-circle ' + (i === matchesToDisplay.length - 1 ? 'highlight' : '') + '"><i class="fas fa-futbol" style="font-size:14px;color:' + (i === matchesToDisplay.length - 1 ? 'white' : 'var(--text-gray)') + '"></i></div>'; });
-
+        
         var pc = sc === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : sc === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
+        
+        var blurClass = (isHomeObscured || isVipObscured) ? 'blurred-value' : '';
+        
+        var displayGains = isHomeObscured ? '***,** €' : fmtC(c.gains || 0);
+        var displayMise = isHomeObscured ? '***,** €' : fmtC(c.mise || 0);
+        var displayTotalOdds = isHomeObscured ? '***.**' : (c.total_odds || 0).toFixed(2);
 
-        // Calcul de la cote totale : on prend la BDD, sinon on la calcule, sinon c'est 0
-        var finalOdds = c.total_odds || c.totalOdds || (hasValidOdds ? calcOdds : 0);
-        var displayTotalOdds = (isHome && sc === 'en-cours') ? '***.**' : finalOdds.toFixed(2);
-
-        let isLocked = false;
-        let timeMessage = '';
-
+        let isLocked = false; let timeMessage = '';
         if (sc === 'en-cours' && c.date && c.time) {
             const matchDateTime = new Date(`${c.date}T${c.time}:00`);
-            const lockoutDateTime = new Date(matchDateTime.getTime() - 15 * 60000); 
-            const now = new Date();
-
-            if (now >= lockoutDateTime) {
-                isLocked = true; 
+            const lockoutDateTime = new Date(matchDateTime.getTime() - 15 * 60000);
+            if (new Date() >= lockoutDateTime) {
+                isLocked = true;
                 timeMessage = `<div style="color: var(--red); font-size: 13px; font-weight: 800; margin: 12px 16px; text-align: center; background: rgba(255,61,61,0.1); padding: 10px; border-radius: 8px;"><i class="fas fa-lock"></i> Les paris sont fermés (Match imminent)</div>`;
             } else {
                 const hrs = String(lockoutDateTime.getHours()).padStart(2, '0');
@@ -2469,31 +2482,33 @@ ${matchLines}
                 timeMessage = `<div style="color: #fff; font-size: 13px; font-weight: 800; margin: 12px 16px; text-align: center; background: linear-gradient(90deg, #00C853, #009624); padding: 10px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,200,83,0.3); animation: glowPass 2s infinite;"><i class="fas fa-stopwatch"></i> Disponible jusqu'à ${hrs}:${mins}</div>`;
             }
         }
-
-        var ctaBtn = '';
-        if (isHome) {
-            if (isLocked && sc === 'en-cours') {
-                ctaBtn = `<button class="combined-cta-btn" style="background: var(--bg-input); color: var(--text-gray); box-shadow: none; cursor: not-allowed;"><i class="fas fa-lock"></i> Trop tard, match commencé !</button>`;
-            } else if (sc === 'en-cours') {
-                ctaBtn = `<a href="${TELEGRAM_LINK}" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>`;
-            }
-        }
-
-        // CONSTRUCTION DU FOOTER (Cote totale + conditionnel pour Mise et Gains)
-        var footerHtml = '<div class="combined-footer">';
-        footerHtml += '<div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span><span class="combined-footer-value '+((isHome && sc === 'en-cours')?'blurred-value':'')+'">' + displayTotalOdds + '</span></div>';
         
-        // Si on N'EST PAS sur la page d'accueil (isHome === false), on affiche la mise et les gains[cite: 3]
-        if (!isHome) {
-            var displayGains = fmtC(c.gains || 0);
-            var displayMise = fmtC(c.mise || 0);
-            footerHtml += '<div class="combined-footer-row"><span class="combined-footer-label">Mise</span><span class="combined-footer-value">' + displayMise + '</span></div>';
-            footerHtml += '<div class="combined-footer-row"><span class="combined-footer-label">Gains potentiels</span><span class="combined-footer-value gains">' + displayGains + '</span></div>';
-        }
-        footerHtml += '</div>';
+        var ctaBtn = (isHome && !isLocked && sc === 'en-cours') ? `<a href="${TELEGRAM_LINK}" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>` : '';
+        if (isHome && isLocked && sc === 'en-cours') ctaBtn = `<button class="combined-cta-btn" style="background: var(--bg-input); color: var(--text-gray); cursor: not-allowed;"><i class="fas fa-lock"></i> Trop tard, match commencé !</button>`;
 
-        return '<div class="combined-card"><div class="combined-header"><div class="combined-status"><span class="status-badge ' + sc + '">' + sl[sc] + '</span><span class="combined-label">Combiné</span><div class="combined-count"><i class="fas fa-futbol"></i> ' + matchesToDisplay.length + '</div></div><i class="fas fa-ellipsis-h combined-more"></i></div><div class="combined-progress"><div class="combined-progress-fill" style="width:' + pw + ';' + pc + '"></div></div><div class="combined-matches-icons">' + ic + '<span style="font-size:12px;color:var(--text-gray);margin-left:4px;">' + matchesToDisplay.length + '</span></div><div class="combined-body">' + mH + '</div>' + footerHtml + ctaBtn + timeMessage + '</div>';
+        // LE BOUTON DE RÉVÉLATION VIP
+        var vipRevealBtn = isVipObscured ? `<button id="reveal-btn-${c.id}" onclick="unblurVipCard('combined-card-vip-${c.id}', 'reveal-btn-${c.id}')" class="combined-cta-btn" style="background:linear-gradient(135deg, #FFD700, #E6C200); color:#000; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);"><i class="fas fa-eye" style="margin-right:6px;"></i> Cliquer ici pour déflouter les scores</button>` : '';
+
+        return `
+        <div class="combined-card" id="combined-card-${isHome ? 'home' : 'vip'}-${c.id}" style="width:100%;">
+            <div class="combined-header">
+                <div class="combined-status"><span class="status-badge ${sc}">${sl[sc]}</span><span class="combined-label">Combiné</span></div>
+                <i class="fas fa-ellipsis-h combined-more"></i>
+            </div>
+            <div class="combined-progress"><div class="combined-progress-fill" style="width:${pw};${pc}"></div></div>
+            <div class="combined-body" style="padding-top: 10px;">${mH}</div>
+            <div class="combined-footer" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
+                <div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span><span class="combined-footer-value ${blurClass}" style="transition: filter 0.5s ease;">${displayTotalOdds}</span></div>
+                <div class="combined-footer-row" style="margin-bottom: 16px;"><span class="combined-footer-label">Mise</span><span class="combined-footer-value ${blurClass}" style="transition: filter 0.5s ease;">${displayMise}</span></div>
+                <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 0 -16px 16px -16px;"></div>
+                <div class="combined-footer-row"><span class="combined-footer-label" style="font-size:14px;">Gains potentiels</span><span class="combined-footer-value gains ${blurClass}" style="color:var(--green); transition: filter 0.5s ease;">${displayGains}</span></div>
+            </div>
+            ${vipRevealBtn}
+            ${ctaBtn}
+            ${timeMessage}
+        </div>`;
     }
+
     // FONCTION QUI GÈRE L'ANIMATION DE DÉFLOUTAGE
     function unblurVipCard(cardId, btnId) {
         let card = document.getElementById(cardId);
