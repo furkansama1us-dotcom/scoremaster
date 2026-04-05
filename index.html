@@ -1045,21 +1045,71 @@
             </div>
         </div>
         <div class="admin-section">
-            <!-- Combinés actifs -->
             <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-clock" style="color:var(--primary-yellow);"></i> Combinés En Cours</div>
             <div id="admin-history-active" style="max-height: 200px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color); margin-bottom:20px;"></div>
             
-            <!-- NOUVEAU : Combinés en attente de validation -->
             <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-exclamation-triangle" style="color:#FF9800;"></i> À Confirmer (Matchs Terminés)</div>
             <div id="admin-history-pending" style="max-height: 200px; overflow-y: auto; background: rgba(255, 152, 0, 0.05); border-radius: 12px; padding: 10px; border: 1px dashed rgba(255, 152, 0, 0.5); margin-bottom:20px;"></div>
 
-            <!-- Historique public -->
             <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-history" style="color:var(--green);"></i> Déjà Terminés (Public)</div>
             <div id="admin-history-past" style="max-height: 200px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color); margin-bottom:15px;"></div>
             
             <button class="btn-create-new" onclick="resetEditor()"><i class="fas fa-plus-circle"></i> Créer un NOUVEAU combiné</button>
         </div>
     </div>
+
+    <!-- ONGLET 2 : ÉDITEUR -->
+    <div class="admin-tab-content" id="admin-tab-editor">
+        <div class="admin-section">
+            <div class="admin-section-title" id="editor-title"><i class="fas fa-edit"></i> Éditeur de combiné</div>
+            <div class="admin-card">
+                <div class="admin-row">
+                    <div class="admin-field">
+                        <div class="admin-label"><i class="fas fa-calendar"></i> Date</div>
+                        <input type="date" class="admin-input" id="admin-date">
+                    </div>
+                    <div class="admin-field">
+                        <div class="admin-label"><i class="fas fa-flag"></i> Statut global</div>
+                        <select class="admin-select" id="admin-status">
+                            <option value="en-cours">En cours (Bleu)</option>
+                            <option value="termine">Gagné ✅ (Vert)</option>
+                            <option value="perdu">Perdu ❌ (Rouge)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs du combiné</div>
+            <div id="api-matches-container"></div>
+            <div id="admin-matches"></div>
+            <button class="admin-add-match-btn" onclick="addMatchEntry()"><i class="fas fa-plus"></i> Ajouter un match manuellement</button>
+        </div>
+        <div class="admin-section">
+            <div class="admin-section-title"><i class="fas fa-coins"></i> Mise & Gain</div>
+            <div class="admin-summary">
+                <div class="admin-summary-row"><span class="admin-summary-label">Cote totale</span><span class="admin-summary-value" id="summary-odds">0.00</span></div>
+            </div>
+            <button class="admin-submit-btn" id="btn-publish" onclick="publishCombined()"><span id="btn-publish-text"><i class="fas fa-paper-plane"></i> Publier le combiné</span></button>
+        </div>
+    </div>
+
+    <!-- ONGLET 3 : VALIDATION (Masqué par défaut) -->
+    <div class="admin-tab-content" id="admin-tab-validation">
+        <div class="admin-section">
+            <div class="admin-section-title" style="color:#FF9800;"><i class="fas fa-check-double"></i> Validation du Combiné</div>
+            <div id="validation-matches-container"></div>
+            <div class="admin-summary" style="margin-top:20px; background:var(--bg-input);">
+                <div class="admin-summary-row" style="border:none;">
+                    <span class="admin-summary-label">Cote validée :</span>
+                    <span class="admin-summary-value" id="validation-odds" style="color:var(--primary-yellow);">0.00</span>
+                </div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:25px;">
+                <button onclick="submitValidation('termine')" style="flex:1; padding:16px; background:var(--green); color:#fff; border:none; border-radius:12px; font-weight:800; cursor:pointer;">GAGNÉ ✅</button>
+                <button onclick="submitValidation('perdu')" style="flex:1; padding:16px; background:var(--red); color:#fff; border:none; border-radius:12px; font-weight:800; cursor:pointer;">PERDU ❌</button>
+            </div>
+        </div>
+    </div>
+</div>
 
     <!-- ONGLET 2 : ÉDITEUR -->
     <div class="admin-tab-content" id="admin-tab-editor">
@@ -1747,38 +1797,50 @@
 
     let validationCombinedId = null;
 
-    // Fonction pour ouvrir l'écran de validation simplifié
     function openValidationScreen(id) {
-        var c = allCombineds.find(function(x) { return x.id == id; });
+        var c = allCombineds.find(x => x.id == id);
         if(!c) return;
-        
         validationCombinedId = c.id;
-        let container = document.getElementById('validation-matches-container');
-        container.innerHTML = ''; // On vide le conteneur
         
-        // On affiche la cote totale
+        let container = document.getElementById('validation-matches-container');
+        container.innerHTML = '';
         document.getElementById('validation-odds').textContent = c.total_odds ? c.total_odds.toFixed(2) : '0.00';
 
-        // On génère une carte simplifiée pour chaque match
-        if(c.matches && c.matches.length > 0) {
-            c.matches.forEach((m, index) => {
-                let logoDisplay = m.logo ? `<img src="${m.logo}" style="width:18px;height:18px;object-fit:contain;margin-right:8px;vertical-align:middle;">` : `<i class="fas fa-shield-alt" style="margin-right:8px;"></i>`;
-                
-                let matchHtml = `
+        c.matches.forEach((m, index) => {
+            container.innerHTML += `
                 <div class="admin-card" style="padding:15px; border-left:4px solid var(--blue); margin-bottom:10px;">
-                    <div style="font-size:12px; color:var(--text-gray); margin-bottom:8px;">Match ${index + 1} • Prévu à ${m.time || '--:--'}</div>
-                    <div style="font-weight:bold; font-size:15px; margin-bottom:15px; display:flex; align-items:center;">
-                        ${logoDisplay} ${m.teams}
-                    </div>
-                    <div class="admin-field" style="margin-bottom:0;">
+                    <div style="font-weight:bold; margin-bottom:10px;">${m.teams}</div>
+                    <div class="admin-field">
                         <div class="admin-label">Score final :</div>
-                        <input type="text" class="admin-input validation-score-input" data-index="${index}" value="${m.score}" style="font-size:16px; font-weight:bold; text-align:center; letter-spacing:2px;">
+                        <input type="text" class="admin-input validation-score-input" data-index="${index}" value="${m.score}">
                     </div>
                 </div>`;
-                
-                container.innerHTML += matchHtml;
-            });
-        }
+        });
+        
+        document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.remove('active'));
+        document.getElementById('admin-tab-validation').classList.add('active');
+        document.querySelectorAll('.admin-tab-btn').forEach(el => el.classList.remove('active'));
+    }
+
+    async function submitValidation(finalStatus) {
+        if (!validationCombinedId) return;
+        var original = allCombineds.find(c => c.id == validationCombinedId);
+        
+        let updatedMatches = JSON.parse(JSON.stringify(original.matches));
+        document.querySelectorAll('.validation-score-input').forEach(input => {
+            let idx = parseInt(input.getAttribute('data-index'));
+            updatedMatches[idx].score = input.value.trim();
+            updatedMatches[idx].match_status = finalStatus;
+        });
+
+        try {
+            await supabaseClient.from('combineds_public').update({ status: finalStatus, matches: updatedMatches }).eq('id', validationCombinedId);
+            await supabaseClient.from('combineds_vip').update({ matches: updatedMatches }).eq('id', validationCombinedId);
+            showToast('Combiné validé !');
+            await chargerDonnees();
+            switchAdminTab('dashboard');
+        } catch (e) { showToast("Erreur", true); }
+    }
         
         // On bascule sur le nouvel onglet
         document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.remove('active'));
