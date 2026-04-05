@@ -1162,6 +1162,33 @@
         </div>
     </div>
 
+    <!-- ONGLET 4 : ÉDITION RAPIDE (Masqué par défaut) -->
+    <div class="admin-tab-content" id="admin-tab-quickedit">
+        <div class="admin-section">
+            <div class="admin-section-title" style="color:var(--blue); font-size:16px; margin-bottom: 20px;">
+                <i class="fas fa-edit"></i> Modification Rapide
+            </div>
+            <p style="font-size:13px; color:var(--text-gray); margin-bottom:20px; line-height:1.5;">
+                Ajustez les scores ou les cotes de ce combiné sans modifier son statut global.
+            </p>
+            
+            <div id="quickedit-matches-container"></div>
+            
+            <div class="admin-summary" style="margin-top:20px; background:var(--bg-input);">
+                <div class="admin-summary-row" style="border:none;">
+                    <span class="admin-summary-label">Nouvelle cote totale :</span>
+                    <span class="admin-summary-value" id="quickedit-odds" style="color:var(--primary-yellow); font-size: 18px;">0.00</span>
+                </div>
+            </div>
+
+            <div style="margin-top:25px; margin-bottom: 20px;">
+                <button onclick="submitQuickEdit()" style="width:100%; padding:16px; background:var(--blue); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer; box-shadow: 0 4px 15px rgba(74, 144, 217, 0.3);">
+                    <i class="fas fa-save" style="margin-right:5px; font-size:16px;"></i> ENREGISTRER LES MODIFICATIONS
+                </button>
+            </div>
+        </div>
+    </div>
+    
 </div> <!-- FIN DU PANEL ADMIN -->
 
 <!-- =====================================================
@@ -2176,17 +2203,17 @@
                 finishTime = new Date(finishTime.getTime() + (2 * 60 * 60 * 1000));
 
                 if (now >= finishTime) {
-                    // SI EXPIRÉ ("À Confirmer")
+                    // SI EXPIRÉ ("À Confirmer") -> Ouvre la VALIDATION (Gagné/Perdu)
                     let btns = `<button onclick="openValidationScreen('${c.id}')" style="background:#FF9800; color:#000;"><i class="fas fa-check-double"></i> Valider</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
                     htmlPending += cardBaseHtml('<span style="color:#FF9800; font-weight:bold;">À vérifier ⚠️</span>', btns);
                 } else {
-                    // SI VRAIMENT EN COURS
-                    let btns = `<button onclick="loadIntoEditor('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
+                    // SI VRAIMENT EN COURS -> Ouvre l'ÉDITION RAPIDE (Bouton Bleu)
+                    let btns = `<button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
                     htmlActive += cardBaseHtml(displayStatus, btns);
                 }
             } else {
-                // SI TERMINÉ
-                let btns = `<button onclick="loadIntoEditor('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
+                // SI DÉJÀ TERMINÉ -> Ouvre l'ÉDITION RAPIDE (Bouton Bleu) pour pouvoir corriger une erreur
+                let btns = `<button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
                 htmlPast += cardBaseHtml(displayStatus, btns);
             }
         });
@@ -2403,6 +2430,116 @@
             minimumFractionDigits: 2 
         }).format(v); 
     }
+let quickEditCombinedId = null;
+
+    // 1. Ouvre la page d'édition rapide
+    function openQuickEditScreen(id) {
+        var c = allCombineds.find(x => x.id == id);
+        if(!c) return;
+        
+        quickEditCombinedId = c.id;
+        let container = document.getElementById('quickedit-matches-container');
+        container.innerHTML = ''; 
+        document.getElementById('quickedit-odds').textContent = c.total_odds ? c.total_odds.toFixed(2) : '0.00';
+
+        if(c.matches && c.matches.length > 0) {
+            c.matches.forEach((m, index) => {
+                let logoDisplay = m.logo ? `<img src="${m.logo}" style="width:18px;height:18px;object-fit:contain;margin-right:8px;vertical-align:middle;" crossorigin="anonymous">` : `<i class="fas fa-shield-alt" style="margin-right:8px;"></i>`;
+                let currentOdds = m.odds ? m.odds.toFixed(2) : '0.00';
+                
+                let matchHtml = `
+                <div class="admin-card" style="padding:15px; border-left:4px solid var(--blue); margin-bottom:10px;">
+                    <div style="font-size:12px; color:var(--text-gray); margin-bottom:8px;">Match ${index + 1} • Prévu à ${m.time || '--:--'}</div>
+                    <div style="font-weight:bold; font-size:15px; margin-bottom:15px; display:flex; align-items:center;">
+                        ${logoDisplay} ${m.teams}
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <div class="admin-field" style="margin-bottom:0; flex:1;">
+                            <div class="admin-label">Score :</div>
+                            <input type="text" class="admin-input quickedit-score-input" data-index="${index}" value="${m.score}" style="font-size:16px; font-weight:bold; text-align:center; letter-spacing:2px;">
+                        </div>
+                        <div class="admin-field" style="margin-bottom:0; flex:1;">
+                            <div class="admin-label">Cote :</div>
+                            <input type="text" inputmode="decimal" class="admin-input quickedit-odds-input" data-index="${index}" value="${currentOdds}" style="font-size:16px; font-weight:bold; text-align:center; color:var(--primary-yellow);" oninput="recalculateQuickEditOdds()">
+                        </div>
+                    </div>
+                </div>`;
+                container.innerHTML += matchHtml;
+            });
+        }
+        
+        document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.remove('active'));
+        document.getElementById('admin-tab-quickedit').classList.add('active');
+        document.querySelectorAll('.admin-tab-btn').forEach(el => el.classList.remove('active'));
+    }
+
+    // 2. Recalcule la cote en direct
+    function recalculateQuickEditOdds() {
+        let total = 1;
+        let hasValidOdds = false;
+        document.querySelectorAll('.quickedit-odds-input').forEach(input => {
+            let val = parseFloat(input.value.replace(',', '.'));
+            if (!isNaN(val) && val > 0) {
+                total *= val;
+                hasValidOdds = true;
+            }
+        });
+        if (!hasValidOdds) total = 0;
+        document.getElementById('quickedit-odds').textContent = total.toFixed(2);
+    }
+
+    // 3. Sauvegarde silencieuse en base de données
+    async function submitQuickEdit() {
+        if (!quickEditCombinedId) return;
+        var originalCombined = allCombineds.find(c => c.id == quickEditCombinedId);
+        if(!originalCombined) return;
+
+        let updatedMatches = JSON.parse(JSON.stringify(originalCombined.matches)); 
+        
+        document.querySelectorAll('.quickedit-score-input').forEach(input => {
+            let index = parseInt(input.getAttribute('data-index'));
+            if(updatedMatches[index]) updatedMatches[index].score = input.value.trim();
+        });
+
+        document.querySelectorAll('.quickedit-odds-input').forEach(input => {
+            let index = parseInt(input.getAttribute('data-index'));
+            let val = parseFloat(input.value.replace(',', '.'));
+            if(updatedMatches[index] && !isNaN(val) && val > 0) updatedMatches[index].odds = val;
+        });
+
+        let newTotalOdds = 1;
+        updatedMatches.forEach(m => newTotalOdds *= m.odds);
+        let newGains = originalCombined.mise * newTotalOdds;
+
+        // Préparation version publique (on masque si c'est encore "en-cours")
+        let publicMatches = updatedMatches.map(m => {
+            let isFinished = (originalCombined.status === 'termine' || originalCombined.status === 'perdu');
+            return { teams: m.teams, time: m.time, score: isFinished ? m.score : '?-?', odds: isFinished ? m.odds : 0, logo: m.logo, match_status: m.match_status };
+        });
+
+        try {
+            var updatePub = await supabaseClient.from('combineds_public')
+                .update({ matches: publicMatches })
+                .eq('id', quickEditCombinedId);
+            if (updatePub.error) throw updatePub.error;
+
+            var updateVip = await supabaseClient.from('combineds_vip')
+                .update({ matches: updatedMatches, total_odds: newTotalOdds, gains: newGains })
+                .eq('id', quickEditCombinedId);
+            if (updateVip.error) throw updateVip.error;
+
+            showToast('Combiné mis à jour !');
+            quickEditCombinedId = null;
+            
+            await chargerDonnees();
+            switchAdminTab('dashboard');
+            renderAdminHistory();
+        } catch (e) {
+            console.error("Erreur update :", e);
+            showToast("Erreur lors de la mise à jour", true);
+        }
+    }
+    
 </script>
 
 </body>
