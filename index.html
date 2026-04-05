@@ -2832,8 +2832,8 @@ function sendTelegramFinalResultDirect(results) {
                 finishTime = new Date(finishTime.getTime() + (2 * 60 * 60 * 1000));
 
                 if (now >= finishTime) {
-                    // SI EXPIRÉ ("À Confirmer") -> Ouvre la VALIDATION (Gagné/Perdu)
-                    let btns = `<button onclick="openValidationScreen('${c.id}')" style="background:#FF9800; color:#000;"><i class="fas fa-check-double"></i> Valider</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
+                    // SI EXPIRÉ ("À Confirmer") -> Ouvre la VALIDATION (Gagné/Perdu) et ajoute le bouton Score API
+                    let btns = `<button onclick="openValidationScreen('${c.id}')" style="background:#FF9800; color:#000;"><i class="fas fa-check-double"></i> Valider</button><button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(255,61,61,0.15); color:var(--red); border:1px solid rgba(255,61,61,0.4);"><i class="fas fa-satellite-dish"></i> Score API</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
                     htmlPending += cardBaseHtml('<span style="color:#FF9800; font-weight:bold;">À vérifier ⚠️</span>', btns);
                 } else {
                     // SI VRAIMENT EN COURS -> Ajout du bouton RELANCER
