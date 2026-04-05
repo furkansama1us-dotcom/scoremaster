@@ -3242,4 +3242,17 @@ let quickEditCombinedId = null;
     function closeGooglePopup() {
         var popup = document.getElementById('google-popup');
         popup.style.opacity = '0'; popup.firstElementChild.style.transform = 'scale(0.9)';
-        setTimeout(fun
+        setTimeout(function () { popup.style.display = 'none'; }, 300);
+    }
+
+    function goToSignupFromGoogle() {
+        closeGooglePopup();
+        // Si l'utilisateur n'est pas déjà sur la vue "Création de compte", on l'y met
+        if (!isSignUpMode) {
+            toggleAuthMode();
+        }
+    }
+</script>
+
+</body>
+</html>
