@@ -2004,10 +2004,12 @@
         let now = new Date();
 
         allCombineds.forEach(function(c) {
-            var itemHtml = `<div class="admin-history-item"><span>Le ${fmtD(c.date)} - ${sl[c.status]}</span><div style="display:flex; gap:8px;"><button onclick="loadIntoEditor('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Revoir</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button></div></div>`;
+            // On prépare le texte du statut. S'il est en cours mais expiré, on l'appellera "À vérifier"
+            let displayStatus = sl[c.status];
+            
+            var itemHtml = `<div class="admin-history-item"><span>Le ${fmtD(c.date)} - {STATUS_PLACEHOLDER}</span><div style="display:flex; gap:8px;"><button onclick="loadIntoEditor('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Revoir</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button></div></div>`;
             
             if (c.status === 'en-cours') {
-                // On calcule l'heure de fin estimée
                 let latestTime = "00:00"; 
                 if (c.matches && c.matches.length > 0) {
                     c.matches.forEach(m => {
@@ -2020,15 +2022,16 @@
                 }
                 
                 let finishTime = new Date(`${c.date}T${latestTime}:00`);
-                finishTime = new Date(finishTime.getTime() + (2 * 60 * 60 * 1000)); // +2 heures
+                finishTime = new Date(finishTime.getTime() + (2 * 60 * 60 * 1000));
 
-                // Si le temps est écoulé, il va dans "À Confirmer"
-                if (now >= finishTime) htmlPending += itemHtml;
-                else htmlActive += itemHtml;
-
+                if (now >= finishTime) {
+                    // C'est ici qu'on met "À vérifier" au lieu de "En cours"
+                    htmlPending += itemHtml.replace('{STATUS_PLACEHOLDER}', '<span style="color:#FF9800; font-weight:bold;">À vérifier ⚠️</span>');
+                } else {
+                    htmlActive += itemHtml.replace('{STATUS_PLACEHOLDER}', displayStatus);
+                }
             } else {
-                // Déjà publié (Gagné ou Perdu)
-                htmlPast += itemHtml;
+                htmlPast += itemHtml.replace('{STATUS_PLACEHOLDER}', displayStatus);
             }
         });
 
