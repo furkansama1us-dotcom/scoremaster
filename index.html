@@ -1900,29 +1900,6 @@ async function startLiveScores() {
     }
 }
 
-    // Démarre le live 15 min avant le 1er match
-    const [h, min] = firstMatchTime.split(':').map(Number);
-    const matchStart = new Date();
-    matchStart.setHours(h, min - 15, 0, 0);
-
-    const now = new Date();
-    const msUntilStart = matchStart - now;
-
-    if (msUntilStart > 0) {
-        document.getElementById('live-scores-section').style.display = 'none';
-        setTimeout(() => startLiveScores(), msUntilStart);
-        return;
-    }
-
-    document.getElementById('live-scores-section').style.display = 'block';
-    await fetchAndRenderLiveScores(matches);
-
-    if (livePollingInterval) clearInterval(livePollingInterval);
-    livePollingInterval = setInterval(async () => {
-        await fetchAndRenderLiveScores(matches);
-    }, 160000);
-}
-
 async function fetchAndRenderLiveScores(matches) {
     const container = document.getElementById('live-scores-container');
     const today = new Date().toISOString().split('T')[0];
