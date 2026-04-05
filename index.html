@@ -1083,6 +1083,38 @@
             </div>
         </div>
 
+        <!-- ONGLET 3 : VALIDATION (Masqué par défaut) -->
+    <div class="admin-tab-content" id="admin-tab-validation">
+        <div class="admin-section">
+            <div class="admin-section-title" style="color:#FF9800; font-size:16px;">
+                <i class="fas fa-check-double"></i> Validation du Combiné
+            </div>
+            <p style="font-size:13px; color:var(--text-gray); margin-bottom:15px;">
+                Vérifiez les scores finaux avant de publier ce combiné dans l'historique public.
+            </p>
+            
+            <!-- Conteneur pour les matchs à valider -->
+            <div id="validation-matches-container"></div>
+            
+            <div class="admin-summary" style="margin-top:20px;">
+                <div class="admin-summary-row">
+                    <span class="admin-summary-label">Cote totale :</span>
+                    <span class="admin-summary-value" id="validation-odds" style="color:var(--primary-yellow);">0.00</span>
+                </div>
+            </div>
+
+            <!-- Boutons d'action clairs -->
+            <div style="display:flex; gap:10px; margin-top:20px; margin-bottom: 40px;">
+                <button onclick="submitValidation('termine')" style="flex:1; padding:15px; background:var(--green); color:#fff; border:none; border-radius:12px; font-weight:bold; font-size:15px; cursor:pointer;">
+                    <i class="fas fa-check-circle"></i> Valider (GAGNÉ)
+                </button>
+                <button onclick="submitValidation('perdu')" style="flex:1; padding:15px; background:var(--red); color:#fff; border:none; border-radius:12px; font-weight:bold; font-size:15px; cursor:pointer;">
+                    <i class="fas fa-times-circle"></i> Valider (PERDU)
+                </button>
+            </div>
+        </div>
+    </div>
+
         <div class="admin-section">
             <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs du combiné</div>
 
@@ -1705,6 +1737,99 @@
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('admin-status').addEventListener('change', handleGlobalStatusChange);
     });
+
+    let validationCombinedId = null;
+
+    // Fonction pour ouvrir l'écran de validation simplifié
+    function openValidationScreen(id) {
+        var c = allCombineds.find(function(x) { return x.id == id; });
+        if(!c) return;
+        
+        validationCombinedId = c.id;
+        let container = document.getElementById('validation-matches-container');
+        container.innerHTML = ''; // On vide le conteneur
+        
+        // On affiche la cote totale
+        document.getElementById('validation-odds').textContent = c.total_odds ? c.total_odds.toFixed(2) : '0.00';
+
+        // On génère une carte simplifiée pour chaque match
+        if(c.matches && c.matches.length > 0) {
+            c.matches.forEach((m, index) => {
+                let logoDisplay = m.logo ? `<img src="${m.logo}" style="width:18px;height:18px;object-fit:contain;margin-right:8px;vertical-align:middle;">` : `<i class="fas fa-shield-alt" style="margin-right:8px;"></i>`;
+                
+                let matchHtml = `
+                <div class="admin-card" style="padding:15px; border-left:4px solid var(--blue); margin-bottom:10px;">
+                    <div style="font-size:12px; color:var(--text-gray); margin-bottom:8px;">Match ${index + 1} • Prévu à ${m.time || '--:--'}</div>
+                    <div style="font-weight:bold; font-size:15px; margin-bottom:15px; display:flex; align-items:center;">
+                        ${logoDisplay} ${m.teams}
+                    </div>
+                    <div class="admin-field" style="margin-bottom:0;">
+                        <div class="admin-label">Score final :</div>
+                        <input type="text" class="admin-input validation-score-input" data-index="${index}" value="${m.score}" style="font-size:16px; font-weight:bold; text-align:center; letter-spacing:2px;">
+                    </div>
+                </div>`;
+                
+                container.innerHTML += matchHtml;
+            });
+        }
+        
+        // On bascule sur le nouvel onglet
+        document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.remove('active'));
+        document.getElementById('admin-tab-validation').classList.add('active');
+        
+        // On désélectionne visuellement les boutons d'onglets (Dashboard / Editeur)
+        document.querySelectorAll('.admin-tab-btn').forEach(el => el.classList.remove('active'));
+    }
+
+    // Fonction pour sauvegarder la validation
+    async function submitValidation(finalStatus) {
+        if (!validationCombinedId) return;
+        
+        // On récupère le combiné original
+        var originalCombined = allCombineds.find(c => c.id == validationCombinedId);
+        if(!originalCombined) return;
+
+        // On met à jour les scores à partir des champs de saisie
+        let updatedMatches = JSON.parse(JSON.stringify(originalCombined.matches)); // Copie profonde
+        document.querySelectorAll('.validation-score-input').forEach(input => {
+            let index = parseInt(input.getAttribute('data-index'));
+            if(updatedMatches[index]) {
+                updatedMatches[index].score = input.value.trim();
+                updatedMatches[index].match_status = finalStatus; // On applique le statut final au match
+            }
+        });
+
+        // On prépare la version publique (sans cotes masquées, puisque c'est terminé)
+        let publicMatches = updatedMatches.map(m => ({
+            teams: m.teams, time: m.time, score: m.score, odds: m.odds, logo: m.logo, match_status: finalStatus
+        }));
+
+        try {
+            // Mise à jour de la table publique
+            var updatePub = await supabaseClient.from('combineds_public')
+                .update({ status: finalStatus, matches: publicMatches })
+                .eq('id', validationCombinedId);
+            if (updatePub.error) throw updatePub.error;
+
+            // Mise à jour de la table VIP
+            var updateVip = await supabaseClient.from('combineds_vip')
+                .update({ matches: updatedMatches })
+                .eq('id', validationCombinedId);
+            if (updateVip.error) throw updateVip.error;
+
+            showToast(finalStatus === 'termine' ? 'Combiné validé GAGNÉ !' : 'Combiné validé PERDU.');
+            validationCombinedId = null;
+            
+            // On recharge les données et on retourne au tableau de bord
+            await chargerDonnees();
+            switchAdminTab('dashboard');
+            renderAdminHistory();
+            
+        } catch (e) {
+            console.error("Erreur validation :", e);
+            showToast("Erreur lors de la validation", true);
+        }
+    }
     
     function loadIntoEditor(id) {
         var c = allCombineds.find(function(x) { return x.id == id; });
@@ -2065,10 +2190,10 @@
         let now = new Date();
 
         allCombineds.forEach(function(c) {
-            // On prépare le texte du statut. S'il est en cours mais expiré, on l'appellera "À vérifier"
             let displayStatus = sl[c.status];
             
-            var itemHtml = `<div class="admin-history-item"><span>Le ${fmtD(c.date)} - {STATUS_PLACEHOLDER}</span><div style="display:flex; gap:8px;"><button onclick="loadIntoEditor('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Revoir</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button></div></div>`;
+            // On prépare le HTML de base
+            let itemHtml;
             
             if (c.status === 'en-cours') {
                 let latestTime = "00:00"; 
@@ -2086,13 +2211,18 @@
                 finishTime = new Date(finishTime.getTime() + (2 * 60 * 60 * 1000));
 
                 if (now >= finishTime) {
-                    // C'est ici qu'on met "À vérifier" au lieu de "En cours"
-                    htmlPending += itemHtml.replace('{STATUS_PLACEHOLDER}', '<span style="color:#FF9800; font-weight:bold;">À vérifier ⚠️</span>');
+                    // SI EXPIRÉ ("À Confirmer") : Le bouton lance la NOUVELLE VUE DE VALIDATION
+                    itemHtml = `<div class="admin-history-item"><span>Le ${fmtD(c.date)} - <span style="color:#FF9800; font-weight:bold;">À vérifier ⚠️</span></span><div style="display:flex; gap:8px;"><button onclick="openValidationScreen('${c.id}')" style="background:#FF9800; color:#000;"><i class="fas fa-check-double"></i> Valider</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button></div></div>`;
+                    htmlPending += itemHtml;
                 } else {
-                    htmlActive += itemHtml.replace('{STATUS_PLACEHOLDER}', displayStatus);
+                    // SI VRAIMENT EN COURS : Le bouton lance L'ÉDITEUR CLASSIQUE
+                    itemHtml = `<div class="admin-history-item"><span>Le ${fmtD(c.date)} - ${displayStatus}</span><div style="display:flex; gap:8px;"><button onclick="loadIntoEditor('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button></div></div>`;
+                    htmlActive += itemHtml;
                 }
             } else {
-                htmlPast += itemHtml.replace('{STATUS_PLACEHOLDER}', displayStatus);
+                // SI TERMINÉ : Plus de bouton d'édition, juste la poubelle
+                itemHtml = `<div class="admin-history-item"><span>Le ${fmtD(c.date)} - ${displayStatus}</span><div style="display:flex; gap:8px;"><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button></div></div>`;
+                htmlPast += itemHtml;
             }
         });
 
