@@ -1657,6 +1657,8 @@
 
     let validationCombinedId = null;
 
+    let validationCombinedId = null;
+
     function openValidationScreen(id) {
         var c = allCombineds.find(function(x) { return x.id == id; });
         if(!c) return;
@@ -1670,16 +1672,25 @@
         if(c.matches && c.matches.length > 0) {
             c.matches.forEach((m, index) => {
                 let logoDisplay = m.logo ? `<img src="${m.logo}" style="width:18px;height:18px;object-fit:contain;margin-right:8px;vertical-align:middle;">` : `<i class="fas fa-shield-alt" style="margin-right:8px;"></i>`;
+                let currentOdds = m.odds ? m.odds.toFixed(2) : '0.00';
                 
+                // J'ajoute le champ "Cote finale" et un événement "oninput" pour recalculer le total
                 let matchHtml = `
                 <div class="admin-card" style="padding:15px; border-left:4px solid var(--blue); margin-bottom:10px;">
                     <div style="font-size:12px; color:var(--text-gray); margin-bottom:8px;">Match ${index + 1} • Prévu à ${m.time || '--:--'}</div>
                     <div style="font-weight:bold; font-size:15px; margin-bottom:15px; display:flex; align-items:center;">
                         ${logoDisplay} ${m.teams}
                     </div>
-                    <div class="admin-field" style="margin-bottom:0;">
-                        <div class="admin-label">Score final :</div>
-                        <input type="text" class="admin-input validation-score-input" data-index="${index}" value="${m.score}" style="font-size:16px; font-weight:bold; text-align:center; letter-spacing:2px;">
+                    
+                    <div style="display:flex; gap:10px;">
+                        <div class="admin-field" style="margin-bottom:0; flex:1;">
+                            <div class="admin-label">Score final :</div>
+                            <input type="text" class="admin-input validation-score-input" data-index="${index}" value="${m.score}" style="font-size:16px; font-weight:bold; text-align:center; letter-spacing:2px;">
+                        </div>
+                        <div class="admin-field" style="margin-bottom:0; flex:1;">
+                            <div class="admin-label">Cote finale :</div>
+                            <input type="text" inputmode="decimal" class="admin-input validation-odds-input" data-index="${index}" value="${currentOdds}" style="font-size:16px; font-weight:bold; text-align:center; color:var(--primary-yellow);" oninput="recalculateValidationOdds()">
+                        </div>
                     </div>
                 </div>`;
                 
@@ -1692,6 +1703,23 @@
         document.querySelectorAll('.admin-tab-btn').forEach(el => el.classList.remove('active'));
     }
 
+    // Nouvelle fonction pour recalculer la cote totale à la volée dans cet écran
+    function recalculateValidationOdds() {
+        let total = 1;
+        let hasValidOdds = false;
+        
+        document.querySelectorAll('.validation-odds-input').forEach(input => {
+            let val = parseFloat(input.value.replace(',', '.'));
+            if (!isNaN(val) && val > 0) {
+                total *= val;
+                hasValidOdds = true;
+            }
+        });
+        
+        if (!hasValidOdds) total = 0;
+        document.getElementById('validation-odds').textContent = total.toFixed(2);
+    }
+
     async function submitValidation(finalStatus) {
         if (!validationCombinedId) return;
         
@@ -1699,6 +1727,8 @@
         if(!originalCombined) return;
 
         let updatedMatches = JSON.parse(JSON.stringify(originalCombined.matches)); 
+        
+        // On récupère les scores ET les cotes
         document.querySelectorAll('.validation-score-input').forEach(input => {
             let index = parseInt(input.getAttribute('data-index'));
             if(updatedMatches[index]) {
@@ -1707,9 +1737,22 @@
             }
         });
 
+        document.querySelectorAll('.validation-odds-input').forEach(input => {
+            let index = parseInt(input.getAttribute('data-index'));
+            let val = parseFloat(input.value.replace(',', '.'));
+            if(updatedMatches[index] && !isNaN(val) && val > 0) {
+                updatedMatches[index].odds = val;
+            }
+        });
+
         let publicMatches = updatedMatches.map(m => ({
             teams: m.teams, time: m.time, score: m.score, odds: m.odds, logo: m.logo, match_status: finalStatus
         }));
+
+        // Recalcul du total global et des gains pour mettre à jour le ticket
+        let newTotalOdds = 1;
+        updatedMatches.forEach(m => newTotalOdds *= m.odds);
+        let newGains = originalCombined.mise * newTotalOdds;
 
         try {
             var updatePub = await supabaseClient.from('combineds_public')
@@ -1718,7 +1761,7 @@
             if (updatePub.error) throw updatePub.error;
 
             var updateVip = await supabaseClient.from('combineds_vip')
-                .update({ matches: updatedMatches })
+                .update({ matches: updatedMatches, total_odds: newTotalOdds, gains: newGains })
                 .eq('id', validationCombinedId);
             if (updateVip.error) throw updateVip.error;
 
@@ -1734,7 +1777,6 @@
             showToast("Erreur lors de la validation", true);
         }
     }
-
     function loadIntoEditor(id) {
         var c = allCombineds.find(function(x) { return x.id == id; });
         if(!c) return;
