@@ -1082,29 +1082,6 @@
 
         <div class="admin-section">
             <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs du combiné</div>
-            
-            <div class="match-filter-bar" id="match-filter-bar">
-                <button class="match-filter-btn f-active-all" id="filter-btn-all" onclick="filterMatches('all', this)">
-                    <i class="fas fa-list"></i> Tous
-                    <span class="filter-count" id="count-all">0</span>
-                </button>
-                <button class="match-filter-btn" id="filter-btn-en-cours" onclick="filterMatches('en-cours', this)">
-                    <i class="fas fa-clock"></i> En cours
-                    <span class="filter-count" id="count-en-cours" style="background:rgba(74,144,217,0.2);color:var(--blue);">0</span>
-                </button>
-                <button class="match-filter-btn" id="filter-btn-termine" onclick="filterMatches('termine', this)">
-                    <i class="fas fa-check"></i> Gagné
-                    <span class="filter-count" id="count-termine" style="background:rgba(0,200,83,0.2);color:var(--green);">0</span>
-                </button>
-                <button class="match-filter-btn" id="filter-btn-perdu" onclick="filterMatches('perdu', this)">
-                    <i class="fas fa-times"></i> Perdu
-                    <span class="filter-count" id="count-perdu" style="background:rgba(255,61,61,0.2);color:var(--red);">0</span>
-                </button>
-            </div>
-            
-            <div id="no-filter-result">
-                <i class="fas fa-search"></i> Aucun match pour ce filtre
-            </div>
 
             <button id="btn-fetch-api" onclick="fetchMatchesFromAPI()" style="width:100%; padding:12px; background:rgba(74, 144, 217, 0.15); color:var(--blue); border:1px solid rgba(74, 144, 217, 0.3); border-radius:10px; cursor:pointer; margin-bottom:15px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
                 <i class="fas fa-plug"></i> Charger les matchs du jour (API)
@@ -1665,7 +1642,6 @@
     
     function resetEditor() {
         editingId = null;
-        activeMatchFilter = 'all';
         document.getElementById('admin-date').value = new Date().toISOString().split('T')[0];
         document.getElementById('admin-status').value = 'en-cours';
         document.getElementById('admin-mise').value = '100';
@@ -1673,10 +1649,7 @@
         document.getElementById('api-matches-container').innerHTML = '';
         matchEntryCount = 0;
         calculateGains();
-        updateFilterCounts();
-        document.querySelectorAll('.match-filter-btn').forEach(function(b) { b.classList.remove('f-active-all','f-active-en-cours','f-active-termine','f-active-perdu'); });
-        document.getElementById('filter-btn-all').classList.add('f-active-all');
-        document.getElementById('no-filter-result').style.display = 'none';
+        
         document.getElementById('btn-publish-text').innerHTML = '<i class="fas fa-paper-plane"></i> Publier le combiné';
         document.getElementById('editor-title').innerHTML = '<i class="fas fa-plus-circle"></i> Créer un combiné';
         switchAdminTab('editor');
@@ -1806,7 +1779,6 @@
         var c = allCombineds.find(function(x) { return x.id == id; });
         if(!c) return;
         editingId = c.id;
-        activeMatchFilter = 'all';
 
         document.getElementById('admin-date').value = c.date || '';
         document.getElementById('admin-status').value = c.status || 'en-cours';
@@ -1819,18 +1791,22 @@
         if(c.matches) { c.matches.forEach(function(m) { addMatchEntry(m); }); }
 
         calculateGains();
-        document.querySelectorAll('.match-filter-btn').forEach(function(b) { b.classList.remove('f-active-all','f-active-en-cours','f-active-termine','f-active-perdu'); });
-        document.getElementById('filter-btn-all').classList.add('f-active-all');
-        filterMatches('all', document.getElementById('filter-btn-all'));
-        updateMatchVisuals();
-
-        // CORRECTION ICI : On simule un changement de statut au lieu d'appeler une fonction fantôme
-        document.getElementById('admin-status').dispatchEvent(new Event('change'));
+        handleGlobalStatusChange(); 
 
         document.getElementById('editor-title').innerHTML = '<i class="fas fa-edit"></i> Éditeur de combiné';
         switchAdminTab('editor');
     }
 
+    function handleGlobalStatusChange() {
+        var globalStatus = document.getElementById('admin-status').value;
+        let btnText = document.getElementById('btn-publish-text');
+        if (globalStatus === 'en-cours') {
+            btnText.innerHTML = editingId ? '<i class="fas fa-save"></i> Mettre à jour (Brouillon)' : '<i class="fas fa-paper-plane"></i> Publier le combiné';
+        } else {
+            btnText.innerHTML = '<i class="fas fa-bullhorn"></i> Publier publiquement !';
+        }
+    }
+    
     function openAdmin() {
         document.getElementById('admin-page').classList.add('active');
         switchAdminTab('dashboard');
@@ -1878,18 +1854,11 @@
         var c = document.getElementById('admin-matches');
         var e = document.createElement('div');
         e.className = 'match-entry';
-        var matchStatus = data && data.match_status ? data.match_status : 'en-cours';
         
+        // Formulaire allégé : on a retiré le select du statut individuel
         e.innerHTML = '<div class="match-entry-header">' + 
-            '<span class="match-entry-number"><i class="fas fa-futbol"></i> Match ' + matchEntryCount + '<span class="match-status-badge"></span></span>' +
-            '<div style="display:flex; gap:8px;">' +
-                '<select class="admin-select match-status-select" style="padding:4px 8px; width:auto; font-size:11px; height:28px; background-position:right 4px center;" onchange="updateMatchVisuals(); updateFilterCounts();">' +
-                    '<option value="en-cours" '+(matchStatus==='en-cours'?'selected':'')+'>En cours</option>' +
-                    '<option value="termine" '+(matchStatus==='termine'?'selected':'')+'>Gagné</option>' +
-                    '<option value="perdu" '+(matchStatus==='perdu'?'selected':'')+'>Perdu</option>' +
-                '</select>' +
-                '<button type="button" class="match-entry-remove" onclick="removeMatchEntry(this)"><i class="fas fa-trash"></i></button>' +
-            '</div>' +
+            '<span class="match-entry-number"><i class="fas fa-futbol"></i> Match ' + matchEntryCount + '</span>' +
+            '<button type="button" class="match-entry-remove" onclick="removeMatchEntry(this)"><i class="fas fa-trash"></i></button>' +
             '</div>'
             + '<input type="hidden" class="match-logo-input" value="' + (data && data.logo ? data.logo : '') + '">'
             + '<div class="admin-field"><div class="admin-label"><i class="fas fa-users"></i> Équipes</div><input type="text" class="admin-input match-teams-input" placeholder="Équipe A - Équipe B" value="' + (data ? data.teams : '') + '" oninput="calculateGains()"></div>'
@@ -1899,8 +1868,6 @@
         
         c.appendChild(e);
         calculateGains();
-        updateMatchVisuals();
-        updateFilterCounts();
     }
 
     function removeMatchEntry(btn) {
@@ -1910,7 +1877,6 @@
             e.remove();
             renumberMatches();
             calculateGains();
-            updateFilterCounts();
         }, 300);
     }
     
