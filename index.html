@@ -1045,15 +1045,12 @@
             </div>
         </div>
         <div class="admin-section">
-            <!-- Combinés actifs -->
             <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-clock" style="color:var(--primary-yellow);"></i> Combinés En Cours</div>
             <div id="admin-history-active" style="max-height: 200px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color); margin-bottom:20px;"></div>
             
-            <!-- NOUVEAU : Combinés en attente de validation -->
             <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-exclamation-triangle" style="color:#FF9800;"></i> À Confirmer (Matchs Terminés)</div>
             <div id="admin-history-pending" style="max-height: 200px; overflow-y: auto; background: rgba(255, 152, 0, 0.05); border-radius: 12px; padding: 10px; border: 1px dashed rgba(255, 152, 0, 0.5); margin-bottom:20px;"></div>
 
-            <!-- Historique public -->
             <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-history" style="color:var(--green);"></i> Déjà Terminés (Public)</div>
             <div id="admin-history-past" style="max-height: 200px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color); margin-bottom:15px;"></div>
             
@@ -1085,8 +1082,7 @@
 
         <div class="admin-section">
             <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs du combiné</div>
-
-            <!-- BARRE DE FILTRES DES MATCHS -->
+            
             <div class="match-filter-bar" id="match-filter-bar">
                 <button class="match-filter-btn f-active-all" id="filter-btn-all" onclick="filterMatches('all', this)">
                     <i class="fas fa-list"></i> Tous
@@ -1107,8 +1103,7 @@
             </div>
             
             <div id="no-filter-result">
-                <i class="fas fa-search"></i>
-                Aucun match pour ce filtre
+                <i class="fas fa-search"></i> Aucun match pour ce filtre
             </div>
 
             <button id="btn-fetch-api" onclick="fetchMatchesFromAPI()" style="width:100%; padding:12px; background:rgba(74, 144, 217, 0.15); color:var(--blue); border:1px solid rgba(74, 144, 217, 0.3); border-radius:10px; cursor:pointer; margin-bottom:15px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
@@ -1167,76 +1162,17 @@
         </div>
     </div>
 
-</div>
+</div> <!-- FIN DU PANEL ADMIN -->
 
 <!-- =====================================================
-     POPUP PROFIL ENRICHI (NOUVEAU)
-     ===================================================== -->
-            <!-- =====================================================
-                 BARRE DE FILTRES DES MATCHS
-                 ===================================================== -->
-            <div class="match-filter-bar" id="match-filter-bar">
-                <button class="match-filter-btn f-active-all" id="filter-btn-all" onclick="filterMatches('all', this)">
-                    <i class="fas fa-list"></i> Tous
-                    <span class="filter-count" id="count-all">0</span>
-                </button>
-                <button class="match-filter-btn" id="filter-btn-en-cours" onclick="filterMatches('en-cours', this)">
-                    <i class="fas fa-clock"></i> En cours
-                    <span class="filter-count" id="count-en-cours" style="background:rgba(74,144,217,0.2);color:var(--blue);">0</span>
-                </button>
-                <button class="match-filter-btn" id="filter-btn-termine" onclick="filterMatches('termine', this)">
-                    <i class="fas fa-check"></i> Gagné
-                    <span class="filter-count" id="count-termine" style="background:rgba(0,200,83,0.2);color:var(--green);">0</span>
-                </button>
-                <button class="match-filter-btn" id="filter-btn-perdu" onclick="filterMatches('perdu', this)">
-                    <i class="fas fa-times"></i> Perdu
-                    <span class="filter-count" id="count-perdu" style="background:rgba(255,61,61,0.2);color:var(--red);">0</span>
-                </button>
-            </div>
-            <!-- Message si aucun match pour le filtre actif -->
-            <div id="no-filter-result">
-                <i class="fas fa-search"></i>
-                Aucun match pour ce filtre
-            </div>
-
-            <button id="btn-fetch-api" onclick="fetchMatchesFromAPI()" style="width:100%; padding:12px; background:rgba(74, 144, 217, 0.15); color:var(--blue); border:1px solid rgba(74, 144, 217, 0.3); border-radius:10px; cursor:pointer; margin-bottom:15px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
-                <i class="fas fa-plug"></i> Charger les matchs du jour (API)
-            </button>
-            <div id="api-matches-container"></div>
-            <div id="admin-matches"></div>
-            <button class="admin-add-match-btn" onclick="addMatchEntry()"><i class="fas fa-plus"></i> Ajouter un match manuellement</button>
-        </div>
-
-        <div class="admin-section">
-            <div class="admin-section-title"><i class="fas fa-coins"></i> Mise & Gain</div>
-            <div class="admin-card" style="margin-bottom:10px;">
-                <div class="admin-field" style="margin-bottom:0;">
-                    <input type="text" inputmode="decimal" class="admin-input" id="admin-mise" placeholder="Mise en € (ex: 100)" oninput="calculateGains()">
-                </div>
-            </div>
-            <div class="admin-summary">
-                <div class="admin-summary-row"><span class="admin-summary-label">Cote totale</span><span class="admin-summary-value" id="summary-odds" style="color:var(--primary-yellow);">0.00</span></div>
-                <div class="admin-summary-row"><span class="admin-summary-label">Gains potentiels</span><span class="admin-summary-value gains" id="summary-gains">0,00 €</span></div>
-            </div>
-        </div>
-
-        <div class="admin-section">
-            <button class="admin-submit-btn" id="btn-publish" onclick="publishCombined()"><span id="btn-publish-text"><i class="fas fa-paper-plane"></i> Publier le combiné</span></button>
-        </div>
-    </div>
-</div>
-
-<!-- =====================================================
-     POPUP PROFIL ENRICHI (NOUVEAU)
+     POPUP PROFIL ENRICHI
      ===================================================== -->
 <div id="profile-modal" class="profile-modal-overlay" style="display:none;">
     <div class="profile-modal-box">
-        <!-- Header -->
         <div class="profile-modal-header">
             <h3>👤 Mon Profil</h3>
             <button class="profile-modal-close" onclick="closeProfileModal()">✕</button>
         </div>
-        <!-- Avatar + nom + email -->
         <div class="profile-avatar-row">
             <div class="profile-avatar-circle" id="profile-avatar-letter">U</div>
             <div>
@@ -1244,7 +1180,6 @@
                 <div class="profile-avatar-email" id="profile-display-email">—</div>
             </div>
         </div>
-        <!-- Infos -->
         <div class="profile-info-row">
             <span class="profile-info-label">Rôle</span>
             <span class="profile-role-badge" id="profile-role-badge">Visiteur</span>
@@ -1257,7 +1192,6 @@
             <span class="profile-info-label">Statut</span>
             <span style="color:#10b981; font-size:0.88rem; font-weight:600;">● Actif</span>
         </div>
-        <!-- Plateforme -->
         <div class="profile-platform-section">
             <span class="profile-platform-label"><i class="fas fa-gamepad" style="color:var(--primary-yellow); margin-right:5px;"></i> Plateforme de paris favorite</span>
             <select class="profile-platform-select" id="profile-platform-select">
@@ -1266,17 +1200,12 @@
                 <option value="UNIBET">Unibet</option>
             </select>
         </div>
-        <!-- Boutons -->
-        <button class="profile-save-btn" onclick="saveProfileFromModal()">
-            <i class="fas fa-save" style="margin-right:6px;"></i> Enregistrer
-        </button>
-        <button class="profile-logout-btn" onclick="logoutUser()">
-            <i class="fas fa-sign-out-alt" style="margin-right:6px;"></i> Se déconnecter
-        </button>
+        <button class="profile-save-btn" onclick="saveProfileFromModal()"><i class="fas fa-save" style="margin-right:6px;"></i> Enregistrer</button>
+        <button class="profile-logout-btn" onclick="logoutUser()"><i class="fas fa-sign-out-alt" style="margin-right:6px;"></i> Se déconnecter</button>
     </div>
 </div>
 
-<!-- AUTRES POPUPS (inchangés) -->
+<!-- AUTRES POPUPS -->
 <div id="vip-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
     <div style="background:var(--bg-card);padding:40px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);">
         <div style="width:70px;height:70px;background:rgba(239,83,80,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 25px auto;"><i class="fas fa-lock" style="font-size:35px;color:var(--red);"></i></div>
@@ -1341,29 +1270,15 @@
         localStorage.setItem('scoreMasterData', JSON.stringify({ stats: appStats, platform: userPlatform })); 
     }
 
-    // =====================================================
-    // NOUVEAU : POPUP PROFIL ENRICHI
-    // =====================================================
-
     function openProfileModal() {
         var p = window.currentUserProfile;
         if (!p) return;
-
-        // Avatar lettre
         var letter = (p.pseudo || p.email || 'U')[0].toUpperCase();
         document.getElementById('profile-avatar-letter').textContent = letter;
-
-        // Nom & email
         document.getElementById('profile-display-name').textContent = p.pseudo || 'Utilisateur';
         document.getElementById('profile-display-email').textContent = p.email || '—';
-
-        // Date d'inscription
-        var memberSince = p.created_at
-            ? new Date(p.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
-            : '—';
+        var memberSince = p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
         document.getElementById('profile-member-since').textContent = memberSince;
-
-        // Rôle + couleur du badge
         var roleMap = {
             'admin':    { label: '👑 Admin',      bg: 'rgba(255,215,0,0.2)',  color: '#FFD700' },
             'vip':      { label: '🔥 VIP+',        bg: 'rgba(255,61,61,0.2)',  color: '#FF3D3D' },
@@ -1377,11 +1292,7 @@
         badge.style.background = roleInfo.bg;
         badge.style.color = roleInfo.color;
         badge.style.border = '1px solid ' + roleInfo.color + '44';
-
-        // Plateforme
         document.getElementById('profile-platform-select').value = userPlatform;
-
-        // Afficher la modale
         var modal = document.getElementById('profile-modal');
         modal.style.display = 'flex';
         setTimeout(function() { modal.classList.add('visible'); }, 10);
@@ -1405,21 +1316,15 @@
         await supabaseClient.auth.signOut();
         window.currentUserProfile = null;
         closeProfileModal();
-        // Retour à l'écran de login
         document.getElementById('app').classList.remove('active');
         var loginScreen = document.getElementById('login-screen');
         loginScreen.style.opacity = '0';
         loginScreen.classList.add('active');
         setTimeout(function() { loginScreen.style.opacity = '1'; }, 10);
-        // Reset des champs
         document.getElementById('login-email').value = '';
         document.getElementById('login-password').value = '';
         showToast('Déconnexion réussie !');
     }
-
-    // =====================================================
-    // FILTRES MATCHS
-    // =====================================================
 
     function filterMatches(status, btn) {
         activeMatchFilter = status;
@@ -1458,17 +1363,11 @@
         if (activeBtn) filterMatches(activeMatchFilter, activeBtn);
     }
 
-    // =====================================================
-    // PARAMÈTRES (ancienne popup — conservée mais non utilisée via engrenage)
-    // =====================================================
-
     function openProfileSettings() { openProfileModal(); }
     function closeProfileSettings() { closeProfileModal(); }
 
     function saveProfileSettings() {
-        userPlatform = document.getElementById('user-platform-select') 
-            ? document.getElementById('user-platform-select').value 
-            : userPlatform;
+        userPlatform = document.getElementById('user-platform-select') ? document.getElementById('user-platform-select').value : userPlatform;
         saveState();
         updatePlatformDisplay();
         showToast('Profil mis à jour !');
@@ -1580,10 +1479,8 @@
     }
 
     function addMatchFromAPI(teams, time, logo) {
-        // On extrait uniquement l'heure (ex: "21:00") du texte "Auj. 21:00"
         let onlyTime = time.match(/\d{2}:\d{2}/);
         let cleanTime = onlyTime ? onlyTime[0] : time;
-        
         addMatchEntry({ teams: teams, score: '2 - 1', odds: '7.00', time: cleanTime, logo: logo });
         showToast('Match ajouté !');
     }
@@ -1597,10 +1494,6 @@
         startCountdown();
         animateOnlineCount();
 
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // NOUVEAU : PERSISTANCE DE SESSION
-        // Si l'utilisateur est déjà connecté, on le connecte automatiquement
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         supabaseClient.auth.getSession().then(async function(result) {
             var session = result.data.session;
             if (session && session.user) {
@@ -1615,7 +1508,6 @@
         });
     });
 
-    // Fonction mutualisée pour finaliser la connexion (appelée au login ET à la restauration de session)
     async function finalizeLogin(user) {
         var profile = null;
         try {
@@ -1630,7 +1522,6 @@
         var finalUsername = (profile && profile.username) ? profile.username : 'Utilisateur';
         var role = window.isAdmin ? 'admin' : (window.isUserVip ? 'vip' : 'visiteur');
 
-        // Stocker le profil globalement pour la modale
         window.currentUserProfile = {
             pseudo:     finalUsername,
             email:      user.email,
@@ -1638,7 +1529,6 @@
             created_at: user.created_at
         };
 
-        // Mettre à jour l'UI
         var homeName = document.querySelector('.home-username-text'); if (homeName) homeName.textContent = finalUsername;
         var vipName  = document.querySelector('.vip-username-text');  if (vipName)  vipName.textContent  = finalUsername;
 
@@ -1651,7 +1541,6 @@
         var adminBtn = document.getElementById('admin-panel-btn');
         if (adminBtn) adminBtn.style.display = window.isAdmin ? 'block' : 'none';
 
-        // Afficher l'app
         document.getElementById('login-screen').classList.remove('active');
         document.getElementById('login-screen').style.opacity = '1';
         document.getElementById('app').classList.add('active');
@@ -1723,7 +1612,6 @@
             }
             
             allCombineds = publicData;
-            // On prend le premier combiné en cours
             currentCombined = allCombineds.find(function(c) { return c.status === 'en-cours'; }) || allCombineds[0];
             
         } catch (e) { 
@@ -1767,89 +1655,68 @@
         switchAdminTab('editor');
     }
 
-    function handleGlobalStatusChange() {
-        var globalStatus = document.getElementById('admin-status').value;
-        
-        // 1. Met à jour tous les petits statuts de matchs automatiquement
-        var selects = document.querySelectorAll('.match-status-select');
-        selects.forEach(function(sel) { sel.value = globalStatus; });
-        updateMatchVisuals();
-        updateFilterCounts();
-
-        // 2. Change le texte du gros bouton de publication en bas
-        var btnText = document.getElementById('btn-publish-text');
-        if (globalStatus === 'en-cours') {
-            btnText.innerHTML = editingId ? '<i class="fas fa-save"></i> Mettre à jour (Toujours en cours)' : '<i class="fas fa-paper-plane"></i> Créer le combiné';
-        } else if (globalStatus === 'termine') {
-            btnText.innerHTML = '<i class="fas fa-check-circle"></i> Valider et Publier (GAGNÉ ✅)';
-        } else if (globalStatus === 'perdu') {
-            btnText.innerHTML = '<i class="fas fa-times-circle"></i> Valider et Publier (PERDU ❌)';
-        }
-    }
-    
-    // On écoute les changements sur le menu déroulant principal
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('admin-status').addEventListener('change', handleGlobalStatusChange);
-    });
-
     let validationCombinedId = null;
 
     function openValidationScreen(id) {
-        var c = allCombineds.find(x => x.id == id);
+        var c = allCombineds.find(function(x) { return x.id == id; });
         if(!c) return;
-        validationCombinedId = c.id;
         
+        validationCombinedId = c.id;
         let container = document.getElementById('validation-matches-container');
-        container.innerHTML = '';
+        container.innerHTML = ''; 
+        
         document.getElementById('validation-odds').textContent = c.total_odds ? c.total_odds.toFixed(2) : '0.00';
 
-        c.matches.forEach((m, index) => {
-            container.innerHTML += `
+        if(c.matches && c.matches.length > 0) {
+            c.matches.forEach((m, index) => {
+                let logoDisplay = m.logo ? `<img src="${m.logo}" style="width:18px;height:18px;object-fit:contain;margin-right:8px;vertical-align:middle;">` : `<i class="fas fa-shield-alt" style="margin-right:8px;"></i>`;
+                
+                let matchHtml = `
                 <div class="admin-card" style="padding:15px; border-left:4px solid var(--blue); margin-bottom:10px;">
-                    <div style="font-weight:bold; margin-bottom:10px;">${m.teams}</div>
-                    <div class="admin-field">
+                    <div style="font-size:12px; color:var(--text-gray); margin-bottom:8px;">Match ${index + 1} • Prévu à ${m.time || '--:--'}</div>
+                    <div style="font-weight:bold; font-size:15px; margin-bottom:15px; display:flex; align-items:center;">
+                        ${logoDisplay} ${m.teams}
+                    </div>
+                    <div class="admin-field" style="margin-bottom:0;">
                         <div class="admin-label">Score final :</div>
-                        <input type="text" class="admin-input validation-score-input" data-index="${index}" value="${m.score}">
+                        <input type="text" class="admin-input validation-score-input" data-index="${index}" value="${m.score}" style="font-size:16px; font-weight:bold; text-align:center; letter-spacing:2px;">
                     </div>
                 </div>`;
-        });
+                
+                container.innerHTML += matchHtml;
+            });
+        }
         
         document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.remove('active'));
         document.getElementById('admin-tab-validation').classList.add('active');
         document.querySelectorAll('.admin-tab-btn').forEach(el => el.classList.remove('active'));
     }
 
-// Fonction unique et propre pour sauvegarder la validation
     async function submitValidation(finalStatus) {
         if (!validationCombinedId) return;
         
-        // On récupère le combiné original
         var originalCombined = allCombineds.find(c => c.id == validationCombinedId);
         if(!originalCombined) return;
 
-        // On met à jour les scores à partir des champs de saisie
-        let updatedMatches = JSON.parse(JSON.stringify(originalCombined.matches)); // Copie profonde
+        let updatedMatches = JSON.parse(JSON.stringify(originalCombined.matches)); 
         document.querySelectorAll('.validation-score-input').forEach(input => {
             let index = parseInt(input.getAttribute('data-index'));
             if(updatedMatches[index]) {
                 updatedMatches[index].score = input.value.trim();
-                updatedMatches[index].match_status = finalStatus; // On applique le statut final au match
+                updatedMatches[index].match_status = finalStatus; 
             }
         });
 
-        // On prépare la version publique (sans cotes masquées, puisque c'est terminé)
         let publicMatches = updatedMatches.map(m => ({
             teams: m.teams, time: m.time, score: m.score, odds: m.odds, logo: m.logo, match_status: finalStatus
         }));
 
         try {
-            // Mise à jour de la table publique
             var updatePub = await supabaseClient.from('combineds_public')
                 .update({ status: finalStatus, matches: publicMatches })
                 .eq('id', validationCombinedId);
             if (updatePub.error) throw updatePub.error;
 
-            // Mise à jour de la table VIP
             var updateVip = await supabaseClient.from('combineds_vip')
                 .update({ matches: updatedMatches })
                 .eq('id', validationCombinedId);
@@ -1858,7 +1725,6 @@
             showToast(finalStatus === 'termine' ? 'Combiné validé GAGNÉ !' : 'Combiné validé PERDU.');
             validationCombinedId = null;
             
-            // On recharge les données et on retourne au tableau de bord
             await chargerDonnees();
             switchAdminTab('dashboard');
             renderAdminHistory();
@@ -1868,7 +1734,7 @@
             showToast("Erreur lors de la validation", true);
         }
     }
-    
+
     function loadIntoEditor(id) {
         var c = allCombineds.find(function(x) { return x.id == id; });
         if(!c) return;
@@ -1891,10 +1757,9 @@
         filterMatches('all', document.getElementById('filter-btn-all'));
         updateMatchVisuals();
 
-        // On appelle la nouvelle fonction pour mettre à jour le bouton
         handleGlobalStatusChange(); 
 
-        document.getElementById('editor-title').innerHTML = '<i class="fas fa-edit"></i> Validation du combiné...';
+        document.getElementById('editor-title').innerHTML = '<i class="fas fa-edit"></i> Éditeur de combiné';
         switchAdminTab('editor');
     }
 
@@ -1914,7 +1779,6 @@
         updateMatchVisuals();
         updateFilterCounts();
         
-        // --- NOUVEAU : Changement dynamique du bouton ---
         let btnText = document.getElementById('btn-publish-text');
         if (globalStatus === 'en-cours') {
             btnText.innerHTML = editingId ? '<i class="fas fa-save"></i> Mettre à jour (Brouillon)' : '<i class="fas fa-paper-plane"></i> Publier le combiné';
@@ -1948,7 +1812,6 @@
         e.className = 'match-entry';
         var matchStatus = data && data.match_status ? data.match_status : 'en-cours';
         
-        // On remet bien le select "match-status-select"
         e.innerHTML = '<div class="match-entry-header">' + 
             '<span class="match-entry-number"><i class="fas fa-futbol"></i> Match ' + matchEntryCount + '<span class="match-status-badge"></span></span>' +
             '<div style="display:flex; gap:8px;">' +
@@ -2036,7 +1899,6 @@
 
             matches.push({ teams: t, score: s, odds: o, time: ti, logo: l, match_status: mStatus });
 
-            // On masque score et cote pour le public si le combiné est toujours "en cours"
             var isMatchFinished = (mStatus === 'termine' || mStatus === 'perdu');
             publicMatches.push({ teams: t, time: ti, score: isMatchFinished ? s : '?-?', odds: isMatchFinished ? o : 0, logo: l, match_status: mStatus });
 
@@ -2050,7 +1912,6 @@
         var gains = mise * tot;
 
         if (editingId) {
-            // === MISE À JOUR OU VALIDATION ===
             var updatePub = await supabaseClient.from('combineds_public').update({ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }).eq('id', editingId);
             if (updatePub.error) { showToast('Erreur Update', true); return; }
             var updateVip = await supabaseClient.from('combineds_vip').update({ matches: matches, mise: mise, gains: gains, total_odds: tot }).eq('id', editingId);
@@ -2063,7 +1924,6 @@
             }
 
         } else {
-            // === CRÉATION D'UN NOUVEAU COMBINÉ ===
             var pubRes = await supabaseClient.from('combineds_public').insert([{ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }]).select().single();
             if (pubRes.error) { showToast('Erreur Création', true); return; }
             var vipRes = await supabaseClient.from('combineds_vip').insert([{ id: pubRes.data.id, matches: matches, mise: mise, gains: gains, total_odds: tot }]);
@@ -2071,7 +1931,6 @@
 
             showToast('Combiné créé avec succès !');
 
-            // === ENVOI DU MESSAGE TELEGRAM (TEXTE UNIQUEMENT) ===
             const TELEGRAM_BOT_TOKEN = '8602776375:AAEuhWYNqb26IG8igWDTUI5iUaqSW0plj9I';
             const TELEGRAM_CHAT_ID   = '905424902';
 
@@ -2114,7 +1973,6 @@
                 `🌐 Site Web : https://scoremaster.fr/\n` +
                 `➡️ Telegram : @ScoreMasterOfficiel`;
 
-            // Envoi de la requête sans image
             fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -2171,9 +2029,7 @@
     function renderHistory() {
         var hc = document.getElementById('history-container'); if (!hc) return;
         
-        // CORRECTION : On filtre pour NE GARDER QUE les combinés validés (Gagné ou Perdu)
         var historyData = allCombineds.filter(function(c) { 
-            // On exclut le combiné "actif" actuel, ET on exige que le statut soit terminé/perdu
             return (currentCombined ? c.id !== currentCombined.id : true) && (c.status === 'termine' || c.status === 'perdu'); 
         });
         
@@ -2229,8 +2085,6 @@
 
         allCombineds.forEach(function(c) {
             let displayStatus = sl[c.status];
-            
-            // On prépare le HTML de base
             let itemHtml;
             
             if (c.status === 'en-cours') {
@@ -2249,16 +2103,13 @@
                 finishTime = new Date(finishTime.getTime() + (2 * 60 * 60 * 1000));
 
                 if (now >= finishTime) {
-                    // SI EXPIRÉ ("À Confirmer") : Le bouton lance la NOUVELLE VUE DE VALIDATION
                     itemHtml = `<div class="admin-history-item"><span>Le ${fmtD(c.date)} - <span style="color:#FF9800; font-weight:bold;">À vérifier ⚠️</span></span><div style="display:flex; gap:8px;"><button onclick="openValidationScreen('${c.id}')" style="background:#FF9800; color:#000;"><i class="fas fa-check-double"></i> Valider</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button></div></div>`;
                     htmlPending += itemHtml;
                 } else {
-                    // SI VRAIMENT EN COURS : Le bouton lance L'ÉDITEUR CLASSIQUE
                     itemHtml = `<div class="admin-history-item"><span>Le ${fmtD(c.date)} - ${displayStatus}</span><div style="display:flex; gap:8px;"><button onclick="loadIntoEditor('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button></div></div>`;
                     htmlActive += itemHtml;
                 }
             } else {
-                // SI TERMINÉ : Plus de bouton d'édition, juste la poubelle
                 itemHtml = `<div class="admin-history-item"><span>Le ${fmtD(c.date)} - ${displayStatus}</span><div style="display:flex; gap:8px;"><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button></div></div>`;
                 htmlPast += itemHtml;
             }
@@ -2290,7 +2141,6 @@
             var displayOdds = isMatchObscured ? '**.**' : m.odds.toFixed(2);
             
             var blurClass = isMatchObscured ? 'blurred-value' : '';
-            // L'ajout du crossorigin="anonymous" est OBLIGATOIRE ici
             var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;" crossorigin="anonymous">` : `<i class="fas fa-shield-alt"></i> `;
             
             let cleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : "--:--";
@@ -2433,7 +2283,6 @@
         }
 
         try {
-            // Insertion des données dans Supabase (C'est tout ce que fait le site web maintenant !)
             const { error } = await supabaseClient
                 .from('subscription_requests')
                 .insert([{ 
@@ -2445,7 +2294,6 @@
 
             if (error) throw error;
 
-            // Succès : affichage de la popup pour le client
             closeSubscribePopup();
             setTimeout(function() {
                 var successPopup = document.getElementById('success-popup');
@@ -2466,16 +2314,12 @@
         setTimeout(function () { popup.style.display = 'none'; }, 300);
     }
 
-    // === FONCTIONS OUTILS (FORMATAGE) ===
-
-    // Formate les dates (ex: 2026-04-04 -> 04/04)
     function fmtD(d) {
         if (!d) return '';
         var dt = new Date(d);
         return String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getMonth() + 1).padStart(2, '0');
     }
 
-    // Formate les prix en Euros (ex: 100 -> 100,00 €)
     function fmtC(v) { 
         return new Intl.NumberFormat('fr-FR', { 
             style: 'currency', 
