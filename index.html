@@ -1797,7 +1797,8 @@
         filterMatches('all', document.getElementById('filter-btn-all'));
         updateMatchVisuals();
 
-        handleGlobalStatusChange(); 
+        // CORRECTION ICI : On simule un changement de statut au lieu d'appeler une fonction fantôme
+        document.getElementById('admin-status').dispatchEvent(new Event('change'));
 
         document.getElementById('editor-title').innerHTML = '<i class="fas fa-edit"></i> Éditeur de combiné';
         switchAdminTab('editor');
@@ -2150,7 +2151,8 @@
                     htmlActive += itemHtml;
                 }
             } else {
-                itemHtml = `<div class="admin-history-item"><span>Le ${fmtD(c.date)} - ${displayStatus}</span><div style="display:flex; gap:8px;"><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button></div></div>`;
+                // SI TERMINÉ : On remet le bouton Éditer (bleu) à côté de la poubelle (rouge)
+                itemHtml = `<div class="admin-history-item"><span>Le ${fmtD(c.date)} - ${displayStatus}</span><div style="display:flex; gap:8px;"><button onclick="loadIntoEditor('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button></div></div>`;
                 htmlPast += itemHtml;
             }
         });
