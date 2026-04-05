@@ -1045,10 +1045,18 @@
             </div>
         </div>
         <div class="admin-section">
+            <!-- Combinés actifs -->
             <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-clock" style="color:var(--primary-yellow);"></i> Combinés En Cours</div>
             <div id="admin-history-active" style="max-height: 200px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color); margin-bottom:20px;"></div>
-            <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-history" style="color:var(--primary-yellow);"></i> Déjà Terminés</div>
-            <div id="admin-history-past" style="max-height: 200px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color);"></div>
+            
+            <!-- NOUVEAU : Combinés en attente de validation -->
+            <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-exclamation-triangle" style="color:#FF9800;"></i> À Confirmer (Matchs Terminés)</div>
+            <div id="admin-history-pending" style="max-height: 200px; overflow-y: auto; background: rgba(255, 152, 0, 0.05); border-radius: 12px; padding: 10px; border: 1px dashed rgba(255, 152, 0, 0.5); margin-bottom:20px;"></div>
+
+            <!-- Historique public -->
+            <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-history" style="color:var(--green);"></i> Déjà Terminés (Public)</div>
+            <div id="admin-history-past" style="max-height: 200px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color); margin-bottom:15px;"></div>
+            
             <button class="btn-create-new" onclick="resetEditor()"><i class="fas fa-plus-circle"></i> Créer un NOUVEAU combiné</button>
         </div>
     </div>
@@ -1610,19 +1618,13 @@
 
     async function chargerDonnees() {
         try {
-            // 1. On récupère d'abord les données publiques
             var publicRes = await supabaseClient.from('combineds_public').select('*').order('date', { ascending: false }).order('id', { ascending: false }).limit(10);
             var publicData = publicRes.data;
             
             if (publicRes.error || !publicData || publicData.length === 0) { 
-                allCombineds = []; 
-                currentCombined = null; 
-                renderCombined(); 
-                renderHistory(); 
-                return; 
+                allCombineds = []; currentCombined = null; renderCombined(); renderHistory(); return; 
             }
             
-            // 2. Si l'utilisateur est VIP (ou Admin), on fusionne les données avec la table VIP
             if (window.isUserVip) {
                 var ids = publicData.map(function(c) { return c.id; });
                 var vipRes = await supabaseClient.from('combineds_vip').select('*').in('id', ids);
@@ -1635,62 +1637,17 @@
             }
             
             allCombineds = publicData;
-
-            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            // 🤖 AUTOMATISATION : PASSAGE EN "GAGNÉ" APRÈS 2 HEURES
-            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            let now = new Date();
-
-            allCombineds.forEach(c => {
-                // Si le combiné est affiché "en cours"
-                if (c.status === 'en-cours' && c.date) {
-                    let latestTime = "00:00"; 
-                    
-                    // On cherche l'heure du match le plus tardif du combiné
-                    if (c.matches && c.matches.length > 0) {
-                        c.matches.forEach(m => {
-                            let matchTime = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
-                            if (matchTime && matchTime[0] > latestTime) {
-                                latestTime = matchTime[0];
-                            }
-                        });
-                    } else if (c.time) {
-                        let matchTime = c.time.match(/\d{2}:\d{2}/);
-                        if(matchTime) latestTime = matchTime[0];
-                    }
-
-                    // Si on a bien trouvé une heure valide
-                    if (latestTime !== "00:00") {
-                        let lastMatchDate = new Date(`${c.date}T${latestTime}:00`);
-                        // On ajoute 2 heures à l'heure du dernier match
-                        let finishTime = new Date(lastMatchDate.getTime() + (2 * 60 * 60 * 1000));
-
-                        // Si l'heure actuelle est supérieure à la fin estimée du match
-                        if (now >= finishTime) {
-                            c.status = 'termine'; // On le force en "Gagné ✅"
-                            if(c.matches) {
-                                c.matches.forEach(m => m.match_status = 'termine');
-                            }
-                        }
-                    }
-                }
-            });
-            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-            // Le combiné actuel est le premier de la liste qui est ENCORE en cours.
-            // Si tout est terminé, on affiche le plus récent.
+            // On prend le premier combiné en cours
             currentCombined = allCombineds.find(function(c) { return c.status === 'en-cours'; }) || allCombineds[0];
             
         } catch (e) { 
-            console.error('Erreur lors du chargement des données :', e); 
-            showToast('Erreur de chargement des données', true); 
-            allCombineds = []; 
-            currentCombined = null; 
+            console.error('Erreur:', e); showToast('Erreur de chargement des données', true); 
         }
         
         renderCombined(); 
         renderHistory();
     }
+    
     function navigateTo(page) {
         if (page === 'vip' && !window.isUserVip) {
             var popup = document.getElementById('vip-popup');
@@ -1761,6 +1718,14 @@
         selects.forEach(function(sel) { sel.value = globalStatus; });
         updateMatchVisuals();
         updateFilterCounts();
+        
+        // --- NOUVEAU : Changement dynamique du bouton ---
+        let btnText = document.getElementById('btn-publish-text');
+        if (globalStatus === 'en-cours') {
+            btnText.innerHTML = editingId ? '<i class="fas fa-save"></i> Mettre à jour (Brouillon)' : '<i class="fas fa-paper-plane"></i> Publier le combiné';
+        } else {
+            btnText.innerHTML = '<i class="fas fa-bullhorn"></i> Publier publiquement !';
+        }
     });
 
     function updateMatchVisuals() {
@@ -2030,16 +1995,45 @@
     
     function renderAdminHistory() {
         var containerActive = document.getElementById('admin-history-active');
+        var containerPending = document.getElementById('admin-history-pending');
         var containerPast = document.getElementById('admin-history-past');
         if(!containerActive || !containerPast) return;
-        var htmlActive = '', htmlPast = '';
+        
+        var htmlActive = '', htmlPending = '', htmlPast = '';
         var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
+        let now = new Date();
+
         allCombineds.forEach(function(c) {
-            var itemHtml = `<div class="admin-history-item"><span>Le ${fmtD(c.date)} - ${sl[c.status]}</span><div style="display:flex; gap:8px;"><button onclick="loadIntoEditor('${c.id}')"><i class="fas fa-edit"></i></button><button onclick="deleteSpecificCombined('${c.id}')" style="background:var(--red); color:#fff;"><i class="fas fa-trash"></i></button></div></div>`;
-            if (c.status === 'en-cours') htmlActive += itemHtml;
-            else htmlPast += itemHtml;
+            var itemHtml = `<div class="admin-history-item"><span>Le ${fmtD(c.date)} - ${sl[c.status]}</span><div style="display:flex; gap:8px;"><button onclick="loadIntoEditor('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Revoir</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button></div></div>`;
+            
+            if (c.status === 'en-cours') {
+                // On calcule l'heure de fin estimée
+                let latestTime = "00:00"; 
+                if (c.matches && c.matches.length > 0) {
+                    c.matches.forEach(m => {
+                        let matchTime = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
+                        if (matchTime && matchTime[0] > latestTime) latestTime = matchTime[0];
+                    });
+                } else if (c.time) {
+                    let matchTime = c.time.match(/\d{2}:\d{2}/);
+                    if(matchTime) latestTime = matchTime[0];
+                }
+                
+                let finishTime = new Date(`${c.date}T${latestTime}:00`);
+                finishTime = new Date(finishTime.getTime() + (2 * 60 * 60 * 1000)); // +2 heures
+
+                // Si le temps est écoulé, il va dans "À Confirmer"
+                if (now >= finishTime) htmlPending += itemHtml;
+                else htmlActive += itemHtml;
+
+            } else {
+                // Déjà publié (Gagné ou Perdu)
+                htmlPast += itemHtml;
+            }
         });
-        containerActive.innerHTML = htmlActive || '<span style="color:var(--text-gray); font-size:12px;">Aucun combiné en cours</span>';
+
+        containerActive.innerHTML = htmlActive || '<span style="color:var(--text-gray); font-size:12px;">Aucun combiné actif</span>';
+        if(containerPending) containerPending.innerHTML = htmlPending || '<span style="color:var(--text-gray); font-size:12px;">Tout est à jour !</span>';
         containerPast.innerHTML = htmlPast || '<span style="color:var(--text-gray); font-size:12px;">Aucun historique précédent</span>';
     }
 
