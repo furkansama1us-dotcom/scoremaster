@@ -1083,51 +1083,48 @@
             </div>
         </div>
 
-        <!-- ONGLET 3 : VALIDATION (Masqué par défaut) -->
+        <div class="admin-section">
+            <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs du combiné</div>
+<div class="admin-section">
+            <button class="admin-submit-btn" id="btn-publish" onclick="publishCombined()"><span id="btn-publish-text"><i class="fas fa-paper-plane"></i> Publier le combiné</span></button>
+        </div>
+    </div>
+
+    <!-- ONGLET 3 : VALIDATION (Masqué par défaut) -->
     <div class="admin-tab-content" id="admin-tab-validation">
         <div class="admin-section">
-            <div class="admin-section-title" style="color:#FF9800; font-size:16px;">
+            <div class="admin-section-title" style="color:#FF9800; font-size:16px; margin-bottom: 20px;">
                 <i class="fas fa-check-double"></i> Validation du Combiné
             </div>
-            <p style="font-size:13px; color:var(--text-gray); margin-bottom:15px;">
-                Vérifiez les scores finaux avant de publier ce combiné dans l'historique public.
+            <p style="font-size:13px; color:var(--text-gray); margin-bottom:20px; line-height:1.5;">
+                Vérifiez et ajustez les scores finaux réels avant de publier ce combiné dans l'historique public de l'application.
             </p>
             
             <div id="validation-matches-container"></div>
             
-            <div class="admin-summary" style="margin-top:20px;">
-                <div class="admin-summary-row">
-                    <span class="admin-summary-label">Cote totale :</span>
-                    <span class="admin-summary-value" id="validation-odds" style="color:var(--primary-yellow);">0.00</span>
+            <div class="admin-summary" style="margin-top:20px; background:var(--bg-input);">
+                <div class="admin-summary-row" style="border:none;">
+                    <span class="admin-summary-label">Cote validée :</span>
+                    <span class="admin-summary-value" id="validation-odds" style="color:var(--primary-yellow); font-size: 18px;">0.00</span>
                 </div>
             </div>
 
-            <div style="display:flex; gap:10px; margin-top:20px; margin-bottom: 40px;">
-                <button onclick="submitValidation('termine')" style="flex:1; padding:15px; background:var(--green); color:#fff; border:none; border-radius:12px; font-weight:bold; font-size:15px; cursor:pointer;">
-                    <i class="fas fa-check-circle"></i> Valider (GAGNÉ)
+            <div style="display:flex; gap:10px; margin-top:25px; margin-bottom: 20px;">
+                <button onclick="submitValidation('termine')" style="flex:1; padding:16px 10px; background:linear-gradient(135deg, var(--green), #009624); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer; box-shadow: 0 4px 15px rgba(0,200,83,0.3);">
+                    <i class="fas fa-check-circle" style="margin-right:5px; font-size:16px;"></i> GAGNÉ
                 </button>
-                <button onclick="submitValidation('perdu')" style="flex:1; padding:15px; background:var(--red); color:#fff; border:none; border-radius:12px; font-weight:bold; font-size:15px; cursor:pointer;">
-                    <i class="fas fa-times-circle"></i> Valider (PERDU)
-                </button>
-            </div>
-        </div>
-    </div>
-
-            <!-- Boutons d'action clairs -->
-            <div style="display:flex; gap:10px; margin-top:20px; margin-bottom: 40px;">
-                <button onclick="submitValidation('termine')" style="flex:1; padding:15px; background:var(--green); color:#fff; border:none; border-radius:12px; font-weight:bold; font-size:15px; cursor:pointer;">
-                    <i class="fas fa-check-circle"></i> Valider (GAGNÉ)
-                </button>
-                <button onclick="submitValidation('perdu')" style="flex:1; padding:15px; background:var(--red); color:#fff; border:none; border-radius:12px; font-weight:bold; font-size:15px; cursor:pointer;">
-                    <i class="fas fa-times-circle"></i> Valider (PERDU)
+                <button onclick="submitValidation('perdu')" style="flex:1; padding:16px 10px; background:linear-gradient(135deg, var(--red), #B71C1C); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer; box-shadow: 0 4px 15px rgba(255,61,61,0.3);">
+                    <i class="fas fa-times-circle" style="margin-right:5px; font-size:16px;"></i> PERDU
                 </button>
             </div>
         </div>
     </div>
 
-        <div class="admin-section">
-            <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs du combiné</div>
+</div> <!-- FIN DU PANEL ADMIN -->
 
+<!-- =====================================================
+     POPUP PROFIL ENRICHI (NOUVEAU)
+     ===================================================== -->
             <!-- =====================================================
                  BARRE DE FILTRES DES MATCHS
                  ===================================================== -->
