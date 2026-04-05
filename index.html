@@ -2991,29 +2991,45 @@ htmlPast += cardBaseHtml(displayStatus, btns);
             var hour = now.getHours();
             var minOnline, maxOnline;
             
-            if (hour >= 2 && hour < 7) { 
-                // Nuit profonde (2h - 6h59) : très peu de monde
-                minOnline = 7; maxOnline = 22; 
+            if (hour >= 2 && hour < 6) { 
+                // Nuit profonde (2h - 5h59) : quasiment personne
+                minOnline = 3; maxOnline = 12; 
             }
-            else if (hour >= 7 && hour < 12) { 
-                // Matin (7h - 11h59) : trafic faible
-                minOnline = 35; maxOnline = 70; 
+            else if (hour >= 6 && hour < 9) { 
+                // Réveil (6h - 8h59) : quelques lève-tôt
+                minOnline = 15; maxOnline = 35; 
             }
-            else if (hour >= 12 && hour < 17) { 
-                // Après-midi (12h - 16h59) : trafic modéré
-                minOnline = 90; maxOnline = 150; 
+            else if (hour >= 9 && hour < 12) { 
+                // Matinée (9h - 11h59) : trafic calme
+                minOnline = 40; maxOnline = 80; 
             }
-            else if (hour >= 17 && hour < 20) { 
-                // Avant-matchs (17h - 19h59) : la pression monte doucement
-                minOnline = 180; maxOnline = 350; 
+            else if (hour >= 12 && hour < 14) { 
+                // Pause déj (12h - 13h59) : petit pic
+                minOnline = 90; maxOnline = 140; 
+            }
+            else if (hour >= 14 && hour < 17) { 
+                // Après-midi (14h - 16h59) : ça redescend un peu pendant le travail
+                minOnline = 60; maxOnline = 110; 
+            }
+            else if (hour >= 17 && hour < 19) { 
+                // Fin de journée (17h - 18h59) : on rentre et on prépare les tickets
+                minOnline = 150; maxOnline = 280; 
+            }
+            else if (hour === 19) { 
+                // Avant-match immédiat (19h - 19h59) : grosse montée
+                minOnline = 280; maxOnline = 400; 
             }
             else if (hour >= 20 && hour < 23) { 
-                // Prime time (20h - 22h59) : Matchs en direct & résultats (Pic absolu)
+                // Prime time (20h - 22h59) : Matchs en direct (Pic absolu)
                 minOnline = 400; maxOnline = 600; 
             }
+            else if (hour === 23) { 
+                // Post-match (23h - 23h59) : vérification des gains, ça commence à chuter
+                minOnline = 120; maxOnline = 250; 
+            }
             else { 
-                // Fin de soirée (23h - 1h59) : ça se vide tranquillement
-                minOnline = 80; maxOnline = 160; 
+                // Minuit (0h - 1h59) : les derniers couche-tard, chute brutale
+                minOnline = 15; maxOnline = 45; 
             }
             
             el.textContent = (minOnline + Math.floor(Math.random() * (maxOnline - minOnline + 1))) + ' personnes en ligne';
