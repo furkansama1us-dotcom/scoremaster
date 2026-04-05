@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -1086,8 +1087,8 @@ ${matchLines}
                 </a>
                 
                 <!-- EMAIL (Avec le lien mailto) -->
-                <a href="mailto:contact.scoremaster@gmail.com?subject=Demande%20d'information%20depuis%20l'application" class="contact-link">
-                    <div class="contact-card"><div class="contact-card-icon email"><i class="fas fa-envelope"></i></div><div class="contact-card-info"><h4>Email</h4><p>contact.scoremaster@gmail.com</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
+                <a href="/cdn-cgi/l/email-protection#2a4945445e4b495e04594945584f474b595e4f586a4d474b43460449454715595f48404f495e176e4f474b444e4f0f181a4e0d43444c4558474b5e4345440f181a4e4f5a5f43590f181a460d4b5a5a4643494b5e434544" class="contact-link">
+                    <div class="contact-card"><div class="contact-card-icon email"><i class="fas fa-envelope"></i></div><div class="contact-card-info"><h4>Email</h4><p><span class="__cf_email__" data-cfemail="d1b2bebfa5b0b2a5ffa2b2bea3b4bcb0a2a5b4a391b6bcb0b8bdffb2bebc">[email&#160;protected]</span></p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
                 </a>
                 
                 <!-- FORMULAIRE DE CONTACT -->
@@ -1446,7 +1447,7 @@ ${matchLines}
 </div>
 <!-- FIN DU POPUP GOOGLE -->
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     var allCombineds = [];
     var currentCombined = null; 
     var editingId = null; 
@@ -1843,12 +1844,31 @@ async function startLiveScores() {
     const matches = currentCombined.matches || [];
     if (!matches.length) return;
 
-    // ✅ NOUVEAU : on calcule l'heure du 1er match et on attend 15 min avant
+    // Calcule l'heure du 1er match (pour démarrer le live 15 min avant)
     const firstMatchTime = matches.reduce((earliest, m) => {
         const t = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
         return (t && t[0] < earliest) ? t[0] : earliest;
     }, '23:59');
 
+    // Calcule l'heure du DERNIER match (pour le fetch auto 2h après)
+    const lastMatchTime = matches.reduce((latest, m) => {
+        const t = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
+        return (t && t[0] > latest) ? t[0] : latest;
+    }, '00:00');
+
+    // Programme le fetch automatique des scores finaux 2h après le dernier match
+    const [lh, lm] = lastMatchTime.split(':').map(Number);
+    const autoFetchTime = new Date();
+    autoFetchTime.setHours(lh + 2, lm, 0, 0);
+    const msUntilAutoFetch = autoFetchTime - new Date();
+    if (msUntilAutoFetch > 0) {
+        setTimeout(async () => {
+            await autoFetchFinalScores(currentCombined);
+        }, msUntilAutoFetch);
+        console.log(`✅ Fetch auto des scores finaux programmé à ${autoFetchTime.getHours()}h${String(autoFetchTime.getMinutes()).padStart(2,'0')}`);
+    }
+
+    // Démarre le live 15 min avant le 1er match
     const [h, min] = firstMatchTime.split(':').map(Number);
     const matchStart = new Date();
     matchStart.setHours(h, min - 15, 0, 0);
@@ -1857,7 +1877,6 @@ async function startLiveScores() {
     const msUntilStart = matchStart - now;
 
     if (msUntilStart > 0) {
-        // Trop tôt : on masque le bloc et on réessaie au bon moment
         document.getElementById('live-scores-section').style.display = 'none';
         setTimeout(() => startLiveScores(), msUntilStart);
         return;
@@ -2087,6 +2106,72 @@ function sendTelegramFinalResult(matches, allFixtures) {
         div.innerHTML = `<div style="font-size:10px; color:var(--red); font-weight:700; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;"><i class="fas fa-satellite-dish"></i> Scores réels (API)</div>${resultHtml}`;
         card.appendChild(div);
     }
+}
+async function autoFetchFinalScores(combined) {
+    if (!combined || !combined.matches) return;
+
+    const today = new Date().toISOString().split("T")[0];
+    let allFixtures = [];
+
+    try {
+        const res = await fetch(
+            `https://v3.football.api-sports.io/fixtures?date=${today}`,
+            { headers: { "x-apisports-key": "4701f5578e916e856d15735fb8079032" } }
+        );
+        const data = await res.json();
+        allFixtures = data.response || [];
+    } catch(e) {
+        console.error("Erreur fetch auto scores finaux:", e);
+        return;
+    }
+
+    if (!allFixtures.length) return;
+
+    if (livePollingInterval) { clearInterval(livePollingInterval); livePollingInterval = null; }
+
+    let html = "";
+    combined.matches.forEach(function(m) {
+        const parts = (m.teams || "").split(" - ");
+        const homeTeam = (parts[0] || "").trim().toLowerCase();
+        const awayTeam = (parts[1] || "").trim().toLowerCase();
+
+        const fixture = allFixtures.find(function(f) {
+            const fHome = f.teams.home.name.toLowerCase();
+            const fAway = f.teams.away.name.toLowerCase();
+            const homeWords = homeTeam.split(" ");
+            const awayWords = awayTeam.split(" ");
+            const homeMatch = homeWords.some(w => w.length > 2 && fHome.includes(w));
+            const awayMatch = awayWords.some(w => w.length > 2 && fAway.includes(w));
+            return homeMatch && awayMatch;
+        });
+
+        const homeGoals = fixture ? fixture.goals.home : "?";
+        const awayGoals = fixture ? fixture.goals.away : "?";
+        const realScore = fixture ? `${homeGoals}-${awayGoals}` : "?-?";
+        const won = realScore === m.score;
+        const resultColor = !fixture ? "#FF9800" : (won ? "var(--green)" : "var(--red)");
+        const resultLabel = !fixture ? "Non trouve" : (won ? "Gagne !" : "Perdu");
+
+        const logoDisplay = m.logo
+            ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;" crossorigin="anonymous">`
+            : `<i class="fas fa-shield-alt" style="font-size:11px; margin-right:6px;"></i>`;
+
+        html += `<div style="padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.06);"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;"><div style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-light-gray);">${logoDisplay}${m.teams}</div><span style="font-size:10px; font-weight:700; color:${resultColor};">${resultLabel}</span></div><div style="display:flex; align-items:center; justify-content:center; gap:16px;"><span style="font-size:26px; font-weight:900; color:#fff;">${homeGoals}</span><span style="font-size:14px; color:var(--text-gray);">-</span><span style="font-size:26px; font-weight:900; color:#fff;">${awayGoals}</span></div><div style="text-align:center; font-size:11px; color:var(--text-gray); margin-top:4px;">Pronostic : <strong style="color:var(--green);">${m.score}</strong></div></div>`;
+    });
+
+    const container = document.getElementById("live-scores-container");
+    if (container) container.innerHTML = html;
+
+    const badge = document.getElementById("live-badge");
+    if (badge) {
+        badge.style.background = "rgba(0,200,83,0.15)";
+        badge.style.borderColor = "rgba(0,200,83,0.3)";
+        badge.style.color = "var(--green)";
+        badge.innerHTML = "TERMINE";
+    }
+
+    sendTelegramFinalResult(combined.matches, allFixtures);
+    showToast("Scores finaux mis a jour !");
 }
 // ============================================================
 // FIN LIVE SCORES
@@ -3157,18 +3242,4 @@ let quickEditCombinedId = null;
     function closeGooglePopup() {
         var popup = document.getElementById('google-popup');
         popup.style.opacity = '0'; popup.firstElementChild.style.transform = 'scale(0.9)';
-        setTimeout(function () { popup.style.display = 'none'; }, 300);
-    }
-
-    function goToSignupFromGoogle() {
-        closeGooglePopup();
-        // Si l'utilisateur n'est pas déjà sur la vue "Création de compte", on l'y met
-        if (!isSignUpMode) {
-            toggleAuthMode();
-        }
-    }
-    
-</script>
-
-</body>
-</html>
+        setTimeout(fun
