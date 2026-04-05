@@ -1610,23 +1610,63 @@
 
     async function chargerDonnees() {
         try {
-            var publicRes = await supabaseClient.from('combineds_public').select('*').order('date', { ascending: false }).order('id', { ascending: false }).limit(10);
-            var publicData = publicRes.data;
-            if (publicRes.error || !publicData || publicData.length === 0) { allCombineds = []; currentCombined = null; renderCombined(); renderHistory(); return; }
-            if (window.isUserVip) {
-                var ids = publicData.map(function(c) { return c.id; });
-                var vipRes = await supabaseClient.from('combineds_vip').select('*').in('id', ids);
-                if (vipRes.data && !vipRes.error) {
-                    publicData = publicData.map(function(pub) {
-                        var vipMatch = vipRes.data.find(function(v) { return v.id === pub.id; });
-                        return vipMatch ? Object.assign({}, pub, vipMatch) : pub;
-                    });
-                }
+            document.getElementById('loading-screen').style.display = 'flex';
+            
+            var req;
+            if (isUserVip()) {
+                req = await supabaseClient.from('combineds_vip').select('*').order('date', { ascending: false });
+            } else {
+                req = await supabaseClient.from('combineds_public').select('*').order('date', { ascending: false });
             }
-            allCombineds = publicData;
-            currentCombined = allCombineds.find(function(c) { return c.status === 'en-cours'; }) || allCombineds[0];
-        } catch (e) { console.error('Erreur lors du chargement des données :', e); allCombineds = []; currentCombined = null; }
-        renderCombined(); renderHistory();
+            
+            if (req.error) throw req.error;
+            allCombineds = req.data || [];
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+            let now = new Date();
+
+            allCombineds.forEach(c => {
+                // Si le combiné est toujours affiché "en cours"
+                if (c.status === 'en-cours' && c.date) {
+                    
+                    // 1. On cherche l'heure du match le plus tardif du combiné
+                    let latestTime = "00:00"; 
+                    if (c.matches && c.matches.length > 0) {
+                        c.matches.forEach(m => {
+                            let matchTime = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
+                            if (matchTime && matchTime[0] > latestTime) {
+                                latestTime = matchTime[0];
+                            }
+                        });
+                    } else if (c.time) {
+                        latestTime = c.time.match(/\d{2}:\d{2}/)[0];
+                    }
+
+                    // 2. On calcule la date/heure de fin estimée (+ 2 heures)
+                    let lastMatchDate = new Date(`${c.date}T${latestTime}:00`);
+                    let finishTime = new Date(lastMatchDate.getTime() + (2 * 60 * 60 * 1000));
+
+                    // 3. Si l'heure actuelle a dépassé la fin du dernier match
+                    if (now >= finishTime) {
+                        c.status = 'termine'; // 🔥 Magie : on le force en Gagné !
+                        // On passe également le statut interne des matchs en terminé
+                        if(c.matches) {
+                            c.matches.forEach(m => m.match_status = 'termine');
+                        }
+                    }
+                }
+            });
+            // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+            renderHistory();
+        } catch (e) {
+            console.error(e);
+            showToast('Erreur de chargement des données', true);
+        } finally {
+            setTimeout(function() {
+                document.getElementById('loading-screen').style.opacity = '0';
+                setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 300);
+            }, 500);
+        }
     }
 
     function navigateTo(page) {
