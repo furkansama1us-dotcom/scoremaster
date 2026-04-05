@@ -1102,7 +1102,7 @@ ${matchLines}
     </div>
 </div>
 
-<!-- ADMIN PANEL -->
+    <!-- ADMIN PANEL -->
 <div id="admin-page">
     <div class="admin-header">
         <h2><img id="img-admin" alt="SM" class="admin-header-logo"> Panel Admin</h2>
@@ -1151,12 +1151,10 @@ ${matchLines}
             </div>
             <!-- Champ caché pour forcer le statut "en-cours" à la création sans casser le code JavaScript -->
             <input type="hidden" id="admin-status" value="en-cours">
-            </div>
         </div>
 
         <div class="admin-section">
             <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs du combiné</div>
-
             <button id="btn-fetch-api" onclick="fetchMatchesFromAPI()" style="width:100%; padding:12px; background:rgba(74, 144, 217, 0.15); color:var(--blue); border:1px solid rgba(74, 144, 217, 0.3); border-radius:10px; cursor:pointer; margin-bottom:15px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
                 <i class="fas fa-plug"></i> Charger les matchs du jour (API)
             </button>
@@ -1181,7 +1179,7 @@ ${matchLines}
         <div class="admin-section">
             <button class="admin-submit-btn" id="btn-publish" onclick="publishCombined()"><span id="btn-publish-text"><i class="fas fa-paper-plane"></i> Publier le combiné</span></button>
         </div>
-    </div> <!-- ATTENTION : C'est ce /div qui ferme l'onglet Éditeur ! -->
+    </div>
 
     <!-- ONGLET 3 : VALIDATION (Masqué par défaut) -->
     <div class="admin-tab-content" id="admin-tab-validation">
@@ -1272,9 +1270,8 @@ ${matchLines}
             </div>
         </div>
     </div>
-
-</div> <!-- FIN DU PANEL ADMIN (C'est lui qui ferme la grosse boite noire) -->
-
+</div> <!-- FIN DU PANEL ADMIN -->
+    
 <!-- =====================================================
      POPUP PROFIL ENRICHI
      ===================================================== -->
