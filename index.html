@@ -828,7 +828,7 @@ ${matchLines}
         </div>
     </div>
     <div style="text-align:center; margin-top:8px; font-size:10px; color:var(--text-gray);">
-        Actualisation automatique toutes les 30s
+        Actualisation automatique toutes les 2 min
     </div>
 </div>
 <!-- ===== FIN BLOC LIVE SCORES ===== -->
@@ -1843,14 +1843,33 @@ async function startLiveScores() {
     const matches = currentCombined.matches || [];
     if (!matches.length) return;
 
-    document.getElementById('live-scores-section').style.display = 'block';
+    // ✅ NOUVEAU : on calcule l'heure du 1er match et on attend 15 min avant
+    const firstMatchTime = matches.reduce((earliest, m) => {
+        const t = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
+        return (t && t[0] < earliest) ? t[0] : earliest;
+    }, '23:59');
 
+    const [h, min] = firstMatchTime.split(':').map(Number);
+    const matchStart = new Date();
+    matchStart.setHours(h, min - 15, 0, 0);
+
+    const now = new Date();
+    const msUntilStart = matchStart - now;
+
+    if (msUntilStart > 0) {
+        // Trop tôt : on masque le bloc et on réessaie au bon moment
+        document.getElementById('live-scores-section').style.display = 'none';
+        setTimeout(() => startLiveScores(), msUntilStart);
+        return;
+    }
+
+    document.getElementById('live-scores-section').style.display = 'block';
     await fetchAndRenderLiveScores(matches);
 
     if (livePollingInterval) clearInterval(livePollingInterval);
     livePollingInterval = setInterval(async () => {
         await fetchAndRenderLiveScores(matches);
-    }, 30000);
+    }, 160000);
 }
 
 async function fetchAndRenderLiveScores(matches) {
