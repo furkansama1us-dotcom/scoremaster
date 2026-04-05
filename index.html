@@ -1045,12 +1045,15 @@
             </div>
         </div>
         <div class="admin-section">
+            <!-- Combinés actifs -->
             <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-clock" style="color:var(--primary-yellow);"></i> Combinés En Cours</div>
             <div id="admin-history-active" style="max-height: 200px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color); margin-bottom:20px;"></div>
             
+            <!-- NOUVEAU : Combinés en attente de validation -->
             <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-exclamation-triangle" style="color:#FF9800;"></i> À Confirmer (Matchs Terminés)</div>
             <div id="admin-history-pending" style="max-height: 200px; overflow-y: auto; background: rgba(255, 152, 0, 0.05); border-radius: 12px; padding: 10px; border: 1px dashed rgba(255, 152, 0, 0.5); margin-bottom:20px;"></div>
 
+            <!-- Historique public -->
             <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-history" style="color:var(--green);"></i> Déjà Terminés (Public)</div>
             <div id="admin-history-past" style="max-height: 200px; overflow-y: auto; background: var(--bg-card); border-radius: 12px; padding: 10px; border: 1px solid var(--border-color); margin-bottom:15px;"></div>
             
@@ -1078,64 +1081,58 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="admin-section">
             <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs du combiné</div>
+
+            <!-- BARRE DE FILTRES DES MATCHS -->
+            <div class="match-filter-bar" id="match-filter-bar">
+                <button class="match-filter-btn f-active-all" id="filter-btn-all" onclick="filterMatches('all', this)">
+                    <i class="fas fa-list"></i> Tous
+                    <span class="filter-count" id="count-all">0</span>
+                </button>
+                <button class="match-filter-btn" id="filter-btn-en-cours" onclick="filterMatches('en-cours', this)">
+                    <i class="fas fa-clock"></i> En cours
+                    <span class="filter-count" id="count-en-cours" style="background:rgba(74,144,217,0.2);color:var(--blue);">0</span>
+                </button>
+                <button class="match-filter-btn" id="filter-btn-termine" onclick="filterMatches('termine', this)">
+                    <i class="fas fa-check"></i> Gagné
+                    <span class="filter-count" id="count-termine" style="background:rgba(0,200,83,0.2);color:var(--green);">0</span>
+                </button>
+                <button class="match-filter-btn" id="filter-btn-perdu" onclick="filterMatches('perdu', this)">
+                    <i class="fas fa-times"></i> Perdu
+                    <span class="filter-count" id="count-perdu" style="background:rgba(255,61,61,0.2);color:var(--red);">0</span>
+                </button>
+            </div>
+            
+            <div id="no-filter-result">
+                <i class="fas fa-search"></i>
+                Aucun match pour ce filtre
+            </div>
+
+            <button id="btn-fetch-api" onclick="fetchMatchesFromAPI()" style="width:100%; padding:12px; background:rgba(74, 144, 217, 0.15); color:var(--blue); border:1px solid rgba(74, 144, 217, 0.3); border-radius:10px; cursor:pointer; margin-bottom:15px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
+                <i class="fas fa-plug"></i> Charger les matchs du jour (API)
+            </button>
             <div id="api-matches-container"></div>
             <div id="admin-matches"></div>
             <button class="admin-add-match-btn" onclick="addMatchEntry()"><i class="fas fa-plus"></i> Ajouter un match manuellement</button>
         </div>
+
         <div class="admin-section">
             <div class="admin-section-title"><i class="fas fa-coins"></i> Mise & Gain</div>
+            <div class="admin-card" style="margin-bottom:10px;">
+                <div class="admin-field" style="margin-bottom:0;">
+                    <input type="text" inputmode="decimal" class="admin-input" id="admin-mise" placeholder="Mise en € (ex: 100)" oninput="calculateGains()">
+                </div>
+            </div>
             <div class="admin-summary">
-                <div class="admin-summary-row"><span class="admin-summary-label">Cote totale</span><span class="admin-summary-value" id="summary-odds">0.00</span></div>
-            </div>
-            <button class="admin-submit-btn" id="btn-publish" onclick="publishCombined()"><span id="btn-publish-text"><i class="fas fa-paper-plane"></i> Publier le combiné</span></button>
-        </div>
-    </div>
-
-    <!-- ONGLET 3 : VALIDATION (Masqué par défaut) -->
-    <div class="admin-tab-content" id="admin-tab-validation">
-        <div class="admin-section">
-            <div class="admin-section-title" style="color:#FF9800;"><i class="fas fa-check-double"></i> Validation du Combiné</div>
-            <div id="validation-matches-container"></div>
-            <div class="admin-summary" style="margin-top:20px; background:var(--bg-input);">
-                <div class="admin-summary-row" style="border:none;">
-                    <span class="admin-summary-label">Cote validée :</span>
-                    <span class="admin-summary-value" id="validation-odds" style="color:var(--primary-yellow);">0.00</span>
-                </div>
-            </div>
-            <div style="display:flex; gap:10px; margin-top:25px;">
-                <button onclick="submitValidation('termine')" style="flex:1; padding:16px; background:var(--green); color:#fff; border:none; border-radius:12px; font-weight:800; cursor:pointer;">GAGNÉ ✅</button>
-                <button onclick="submitValidation('perdu')" style="flex:1; padding:16px; background:var(--red); color:#fff; border:none; border-radius:12px; font-weight:800; cursor:pointer;">PERDU ❌</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-    <!-- ONGLET 2 : ÉDITEUR -->
-    <div class="admin-tab-content" id="admin-tab-editor">
-        <div class="admin-section">
-            <div class="admin-section-title" id="editor-title"><i class="fas fa-edit"></i> Éditeur de combiné</div>
-            <div class="admin-card">
-                <div class="admin-row">
-                    <div class="admin-field">
-                        <div class="admin-label"><i class="fas fa-calendar"></i> Date</div>
-                        <input type="date" class="admin-input" id="admin-date">
-                    </div>
-                    <div class="admin-field">
-                        <div class="admin-label"><i class="fas fa-flag"></i> Statut global</div>
-                        <select class="admin-select" id="admin-status">
-                            <option value="en-cours">En cours (Bleu)</option>
-                            <option value="termine">Gagné ✅ (Vert)</option>
-                            <option value="perdu">Perdu ❌ (Rouge)</option>
-                        </select>
-                    </div>
-                </div>
+                <div class="admin-summary-row"><span class="admin-summary-label">Cote totale</span><span class="admin-summary-value" id="summary-odds" style="color:var(--primary-yellow);">0.00</span></div>
+                <div class="admin-summary-row"><span class="admin-summary-label">Gains potentiels</span><span class="admin-summary-value gains" id="summary-gains">0,00 €</span></div>
             </div>
         </div>
 
         <div class="admin-section">
-            <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs du combiné</div>
-<div class="admin-section">
             <button class="admin-submit-btn" id="btn-publish" onclick="publishCombined()"><span id="btn-publish-text"><i class="fas fa-paper-plane"></i> Publier le combiné</span></button>
         </div>
     </div>
@@ -1170,7 +1167,7 @@
         </div>
     </div>
 
-</div> <!-- FIN DU PANEL ADMIN -->
+</div>
 
 <!-- =====================================================
      POPUP PROFIL ENRICHI (NOUVEAU)
@@ -1822,35 +1819,7 @@
         document.querySelectorAll('.admin-tab-btn').forEach(el => el.classList.remove('active'));
     }
 
-    async function submitValidation(finalStatus) {
-        if (!validationCombinedId) return;
-        var original = allCombineds.find(c => c.id == validationCombinedId);
-        
-        let updatedMatches = JSON.parse(JSON.stringify(original.matches));
-        document.querySelectorAll('.validation-score-input').forEach(input => {
-            let idx = parseInt(input.getAttribute('data-index'));
-            updatedMatches[idx].score = input.value.trim();
-            updatedMatches[idx].match_status = finalStatus;
-        });
-
-        try {
-            await supabaseClient.from('combineds_public').update({ status: finalStatus, matches: updatedMatches }).eq('id', validationCombinedId);
-            await supabaseClient.from('combineds_vip').update({ matches: updatedMatches }).eq('id', validationCombinedId);
-            showToast('Combiné validé !');
-            await chargerDonnees();
-            switchAdminTab('dashboard');
-        } catch (e) { showToast("Erreur", true); }
-    }
-        
-        // On bascule sur le nouvel onglet
-        document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.remove('active'));
-        document.getElementById('admin-tab-validation').classList.add('active');
-        
-        // On désélectionne visuellement les boutons d'onglets (Dashboard / Editeur)
-        document.querySelectorAll('.admin-tab-btn').forEach(el => el.classList.remove('active'));
-    }
-
-    // Fonction pour sauvegarder la validation
+// Fonction unique et propre pour sauvegarder la validation
     async function submitValidation(finalStatus) {
         if (!validationCombinedId) return;
         
