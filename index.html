@@ -1718,63 +1718,7 @@
         document.getElementById('validation-odds').textContent = total.toFixed(2);
     }
 
-    async function submitValidation(finalStatus) {
-        if (!validationCombinedId) return;
-        
-        var originalCombined = allCombineds.find(c => c.id == validationCombinedId);
-        if(!originalCombined) return;
-
-        let updatedMatches = JSON.parse(JSON.stringify(originalCombined.matches)); 
-        
-        // On récupère les scores ET les cotes
-        document.querySelectorAll('.validation-score-input').forEach(input => {
-            let index = parseInt(input.getAttribute('data-index'));
-            if(updatedMatches[index]) {
-                updatedMatches[index].score = input.value.trim();
-                updatedMatches[index].match_status = finalStatus; 
-            }
-        });
-
-        document.querySelectorAll('.validation-odds-input').forEach(input => {
-            let index = parseInt(input.getAttribute('data-index'));
-            let val = parseFloat(input.value.replace(',', '.'));
-            if(updatedMatches[index] && !isNaN(val) && val > 0) {
-                updatedMatches[index].odds = val;
-            }
-        });
-
-        let publicMatches = updatedMatches.map(m => ({
-            teams: m.teams, time: m.time, score: m.score, odds: m.odds, logo: m.logo, match_status: finalStatus
-        }));
-
-        // Recalcul du total global et des gains pour mettre à jour le ticket
-        let newTotalOdds = 1;
-        updatedMatches.forEach(m => newTotalOdds *= m.odds);
-        let newGains = originalCombined.mise * newTotalOdds;
-
-        try {
-            var updatePub = await supabaseClient.from('combineds_public')
-                .update({ status: finalStatus, matches: publicMatches })
-                .eq('id', validationCombinedId);
-            if (updatePub.error) throw updatePub.error;
-
-            var updateVip = await supabaseClient.from('combineds_vip')
-                .update({ matches: updatedMatches, total_odds: newTotalOdds, gains: newGains })
-                .eq('id', validationCombinedId);
-            if (updateVip.error) throw updateVip.error;
-
-            showToast(finalStatus === 'termine' ? 'Combiné validé GAGNÉ !' : 'Combiné validé PERDU.');
-            validationCombinedId = null;
-            
-            await chargerDonnees();
-            switchAdminTab('dashboard');
-            renderAdminHistory();
-            
-        } catch (e) {
-            console.error("Erreur validation :", e);
-            showToast("Erreur lors de la validation", true);
-        }
-    }
+    
     function loadIntoEditor(id) {
         var c = allCombineds.find(function(x) { return x.id == id; });
         if(!c) return;
