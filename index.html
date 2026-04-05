@@ -602,7 +602,7 @@
         setTimeout(function () { popup.style.display = 'none'; }, 300);
     }
 
-    // --- NOUVELLE FONCTION : ENVOI DE RELANCES TELEGRAM ---
+    // --- FONCTION : ENVOI DE RELANCES TELEGRAM ---
     function sendTelegramReminder(id) {
         var c = allCombineds.find(x => x.id == id);
         if (!c || c.status !== 'en-cours') {
@@ -613,22 +613,59 @@
         const TELEGRAM_BOT_TOKEN = '8602776375:AAEuhWYNqb26IG8igWDTUI5iUaqSW0plj9I';
         const TELEGRAM_CHAT_ID   = '905424902';
 
+        // 1. Préparation de la liste des matchs
         let matchLines = "";
-        c.matches.forEach(m => { matchLines += `⚽️ ${m.teams}\n`; });
+        if (c.matches && c.matches.length > 0) {
+            c.matches.forEach(m => { matchLines += `⚽️ ${m.teams}\n`; });
+        } else {
+            matchLines = "⚽️ Matchs confidentiels\n";
+        }
 
-        // Modèles de relance (Inspirés de Maverick Pronos)
+        // 2. Calcul des heures
+        let earliestTime = '23:59';
+        if (c.matches && c.matches.length > 0) {
+            c.matches.forEach(m => {
+                let extracted = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
+                if (extracted && extracted[0] < earliestTime) earliestTime = extracted[0];
+            });
+        }
+
+        let deadlineStr = "Indéfini";
+        if (earliestTime !== '23:59' && c.date) {
+            let matchDateTime = new Date(`${c.date}T${earliestTime}:00`);
+            let deadlineDateTime = new Date(matchDateTime.getTime() - 15 * 60000);
+            deadlineStr = String(deadlineDateTime.getHours()).padStart(2, '0') + ':' + String(deadlineDateTime.getMinutes()).padStart(2, '0');
+        }
+
+        // 3. Calcul du jour (aujourd'hui, demain, ou date précise)
+        let today = new Date();
+        let tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
+        let dayContext = "le " + new Date(c.date).toLocaleDateString('fr-FR');
+        if (c.date === today.toISOString().split('T')[0]) dayContext = "aujourd'hui";
+        else if (c.date === tomorrow.toISOString().split('T')[0]) dayContext = "demain";
+
+        // 4. Le fameux bloc d'infos précis (Équipes, Heure, Deadline)
+        let infoBlock = 
+`🏆 *AU PROGRAMME :*
+${matchLines}
+⚠️ Début des matchs : ${dayContext} à *${earliestTime}*
+⛔️ *FERMETURE STRICTE DES ACCÈS : ${deadlineStr}* ❗️`;
+
+        // 5. Modèles de relance dynamiques
         const reminders = [
-            `⏳ *TICK TOCK... Le temps presse !*\n\nPlus que quelques heures avant le coup d'envoi de notre combiné 100% Confiance.\n\nChez ScoreMaster tout est professionnel :\n- Tu payes l'accès 💳\n- Tu as les scores dans les 5 minutes 📲\n- Tu encaisses ce soir ⏳\n\nTu comptes continuer à regarder les autres gagner ? 🥇\n\n👉 Contact : @ScoreMasterOfficiel`,
+            `⏳ *TICK TOCK... Le temps presse !*\n\nPlus que quelques heures avant le coup d'envoi de notre combiné 100% Confiance.\n\n${infoBlock}\n\nChez ScoreMaster tout est professionnel :\n- Tu payes l'accès 💳\n- Tu as les scores dans les 5 minutes 📲\n- Tu encaisses ce soir ⏳\n\nTu comptes continuer à regarder les autres gagner ? 🥇\n\n👉 Contact : @ScoreMasterOfficiel`,
             
-            `🚨 *ALERTE DERNIÈRE MINUTE !*\n\nLe combiné du jour est toujours disponible, mais les accès ferment BIENTÔT ! 🔒\n\n${matchLines}\n\n💣 COTE SUPÉRIEURE À ${Math.floor(c.total_odds)}\n💯 CONFIANCE 100%\n🎁 Satisfait ou remboursé\n\nNe rate pas le train pour encaisser ce soir 🚂🚂🚂\n\n👉 Contact : @ScoreMasterOfficiel`,
+            `🚨 *ALERTE DERNIÈRE MINUTE !*\n\nLe combiné du jour est toujours disponible, mais attention, le chrono tourne ! ⏱\n\n${infoBlock}\n\nNe rate pas le train pour encaisser ce soir 🚂🚂🚂\n\n👉 Contact : @ScoreMasterOfficiel`,
             
-            `⚠️ *PLACES LIMITÉES !*\n\nUn grand merci aux nouveaux VIP qui nous ont rejoint aujourd'hui ✅\n\nSI TOI AUSSI, TU VEUX ENCAISSER 🤑 C'EST LE MOMENT ! C'EST CADEAU 🎁\n\nLes bookmakers vont trembler ce soir.\n\n❗️ CLIQUE ICI : @ScoreMasterOfficiel 👈 ET ENVOIE MOI UN MESSAGE !`,
+            `⚠️ *PLACES LIMITÉES !*\n\nUn grand merci aux nouveaux VIP qui nous ont rejoints aujourd'hui ✅\n\nSI TOI AUSSI, TU VEUX ENCAISSER 🤑 C'EST LE MOMENT ! C'EST CADEAU 🎁\n\n${infoBlock}\n\nLes bookmakers vont trembler ce soir.\n\n❗️ CLIQUE ICI : @ScoreMasterOfficiel 👈 ET ENVOIE MOI UN MESSAGE !`,
             
-            `⏰ *DERNIER APPEL AVANT FERMETURE !*\n\nLa validation approche à grands pas. Nos experts ont déniché la faille parfaite sur ces matchs :\n\n${matchLines}\n\nRejoins l'élite et encaisse ton salaire du mois en une soirée 💸.\n\n👉 Pour nous rejoindre : @ScoreMasterOfficiel`
+            `⏰ *DERNIER APPEL AVANT FERMETURE !*\n\nLa validation approche à grands pas. Nos experts ont déniché la faille parfaite :\n\n${infoBlock}\n\nRejoins l'élite et encaisse ton salaire du mois en une soirée 💸.\n\n👉 Pour nous rejoindre : @ScoreMasterOfficiel`
         ];
 
+        // Sélection aléatoire du message
         let telegramText = reminders[Math.floor(Math.random() * reminders.length)];
 
+        // Envoi via l'API Telegram
         if (confirm("Veux-tu envoyer un message de relance sur Telegram pour ce combiné ?")) {
             fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
                 method: 'POST',
