@@ -1110,8 +1110,9 @@ ${matchLines}
     </div>
     
     <div class="admin-tabs">
-        <button class="admin-tab-btn active" id="btn-tab-dashboard" onclick="switchAdminTab('dashboard')"><i class="fas fa-chart-pie"></i> Vue d'ensemble</button>
+        <button class="admin-tab-btn active" id="btn-tab-dashboard" onclick="switchAdminTab('dashboard')"><i class="fas fa-chart-pie"></i> Vue</button>
         <button class="admin-tab-btn" id="btn-tab-editor" onclick="switchAdminTab('editor')"><i class="fas fa-edit"></i> Éditeur</button>
+        <button class="admin-tab-btn" id="btn-tab-notifications" onclick="switchAdminTab('notifications')"><i class="fas fa-bell"></i> Notifs</button>
     </div>
 
     <!-- ONGLET 1 : DASHBOARD -->
@@ -1238,9 +1239,40 @@ ${matchLines}
             </div>
         </div>
     </div>
-    
-</div> <!-- FIN DU PANEL ADMIN -->
 
+    <!-- ONGLET 5 : NOTIFICATIONS -->
+    <div class="admin-tab-content" id="admin-tab-notifications">
+        <div class="admin-section">
+            <div class="admin-section-title" style="color:var(--primary-yellow); font-size:16px; margin-bottom: 20px;">
+                <i class="fas fa-paper-plane"></i> Centre de notifications
+            </div>
+            <p style="font-size:13px; color:var(--text-gray); margin-bottom:20px; line-height:1.5;">
+                Envoyez des messages marketing automatiques sur votre canal Telegram pour rediriger vers l'application.
+            </p>
+
+            <!-- BOUTON 1 : PROMO WEB APP -->
+            <div class="admin-card" style="padding:15px; border-left:4px solid var(--primary-yellow); margin-bottom:10px; cursor:pointer; transition:all 0.2s;" onclick="sendPromoNotification()" onmouseover="this.style.background='var(--bg-input)'" onmouseout="this.style.background='var(--bg-card)'">
+                <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff; display:flex; justify-content:space-between; align-items:center;">
+                    <span><i class="fas fa-globe" style="color:var(--primary-yellow); margin-right:5px;"></i> Promo Web App (scoremaster.fr)</span>
+                    <i class="fas fa-chevron-right" style="color:var(--text-gray); font-size:12px;"></i>
+                </div>
+                <div style="font-size:12px; color:var(--text-gray);">
+                    Redirige les membres Telegram vers le site pour découvrir les packs, les avis et l'historique.
+                </div>
+            </div>
+            
+            <!-- BOUTON 2 : EMPLACEMENT FUTUR -->
+            <div class="admin-card" style="padding:15px; border-left:4px solid var(--text-gray); margin-bottom:10px; opacity:0.5;">
+                <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff;">
+                    <i class="fas fa-plus"></i> Autre relance (à venir)
+                </div>
+                <div style="font-size:12px; color:var(--text-gray);">
+                    Emplacement pour de futures notifications spécifiques.
+                </div>
+            </div>
+        </div>
+    </div>
+</div> <!-- FIN DU PANEL ADMIN -->
 <!-- =====================================================
      POPUP PROFIL ENRICHI
      ===================================================== -->
@@ -2606,6 +2638,41 @@ let quickEditCombinedId = null;
         } catch (e) {
             console.error("Erreur update :", e);
             showToast("Erreur lors de la mise à jour", true);
+        }
+    }
+
+    // --- FONCTION : CENTRE DE NOTIFICATIONS (PROMO WEB APP) ---
+    function sendPromoNotification() {
+        const TELEGRAM_BOT_TOKEN = '8602776375:AAEuhWYNqb26IG8igWDTUI5iUaqSW0plj9I';
+        const TELEGRAM_CHAT_ID   = '905424902';
+
+        // Modèles de messages orientés "Conversion vers le site web"
+        const promos = [
+            `🌐 *DÉCOUVREZ L'APPLICATION SCOREMASTER !*\n\nMarre de chercher les infos et de vous faire arnaquer sur Telegram ? Tout est centralisé et sécurisé sur notre Web App officielle !\n\n✅ Historique 100% transparent\n✅ Accès VIP+ instantané après paiement\n✅ Cotes en temps réel\n\nRejoignez l'élite et prenez votre pass VIP+ directement ici : 👉 https://scoremaster.fr/`,
+            
+            `🚀 *PASSEZ AU NIVEAU SUPÉRIEUR !*\n\nNe vous contentez pas de nous suivre sur Telegram. Utilisez nos outils de pro pour encaisser tous les jours.\n\n🛡 Paiement 100% sécurisé\n⚡️ Réception immédiate des scores\n🤝 Satisfait ou remboursé\n\nDécouvrez nos packs et nos scores exacts sur : 🔗 https://scoremaster.fr/`,
+            
+            `🎯 *LA RÉFÉRENCE DU SCORE EXACT EST SUR LE WEB !*\n\nPourquoi nous faire confiance ? Allez voir notre historique de tickets gagnants et les avis de nos membres directement sur le site. La transparence est notre priorité.\n\nPrenez votre accès avant la fermeture des portes : 🎟 https://scoremaster.fr/`,
+            
+            `📲 *TOUT SE PASSE SUR SCOREMASTER.FR !*\n\nL'application ScoreMaster est en ligne. Rejoignez les centaines de membres qui encaissent chaque semaine avec des cotes stratosphériques.\n\n👉 C'est par ici : https://scoremaster.fr/`,
+            
+            `🏆 *DEVENEZ VIP+ À VIE !*\n\nSaviez-vous que notre pack VIP+ vous donne accès à TOUS nos scores exacts, à vie, avec un seul paiement ? \n\nDécouvrez les détails de l'offre sur notre plateforme officielle :\n\n💻 Accès direct : https://scoremaster.fr/`
+        ];
+
+        let telegramText = promos[Math.floor(Math.random() * promos.length)];
+
+        if (confirm("Envoyer une notification promotionnelle (Web App) sur Telegram ?")) {
+            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: telegramText, parse_mode: 'Markdown', disable_web_page_preview: false })
+            }).then(response => {
+                if (response.ok) showToast("Notification promo envoyée !");
+                else showToast("Erreur lors de l'envoi", true);
+            }).catch(err => {
+                console.error("Erreur Telegram:", err);
+                showToast("Erreur réseau Telegram", true);
+            });
         }
     }
     
