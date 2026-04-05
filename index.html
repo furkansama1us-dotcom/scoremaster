@@ -1063,20 +1063,13 @@
         <div class="admin-section">
             <div class="admin-section-title" id="editor-title"><i class="fas fa-edit"></i> Éditeur de combiné</div>
             <div class="admin-card">
-                <div class="admin-row">
-                    <div class="admin-field">
-                        <div class="admin-label"><i class="fas fa-calendar"></i> Date</div>
-                        <input type="date" class="admin-input" id="admin-date">
-                    </div>
-                    <div class="admin-field">
-                        <div class="admin-label"><i class="fas fa-flag"></i> Statut global</div>
-                        <select class="admin-select" id="admin-status">
-                            <option value="en-cours">En cours (Bleu)</option>
-                            <option value="termine">Gagné ✅ (Vert)</option>
-                            <option value="perdu">Perdu ❌ (Rouge)</option>
-                        </select>
-                    </div>
+                <div class="admin-field" style="margin-bottom:0;">
+                    <div class="admin-label"><i class="fas fa-calendar"></i> Date</div>
+                    <input type="date" class="admin-input" id="admin-date">
                 </div>
+            </div>
+            <!-- Champ caché pour forcer le statut "en-cours" à la création sans casser le code JavaScript -->
+            <input type="hidden" id="admin-status" value="en-cours">
             </div>
         </div>
 
