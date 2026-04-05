@@ -2983,16 +2983,47 @@ htmlPast += cardBaseHtml(displayStatus, btns);
     }
 
     function animateOnlineCount() {
-        var el = document.getElementById('online-count'); if (!el) return;
-        setInterval(function () {
-            var now = new Date(); var hour = now.getHours();
+        var el = document.getElementById('online-count'); 
+        if (!el) return;
+        
+        function updateCount() {
+            var now = new Date(); 
+            var hour = now.getHours();
             var minOnline, maxOnline;
-            if (hour >= 19 && hour <= 23) { minOnline = 380; maxOnline = 500; }
-            else if (hour >= 0 && hour < 11) { minOnline = 50; maxOnline = 90; }
-            else if (hour >= 11 && hour < 17) { minOnline = 150; maxOnline = 250; }
-            else { minOnline = 350; maxOnline = 410; }
+            
+            if (hour >= 2 && hour < 7) { 
+                // Nuit profonde (2h - 6h59) : très peu de monde
+                minOnline = 7; maxOnline = 22; 
+            }
+            else if (hour >= 7 && hour < 12) { 
+                // Matin (7h - 11h59) : trafic faible
+                minOnline = 35; maxOnline = 70; 
+            }
+            else if (hour >= 12 && hour < 17) { 
+                // Après-midi (12h - 16h59) : trafic modéré
+                minOnline = 90; maxOnline = 150; 
+            }
+            else if (hour >= 17 && hour < 20) { 
+                // Avant-matchs (17h - 19h59) : la pression monte doucement
+                minOnline = 180; maxOnline = 350; 
+            }
+            else if (hour >= 20 && hour < 23) { 
+                // Prime time (20h - 22h59) : Matchs en direct & résultats (Pic absolu)
+                minOnline = 400; maxOnline = 600; 
+            }
+            else { 
+                // Fin de soirée (23h - 1h59) : ça se vide tranquillement
+                minOnline = 80; maxOnline = 160; 
+            }
+            
             el.textContent = (minOnline + Math.floor(Math.random() * (maxOnline - minOnline + 1))) + ' personnes en ligne';
-        }, 8000);
+        }
+
+        // Exécuter tout de suite à l'ouverture de la page
+        updateCount(); 
+        
+        // Puis rafraîchir toutes les 8 secondes
+        setInterval(updateCount, 8000);
     }
 
     function toggleFaq(el) { el.classList.toggle('open'); }
