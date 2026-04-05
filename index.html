@@ -1093,7 +1093,6 @@
                 Vérifiez les scores finaux avant de publier ce combiné dans l'historique public.
             </p>
             
-            <!-- Conteneur pour les matchs à valider -->
             <div id="validation-matches-container"></div>
             
             <div class="admin-summary" style="margin-top:20px;">
@@ -1102,6 +1101,17 @@
                     <span class="admin-summary-value" id="validation-odds" style="color:var(--primary-yellow);">0.00</span>
                 </div>
             </div>
+
+            <div style="display:flex; gap:10px; margin-top:20px; margin-bottom: 40px;">
+                <button onclick="submitValidation('termine')" style="flex:1; padding:15px; background:var(--green); color:#fff; border:none; border-radius:12px; font-weight:bold; font-size:15px; cursor:pointer;">
+                    <i class="fas fa-check-circle"></i> Valider (GAGNÉ)
+                </button>
+                <button onclick="submitValidation('perdu')" style="flex:1; padding:15px; background:var(--red); color:#fff; border:none; border-radius:12px; font-weight:bold; font-size:15px; cursor:pointer;">
+                    <i class="fas fa-times-circle"></i> Valider (PERDU)
+                </button>
+            </div>
+        </div>
+    </div>
 
             <!-- Boutons d'action clairs -->
             <div style="display:flex; gap:10px; margin-top:20px; margin-bottom: 40px;">
