@@ -1620,61 +1620,87 @@ ${matchLines}
     }
 
     async function fetchMatchesFromAPI() {
-        var date = document.getElementById('admin-date').value;
-        if (!date) { showToast("Choisis une date d'abord", true); return; }
-        const API_KEY = '2620f835eb08886d508258550a5254a4';
-        var btn = document.getElementById('btn-fetch-api');
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche des matchs...';
-        try {
-            var response = await fetch(`https://v3.football.api-sports.io/fixtures?date=${date}`, { method: 'GET', headers: { 'x-apisports-key': API_KEY } });
-            if (!response.ok) throw new Error(`Erreur réseau: HTTP ${response.status}`);
-            var data = await response.json();
-            if (data.errors && Object.keys(data.errors).length > 0) throw new Error(Object.values(data.errors)[0]);
-            if (data.response && data.response.length > 0) {
-                var filteredMatches = data.response.filter(function(match) {
-                    if (match.fixture.status.short !== 'NS' && match.fixture.status.short !== 'TBD') return false;
-                    var matchDate = new Date(match.fixture.date);
-                    if (matchDate.getHours() < 18) return false;
-                    return true;
-                });
-                var topLeagues = [2, 3, 848, 39, 61, 140, 135, 78];
-                filteredMatches.sort(function(a, b) {
-                    var aTop = topLeagues.includes(a.league.id) ? 1 : 0;
-                    var bTop = topLeagues.includes(b.league.id) ? 1 : 0;
-                    if (aTop !== bTop) return bTop - aTop;
-                    return new Date(a.fixture.date) - new Date(b.fixture.date);
-                });
-                if (filteredMatches.length === 0) { showToast('Aucun match majeur à venir après 18h.', true); document.getElementById('api-matches-container').innerHTML = ''; btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs du jour (API)'; return; }
-                var matchesHtml = '<div style="background:#2A2A2A; padding:10px; border-radius:8px; margin-bottom:10px; max-height:300px; overflow-y:auto;">';
-                matchesHtml += `<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px; display:flex; justify-content:space-between;"><span>Matchs trouvés (${filteredMatches.length})</span><span style="color:var(--primary-yellow); cursor:pointer;" onclick="document.getElementById('api-matches-container').innerHTML=''">Fermer <i class="fas fa-times"></i></span></div>`;
-                var limit = Math.min(filteredMatches.length, 50);
-                var today = new Date(); var tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
-                for(var i=0; i<limit; i++) {
-                    var match = filteredMatches[i];
-                    var matchDate = new Date(match.fixture.date);
-                    var teamHome = match.teams.home.name || 'Dom.'; var teamAway = match.teams.away.name || 'Ext.';
-                    var timeStr = matchDate.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
-                    var prefix = "";
-                    if (matchDate.toDateString() === today.toDateString()) prefix = "Auj. ";
-                    else if (matchDate.toDateString() === tomorrow.toDateString()) prefix = "Dem. ";
-                    var displayTime = prefix + timeStr;
-                    var leagueName = match.league.name || ''; var flagUrl = match.league.flag || match.league.logo || '';
-                    var safeMatchString = `${teamHome} - ${teamAway}`.replace(/'/g, "\\'");
-                    matchesHtml += `<button type="button" onclick="addMatchFromAPI('${safeMatchString}', '${displayTime}', '${flagUrl}')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer; transition:border-color 0.2s;"><div style="font-size:10px; color:var(--text-gray); margin-bottom:4px; display:flex; align-items:center; gap:6px;">${flagUrl ? `<img src="${flagUrl}" style="width:14px; height:10px; object-fit:cover; border-radius:2px;">` : ''}${leagueName}</div><div style="font-size:13px; font-weight:600; display:flex; align-items:center;"><span style="color:var(--primary-yellow); margin-right:8px; width:75px;"><i class="fas fa-clock" style="font-size:11px;"></i> ${displayTime}</span><span>${safeMatchString}</span></div></button>`;
-                }
-                matchesHtml += '</div>';
-                document.getElementById('api-matches-container').innerHTML = matchesHtml;
-                showToast('Matchs chargés avec succès !');
-            } else {
-                showToast('Aucun match programmé à cette date.', true);
-                document.getElementById('api-matches-container').innerHTML = '';
+    var dateVal = document.getElementById('admin-date').value;
+    if (!dateVal) { showToast("Choisis une date d'abord", true); return; }
+
+    var btn = document.getElementById('btn-fetch-api');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche des matchs...';
+
+    try {
+        // L'API RapidAPI attend la date au format YYYYMMDD (sans les tirets)
+        var dateStr = dateVal.replace(/-/g, '');
+        
+        // Ta clé RapidAPI
+        const RAPIDAPI_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
+
+        // Appel à la nouvelle API
+        var response = await fetch(`https://free-api-live-football-data.p.rapidapi.com/football-get-matches-by-date?date=${dateStr}`, {
+            method: 'GET',
+            headers: {
+                'x-rapidapi-host': 'free-api-live-football-data.p.rapidapi.com',
+                'x-rapidapi-key': RAPIDAPI_KEY
             }
-        } catch (error) {
-            console.error("Détail de l'erreur :", error);
-            showToast('Erreur: ' + error.message, true);
+        });
+
+        if (!response.ok) throw new Error(`Erreur réseau: HTTP ${response.status}`);
+        var data = await response.json();
+
+        // Vérification de la réponse
+        if (data.status !== "success" || !data.response || !data.response.matches) {
+            throw new Error("L'API n'a renvoyé aucune donnée valide.");
         }
-        btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs du jour (API)';
+
+        var filteredMatches = data.response.matches;
+
+        // Tri des matchs par ordre chronologique
+        filteredMatches.sort(function(a, b) {
+            var aTime = a.time ? a.time.match(/\d{2}:\d{2}/)[0] : "00:00";
+            var bTime = b.time ? b.time.match(/\d{2}:\d{2}/)[0] : "00:00";
+            return aTime.localeCompare(bTime);
+        });
+
+        if (filteredMatches.length === 0) { 
+            showToast('Aucun match trouvé pour cette date.', true); 
+            document.getElementById('api-matches-container').innerHTML = ''; 
+            btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs du jour (API)'; 
+            return; 
+        }
+
+        // Construction du HTML pour la liste des matchs
+        var matchesHtml = '<div style="background:#2A2A2A; padding:10px; border-radius:8px; margin-bottom:10px; max-height:300px; overflow-y:auto;">';
+        matchesHtml += `<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px; display:flex; justify-content:space-between;"><span>Matchs trouvés (${filteredMatches.length})</span><span style="color:var(--primary-yellow); cursor:pointer;" onclick="document.getElementById('api-matches-container').innerHTML=''">Fermer <i class="fas fa-times"></i></span></div>`;
+        
+        // Limiter à 100 matchs pour ne pas surcharger l'interface
+        var limit = Math.min(filteredMatches.length, 100);
+
+        for(var i=0; i<limit; i++) {
+            var match = filteredMatches[i];
+            var teamHome = match.home.name || 'Dom.'; 
+            var teamAway = match.away.name || 'Ext.';
+            
+            // Extraction de l'heure (format renvoyé par l'API : "DD.MM.YYYY HH:mm")
+            var timeStr = match.time ? match.time.match(/\d{2}:\d{2}/)[0] : "--:--";
+            
+            var safeMatchString = `${teamHome} - ${teamAway}`.replace(/'/g, "\\'");
+            
+            matchesHtml += `<button type="button" onclick="addMatchFromAPI('${safeMatchString}', '${timeStr}', '')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer; transition:border-color 0.2s;">
+            <div style="font-size:13px; font-weight:600; display:flex; align-items:center;">
+                <span style="color:var(--primary-yellow); margin-right:8px; width:45px;"><i class="fas fa-clock" style="font-size:11px;"></i> ${timeStr}</span>
+                <span>${safeMatchString}</span>
+            </div></button>`;
+        }
+        matchesHtml += '</div>';
+        
+        document.getElementById('api-matches-container').innerHTML = matchesHtml;
+        showToast('Matchs chargés avec succès !');
+
+    } catch (error) {
+        console.error("Détail de l'erreur :", error);
+        showToast('Erreur: ' + error.message, true);
     }
+    
+    btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs du jour (API)';
+}
 
     function addMatchFromAPI(teams, time, logo) {
         let onlyTime = time.match(/\d{2}:\d{2}/);
