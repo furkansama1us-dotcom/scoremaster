@@ -1902,7 +1902,14 @@ async function startLiveScores() {
 
 async function fetchAndRenderLiveScores(matches) {
     const container = document.getElementById('live-scores-container');
-    const fetchDate = currentCombined.date; // On garde la date du combiné
+    
+    // SÉCURITÉ DATE : Forcer le format strict YYYY-MM-DD
+    let fetchDate = currentCombined.date;
+    if (fetchDate && fetchDate.includes('T')) {
+        fetchDate = fetchDate.split('T')[0];
+    } else if (!fetchDate) {
+        fetchDate = new Date().toISOString().split('T')[0];
+    }
 
     let allFixtures = [];
     try {
@@ -1911,9 +1918,15 @@ async function fetchAndRenderLiveScores(matches) {
             { headers: { 'x-apisports-key': LIVE_API_KEY } }
         );
         const data = await res.json();
+        
+        // AFFICHAGE D'ERREUR SI QUOTA DÉPASSÉ
+        if (data.errors && Object.keys(data.errors).length > 0) {
+            console.error("🚨 L'API-Sports a renvoyé une erreur (Quota dépassé ?) :", data.errors);
+        }
+        
         allFixtures = data.response || [];
     } catch(e) {
-        console.error("Erreur API:", e);
+        console.error("Erreur de connexion API:", e);
     }
 
     let html = '';
@@ -1928,32 +1941,33 @@ async function fetchAndRenderLiveScores(matches) {
         const homeTeamStr = (parts[0] || 'Domicile').trim();
         const awayTeamStr = (parts[1] || 'Extérieur').trim();
         
-        const homeTeamSearch = homeTeamStr.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        const awayTeamSearch = awayTeamStr.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        // Nettoyage absolu des caractères (minuscules, sans accents, sans espaces en trop)
+        const cleanString = (str) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+        const homeSearch = cleanString(homeTeamStr);
+        const awaySearch = cleanString(awayTeamStr);
 
         const fixture = allFixtures.find(function(f) {
-            const fHome = f.teams.home.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            const fAway = f.teams.away.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const fHome = cleanString(f.teams.home.name);
+            const fAway = cleanString(f.teams.away.name);
             
-            const homeWords = homeTeamSearch.split(" ").filter(w => w.length > 2);
-            const awayWords = awayTeamSearch.split(" ").filter(w => w.length > 2);
-            
-            const homeMatch = homeWords.some(w => fHome.includes(w)) || fHome.includes(homeTeamSearch) || homeTeamSearch.includes(fHome);
-            const awayMatch = awayWords.some(w => fAway.includes(w)) || fAway.includes(awayTeamSearch) || awayTeamSearch.includes(fAway);
+            // On vérifie une inclusion dans les deux sens
+            const homeMatch = fHome.includes(homeSearch) || homeSearch.includes(fHome);
+            const awayMatch = fAway.includes(awaySearch) || awaySearch.includes(fAway);
             
             return homeMatch && awayMatch;
         });
 
-        // VALEURS PAR DÉFAUT SI LE MATCH N'EST PAS TROUVÉ (Pour que ce soit beau même en test)
+        // Variables de secours
         let homeLogoTag = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:50%; border:1px solid var(--border-color);"><i class="fas fa-shield-alt" style="font-size:18px; color:var(--text-gray);"></i></div>`;
         let awayLogoTag = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:50%; border:1px solid var(--border-color);"><i class="fas fa-shield-alt" style="font-size:18px; color:var(--text-gray);"></i></div>`;
-        let leagueName = 'Événement sportif';
-        let homeGoals = '0'; // On force les zéros au lieu des tirets
+        let leagueName = 'Événement non synchronisé ⚠️'; // Texte pour te prévenir visuellement !
+        let homeGoals = '0';
         let awayGoals = '0';
         let statusLabel = '';
         let statusColor = 'var(--text-gray)';
 
         if (fixture) {
+            // MATCH TROUVÉ PAR L'API : on charge les vraies infos
             homeLogoTag = `<img src="${fixture.teams.home.logo}" style="width:40px; height:40px; object-fit:contain; margin-bottom:8px;" crossorigin="anonymous">`;
             awayLogoTag = `<img src="${fixture.teams.away.logo}" style="width:40px; height:40px; object-fit:contain; margin-bottom:8px;" crossorigin="anonymous">`;
             leagueName = fixture.league.name;
@@ -1979,29 +1993,27 @@ async function fetchAndRenderLiveScores(matches) {
             if (isNotStarted) {
                 let matchCleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
                 statusLabel = matchCleanTime ? `${matchCleanTime[0]}` : 'À venir';
-                homeGoals = '-'; awayGoals = '-'; // On met des tirets QUE s'il n'est pas commencé
+                homeGoals = '-'; awayGoals = '-';
             } else if (isFinished) {
                 statusLabel = 'Terminé';
             } else if (status === 'HT') {
                 statusLabel = 'Mi-temps';
                 statusColor = '#FF9800';
             } else {
-                statusLabel = `${elapsed}'`;
-                statusColor = '#00C853';
+                statusLabel = `${elapsed}'`; // Minute exacte (ex: 23')
+                statusColor = '#00C853'; // Vert en direct
             }
         } else {
-            // SI LE MATCH N'EST PAS TROUVÉ (Ex: Match inventé pour tester)
+            // MATCH NON TROUVÉ : Roue de secours visuelle
             allFinished = false;
             let matchCleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
             
             if (matchCleanTime && currentHrMin >= matchCleanTime[0]) {
-                // L'heure du match est passée ! On affiche un faux direct pour combler
                 statusLabel = "En cours";
-                statusColor = '#00C853'; // Vert
-                homeGoals = "0";
+                statusColor = '#00C853';
+                homeGoals = "0"; 
                 awayGoals = "0";
             } else {
-                // L'heure n'est pas passée
                 statusLabel = matchCleanTime ? `${matchCleanTime[0]}` : 'À venir';
                 homeGoals = "-";
                 awayGoals = "-";
