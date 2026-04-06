@@ -688,6 +688,9 @@ ${matchLines}
 // ============================================================
 // RÉCUPÉRATION MANUELLE DES SCORES VIA API (NOUVELLE API)
 // ============================================================
+// ============================================================
+// RÉCUPÉRATION MANUELLE DES SCORES VIA API (BOUTON ADMIN)
+// ============================================================
 async function fetchApiScore(id, dateRaw) {
     showToast("Recherche des scores en cours... ⏳");
     
@@ -695,52 +698,31 @@ async function fetchApiScore(id, dateRaw) {
     if (!c) { showToast("Combiné introuvable", true); return; }
 
     try {
-        // 1. Formatage de la date pour RapidAPI (YYYYMMDD)
-        const dateStr = dateRaw.replace(/-/g, '');
-        const RAPIDAPI_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
-
-        // 2. Appel direct à la nouvelle API
-        const response = await fetch(`https://free-api-live-football-data.p.rapidapi.com/football-get-matches-by-date?date=${dateStr}`, {
-            method: 'GET',
-            headers: {
-                'x-rapidapi-host': 'free-api-live-football-data.p.rapidapi.com',
-                'x-rapidapi-key': RAPIDAPI_KEY
-            }
-        });
-
-        if (!response.ok) throw new Error("Erreur réseau API");
-        const data = await response.json();
-
-        if (data.status !== "success" || !data.response || !data.response.matches) {
-            throw new Error("Données invalides de l'API");
-        }
-
-        const apiMatches = data.response.matches;
+        // 1. On utilise notre fonction de formatage de date sécurisée (déjà existante)
+        const dateStr = toDateStr(dateRaw);
+        
+        // 2. On utilise notre fonction de téléchargement API (déjà existante et protégée contre les erreurs)
+        const allFixtures = await fetchFixtures(dateStr);
+        
         let updatedCount = 0;
         
-        // 3. On compare les matchs de ton ticket avec ceux de l'API
-        c.matches.forEach(m => {
-            const parts = m.teams.split(' - ');
-            const homeName = parts[0] ? parts[0].trim().toLowerCase() : '';
-            const awayName = parts[1] ? parts[1].trim().toLowerCase() : '';
-
-            // On cherche le match correspondant dans la réponse API
-            const fixture = apiMatches.find(apiM => {
-                const apiHome = (apiM.home.name || '').toLowerCase();
-                const apiAway = (apiM.away.name || '').toLowerCase();
-                return apiHome === homeName && apiAway === awayName;
+        // 3. On compare avec nos fonctions intelligentes
+        if (c.matches && c.matches.length > 0) {
+            c.matches.forEach(m => {
+                // Utilisation de la fonction "findFixture" qui analyse intelligemment les noms d'équipes
+                const fixture = findFixture(allFixtures, m.teams);
+                
+                // Si le match est trouvé et terminé, on applique le score
+                if (fixture && fixture.status && fixture.status.finished) {
+                    let hScore = fixture.home.score !== null ? fixture.home.score : 0;
+                    let aScore = fixture.away.score !== null ? fixture.away.score : 0;
+                    m.score = hScore + ' - ' + aScore;
+                    updatedCount++;
+                }
             });
-            
-            // Si on trouve le match et qu'il est terminé (finished: true)
-            if (fixture && fixture.status && fixture.status.finished) {
-                let hScore = fixture.home.score !== null ? fixture.home.score : 0;
-                let aScore = fixture.away.score !== null ? fixture.away.score : 0;
-                m.score = hScore + ' - ' + aScore;
-                updatedCount++;
-            }
-        });
+        }
         
-        // 4. Ouverture de l'écran d'édition avec les scores remplis
+        // 4. Ouverture de l'écran d'édition / validation
         if (updatedCount > 0) {
             showToast(`${updatedCount} score(s) récupéré(s) avec succès ! ✅`);
             if (c.status === 'en-cours') {
@@ -749,12 +731,12 @@ async function fetchApiScore(id, dateRaw) {
                 openQuickEditScreen(id);
             }
         } else {
-            showToast("Aucun score terminé trouvé dans l'API.", true);
+            showToast("Aucun score terminé trouvé pour ces matchs.", true);
         }
         
     } catch(e) {
         console.error("Erreur fetchApiScore:", e);
-        showToast("Erreur de connexion à l'API.", true);
+        showToast("Erreur lors de la récupération.", true);
     }
 }
 </script>
