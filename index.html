@@ -1968,8 +1968,6 @@ async function startLiveScores() {
 // ============================================================
 const logosCache = {};
 
-const logosCache = {};
-
 async function fetchTeamLogo(teamName) {
     if (!teamName || teamName === 'Domicile' || teamName === 'Extérieur') return null;
     if (logosCache[teamName]) {
