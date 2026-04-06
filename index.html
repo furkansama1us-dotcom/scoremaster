@@ -1903,17 +1903,18 @@ async function startLiveScores() {
 async function fetchAndRenderLiveScores(matches) {
     const container = document.getElementById('live-scores-container');
     
-    // Format de date attendu par la nouvelle API : YYYYMMDD
+    // Format YYYYMMDD pour la nouvelle API
     let fetchDate = currentCombined.date;
     if (fetchDate && fetchDate.includes('-')) {
-        fetchDate = fetchDate.replace(/-/g, ''); // Transforme 2024-04-06 en 20240406
-    } else {
+        fetchDate = fetchDate.replace(/-/g, '');
+    } else if (!fetchDate) {
         const today = new Date();
         fetchDate = today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0');
     }
 
     let allFixtures = [];
     try {
+        console.log("📡 Recherche des matchs pour le :", fetchDate);
         const res = await fetch(
             `https://free-api-live-football-data.p.rapidapi.com/football-get-matches-by-date?date=${fetchDate}`,
             { 
@@ -1925,13 +1926,14 @@ async function fetchAndRenderLiveScores(matches) {
         );
         const data = await res.json();
         
-        // La nouvelle structure range les matchs dans data.response.matches
         if (data && data.response && data.response.matches) {
             allFixtures = data.response.matches;
+            console.log(`✅ L'API a renvoyé ${allFixtures.length} matchs.`);
+        } else {
+            console.warn("⚠️ Structure API inattendue ou quota dépassé.", data);
         }
-        
     } catch(e) {
-        console.error("Erreur API:", e);
+        console.error("❌ Erreur API:", e);
     }
 
     let html = '';
@@ -1946,40 +1948,38 @@ async function fetchAndRenderLiveScores(matches) {
         const homeTeamStr = (parts[0] || 'Domicile').trim();
         const awayTeamStr = (parts[1] || 'Extérieur').trim();
         
-        // Nettoyage pour la recherche
+        // Nettoyage pour trouver le match
         const cleanString = (str) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
         const homeSearch = cleanString(homeTeamStr);
         const awaySearch = cleanString(awayTeamStr);
 
         const fixture = allFixtures.find(function(f) {
             if (!f.home || !f.away) return false;
-            const fHome = cleanString(f.home.name);
-            const fAway = cleanString(f.away.name);
             
-            const homeMatch = fHome.includes(homeSearch) || homeSearch.includes(fHome);
-            const awayMatch = fAway.includes(awaySearch) || awaySearch.includes(fAway);
+            const fHomeName = cleanString(f.home.name);
+            const fHomeLong = f.home.longName ? cleanString(f.home.longName) : fHomeName;
+            const fAwayName = cleanString(f.away.name);
+            const fAwayLong = f.away.longName ? cleanString(f.away.longName) : fAwayName;
+            
+            const homeMatch = fHomeName.includes(homeSearch) || homeSearch.includes(fHomeName) || fHomeLong.includes(homeSearch) || homeSearch.includes(fHomeLong);
+            const awayMatch = fAwayName.includes(awaySearch) || awaySearch.includes(fAwayName) || fAwayLong.includes(awaySearch) || awaySearch.includes(fAwayLong);
             
             return homeMatch && awayMatch;
         });
 
-        // La nouvelle API ne fournit pas de logos, on utilise le bouclier par défaut
+        // Boucliers par défaut (plus de logos avec cette API gratuite)
         let homeLogoTag = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:50%; border:1px solid var(--border-color);"><i class="fas fa-shield-alt" style="font-size:18px; color:var(--text-gray);"></i></div>`;
         let awayLogoTag = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:50%; border:1px solid var(--border-color);"><i class="fas fa-shield-alt" style="font-size:18px; color:var(--text-gray);"></i></div>`;
         
-        let leagueName = 'Événement sportif';
+        let leagueName = 'Aujourd\'hui'; 
         let homeGoals = '0';
         let awayGoals = '0';
         let statusLabel = '';
         let statusColor = 'var(--text-gray)';
 
         if (fixture) {
-            // MATCH TROUVÉ PAR L'API
-            // Note: La ligue n'est pas directement dans le premier niveau de l'objet de l'exemple, 
-            // on garde le texte générique ou on extrait l'heure.
-            const matchTimeObj = new Date(fixture.status.utcTime);
-            const matchTimeStr = String(matchTimeObj.getHours()).padStart(2, '0') + ':' + String(matchTimeObj.getMinutes()).padStart(2, '0');
-            leagueName = `Aujourd'hui - ${matchTimeStr}`;
-
+            console.log("🔥 MATCH SYNCHRONISÉ :", fixture.home.name, "vs", fixture.away.name);
+            
             const isNotStarted = !fixture.status.started;
             const isFinished = fixture.status.finished;
             const statusShort = fixture.status.reason ? fixture.status.reason.short : '';
@@ -2001,15 +2001,17 @@ async function fetchAndRenderLiveScores(matches) {
                 homeGoals = '-'; awayGoals = '-';
             } else if (isFinished) {
                 statusLabel = 'Terminé';
+                statusColor = 'var(--green)';
             } else if (statusShort === 'HT') {
                 statusLabel = 'Mi-temps';
                 statusColor = '#FF9800';
             } else {
-                statusLabel = `En cours`; // L'API ne donne pas la minute exacte facilement
+                // Le petit point vert clignotant prouve que l'API fonctionne en direct !
+                statusLabel = `<span style="display:inline-block;width:6px;height:6px;background:#00C853;border-radius:50%;margin-right:4px;animation:pulse 1s infinite;"></span> En direct`;
                 statusColor = '#00C853';
             }
         } else {
-            // MATCH NON TROUVÉ : Roue de secours
+            console.warn("⚠️ MATCH NON TROUVÉ (Roue de secours activée) :", m.teams);
             allFinished = false;
             let matchCleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
             
@@ -2062,6 +2064,129 @@ async function fetchAndRenderLiveScores(matches) {
     }
 
     container.innerHTML = html || '<div style="padding:20px; text-align:center; color:var(--text-gray); font-size:13px;">Aucun match trouvé</div>';
+}
+
+async function autoFetchFinalScores(combined) {
+    if (!combined || !combined.matches) return;
+
+    let fetchDate = combined.date; 
+    if (fetchDate && fetchDate.includes('-')) {
+        fetchDate = fetchDate.replace(/-/g, '');
+    } else if (!fetchDate) {
+        const today = new Date();
+        fetchDate = today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0');
+    }
+
+    let allFixtures = [];
+
+    try {
+        const res = await fetch(
+             `https://free-api-live-football-data.p.rapidapi.com/football-get-matches-by-date?date=${fetchDate}`,
+            { 
+                headers: { 
+                    'x-rapidapi-host': 'free-api-live-football-data.p.rapidapi.com',
+                    'x-rapidapi-key': '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b'
+                } 
+            }
+        );
+        const data = await res.json();
+        if (data && data.response && data.response.matches) {
+            allFixtures = data.response.matches;
+        }
+    } catch(e) {
+        console.error("Erreur fetch auto scores finaux:", e);
+        return;
+    }
+
+    if (!allFixtures.length) return;
+    if (livePollingInterval) { clearInterval(livePollingInterval); livePollingInterval = null; }
+
+    let html = "";
+    let matchesResults = []; 
+
+    combined.matches.forEach(function(m) {
+        const parts = (m.teams || "").split(" - ");
+        const homeTeamStr = (parts[0] || 'Domicile').trim();
+        const awayTeamStr = (parts[1] || 'Extérieur').trim();
+        
+        const cleanString = (str) => str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+        const homeSearch = cleanString(homeTeamStr);
+        const awaySearch = cleanString(awayTeamStr);
+
+        const fixture = allFixtures.find(function(f) {
+            if (!f.home || !f.away) return false;
+            const fHomeName = cleanString(f.home.name);
+            const fHomeLong = f.home.longName ? cleanString(f.home.longName) : fHomeName;
+            const fAwayName = cleanString(f.away.name);
+            const fAwayLong = f.away.longName ? cleanString(f.away.longName) : fAwayName;
+            
+            const homeMatch = fHomeName.includes(homeSearch) || homeSearch.includes(fHomeName) || fHomeLong.includes(homeSearch) || homeSearch.includes(fHomeLong);
+            const awayMatch = fAwayName.includes(awaySearch) || awaySearch.includes(fAwayName) || fAwayLong.includes(awaySearch) || awaySearch.includes(fAwayLong);
+            
+            return homeMatch && awayMatch;
+        });
+
+        let homeLogoTag = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:50%; border:1px solid var(--border-color);"><i class="fas fa-shield-alt" style="font-size:20px; color:var(--text-gray);"></i></div>`;
+        let awayLogoTag = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:50%; border:1px solid var(--border-color);"><i class="fas fa-shield-alt" style="font-size:20px; color:var(--text-gray);"></i></div>`;
+        let leagueName = 'Résultat Final';
+
+        let homeGoals = "?";
+        let awayGoals = "?";
+        let realScore = "?-?";
+        
+        if(fixture) {
+            homeGoals = fixture.home.score !== null ? fixture.home.score : "?";
+            awayGoals = fixture.away.score !== null ? fixture.away.score : "?";
+            realScore = `${homeGoals}-${awayGoals}`;
+        }
+
+        html += `
+        <div style="padding:16px; border-bottom:1px solid rgba(255,255,255,0.05);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <span style="font-size:11px; color:var(--text-gray); text-transform:uppercase; letter-spacing:0.5px;">${leagueName}</span>
+                <span style="font-size:12px; font-weight:800; color:var(--text-gray);">Terminé</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; flex-direction:column; align-items:center; width:35%;">
+                    ${homeLogoTag}
+                    <span style="font-size:12px; font-weight:500; color:var(--text-white); text-align:center; line-height:1.2;">${homeTeamStr}</span>
+                </div>
+
+                <div style="display:flex; align-items:center; justify-content:center; width:30%;">
+                    <span style="font-size:32px; font-weight:400; color:var(--text-white);">${homeGoals}</span>
+                    <span style="font-size:18px; color:var(--text-gray); margin:0 10px;">-</span>
+                    <span style="font-size:32px; font-weight:400; color:var(--text-white);">${awayGoals}</span>
+                </div>
+
+                <div style="display:flex; flex-direction:column; align-items:center; width:35%;">
+                    ${awayLogoTag}
+                    <span style="font-size:12px; font-weight:500; color:var(--text-white); text-align:center; line-height:1.2;">${awayTeamStr}</span>
+                </div>
+            </div>
+        </div>`;
+                
+        if(fixture) {
+             matchesResults.push({ teams: m.teams, score: m.score, realScore: realScore, won: (realScore === m.score) });
+        }
+    });
+
+    const container = document.getElementById("live-scores-container");
+    if (container) container.innerHTML = html;
+
+    const badge = document.getElementById("live-badge");
+    if (badge) {
+        badge.style.background = "rgba(0,200,83,0.15)";
+        badge.style.borderColor = "rgba(0,200,83,0.3)";
+        badge.style.color = "var(--green)";
+        badge.innerHTML = "TERMINE";
+    }
+
+    if (!liveFinalNotifSent && matchesResults.length > 0) {
+        liveFinalNotifSent = true;
+        sendTelegramFinalResultDirect(matchesResults);
+        showToast("Scores finaux mis à jour !");
+    }
 }
 
 async function autoFetchFinalScores(combined) {
