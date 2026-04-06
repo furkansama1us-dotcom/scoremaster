@@ -681,7 +681,57 @@ ${matchLines}
             });
         }
     }
+
+    // ============================================================
+// RÉCUPÉRATION MANUELLE DES SCORES VIA API (BOUTON ADMIN)
+// ============================================================
+async function fetchApiScore(id, dateRaw) {
+    // 1. On affiche un message de chargement
+    showToast("Recherche des scores en cours... ⏳");
     
+    // 2. On retrouve le combiné sur lequel tu as cliqué
+    var c = allCombineds.find(x => x.id == id);
+    if (!c) { showToast("Combiné introuvable", true); return; }
+
+    try {
+        // 3. On interroge l'API pour la date de ce combiné
+        const dateStr = toDateStr(dateRaw);
+        const allFixtures = await fetchFixtures(dateStr);
+        
+        let updatedCount = 0;
+        
+        // 4. On compare chaque match de ton combiné avec les données de l'API
+        c.matches.forEach(m => {
+            const fixture = findFixture(allFixtures, m.teams);
+            
+            // Si le match est trouvé et qu'il est terminé, on met à jour le score en mémoire
+            if (fixture && fixture.status && fixture.status.finished) {
+                let hScore = fixture.home.score !== null ? fixture.home.score : 0;
+                let aScore = fixture.away.score !== null ? fixture.away.score : 0;
+                m.score = hScore + ' - ' + aScore;
+                updatedCount++;
+            }
+        });
+        
+        // 5. On affiche le résultat et on ouvre la fenêtre d'édition/validation
+        if (updatedCount > 0) {
+            showToast(`${updatedCount} score(s) récupéré(s) avec succès ! ✅`);
+            
+            // Ouvre le bon écran pour te laisser vérifier avant de sauvegarder en BDD
+            if (c.status === 'en-cours') {
+                openValidationScreen(id);
+            } else {
+                openQuickEditScreen(id);
+            }
+        } else {
+            showToast("Aucun score terminé trouvé dans l'API.", true);
+        }
+        
+    } catch(e) {
+        console.error("Erreur fetchApiScore:", e);
+        showToast("Erreur de connexion à l'API.", true);
+    }
+}
 </script>
 
 <!-- SPLASH -->
