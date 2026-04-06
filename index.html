@@ -1901,31 +1901,29 @@ async function startLiveScores() {
     const matches = currentCombined.matches || [];
     if (!matches.length) return;
 
-    // Calcul heure premier et dernier match
+    // Calcul de l'heure du premier match
     let firstMatchTime = '23:59';
-    let lastMatchTime  = '00:00';
     matches.forEach(m => {
         const t = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
-        if (t) {
-            if (t[0] < firstMatchTime) firstMatchTime = t[0];
-            if (t[0] > lastMatchTime)  lastMatchTime  = t[0];
-        }
+        if (t && t[0] < firstMatchTime) firstMatchTime = t[0];
     });
 
     const now = new Date();
-
-    // Démarre le live 15 min avant le 1er match
-    const [fh, fm] = firstMatchTime.split(':').map(Number);
-    const matchStart = new Date();
-    matchStart.setHours(fh, fm - 15, 0, 0);
+    
+    // FIX : On crée la date complète du match (Date + Heure)
+    const matchDateTime = new Date(`${currentCombined.date}T${firstMatchTime}:00`);
+    const matchStart = new Date(matchDateTime.getTime() - 15 * 60000); // 15 min avant
     const msUntilStart = matchStart.getTime() - now.getTime();
 
+    // Si le match est dans le futur (demain par exemple)
     if (msUntilStart > 0) {
         document.getElementById('live-scores-section').style.display = 'none';
+        console.log("⏳ En attente du début des matchs (Prévu à " + firstMatchTime + ")");
         setTimeout(() => startLiveScores(), msUntilStart);
         return;
     }
 
+    // Sinon on affiche la section et on lance le live
     document.getElementById('live-scores-section').style.display = 'block';
     await fetchAndRenderLiveScores(matches);
 
@@ -1933,6 +1931,7 @@ async function startLiveScores() {
     livePollingInterval = setInterval(async () => {
         await fetchAndRenderLiveScores(matches);
     }, 160000);
+}
 
     // Programme le fetch final 2h après le dernier match
     const [lh, lm] = lastMatchTime.split(':').map(Number);
@@ -2126,10 +2125,7 @@ async function autoFetchFinalScores(combined) {
 
     try {
         allFixtures = await fetchFixtures(dateStr);
-    } catch(e) {
-        console.error("Erreur fetch scores finaux:", e);
-        return;
-    }
+    } catch(e) { return; }
 
     if (!allFixtures.length) return;
     if (livePollingInterval) { clearInterval(livePollingInterval); livePollingInterval = null; }
@@ -2137,14 +2133,12 @@ async function autoFetchFinalScores(combined) {
     let html = '';
     let matchesResults = [];
 
-    // Utilisation de for...of pour gérer l'attente des logos
     for (const m of combined.matches) {
         const parts = (m.teams || '').split(' - ');
         const homeTeamStr = (parts[0] || 'Domicile').trim();
         const awayTeamStr = (parts[1] || 'Extérieur').trim();
         const fixture = findFixture(allFixtures, m.teams);
 
-        // Récupération des logos pour la cohérence visuelle
         const homeLogoUrl = await fetchTeamLogo(homeTeamStr);
         const awayLogoUrl = await fetchTeamLogo(awayTeamStr);
 
@@ -2158,15 +2152,13 @@ async function autoFetchFinalScores(combined) {
             homeGoals  = fixture.home.score !== null ? fixture.home.score : '?';
             awayGoals  = fixture.away.score !== null ? fixture.away.score : '?';
             realScore  = `${homeGoals}-${awayGoals}`;
-            const won  = realScore === m.score;
-            matchesResults.push({ teams: m.teams, score: m.score, realScore, won });
+            matchesResults.push({ teams: m.teams, score: m.score, realScore, won: realScore === m.score });
         }
 
         html += `
         <div style="padding:16px; border-bottom:1px solid rgba(255,255,255,0.05);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <span style="font-size:11px; color:var(--text-gray); text-transform:uppercase; letter-spacing:0.5px;">Résultat Final</span>
-                <!-- Badge de statut supprimé -->
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div style="display:flex; flex-direction:column; align-items:center; width:35%;">
@@ -2183,7 +2175,6 @@ async function autoFetchFinalScores(combined) {
                     <span style="font-size:12px; font-weight:500; color:var(--text-white); text-align:center; line-height:1.2;">${awayTeamStr}</span>
                 </div>
             </div>
-            <!-- Bloc Pronostic supprimé -->
         </div>`;
     }
 
@@ -2198,20 +2189,18 @@ async function autoFetchFinalScores(combined) {
         badge.innerHTML = 'TERMINÉ ✅';
     }
 
-    // On conserve la notification Telegram pour l'admin
+    // Notif Telegram Admin
     if (!liveFinalNotifSent && matchesResults.length > 0) {
         liveFinalNotifSent = true;
         let lines = '';
-        matchesResults.forEach(r => {
-            lines += `${r.won ? '✅' : '❌'} *${r.teams}*\n   Score réel : ${r.realScore} | Pronostic : ${r.score}\n\n`;
-        });
-        const text = `🏁 *RÉSULTATS FINAUX DU COMBINÉ*\n\n${lines}📊 Validez le ticket dans votre panel admin !\n\n#ScoreMaster #Résultats`;
+        matchesResults.forEach(r => { lines += `${r.won ? '✅' : '❌'} *${r.teams}*\n   Réel : ${r.realScore} | Prono : ${r.score}\n\n`; });
+        const text = `🏁 *RÉSULTATS FINAUX*\n\n${lines}📊 Validez le ticket !`;
         fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_LIVE}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID_LIVE, text, parse_mode: 'Markdown' })
-        }).catch(err => console.error('Erreur Telegram:', err));
-        showToast('Scores finaux mis à jour !');
+        }).catch(err => console.error('Telegram Error'));
+        showToast('Scores mis à jour !');
     }
 }
     function navigateTo(page) {
