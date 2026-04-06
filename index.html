@@ -685,26 +685,53 @@ ${matchLines}
     // ============================================================
 // RÉCUPÉRATION MANUELLE DES SCORES VIA API (BOUTON ADMIN)
 // ============================================================
+// ============================================================
+// RÉCUPÉRATION MANUELLE DES SCORES VIA API (NOUVELLE API)
+// ============================================================
 async function fetchApiScore(id, dateRaw) {
-    // 1. On affiche un message de chargement
     showToast("Recherche des scores en cours... ⏳");
     
-    // 2. On retrouve le combiné sur lequel tu as cliqué
     var c = allCombineds.find(x => x.id == id);
     if (!c) { showToast("Combiné introuvable", true); return; }
 
     try {
-        // 3. On interroge l'API pour la date de ce combiné
-        const dateStr = toDateStr(dateRaw);
-        const allFixtures = await fetchFixtures(dateStr);
-        
+        // 1. Formatage de la date pour RapidAPI (YYYYMMDD)
+        const dateStr = dateRaw.replace(/-/g, '');
+        const RAPIDAPI_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
+
+        // 2. Appel direct à la nouvelle API
+        const response = await fetch(`https://free-api-live-football-data.p.rapidapi.com/football-get-matches-by-date?date=${dateStr}`, {
+            method: 'GET',
+            headers: {
+                'x-rapidapi-host': 'free-api-live-football-data.p.rapidapi.com',
+                'x-rapidapi-key': RAPIDAPI_KEY
+            }
+        });
+
+        if (!response.ok) throw new Error("Erreur réseau API");
+        const data = await response.json();
+
+        if (data.status !== "success" || !data.response || !data.response.matches) {
+            throw new Error("Données invalides de l'API");
+        }
+
+        const apiMatches = data.response.matches;
         let updatedCount = 0;
         
-        // 4. On compare chaque match de ton combiné avec les données de l'API
+        // 3. On compare les matchs de ton ticket avec ceux de l'API
         c.matches.forEach(m => {
-            const fixture = findFixture(allFixtures, m.teams);
+            const parts = m.teams.split(' - ');
+            const homeName = parts[0] ? parts[0].trim().toLowerCase() : '';
+            const awayName = parts[1] ? parts[1].trim().toLowerCase() : '';
+
+            // On cherche le match correspondant dans la réponse API
+            const fixture = apiMatches.find(apiM => {
+                const apiHome = (apiM.home.name || '').toLowerCase();
+                const apiAway = (apiM.away.name || '').toLowerCase();
+                return apiHome === homeName && apiAway === awayName;
+            });
             
-            // Si le match est trouvé et qu'il est terminé, on met à jour le score en mémoire
+            // Si on trouve le match et qu'il est terminé (finished: true)
             if (fixture && fixture.status && fixture.status.finished) {
                 let hScore = fixture.home.score !== null ? fixture.home.score : 0;
                 let aScore = fixture.away.score !== null ? fixture.away.score : 0;
@@ -713,11 +740,9 @@ async function fetchApiScore(id, dateRaw) {
             }
         });
         
-        // 5. On affiche le résultat et on ouvre la fenêtre d'édition/validation
+        // 4. Ouverture de l'écran d'édition avec les scores remplis
         if (updatedCount > 0) {
             showToast(`${updatedCount} score(s) récupéré(s) avec succès ! ✅`);
-            
-            // Ouvre le bon écran pour te laisser vérifier avant de sauvegarder en BDD
             if (c.status === 'en-cours') {
                 openValidationScreen(id);
             } else {
