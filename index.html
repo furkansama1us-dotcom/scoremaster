@@ -2125,6 +2125,9 @@ async function fetchAndRenderLiveScores(matches) {
 
     container.innerHTML = html || '<div style="padding:20px; text-align:center; color:var(--text-gray); font-size:13px;">Connexion en cours...</div>';
 }
+// ============================================================
+// RÉCUPÉRATION ET AFFICHAGE DES RÉSULTATS FINAUX (SANS STATUTS NI PRONOS)
+// ============================================================
 async function autoFetchFinalScores(combined) {
     if (!combined || !combined.matches) return;
 
@@ -2144,24 +2147,28 @@ async function autoFetchFinalScores(combined) {
     let html = '';
     let matchesResults = [];
 
-    combined.matches.forEach(function(m) {
+    // Utilisation de for...of pour gérer l'attente des logos
+    for (const m of combined.matches) {
         const parts = (m.teams || '').split(' - ');
         const homeTeamStr = (parts[0] || 'Domicile').trim();
         const awayTeamStr = (parts[1] || 'Extérieur').trim();
         const fixture = findFixture(allFixtures, m.teams);
 
-        const shieldTag = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:50%;border:1px solid var(--border-color);"><i class="fas fa-shield-alt" style="font-size:18px;color:var(--text-gray);"></i></div>`;
+        // Récupération des logos pour la cohérence visuelle
+        const homeLogoUrl = await fetchTeamLogo(homeTeamStr);
+        const awayLogoUrl = await fetchTeamLogo(awayTeamStr);
+
+        const defaultShield = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:50%;border:1px solid var(--border-color);"><i class="fas fa-shield-alt" style="font-size:18px;color:var(--text-gray);"></i></div>`;
+        const homeLogoTag = homeLogoUrl ? `<img src="${homeLogoUrl}" style="width:40px; height:40px; object-fit:contain; margin-bottom:8px;">` : defaultShield;
+        const awayLogoTag = awayLogoUrl ? `<img src="${awayLogoUrl}" style="width:40px; height:40px; object-fit:contain; margin-bottom:8px;">` : defaultShield;
 
         let homeGoals = '?', awayGoals = '?', realScore = '?-?';
-        let resultLabel = 'Non trouvé', resultColor = '#FF9800';
 
         if (fixture) {
             homeGoals  = fixture.home.score !== null ? fixture.home.score : '?';
             awayGoals  = fixture.away.score !== null ? fixture.away.score : '?';
             realScore  = `${homeGoals}-${awayGoals}`;
             const won  = realScore === m.score;
-            resultLabel = won ? '✅ Gagné !' : '❌ Perdu';
-            resultColor = won ? 'var(--green)' : 'var(--red)';
             matchesResults.push({ teams: m.teams, score: m.score, realScore, won });
         }
 
@@ -2169,11 +2176,11 @@ async function autoFetchFinalScores(combined) {
         <div style="padding:16px; border-bottom:1px solid rgba(255,255,255,0.05);">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <span style="font-size:11px; color:var(--text-gray); text-transform:uppercase; letter-spacing:0.5px;">Résultat Final</span>
-                <span style="font-size:12px; font-weight:800; color:${resultColor};">${resultLabel}</span>
+                <!-- Badge de statut supprimé -->
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div style="display:flex; flex-direction:column; align-items:center; width:35%;">
-                    ${shieldTag}
+                    ${homeLogoTag}
                     <span style="font-size:12px; font-weight:500; color:var(--text-white); text-align:center; line-height:1.2;">${homeTeamStr}</span>
                 </div>
                 <div style="display:flex; align-items:center; justify-content:center; width:30%;">
@@ -2182,15 +2189,13 @@ async function autoFetchFinalScores(combined) {
                     <span style="font-size:32px; font-weight:400; color:var(--text-white);">${awayGoals}</span>
                 </div>
                 <div style="display:flex; flex-direction:column; align-items:center; width:35%;">
-                    ${shieldTag}
+                    ${awayLogoTag}
                     <span style="font-size:12px; font-weight:500; color:var(--text-white); text-align:center; line-height:1.2;">${awayTeamStr}</span>
                 </div>
             </div>
-            <div style="text-align:center; font-size:11px; color:var(--text-gray); margin-top:10px;">
-                Pronostic : <strong style="color:var(--green);">${m.score}</strong>
-            </div>
+            <!-- Bloc Pronostic supprimé -->
         </div>`;
-    });
+    }
 
     const container = document.getElementById('live-scores-container');
     if (container) container.innerHTML = html;
@@ -2203,6 +2208,7 @@ async function autoFetchFinalScores(combined) {
         badge.innerHTML = 'TERMINÉ ✅';
     }
 
+    // On conserve la notification Telegram pour l'admin
     if (!liveFinalNotifSent && matchesResults.length > 0) {
         liveFinalNotifSent = true;
         let lines = '';
@@ -2218,9 +2224,6 @@ async function autoFetchFinalScores(combined) {
         showToast('Scores finaux mis à jour !');
     }
 }
-// ============================================================
-// FIN LIVE SCORES
-// ============================================================
     function navigateTo(page) {
         if (page === 'vip' && !window.isUserVip) {
             var popup = document.getElementById('vip-popup');
