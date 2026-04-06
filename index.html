@@ -2693,74 +2693,161 @@ async function autoFetchFinalScores(combined) {
         else if (sb) sb.innerHTML = '';
     }
     
-    function renderHistory() {
-        var hc = document.getElementById('history-container');
-        if (!hc) return;
-        
-        var historyData = allCombineds.filter(function(c) { 
-            return currentCombined ? c.id !== currentCombined.id : true; 
-        });
-        
-        if (historyData.length === 0) {
-            hc.innerHTML = '<div class="no-combined-message"><i class="fas fa-history"></i>Aucun historique pour le moment.</div>';
-            return;
-        }
-        
-        var html = '';
-        var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
-        
-        historyData.forEach(function(c) {
-            var sc = c.status;
-            var statusColor = sc === 'termine' ? 'var(--green)' : (sc === 'perdu' ? 'var(--red)' : 'var(--primary-yellow)');
-            
-            // Calcul robuste de la cote totale pour éviter les plantages si la BDD la masque
-            var calcOdds = 1;
-            var hasValidOdds = false;
-            if(c.matches) {
-                c.matches.forEach(function(m) {
-                    if(m.odds && m.odds > 0) { calcOdds *= m.odds; hasValidOdds = true; }
-                });
-            }
-            var finalOdds = c.total_odds || c.totalOdds || (hasValidOdds ? calcOdds : 0);
-            
-            // Si la cote existe, on l'affiche, sinon on la cache (***)
-            var displayOdds = finalOdds > 0 ? finalOdds.toFixed(2) : '***.**';
-            
-            var matchesHtml = '';
-            if(c.matches && c.matches.length > 0) {
-                matchesHtml = '<div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.1);">';
-                c.matches.forEach(function(m) {
-                    // On gère la couleur selon le statut INDIVIDUEL du match
-                    var mStatus = m.match_status || (sc === 'en-cours' ? 'en-cours' : sc);
-                    var scoreColor = mStatus === 'termine' ? 'var(--green)' : (mStatus === 'perdu' ? 'var(--red)' : 'var(--text-white)');
-                    
-                    var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:12px;height:12px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<i class="fas fa-shield-alt" style="font-size:10px; margin-right:6px; color:var(--text-gray);"></i>`;
-                    
-                    matchesHtml += `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; align-items:center;">
-                        <span style="color:var(--text-light-gray);">${logoDisplay}${m.teams || 'Équipes'}</span>
-                        <span style="font-weight:700; color:${scoreColor}; background:rgba(255,255,255,0.05); padding:3px 8px; border-radius:6px;">${m.score}</span>
-                    </div>`;
-                });
-                matchesHtml += '</div>';
-            }
+    // ============================================================
+// AFFICHAGE DE L'HISTORIQUE ADMIN (AVEC BOUTON VICTOIRE TELEGRAM)
+// ============================================================
+function renderAdminHistory() {
+    var containerActive = document.getElementById('admin-history-active');
+    var containerPending = document.getElementById('admin-history-pending');
+    var containerPast = document.getElementById('admin-history-past');
+    if(!containerActive || !containerPast) return;
+    
+    var htmlActive = '', htmlPending = '', htmlPast = '';
+    var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
+    let now = new Date();
 
-            html += `<div class="history-card ${sc}">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <div class="date"><i class="fas fa-calendar-alt"></i> Combiné du ${fmtD(c.date)}</div>
-                        <div class="status ${sc}" style="color:${statusColor};">${sl[sc] || sc}</div>
-                    </div>
-                    <div style="text-align:right; background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:10px;">
-                        <div style="font-size:11px; color:var(--text-gray); margin-bottom:2px;">Cote</div>
-                        <div style="font-weight:800; font-size:16px; color:var(--text-white);">${displayOdds}</div>
-                    </div>
-                </div>
-                ${matchesHtml}
-            </div>`;
-        });
+    allCombineds.forEach(function(c) {
+        let displayStatus = sl[c.status];
         
-        hc.innerHTML = html;
+        // Création de la liste des matchs (Équipes + Logos + Scores)
+        let matchesDetailsHtml = '';
+        if (c.matches && c.matches.length > 0) {
+            matchesDetailsHtml = '<div style="margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px;">';
+            c.matches.forEach(m => {
+                let logoImg = m.logo ? `<img src="${m.logo}" style="width:14px; height:14px; object-fit:contain; border-radius:2px; margin-right:6px; vertical-align:middle;" crossorigin="anonymous">` : `<i class="fas fa-shield-alt" style="font-size:10px; margin-right:6px; color:var(--text-gray);"></i>`;
+                
+                let scoreDisplay = '';
+                if (c.status === 'termine' || c.status === 'perdu') {
+                    let color = c.status === 'termine' ? 'var(--green)' : 'var(--text-white)';
+                    scoreDisplay = `<span style="float:right; font-weight:bold; color:${color}">${m.score}</span>`;
+                }
+                
+                matchesDetailsHtml += `<div style="font-size: 12px; color: var(--text-light-gray); margin-bottom: 4px;">${logoImg} ${m.teams || 'Équipes'} ${scoreDisplay}</div>`;
+            });
+            matchesDetailsHtml += '</div>';
+        }
+
+        let cardBaseHtml = function(statusText, btnHtml) {
+            return `<div class="admin-history-item" data-combined-id="${c.id}" style="flex-direction:column; align-items:stretch;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span>Le ${fmtD(c.date)} - ${statusText}</span>
+                            <div style="display:flex; gap:6px;">${btnHtml}</div>
+                        </div>
+                        ${matchesDetailsHtml}
+                    </div>`;
+        };
+
+        if (c.status === 'en-cours') {
+            let latestTime = "00:00"; 
+            if (c.matches && c.matches.length > 0) {
+                c.matches.forEach(m => {
+                    let matchTime = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
+                    if (matchTime && matchTime[0] > latestTime) latestTime = matchTime[0];
+                });
+            } else if (c.time) {
+                let matchTime = c.time.match(/\d{2}:\d{2}/);
+                if(matchTime) latestTime = matchTime[0];
+            }
+            
+            let finishTime = new Date(`${c.date}T${latestTime}:00`);
+            finishTime = new Date(finishTime.getTime() + (2 * 60 * 60 * 1000));
+
+            if (now >= finishTime) {
+                // À CONFIRMER
+                let btns = `<button onclick="openValidationScreen('${c.id}')" style="background:#FF9800; color:#000;"><i class="fas fa-check-double"></i> Valider</button><button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(255,61,61,0.15); color:var(--red); border:1px solid rgba(255,61,61,0.4);"><i class="fas fa-satellite-dish"></i> Score API</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
+                htmlPending += cardBaseHtml('<span style="color:#FF9800; font-weight:bold;">À vérifier ⚠️</span>', btns);
+            } else {
+                // EN COURS
+                let btns = `<button onclick="sendTelegramReminder('${c.id}')" style="background:var(--primary-yellow); color:#000; font-weight:bold;"><i class="fas fa-bell"></i> Relancer</button><button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
+                htmlActive += cardBaseHtml(displayStatus, btns);
+            }
+        } else {
+            // TERMINÉ (PUBLIC) - NOUVEAU BOUTON TELEGRAM VICTOIRE
+            let btns = `
+            <button onclick="sendTelegramWin('${c.id}')" style="background:var(--green); color:#000; font-weight:bold; padding:6px 10px;" title="Envoyer sur Telegram"><i class="fab fa-telegram-plane"></i> Gagné</button>
+            <button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue); padding:6px 10px;" title="Éditer"><i class="fas fa-edit"></i></button>
+            <button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(255,61,61,0.15); color:var(--red); border:1px solid rgba(255,61,61,0.4); padding:6px 10px;" title="Score API"><i class="fas fa-satellite-dish"></i></button>
+            <button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red); padding:6px 10px;" title="Supprimer"><i class="fas fa-trash"></i></button>`;
+            htmlPast += cardBaseHtml(displayStatus, btns);
+        }
+    });
+
+    containerActive.innerHTML = htmlActive || '<span style="color:var(--text-gray); font-size:12px;">Aucun combiné actif</span>';
+    if(containerPending) containerPending.innerHTML = htmlPending || '<span style="color:var(--text-gray); font-size:12px;">Tout est à jour !</span>';
+    containerPast.innerHTML = htmlPast || '<span style="color:var(--text-gray); font-size:12px;">Aucun historique précédent</span>';
+}
+
+// ============================================================
+// ENVOI DU MESSAGE DE VICTOIRE SUR TELEGRAM (20 MESSAGES)
+// ============================================================
+function sendTelegramWin(id) {
+    var c = allCombineds.find(x => x.id == id);
+    if (!c) { showToast("Combiné introuvable", true); return; }
+
+    const TELEGRAM_BOT_TOKEN = '8602776375:AAEuhWYNqb26IG8igWDTUI5iUaqSW0plj9I';
+    const TELEGRAM_CHAT_ID   = '905424902';
+
+    // Formatage de la date du ticket
+    const ticketDate = new Date(c.date).toLocaleDateString('fr-FR');
+
+    // Récupération des scores du combiné
+    let matchLines = "";
+    if (c.matches && c.matches.length > 0) {
+        c.matches.forEach(m => { 
+            matchLines += `✅ *${m.teams}* | Score : ${m.score}\n`; 
+        });
     }
+
+    // 20 Messages de victoire différents
+    const winMessages = [
+        `BOOM ! 💥 Encore un ticket validé ! Félicitations à tous ceux qui ont suivi le combiné du ${ticketDate}. L'algorithme a encore frappé fort ! 💸`,
+        `✅ ENCAISSÉ ! Le travail paie toujours. On vient de plumer les bookmakers sur le ticket du ${ticketDate}. Qui est prêt pour le prochain ? 💰`,
+        `🎯 BINGO ! Précision chirurgicale sur les scores exacts ! Bravo aux VIP+ qui s'en mettent plein les poches ce soir ! 🍾`,
+        `🤑 Et ça fait un de plus ! Le ticket du ${ticketDate} passe crème. On continue la série de victoires. Ne restez pas sur la touche !`,
+        `🔥 ON FIRE ! Vous avez douté ? Regardez les résultats ! Le combiné score exact est validé avec succès. 📈`,
+        `💰 C'EST DEDANS ! Une soirée parfaite pour les membres ScoreMaster. Les scores étaient donnés !`,
+        `🍾 CHAMPAGNE ! Un nouveau ticket VIP+ validé. C'est ça l'expertise ScoreMaster. Foncez voir l'historique sur l'appli !`,
+        `👑 LES ROIS DU PRONO ! Le ticket du ${ticketDate} est vert. 100% de réussite sur ces scores. On ne s'arrête plus !`,
+        `💸 BRAQUAGE RÉUSSI ! Les bookmakers pleurent. Félicitations à toute l'équipe pour ce ticket validé !`,
+        `✅ ENCORE UN VERDICT PARFAIT ! L'analyse a payé. C'était du gâteau. Préparez-vous pour le prochain !`,
+        `🚀 ON DÉCOLLE ! Le compte en banque s'envole grâce au ticket du ${ticketDate}. Bravo à tous les visionnaires !`,
+        `💎 UN BIJOU VALIDÉ ! C'était écrit d'avance. Les scores exacts sont rentrés comme prévu !`,
+        `💶 CAISSE ! Le ticket VIP+ du ${ticketDate} est dans la poche. L'algorithme ne ment jamais.`,
+        `🥇 MASTERCLASS ! Une nouvelle leçon de paris sportifs donnée. Le ticket est validé haut la main !`,
+        `💥 INCROYABLE ! Quel frisson et quelle victoire ! Le ticket score exact passe en beauté !`,
+        `💸 PAY PAY PAY ! On récupère notre dû chez les bookmakers. Le ticket du ${ticketDate} est vert de chez vert !`,
+        `✅ MISSION ACCOMPLIE ! Le combiné a fait le travail. On encaisse et on recommence !`,
+        `🎯 DANS LE MILLE ! L'info était fiable à 100%. Bravo à tous ceux qui ont eu la chance d'avoir le VIP+ !`,
+        `💰 C'EST TROP FACILE ! Nouvelle victoire fracassante sur le ticket du ${ticketDate}. Rejoignez l'élite !`,
+        `🔥 BOUM BOUM BOUM ! Le réseau VIP+ a encore frappé. Le ticket score exact est validé. Quelle soirée !`
+    ];
+
+    // Sélection aléatoire d'un message
+    let randomWinMessage = winMessages[Math.floor(Math.random() * winMessages.length)];
+
+    // Assemblage du message final Telegram
+    let telegramText = 
+`${randomWinMessage}
+
+📋 *Détails du ticket :*
+${matchLines}
+🚀 *Rejoignez l'élite sur l'application :* https://scoremaster.fr/`;
+
+    // Envoi via l'API Telegram
+    if (confirm("Envoyer le message de VICTOIRE sur Telegram pour ce combiné ?")) {
+        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: telegramText, parse_mode: 'Markdown', disable_web_page_preview: true })
+        }).then(response => {
+            if (response.ok) showToast("Message de victoire envoyé sur Telegram ! 🍾");
+            else showToast("Erreur lors de l'envoi", true);
+        }).catch(err => {
+            console.error("Erreur Telegram:", err);
+            showToast("Erreur réseau Telegram", true);
+        });
+    }
+}
     
     function renderAdminHistory() {
         var containerActive = document.getElementById('admin-history-active');
