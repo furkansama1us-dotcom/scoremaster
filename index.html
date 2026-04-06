@@ -1902,118 +1902,132 @@ async function startLiveScores() {
 
 async function fetchAndRenderLiveScores(matches) {
     const container = document.getElementById('live-scores-container');
-    
-    // FIX 1 : On force la date exacte du combiné au lieu de "aujourd'hui en UTC"
-    // Ça évite tous les bugs de minuit et de décalage horaire !
     const fetchDate = currentCombined.date;
 
     let allFixtures = [];
     try {
         const res = await fetch(
-            `https://v3.football.api-sports.io/fixtures?date=${fetchDate}&status=1H-2H-HT-ET-BT-P`,
+            `https://v3.football.api-sports.io/fixtures?date=${fetchDate}`,
             { headers: { 'x-apisports-key': LIVE_API_KEY } }
         );
         const data = await res.json();
         allFixtures = data.response || [];
     } catch(e) {
-        renderLiveManual(matches, container);
-        return;
-    }
-
-    // Si aucun match en cours, on récupère TOUS les matchs de la date du combiné
-    if (!allFixtures.length) {
-        try {
-            const res2 = await fetch(
-                `https://v3.football.api-sports.io/fixtures?date=${fetchDate}`,
-                { headers: { 'x-apisports-key': LIVE_API_KEY } }
-            );
-            const data2 = await res2.json();
-            allFixtures = data2.response || [];
-        } catch(e) { renderLiveManual(matches, container); return; }
+        console.error("Erreur API:", e);
     }
 
     let html = '';
     let allFinished = true;
     let changedScores = [];
+    
+    const now = new Date();
+    const currentHrMin = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
 
     matches.forEach(function(m) {
         const parts = (m.teams || '').split(' - ');
-        const homeTeam = (parts[0] || '').trim().toLowerCase();
-        const awayTeam = (parts[1] || '').trim().toLowerCase();
+        const homeTeamStr = (parts[0] || 'Domicile').trim();
+        const awayTeamStr = (parts[1] || 'Extérieur').trim();
+        
+        const homeTeamSearch = homeTeamStr.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const awayTeamSearch = awayTeamStr.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-        // FIX 2 : Logique de recherche souple et intelligente
         const fixture = allFixtures.find(function(f) {
-            const fHome = f.teams.home.name.toLowerCase();
-            const fAway = f.teams.away.name.toLowerCase();
+            const fHome = f.teams.home.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const fAway = f.teams.away.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             
-            const homeWords = homeTeam.split(" ");
-            const awayWords = awayTeam.split(" ");
+            const homeWords = homeTeamSearch.split(" ").filter(w => w.length > 2);
+            const awayWords = awayTeamSearch.split(" ").filter(w => w.length > 2);
             
-            // On cherche si un mot clé correspond (ex: "Milan" correspondra à "AC Milan")
-            const homeMatch = homeWords.some(w => w.length > 2 && fHome.includes(w)) || fHome.includes(homeTeam);
-            const awayMatch = awayWords.some(w => w.length > 2 && fAway.includes(w)) || fAway.includes(awayTeam);
+            const homeMatch = homeWords.some(w => fHome.includes(w)) || fHome.includes(homeTeamSearch) || homeTeamSearch.includes(fHome);
+            const awayMatch = awayWords.some(w => fAway.includes(w)) || fAway.includes(awayTeamSearch) || awayTeamSearch.includes(fAway);
             
             return homeMatch && awayMatch;
         });
 
+        let homeLogoTag = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:50%;"><i class="fas fa-shield-alt" style="font-size:20px; color:var(--text-gray);"></i></div>`;
+        let awayLogoTag = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:50%;"><i class="fas fa-shield-alt" style="font-size:20px; color:var(--text-gray);"></i></div>`;
+        let leagueName = 'Recherche...';
+        let homeGoals = '-';
+        let awayGoals = '-';
+        let statusLabel = '';
+        let statusColor = 'var(--text-gray)';
+
         if (fixture) {
+            homeLogoTag = `<img src="${fixture.teams.home.logo}" style="width:40px; height:40px; object-fit:contain; margin-bottom:8px;" crossorigin="anonymous">`;
+            awayLogoTag = `<img src="${fixture.teams.away.logo}" style="width:40px; height:40px; object-fit:contain; margin-bottom:8px;" crossorigin="anonymous">`;
+            leagueName = fixture.league.name;
+
             const status    = fixture.fixture.status.short;
             const elapsed   = fixture.fixture.status.elapsed || 0;
-            const homeGoals = fixture.goals.home ?? 0;
-            const awayGoals = fixture.goals.away ?? 0;
+            homeGoals = fixture.goals.home ?? 0;
+            awayGoals = fixture.goals.away ?? 0;
+            
             const scoreKey  = `${fixture.fixture.id}`;
+            const isNotStarted = ['NS', 'TBD'].includes(status);
             const isFinished = ['FT','AET','PEN'].includes(status);
 
             if (!isFinished) allFinished = false;
 
-            if (liveLastScores[scoreKey] !== undefined &&
-                liveLastScores[scoreKey] !== `${homeGoals}-${awayGoals}`) {
+            if (liveLastScores[scoreKey] !== undefined && liveLastScores[scoreKey] !== `${homeGoals}-${awayGoals}` && !isNotStarted) {
                 changedScores.push({ teams: m.teams, score: `${homeGoals}-${awayGoals}` });
             }
             liveLastScores[scoreKey] = `${homeGoals}-${awayGoals}`;
 
-            // Ajout du minutage exact si le match joue
-            const statusLabel = isFinished ? 'Terminé' :
-                                status === 'HT' ? 'Mi-temps' :
-                                (status === '1H' || status === '2H') ? `${elapsed}'` : 'Bientôt';
+            if (isNotStarted) {
+                let matchCleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
+                statusLabel = matchCleanTime ? `Aujourd'hui ${matchCleanTime[0]}` : 'À venir';
+            } else if (isFinished) {
+                statusLabel = 'Terminé';
+            } else if (status === 'HT') {
+                statusLabel = 'Mi-temps';
+                statusColor = '#FF9800';
+            } else {
+                statusLabel = `${elapsed}'`;
+                statusColor = '#00C853';
+            }
+            
+            if(isNotStarted) { homeGoals = '-'; awayGoals = '-'; }
 
-            const statusColor = isFinished ? 'var(--green)' :
-                                status === 'HT' ? '#FF9800' :
-                                (status === '1H' || status === '2H') ? '#FF3D3D' : 'var(--text-gray)';
-
-            const logoDisplay = m.logo
-                ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;" crossorigin="anonymous">`
-                : `<i class="fas fa-shield-alt" style="font-size:11px; margin-right:6px;"></i>`;
-
-            html += `
-            <div style="padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.06);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                    <div style="display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-light-gray);">${logoDisplay}${m.teams}</div>
-                    <span style="font-size:10px; font-weight:700; color:${statusColor};">${statusLabel}</span>
-                </div>
-                <div style="display:flex; align-items:center; justify-content:center; gap:16px;">
-                    <span style="font-size:26px; font-weight:900; color:#fff;">${homeGoals}</span>
-                    <span style="font-size:14px; color:var(--text-gray);">-</span>
-                    <span style="font-size:26px; font-weight:900; color:#fff;">${awayGoals}</span>
-                </div>
-                <div style="text-align:center; font-size:11px; color:var(--text-gray); margin-top:4px;">Pronostic : <strong style="color:var(--green);">${m.score}</strong></div>
-            </div>`;
         } else {
             allFinished = false;
-            html += `
-            <div style="padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.06);">
-                <div style="font-size:12px; color:var(--text-light-gray); margin-bottom:6px;">${m.teams}</div>
-                <div style="text-align:center; font-size:11px; color:var(--text-gray);">Recherche du match en cours...</div>
-            </div>`;
+            let matchCleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
+            if (matchCleanTime && currentHrMin < matchCleanTime[0]) {
+                statusLabel = `Aujourd'hui ${matchCleanTime[0]}`;
+            } else {
+                statusLabel = "En attente...";
+            }
         }
+
+        html += `
+        <div style="padding:16px; border-bottom:1px solid rgba(255,255,255,0.05);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <span style="font-size:11px; color:var(--text-gray); text-transform:uppercase; letter-spacing:0.5px;">${leagueName}</span>
+                <span style="font-size:12px; font-weight:800; color:${statusColor};">${statusLabel}</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; flex-direction:column; align-items:center; width:35%;">
+                    ${homeLogoTag}
+                    <span style="font-size:12px; font-weight:500; color:var(--text-white); text-align:center; line-height:1.2;">${homeTeamStr}</span>
+                </div>
+
+                <div style="display:flex; align-items:center; justify-content:center; width:30%;">
+                    <span style="font-size:32px; font-weight:400; color:var(--text-white);">${homeGoals}</span>
+                    <span style="font-size:18px; color:var(--text-gray); margin:0 10px;">-</span>
+                    <span style="font-size:32px; font-weight:400; color:var(--text-white);">${awayGoals}</span>
+                </div>
+
+                <div style="display:flex; flex-direction:column; align-items:center; width:35%;">
+                    ${awayLogoTag}
+                    <span style="font-size:12px; font-weight:500; color:var(--text-white); text-align:center; line-height:1.2;">${awayTeamStr}</span>
+                </div>
+            </div>
+        </div>`;
     });
 
-    changedScores.forEach(function(cs) {
-        showToast(`⚽ But ! ${cs.teams} → ${cs.score}`);
-    });
+    changedScores.forEach(function(cs) { showToast(`⚽ But ! ${cs.teams} → ${cs.score}`); });
 
-    // Si tous les matchs sont terminés, on déclenche l'envoi de la notif finale
-    if (allFinished && !liveFinalNotifSent && matches.length > 0) {
+    if (allFinished && !liveFinalNotifSent && matches.length > 0 && allFixtures.length > 0) {
         liveFinalNotifSent = true;
         sendTelegramFinalResult(matches, allFixtures);
         clearInterval(livePollingInterval);
@@ -2021,6 +2035,114 @@ async function fetchAndRenderLiveScores(matches) {
     }
 
     container.innerHTML = html || '<div style="padding:20px; text-align:center; color:var(--text-gray); font-size:13px;">Aucun match trouvé</div>';
+}
+
+async function autoFetchFinalScores(combined) {
+    if (!combined || !combined.matches) return;
+
+    const fetchDate = combined.date; 
+    let allFixtures = [];
+
+    try {
+        const res = await fetch(
+            `https://v3.football.api-sports.io/fixtures?date=${fetchDate}`,
+            { headers: { "x-apisports-key": LIVE_API_KEY } }
+        );
+        const data = await res.json();
+        allFixtures = data.response || [];
+    } catch(e) {
+        console.error("Erreur fetch auto scores finaux:", e);
+        return;
+    }
+
+    if (!allFixtures.length) return;
+    if (livePollingInterval) { clearInterval(livePollingInterval); livePollingInterval = null; }
+
+    let html = "";
+    let matchesResults = []; 
+
+    combined.matches.forEach(function(m) {
+        const parts = (m.teams || "").split(" - ");
+        const homeTeamStr = (parts[0] || 'Domicile').trim();
+        const awayTeamStr = (parts[1] || 'Extérieur').trim();
+        
+        const homeTeamSearch = homeTeamStr.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const awayTeamSearch = awayTeamStr.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+        const fixture = allFixtures.find(function(f) {
+            const fHome = f.teams.home.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const fAway = f.teams.away.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            
+            const homeWords = homeTeamSearch.split(" ").filter(w => w.length > 2);
+            const awayWords = awayTeamSearch.split(" ").filter(w => w.length > 2);
+            
+            const homeMatch = homeWords.some(w => fHome.includes(w)) || fHome.includes(homeTeamSearch) || homeTeamSearch.includes(fHome);
+            const awayMatch = awayWords.some(w => fAway.includes(w)) || fAway.includes(awayTeamSearch) || awayTeamSearch.includes(fAway);
+            
+            return homeMatch && awayMatch;
+        });
+
+        let homeLogoTag = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:50%;"><i class="fas fa-shield-alt" style="font-size:20px; color:var(--text-gray);"></i></div>`;
+        let awayLogoTag = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:50%;"><i class="fas fa-shield-alt" style="font-size:20px; color:var(--text-gray);"></i></div>`;
+        let leagueName = 'Résultat';
+
+        const homeGoals = fixture && fixture.goals.home !== null ? fixture.goals.home : "?";
+        const awayGoals = fixture && fixture.goals.away !== null ? fixture.goals.away : "?";
+        const realScore = fixture ? `${homeGoals}-${awayGoals}` : "?-?";
+        
+        if(fixture) {
+            homeLogoTag = `<img src="${fixture.teams.home.logo}" style="width:40px; height:40px; object-fit:contain; margin-bottom:8px;" crossorigin="anonymous">`;
+            awayLogoTag = `<img src="${fixture.teams.away.logo}" style="width:40px; height:40px; object-fit:contain; margin-bottom:8px;" crossorigin="anonymous">`;
+            leagueName = fixture.league.name;
+        }
+
+        html += `
+        <div style="padding:16px; border-bottom:1px solid rgba(255,255,255,0.05);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <span style="font-size:11px; color:var(--text-gray); text-transform:uppercase; letter-spacing:0.5px;">${leagueName}</span>
+                <span style="font-size:12px; font-weight:800; color:var(--text-gray);">Terminé</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; flex-direction:column; align-items:center; width:35%;">
+                    ${homeLogoTag}
+                    <span style="font-size:12px; font-weight:500; color:var(--text-white); text-align:center; line-height:1.2;">${homeTeamStr}</span>
+                </div>
+
+                <div style="display:flex; align-items:center; justify-content:center; width:30%;">
+                    <span style="font-size:32px; font-weight:400; color:var(--text-white);">${homeGoals}</span>
+                    <span style="font-size:18px; color:var(--text-gray); margin:0 10px;">-</span>
+                    <span style="font-size:32px; font-weight:400; color:var(--text-white);">${awayGoals}</span>
+                </div>
+
+                <div style="display:flex; flex-direction:column; align-items:center; width:35%;">
+                    ${awayLogoTag}
+                    <span style="font-size:12px; font-weight:500; color:var(--text-white); text-align:center; line-height:1.2;">${awayTeamStr}</span>
+                </div>
+            </div>
+        </div>`;
+                
+        if(fixture) {
+             matchesResults.push({ teams: m.teams, score: m.score, realScore: realScore, won: (realScore === m.score) });
+        }
+    });
+
+    const container = document.getElementById("live-scores-container");
+    if (container) container.innerHTML = html;
+
+    const badge = document.getElementById("live-badge");
+    if (badge) {
+        badge.style.background = "rgba(0,200,83,0.15)";
+        badge.style.borderColor = "rgba(0,200,83,0.3)";
+        badge.style.color = "var(--green)";
+        badge.innerHTML = "TERMINE";
+    }
+
+    if (!liveFinalNotifSent && matchesResults.length > 0) {
+        liveFinalNotifSent = true;
+        sendTelegramFinalResultDirect(matchesResults);
+        showToast("Scores finaux mis à jour !");
+    }
 }
 function renderLiveManual(matches, container) {
     let html = '';
