@@ -1133,22 +1133,14 @@ async function fetchApiScore(id, dateRaw) {
         <div class="page" id="page-contact">
             <div class="page-title-bar"><h2>Contact</h2></div>
             <div class="contact-page">
-                <!-- TELEGRAM -->
                 <a href="https://t.me/scoremasteroff" target="_blank" rel="noopener" class="contact-link">
                     <div class="contact-card"><div class="contact-card-icon telegram"><i class="fab fa-telegram-plane"></i></div><div class="contact-card-info"><h4>Telegram</h4><p>Rejoignez notre canal officiel</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
                 </a>
+                <div class="contact-card"><div class="contact-card-icon instagram"><i class="fab fa-instagram"></i></div><div class="contact-card-info"><h4>Instagram</h4><p>@scoremaster.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
+                <div class="contact-card"><div class="contact-card-icon twitter"><i class="fab fa-x-twitter"></i></div><div class="contact-card-info"><h4>X (Twitter)</h4><p>@ScoreMasterFR</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
+                <div class="contact-card"><div class="contact-card-icon email"><i class="fas fa-envelope"></i></div><div class="contact-card-info"><h4>Email</h4><p>contact@scoremaster.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
                 
-                <!-- INSTAGRAM -->
-                <a href="https://instagram.com/scoremaster.fr/" target="_blank" rel="noopener" class="contact-link">
-                    <div class="contact-card"><div class="contact-card-icon instagram"><i class="fab fa-instagram"></i></div><div class="contact-card-info"><h4>Instagram</h4><p>@scoremaster.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
-                </a>
-                
-                <!-- EMAIL (Avec le lien mailto) -->
-                <a href="mailto:contact.scoremaster@gmail.com" class="contact-link">
-                    <div class="contact-card"><div class="contact-card-icon email"><i class="fas fa-envelope"></i></div><div class="contact-card-info"><h4>Email</h4><p>contact.scoremaster@gmail.com</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
-                </a>
-                
-                <!-- FORMULAIRE DE CONTACT -->
+                <!-- NOUVEAU : FORMULAIRE DE CONTACT -->
                 <div style="margin-top: 15px; margin-bottom: 30px; background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color);">
                     <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 15px; color: #fff;"><i class="fas fa-paper-plane" style="color:var(--primary-yellow); margin-right:6px;"></i> Laissez-nous un message</h3>
                     
@@ -1183,7 +1175,6 @@ async function fetchApiScore(id, dateRaw) {
                 </div>
             </div>
         </div>
-
         <!-- VIP -->
         <div class="page" id="page-vip">
             <div class="vip-header"><h2>Espace SM VIP+</h2></div>
@@ -3456,8 +3447,7 @@ let quickEditCombinedId = null;
         }
     }
 
-    // --- FONCTION : CENTRE DE NOTIFICATIONS (PROMO WEB APP) ---
-    // --- FONCTION : CENTRE DE NOTIFICATIONS (PROMO WEB APP) ---
+   // --- FONCTION : CENTRE DE NOTIFICATIONS (PROMO WEB APP) ---
     function sendPromoNotification() {
         const TELEGRAM_BOT_TOKEN = '8602776375:AAEuhWYNqb26IG8igWDTUI5iUaqSW0plj9I';
         const TELEGRAM_CHAT_ID   = '905424902';
@@ -3560,26 +3550,7 @@ let quickEditCombinedId = null;
             showToast("Erreur réseau Telegram", true);
         });
     }
-// --- GESTION DU BOUTON GOOGLE ---
-    function showGooglePopup() {
-        var popup = document.getElementById('google-popup');
-        popup.style.display = 'flex';
-        setTimeout(function () { popup.style.opacity = '1'; popup.firstElementChild.style.transform = 'scale(1)'; }, 10);
-    }
-
-    function closeGooglePopup() {
-        var popup = document.getElementById('google-popup');
-        popup.style.opacity = '0'; popup.firstElementChild.style.transform = 'scale(0.9)';
-        setTimeout(function () { popup.style.display = 'none'; }, 300);
-    }
-
-    function goToSignupFromGoogle() {
-        closeGooglePopup();
-        // Si l'utilisateur n'est pas déjà sur la vue "Création de compte", on l'y met
-        if (!isSignUpMode) {
-            toggleAuthMode();
-        }
-    }
+    
 </script>
 
 </body>
