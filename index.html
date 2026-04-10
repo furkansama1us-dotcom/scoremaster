@@ -1136,13 +1136,18 @@ async function fetchApiScore(id, dateRaw) {
                 <a href="https://t.me/scoremasteroff" target="_blank" rel="noopener" class="contact-link">
                     <div class="contact-card"><div class="contact-card-icon telegram"><i class="fab fa-telegram-plane"></i></div><div class="contact-card-info"><h4>Telegram</h4><p>Rejoignez notre canal officiel</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
                 </a>
-                <div class="contact-card"><div class="contact-card-icon instagram"><i class="fab fa-instagram"></i></div><div class="contact-card-info"><h4>Instagram</h4><p>@scoremaster.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
-                <div class="contact-card"><div class="contact-card-icon twitter"><i class="fab fa-x-twitter"></i></div><div class="contact-card-info"><h4>X (Twitter)</h4><p>@ScoreMasterFR</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
-                <div class="contact-card"><div class="contact-card-icon email"><i class="fas fa-envelope"></i></div><div class="contact-card-info"><h4>Email</h4><p>contact@scoremaster.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
                 
-                <!-- NOUVEAU : FORMULAIRE DE CONTACT -->
+                <a href="https://instagram.com/scoremaster.fr/" target="_blank" rel="noopener" class="contact-link">
+                    <div class="contact-card"><div class="contact-card-icon instagram"><i class="fab fa-instagram"></i></div><div class="contact-card-info"><h4>Instagram</h4><p>@scoremaster.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
+                </a>
+                
+                <a href="mailto:contact.scoremaster@gmail.com?subject=Demande%20d'information%20depuis%20l'application" class="contact-link">
+                    <div class="contact-card"><div class="contact-card-icon email"><i class="fas fa-envelope"></i></div><div class="contact-card-info"><h4>Email</h4><p>contact.scoremaster@gmail.com</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
+                </a>
+                
                 <div style="margin-top: 15px; margin-bottom: 30px; background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color);">
-                    <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 15px; color: #fff;"><i class="fas fa-paper-plane" style="color:var(--primary-yellow); margin-right:6px;"></i> Laissez-nous un message</h3>
+                    <h3 style="font-size: 16px; font-weight: 800; margin-bottom: 5px; color: #fff;"><i class="fas fa-paper-plane" style="color:var(--primary-yellow); margin-right:6px;"></i> Laissez-nous un message</h3>
+                    <p style="font-size: 11px; color: var(--green); margin-bottom: 15px; display:flex; align-items:center; gap:4px;"><i class="fas fa-lock"></i> Vos données sont chiffrées et sécurisées.</p>
                     
                     <div class="admin-field" style="margin-bottom:16px;">
                         <div class="admin-label" style="color:var(--text-gray); margin-bottom:8px; font-family:'Inter',sans-serif;">Mode de réponse souhaité</div>
@@ -3481,7 +3486,7 @@ let quickEditCombinedId = null;
         }
     }
 
-    // --- GESTION DU FORMULAIRE DE LA PAGE CONTACT ---
+    // --- GESTION DU FORMULAIRE DE LA PAGE CONTACT (SÉCURISÉ VIA SUPABASE) ---
     function selectContactPagePref(type) {
         document.querySelectorAll('input[name="contact-page-pref"]').forEach(function(radio) {
             radio.parentElement.classList.remove('selected');
@@ -3503,7 +3508,7 @@ let quickEditCombinedId = null;
         }
     }
 
-    function submitContactForm() {
+    async function submitContactForm() {
         var contactInfo = document.getElementById('contact-page-info').value.trim();
         var contactMethod = document.querySelector('input[name="contact-page-pref"]:checked').value;
         var message = document.getElementById('contact-page-message').value.trim();
@@ -3517,38 +3522,33 @@ let quickEditCombinedId = null;
             return; 
         }
 
-        const TELEGRAM_BOT_TOKEN = '8602776375:AAEuhWYNqb26IG8igWDTUI5iUaqSW0plj9I';
-        const TELEGRAM_CHAT_ID   = '905424902';
+        try {
+            // ENVOI 100% SÉCURISÉ VERS SUPABASE (Aucune API Telegram ici)
+            const { error } = await supabaseClient
+                .from('contact_messages')
+                .insert([{ 
+                    contact_method: contactMethod, 
+                    contact_info: contactInfo, 
+                    message: message 
+                }]);
 
-        let methodDisplay = contactMethod.charAt(0).toUpperCase() + contactMethod.slice(1);
-        
-        let telegramText = `✉️ *NOUVEAU MESSAGE (PAGE CONTACT)*\n\n` +
-                           `👤 *Réponse via :* ${methodDisplay}\n` +
-                           `📞 *Contact :* ${contactInfo}\n\n` +
-                           `📝 *Message :*\n_${message}_\n\n` +
-                           `#Contact #ScoreMaster`;
+            if (error) throw error;
 
-        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: telegramText, parse_mode: 'Markdown' })
-        }).then(response => {
-            if (response.ok) {
-                // Vide les champs
-                document.getElementById('contact-page-info').value = '';
-                document.getElementById('contact-page-message').value = '';
-                
-                // Affiche le popup de succès existant
-                var successPopup = document.getElementById('success-popup');
-                successPopup.style.display = 'flex';
-                setTimeout(function () { successPopup.style.opacity = '1'; successPopup.firstElementChild.style.transform = 'scale(1)'; }, 10);
-            } else {
-                showToast("Erreur lors de l'envoi", true);
-            }
-        }).catch(err => {
-            console.error("Erreur Telegram:", err);
-            showToast("Erreur réseau Telegram", true);
-        });
+            // Vide les champs
+            document.getElementById('contact-page-info').value = '';
+            document.getElementById('contact-page-message').value = '';
+            
+            // Affiche le popup de succès existant, mais avec un texte adapté
+            var successPopup = document.getElementById('success-popup');
+            successPopup.querySelector('h3').textContent = 'Message envoyé !';
+            successPopup.querySelector('p').textContent = 'Votre message a été transmis de manière sécurisée. Nous vous répondrons très vite !';
+            successPopup.style.display = 'flex';
+            setTimeout(function () { successPopup.style.opacity = '1'; successPopup.firstElementChild.style.transform = 'scale(1)'; }, 10);
+
+        } catch (error) {
+            console.error("Erreur Supabase:", error);
+            showToast("Erreur lors de l'envoi du message.", true);
+        }
     }
     
 </script>
