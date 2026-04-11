@@ -3010,9 +3010,10 @@ ${matchLines}
 
    // Envoi via Supabase (Sécurisé)
     if (confirm("Envoyer le message de VICTOIRE sur Telegram pour ce combiné ?")) {
-        sendAdminTelegram(telegramText).then(() => {
-            showToast("Message de victoire envoyé sur Telegram ! 🍾");
-        });
+            sendAdminTelegram(telegramText).then(() => {
+                showToast("Message de victoire envoyé sur Telegram ! 🍾");
+            });
+        }
     }
 
     function buildCC(c, sc, sl, pw, isHome) {
