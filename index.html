@@ -2205,12 +2205,7 @@ async function autoFetchFinalScores(combined) {
         let lines = '';
         matchesResults.forEach(r => { lines += `${r.won ? '✅' : '❌'} *${r.teams}*\n   Réel : ${r.realScore} | Prono : ${r.score}\n\n`; });
         const text = `🏁 *RÉSULTATS FINAUX*\n\n${lines}📊 Validez le ticket !`;
-        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN_LIVE}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID_LIVE, text, parse_mode: 'Markdown' })
-        }).catch(err => console.error('Telegram Error'));
-    }
+        sendAdminTelegram(text);
 }
     
     function navigateTo(page) {
