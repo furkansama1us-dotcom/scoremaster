@@ -2553,7 +2553,6 @@ async function autoFetchFinalScores(combined) {
         let matchLines = "";
         matches.forEach(m => { matchLines += `⚽️ ${m.teams}\n`; });
 
-        const intros = [
             const intros = [
             "Salut l’équipe ! 🔥 L'analyse est tombée. Le nouveau combiné est officiellement disponible dans votre espace VIP+.",
             "Nos experts ont validé les choix du jour. Le ticket est prêt avec une excellente fiabilité. Filez vite sur l'app !",
@@ -3486,6 +3485,7 @@ let quickEditCombinedId = null;
             successPopup.querySelector('p').textContent = 'Votre message a été transmis de manière sécurisée. Nous vous répondrons très vite !';
             successPopup.style.display = 'flex';
             setTimeout(function() { closeSuccessPopup(); }, 4000);
+
         } catch (error) {
             console.error('Erreur formulaire contact:', error);
             showToast('Erreur lors de l\'envoi. Réessayez.', true);
