@@ -654,15 +654,14 @@ ${matchLines}
 
         // 5. Modèles de relance dynamiques (AVEC infoBlock PARTOUT)
         const reminders = [
-            `⏳ *TICK TOCK... Le temps presse !*\n\nPlus que quelques heures avant le coup d'envoi de notre combiné 100% Confiance.\n\n${infoBlock}\n\nChez ScoreMaster tout est professionnel :\n- Tu payes l'accès 💳\n- Tu as les scores dans les 5 minutes 📲\n- Tu encaisses ce soir ⏳\n\nTu comptes continuer à regarder les autres gagner ? 🥇\n\n👉 Contact : @ScoreMasterOfficiel`,
+            `⏳ *L'heure approche !*\n\nPlus que quelques heures avant le coup d'envoi de notre combiné.\n\n${infoBlock}\n\nChez ScoreMaster tout est professionnel :\n- Analyses détaillées 📈\n- Suivi de la rencontre 📲\n- Gestion de bankroll 📊\n\n👉 Contact : @ScoreMasterOfficiel`,
             
-            `🚨 *ALERTE DERNIÈRE MINUTE !*\n\nLe combiné du jour est toujours disponible, mais attention, le chrono tourne ! ⏱\n\n${infoBlock}\n\nNe rate pas le train pour encaisser ce soir 🚂🚂🚂\n\n👉 Contact : @ScoreMasterOfficiel`,
+            `🚨 *DERNIÈRE MINUTE !*\n\nLe combiné du jour est toujours disponible, l'analyse est très prometteuse ! ⏱\n\n${infoBlock}\n\nNe manquez pas la session de ce soir ⚽️\n\n👉 Contact : @ScoreMasterOfficiel`,
             
-            `⚠️ *PLACES LIMITÉES !*\n\nUn grand merci aux nouveaux VIP qui nous ont rejoints aujourd'hui ✅\n\nSI TOI AUSSI, TU VEUX ENCAISSER 🤑 C'EST LE MOMENT ! C'EST CADEAU 🎁\n\n${infoBlock}\n\nLes bookmakers vont trembler ce soir.\n\n❗️ CLIQUE ICI : @ScoreMasterOfficiel 👈 ET ENVOIE MOI UN MESSAGE !`,
+            `⚠️ *SESSION BIENTÔT FERMÉE !*\n\nUn grand merci aux nouveaux membres qui nous ont rejoints aujourd'hui ✅\n\nSI VOUS SOUHAITEZ OPTIMISER VOS PARIS, C'EST LE MOMENT !\n\n${infoBlock}\n\nL'étude des statistiques est excellente pour ce soir.\n\n❗️ CLIQUE ICI : @ScoreMasterOfficiel 👈`,
             
-            `⏰ *DERNIER APPEL AVANT FERMETURE !*\n\nLa validation approche à grands pas. Nos experts ont déniché la faille parfaite :\n\n${infoBlock}\n\nRejoins l'élite et encaisse ton salaire du mois en une soirée 💸.\n\n👉 Pour nous rejoindre : @ScoreMasterOfficiel`
+            `⏰ *DERNIER APPEL !*\n\nLa validation approche à grands pas. Nos experts ont finalisé leur sélection :\n\n${infoBlock}\n\nRejoins la communauté et gère tes paris intelligemment 📊.\n\n👉 Pour nous rejoindre : @ScoreMasterOfficiel`
         ];
-
         // Sélection aléatoire du message
         let telegramText = reminders[Math.floor(Math.random() * reminders.length)];
 
@@ -1104,7 +1103,7 @@ async function fetchApiScore(id, dateRaw) {
                 <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-question"><span>Comment fonctionne le paiement ?</span><i class="fas fa-chevron-down faq-icon"></i></div><div class="faq-answer">Le paiement est 100% sécurisé via Stripe/PayPal. Vous recevez un accès instantané après le paiement. Aucun abonnement caché, c'est un paiement unique.</div></div>
                 <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-question"><span>Puis-je être remboursé ?</span><i class="fas fa-chevron-down faq-icon"></i></div><div class="faq-answer">Oui ! Si vous n'êtes pas satisfait, contactez-nous dans les 48h (7 jours pour le VIP+) et nous vous remboursons intégralement, sans condition.</div></div>
                 <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-question"><span>Comment je reçois les pronostics ?</span><i class="fas fa-chevron-down faq-icon"></i></div><div class="faq-answer">Dès votre achat confirmé, vous accédez directement à l'espace VIP+ dans l'application. Pour le pack VIP+, vous êtes aussi ajouté à notre canal Telegram exclusif.</div></div>
-                <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-question"><span>Quel est le taux de réussite ?</span><i class="fas fa-chevron-down faq-icon"></i></div><div class="faq-answer">Nos combinés affichent un taux de réussite moyen de 87% sur les scores exacts.</div></div>
+                <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-question"><span>Quel est le taux de réussite ?</span><i class="fas fa-chevron-down faq-icon"></i></div><div class="faq-answer">Nos experts visent une rentabilité sur le long terme grâce à une sélection rigoureuse et une analyse poussée des statistiques.</div></div>
             </div>
 
             <div style="padding: 0 20px; margin-bottom:30px;">
@@ -1112,7 +1111,7 @@ async function fetchApiScore(id, dateRaw) {
                     <div class="final-cta-glow"></div>
                     <i class="fas fa-crown" style="font-size:30px; color:#FFD700; margin-bottom:12px;"></i>
                     <h3 style="font-size:18px; font-weight:800; margin-bottom:8px;">Prêt à passer au niveau supérieur ?</h3>
-                    <p style="font-size:13px; color:var(--text-gray); margin-bottom:18px;">Rejoignez les 1,247 membres qui gagnent déjà</p>
+                    <p style="font-size:13px; color:var(--text-gray); margin-bottom:18px;">Rejoignez notre communauté de passionnés et optimisez vos analyses</p>
                     <button class="final-cta-btn" onclick="openCheckout('vip', 99.99)"><i class="fas fa-crown"></i> Devenir VIP+ maintenant — 99,99€</button>
                     <span style="font-size:11px; color:var(--text-gray); margin-top:10px; display:block;">🔒 Paiement sécurisé • Satisfait ou remboursé</span>
                 </div>
@@ -3493,7 +3492,6 @@ let quickEditCombinedId = null;
             showToast("Erreur lors de l'envoi du message.", true);
         }
     }
-    
 </script>
 
 </body>
