@@ -670,14 +670,9 @@ ${matchLines}
                 showToast("Relance envoyée avec succès !");
             });
         }
+    }
 
     // ============================================================
-// RÉCUPÉRATION MANUELLE DES SCORES VIA API (BOUTON ADMIN)
-// ============================================================
-// ============================================================
-// RÉCUPÉRATION MANUELLE DES SCORES VIA API (NOUVELLE API)
-// ============================================================
-// ============================================================
 // RÉCUPÉRATION MANUELLE DES SCORES VIA API (BOUTON ADMIN)
 // ============================================================
 async function fetchApiScore(id, dateRaw) {
@@ -2867,12 +2862,13 @@ function sendTelegramWin(id) {
 ${matchLines}
 🚀 *Rejoignez l'élite sur l'application :* https://scoremaster.fr/`;
 
-    // Envoi via l'API Telegram
+    // Envoi via Supabase (Sécurisé)
     if (confirm("Envoyer le message de VICTOIRE sur Telegram pour ce combiné ?")) {
         sendAdminTelegram(telegramText).then(() => {
             showToast("Message de victoire envoyé sur Telegram ! 🍾");
         });
     }
+}
     
     // ============================================================
 // AFFICHAGE DE L'HISTORIQUE ADMIN (AVEC BOUTON VICTOIRE TELEGRAM)
