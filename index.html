@@ -2570,7 +2570,7 @@ async function autoFetchFinalScores(combined) {
             "Le combiné VIP+ est en ligne et il est magnifique.",
             "L'équipe de passionnés est prête ? Le nouveau ticket vient de tomber."
         ];
-        const outros = [
+        
             const outros = [
             "C’est le moment parfait pour prendre de l’avance. Ne laissez pas passer cette belle opportunité ! 🙌⚡️",
             "Faites vite avant que les cotes ne chutent ! L'horloge tourne. ⏱️",
@@ -2608,7 +2608,7 @@ async function autoFetchFinalScores(combined) {
             `🌐 Site Web : https://scoremaster.fr/\n` +
             `➡️ Telegram : @ScoreMasterOfficiel`;
 
-        sendAdminTelegram(text);
+        sendAdminTelegram(telegramDraft);
 
         // On nettoie l'éditeur après publication
         resetEditor();
