@@ -573,12 +573,15 @@
     
     const FOOTBALL_DATA_API_KEY = '2620f835eb08886d508258550a5254a4';
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // TELEGRAM BOT
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    const TELEGRAM_BOT_TOKEN = '8602776375:AAEuhWYNqb26IG8igWDTUI5iUaqSW0plj9I';
-    const TELEGRAM_CHAT_ID   = '905424902';
-    
+    async function sendAdminTelegram(text) {
+        try {
+            // Nettoyage des caractères spéciaux pour éviter les bugs Telegram
+            let cleanText = text.replace(/[*_\[\]]/g, '');
+            await supabaseClient.from('telegram_queue').insert([{ message: cleanText }]);
+        } catch(e) {
+            console.error("Erreur Telegram Queue:", e);
+        }
+    }
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // Profil utilisateur global (chargé après login)
@@ -610,9 +613,6 @@
             showToast("Ce combiné n'est plus en cours !", true);
             return;
         }
-
-        const TELEGRAM_BOT_TOKEN = '8602776375:AAEuhWYNqb26IG8igWDTUI5iUaqSW0plj9I';
-        const TELEGRAM_CHAT_ID   = '905424902';
 
         // 1. Préparation de la liste des matchs
         let matchLines = "";
@@ -666,21 +666,11 @@ ${matchLines}
         // Sélection aléatoire du message
         let telegramText = reminders[Math.floor(Math.random() * reminders.length)];
 
-        // Envoi via l'API Telegram
         if (confirm("Veux-tu envoyer un message de relance sur Telegram pour ce combiné ?")) {
-            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: telegramText, parse_mode: 'Markdown' })
-            }).then(response => {
-                if (response.ok) showToast("Relance Telegram envoyée !");
-                else showToast("Erreur lors de l'envoi", true);
-            }).catch(err => {
-                console.error("Erreur Telegram:", err);
-                showToast("Erreur réseau Telegram", true);
+            sendAdminTelegram(telegramText).then(() => {
+                showToast("Relance envoyée avec succès !");
             });
         }
-    }
 
     // ============================================================
 // RÉCUPÉRATION MANUELLE DES SCORES VIA API (BOUTON ADMIN)
@@ -1893,8 +1883,6 @@ async function fetchMatchesFromAPI() {
 // LIVE SCORES — RapidAPI Free Football + Notif Telegram
 // ============================================================
 const RAPIDAPI_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
-const TELEGRAM_BOT_TOKEN_LIVE = '8602776375:AAEuhWYNqb26IG8igWDTUI5iUaqSW0plj9I';
-const TELEGRAM_CHAT_ID_LIVE   = '905424902';
 
 let livePollingInterval = null;
 let liveFinalNotifSent  = false;
@@ -2555,10 +2543,6 @@ async function autoFetchFinalScores(combined) {
 
         showToast('Combiné créé avec succès !');
 
-        // === ENVOI DU MESSAGE TELEGRAM ===
-        const TELEGRAM_BOT_TOKEN = '8602776375:AAEuhWYNqb26IG8igWDTUI5iUaqSW0plj9I';
-        const TELEGRAM_CHAT_ID   = '905424902';
-
         let deadlineStr = "Indéfini";
         if (earliestTime !== '23:59') {
             let matchDateTime = new Date(`${date}T${earliestTime}:00`);
@@ -2634,11 +2618,7 @@ async function autoFetchFinalScores(combined) {
             `🌐 Site Web : https://scoremaster.fr/\n` +
             `➡️ Telegram : @ScoreMasterOfficiel`;
 
-        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: telegramDraft, parse_mode: 'Markdown' })
-        }).catch(err => console.error("Erreur Telegram:", err));
+        sendAdminTelegram(text);
 
         // On nettoie l'éditeur après publication
         resetEditor();
@@ -2847,9 +2827,6 @@ function sendTelegramWin(id) {
     var c = allCombineds.find(x => x.id == id);
     if (!c) { showToast("Combiné introuvable", true); return; }
 
-    const TELEGRAM_BOT_TOKEN = '8602776375:AAEuhWYNqb26IG8igWDTUI5iUaqSW0plj9I';
-    const TELEGRAM_CHAT_ID   = '905424902';
-
     // Formatage de la date du ticket
     const ticketDate = new Date(c.date).toLocaleDateString('fr-FR');
 
@@ -2898,19 +2875,10 @@ ${matchLines}
 
     // Envoi via l'API Telegram
     if (confirm("Envoyer le message de VICTOIRE sur Telegram pour ce combiné ?")) {
-        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: telegramText, parse_mode: 'Markdown', disable_web_page_preview: true })
-        }).then(response => {
-            if (response.ok) showToast("Message de victoire envoyé sur Telegram ! 🍾");
-            else showToast("Erreur lors de l'envoi", true);
-        }).catch(err => {
-            console.error("Erreur Telegram:", err);
-            showToast("Erreur réseau Telegram", true);
+        sendAdminTelegram(telegramText).then(() => {
+            showToast("Message de victoire envoyé sur Telegram ! 🍾");
         });
     }
-}
     
     // ============================================================
 // AFFICHAGE DE L'HISTORIQUE ADMIN (AVEC BOUTON VICTOIRE TELEGRAM)
@@ -3003,8 +2971,6 @@ function sendTelegramWin(id) {
     var c = allCombineds.find(x => x.id == id);
     if (!c) { showToast("Combiné introuvable", true); return; }
 
-    const TELEGRAM_BOT_TOKEN = '8602776375:AAEuhWYNqb26IG8igWDTUI5iUaqSW0plj9I';
-    const TELEGRAM_CHAT_ID   = '905424902';
 
     // Formatage de la date du ticket
     const ticketDate = new Date(c.date).toLocaleDateString('fr-FR');
@@ -3454,8 +3420,6 @@ let quickEditCombinedId = null;
 
    // --- FONCTION : CENTRE DE NOTIFICATIONS (PROMO WEB APP) ---
     function sendPromoNotification() {
-        const TELEGRAM_BOT_TOKEN = '8602776375:AAEuhWYNqb26IG8igWDTUI5iUaqSW0plj9I';
-        const TELEGRAM_CHAT_ID   = '905424902';
 
         const promos = [
             `🌐 *DÉCOUVREZ L'APPLICATION SCOREMASTER !*\n\nMarre de chercher les infos et de vous faire arnaquer sur Telegram ? Tout est centralisé et sécurisé sur notre Web App officielle !\n\n✅ Historique 100% transparent\n✅ Accès VIP+ instantané après paiement\n✅ Cotes en temps réel\n\nRejoignez l'élite et prenez votre pass VIP+ directement ici : 👉 https://scoremaster.fr/`,
@@ -3471,20 +3435,11 @@ let quickEditCombinedId = null;
 
         let telegramText = promos[Math.floor(Math.random() * promos.length)];
 
-        if (confirm("Envoyer une notification promotionnelle (Web App) sur Telegram ?")) {
-            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: telegramText, parse_mode: 'Markdown', disable_web_page_preview: false })
-            }).then(response => {
-                if (response.ok) showToast("Notification promo envoyée !");
-                else showToast("Erreur lors de l'envoi", true);
-            }).catch(err => {
-                console.error("Erreur Telegram:", err);
-                showToast("Erreur réseau Telegram", true);
+       if (confirm("Envoyer une notification promotionnelle (Web App) sur Telegram ?")) {
+            sendAdminTelegram(telegramText).then(() => {
+                showToast("Notification promo envoyée !");
             });
         }
-    }
 
     // --- GESTION DU FORMULAIRE DE LA PAGE CONTACT (SÉCURISÉ VIA SUPABASE) ---
     function selectContactPagePref(type) {
