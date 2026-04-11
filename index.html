@@ -665,7 +665,7 @@ ${matchLines}
         // Sélection aléatoire du message
         let telegramText = reminders[Math.floor(Math.random() * reminders.length)];
 
-        if (confirm("Veux-tu envoyer un message de relance sur Telegram pour ce combiné ?")) {
+        if (confirm("Veux-tu envoyer un message de relance...")) {
             sendAdminTelegram(telegramText).then(() => {
                 showToast("Relance envoyée avec succès !");
             });
