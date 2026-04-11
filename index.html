@@ -3485,14 +3485,12 @@ let quickEditCombinedId = null;
             successPopup.querySelector('h3').textContent = 'Message envoyé !';
             successPopup.querySelector('p').textContent = 'Votre message a été transmis de manière sécurisée. Nous vous répondrons très vite !';
             successPopup.style.display = 'flex';
-            setTimeout(function () { successPopup.style.opacity = '1'; successPopup.firstElementChild.style.transform = 'scale(1)'; }, 10);
-
+            setTimeout(function() { closeSuccessPopup(); }, 4000);
         } catch (error) {
-            console.error("Erreur Supabase:", error);
-            showToast("Erreur lors de l'envoi du message.", true);
+            console.error('Erreur formulaire contact:', error);
+            showToast('Erreur lors de l\'envoi. Réessayez.', true);
         }
     }
 </script>
-
 </body>
 </html>
