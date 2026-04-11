@@ -3013,21 +3013,12 @@ function sendTelegramWin(id) {
 ${matchLines}
 🚀 *Rejoignez l'élite sur l'application :* https://scoremaster.fr/`;
 
-    // Envoi via l'API Telegram
+   // Envoi via Supabase (Sécurisé)
     if (confirm("Envoyer le message de VICTOIRE sur Telegram pour ce combiné ?")) {
-        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: telegramText, parse_mode: 'Markdown', disable_web_page_preview: true })
-        }).then(response => {
-            if (response.ok) showToast("Message de victoire envoyé sur Telegram ! 🍾");
-            else showToast("Erreur lors de l'envoi", true);
-        }).catch(err => {
-            console.error("Erreur Telegram:", err);
-            showToast("Erreur réseau Telegram", true);
+        sendAdminTelegram(telegramText).then(() => {
+            showToast("Message de victoire envoyé sur Telegram ! 🍾");
         });
     }
-}
 
     function buildCC(c, sc, sl, pw, isHome) {
         var mH = '';
