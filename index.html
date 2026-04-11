@@ -2200,6 +2200,7 @@ async function autoFetchFinalScores(combined) {
         matchesResults.forEach(r => { lines += `${r.won ? '✅' : '❌'} *${r.teams}*\n   Réel : ${r.realScore} | Prono : ${r.score}\n\n`; });
         const text = `🏁 *RÉSULTATS FINAUX*\n\n${lines}📊 Validez le ticket !`;
         sendAdminTelegram(text);
+    }
 }
     
     function navigateTo(page) {
