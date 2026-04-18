@@ -2868,40 +2868,76 @@ ${matchLines}
             showToast("Message de victoire envoyé sur Telegram ! 🍾");
         });
     }
-    function sendInstaPrompt(id) {
+    // ============================================================
+// GÉNÉRATION DU PROMPT IA PREMIUM (STYLE NÉON & STADE)
+// ============================================================
+function sendInstaPrompt(id) {
     var c = allCombineds.find(x => x.id == id);
     if (!c) { showToast("Combiné introuvable", true); return; }
 
-    let detailsMatchs = "";
+    let match1Info = "Informations Match 1 en attente...";
+    let match2Info = "Informations Match 2 en attente...";
+
+    // On traite les deux premiers matchs du combiné pour les cadres
     if (c.matches && c.matches.length > 0) {
         c.matches.forEach((m, index) => {
             let teams = m.teams.split('-');
             let scores = m.score.split('-');
-            let vainqueur = "match nul";
+            let resultText = "MATCH NUL";
+            
             if (teams.length === 2 && scores.length === 2) {
+                let eqA = teams[0].trim(); let eqB = teams[1].trim();
                 let scA = parseInt(scores[0].trim()); let scB = parseInt(scores[1].trim());
-                if (scA > scB) vainqueur = `victoire de ${teams[0].trim()}`;
-                else if (scB > scA) vainqueur = `victoire de ${teams[1].trim()}`;
-                detailsMatchs += `- Match ${index + 1} : ${m.teams}. Mentionner la ${vainqueur} (${m.score}).\n`;
-            } else {
-                detailsMatchs += `- Match ${m.teams} (${m.score}).\n`;
+                
+                if (scA > scB) resultText = `VICTOIRE ${eqA.toUpperCase()}`;
+                else if (scB > scA) resultText = `VICTOIRE ${eqB.toUpperCase()}`;
+
+                let info = `CADRE MATCH ${index + 1} :
+- Équipes : ${eqA} VS ${eqB}
+- Résultat : ${resultText}
+- Score Exact : ${m.score}`;
+
+                if (index === 0) match1Info = info;
+                if (index === 1) match2Info = info;
             }
         });
     }
 
-    let aiPrompt = 
-`Je veux créer une bannière Instagram très visuelle et dynamique pour annoncer une victoire de paris sportifs (score exact). 
-Voici le contenu à intégrer visuellement dans l'image :
-${detailsMatchs}
+    let aiPrompt = `Affiche promotionnelle numérique de style « premium sportif », sombre et électrisante. 
+- FORMAT : Vertical (9:16).
+- STYLE : Néons bleu cyan et dorés, éclairs et étincelles sur fond de stade de football de nuit avec projecteurs.
 
-Contexte de l'image :
-"Sports graphic design, instagram post, vertical 9:16 ratio, victory banner for football match, epic stadium lighting, players celebrating in the background, neon accents, highly detailed, aggressive sports typography, dramatic contrast, photorealistic, 8k resolution, **integrate the 'SM' logo from the reference image (FAMILY.png) into the design as a branding element**, --ar 9:16"`;
-    let telegramText = `🎨 *PROMPT IA INSTA* 🎨\n\n\`\`\`\n${aiPrompt}\n\`\`\``;
+- HAUT DE L'IMAGE : 
+  * Logo central : Grand bouclier néon doré surmonté d'une couronne avec les lettres "SM" stylisées.
+  * Texte 3D : "VICTOIRE" en bleu cyan brillant et "SCORE EXACT" en lettres dorées lumineuses.
+  * Ambiance : Joueurs célébrant devant des gerbes de feu.
 
-    if (confirm("Envoyer le prompt IA sur Telegram ?")) {
-        sendAdminTelegram(telegramText).then(() => { showToast("Prompt IA envoyé ! 🎨"); });
+- SECTION MATCHS (CONTENU DYNAMIQUE) :
+  ${match1Info}
+  ${match2Info}
+
+- DESIGN DES CADRES : Rectangles à contours néon bleu cyan. Scores en très gros chiffres néon. Mention "GAINS MAX" en doré entre les deux.
+
+- BAS DE L'IMAGE : 
+  * Superposition de "BETTING SLIPS" et reçus de gains bleu clair.
+  * Réseaux sociaux : Logo Instagram avec le texte "@scoremaster.fr" bien visible.
+  * Hashtag : #SCORES_PARIS_SPORTIFS
+
+"Sports graphic design, dramatic contrast, high-end betting aesthetic, photorealistic, 8k resolution, cinematic lighting, --ar 9:16"`;
+
+    let telegramText = `🎨 *PROMPT IA BANNIÈRE PREMIUM* 🎨
+
+Voici ton prompt optimisé pour Midjourney / DALL-E (Format 9:16) :
+
+\`\`\`
+${aiPrompt}
+\`\`\``;
+
+    if (confirm("Envoyer le prompt IA Premium sur Telegram ?")) {
+        sendAdminTelegram(telegramText).then(() => {
+            showToast("Prompt IA Premium envoyé ! 🎨");
+        });
     }
-}
 }
     
     // ============================================================
@@ -3051,58 +3087,77 @@ ${matchLines}
     // ============================================================
 // GÉNÉRATION DU PROMPT IA POUR BANNIÈRE INSTAGRAM
 // ============================================================
+// ============================================================
+// GÉNÉRATION DU PROMPT IA PREMIUM (STYLE NÉON & STADE)
+// ============================================================
 function sendInstaPrompt(id) {
     var c = allCombineds.find(x => x.id == id);
     if (!c) { showToast("Combiné introuvable", true); return; }
 
-    let detailsMatchs = "";
+    let match1Info = "Informations Match 1 en attente...";
+    let match2Info = "Informations Match 2 en attente...";
 
+    // On traite les deux premiers matchs du combiné pour les cadres
     if (c.matches && c.matches.length > 0) {
         c.matches.forEach((m, index) => {
             let teams = m.teams.split('-');
             let scores = m.score.split('-');
+            let resultText = "MATCH NUL";
             
-            // Logique pour déterminer le gagnant
             if (teams.length === 2 && scores.length === 2) {
                 let eqA = teams[0].trim(); let eqB = teams[1].trim();
                 let scA = parseInt(scores[0].trim()); let scB = parseInt(scores[1].trim());
                 
-                let vainqueur = "";
-                if (scA > scB) vainqueur = `victoire de ${eqA}`;
-                else if (scB > scA) vainqueur = `victoire de ${eqB}`;
-                else vainqueur = `match nul`;
+                if (scA > scB) resultText = `VICTOIRE ${eqA.toUpperCase()}`;
+                else if (scB > scA) resultText = `VICTOIRE ${eqB.toUpperCase()}`;
 
-                detailsMatchs += `- Match ${index + 1} : ${eqA} contre ${eqB}. Mentionner la ${vainqueur} avec le score exact de ${m.score}.\n`;
-            } else {
-                detailsMatchs += `- Match ${m.teams} avec le score exact de ${m.score}.\n`;
+                let info = `CADRE MATCH ${index + 1} :
+- Équipes : ${eqA} VS ${eqB}
+- Résultat : ${resultText}
+- Score Exact : ${m.score}`;
+
+                if (index === 0) match1Info = info;
+                if (index === 1) match2Info = info;
             }
         });
     }
 
-    // Le prompt anglais (souvent plus performant pour Midjourney/DALL-E) combiné aux instructions françaises
-    let aiPrompt = 
-`Je veux créer une bannière Instagram très visuelle et dynamique pour annoncer une victoire de paris sportifs (score exact). 
-Voici le contenu à intégrer visuellement dans l'image :
-${detailsMatchs}
+    let aiPrompt = `Affiche promotionnelle numérique de style « premium sportif », sombre et électrisante. 
+- FORMAT : Vertical (9:16).
+- STYLE : Néons bleu cyan et dorés, éclairs et étincelles sur fond de stade de football de nuit avec projecteurs.
 
-Contexte de l'image :
-"Sports graphic design, instagram post, vertical 9:16 ratio, victory banner for football match, epic stadium lighting, players celebrating in the background, neon accents, highly detailed, aggressive sports typography, dramatic contrast, photorealistic, 8k resolution, **integrate the 'SM' logo from the reference image (FAMILY.png) into the design as a branding element**, --ar 9:16"`;
-    let telegramText = 
-`🎨 *PROMPT IA BANNIÈRE INSTA* 🎨
+- HAUT DE L'IMAGE : 
+  * Logo central : Grand bouclier néon doré surmonté d'une couronne avec les lettres "SM" stylisées.
+  * Texte 3D : "VICTOIRE" en bleu cyan brillant et "SCORE EXACT" en lettres dorées lumineuses.
+  * Ambiance : Joueurs célébrant devant des gerbes de feu.
 
-Voici ton prompt prêt à l'emploi. Copie le texte ci-dessous et colle-le dans ChatGPT (DALL-E) ou Midjourney :
+- SECTION MATCHS (CONTENU DYNAMIQUE) :
+  ${match1Info}
+  ${match2Info}
+
+- DESIGN DES CADRES : Rectangles à contours néon bleu cyan. Scores en très gros chiffres néon. Mention "GAINS MAX" en doré entre les deux.
+
+- BAS DE L'IMAGE : 
+  * Superposition de "BETTING SLIPS" et reçus de gains bleu clair.
+  * Réseaux sociaux : Logo Instagram avec le texte "@scoremaster.fr" bien visible.
+  * Hashtag : #SCORES_PARIS_SPORTIFS
+
+"Sports graphic design, dramatic contrast, high-end betting aesthetic, photorealistic, 8k resolution, cinematic lighting, --ar 9:16"`;
+
+    let telegramText = `🎨 *PROMPT IA BANNIÈRE PREMIUM* 🎨
+
+Voici ton prompt optimisé pour Midjourney / DALL-E (Format 9:16) :
 
 \`\`\`
 ${aiPrompt}
 \`\`\``;
 
-    if (confirm("Envoyer le prompt IA Instagram sur Telegram ?")) {
+    if (confirm("Envoyer le prompt IA Premium sur Telegram ?")) {
         sendAdminTelegram(telegramText).then(() => {
-            showToast("Prompt IA envoyé sur Telegram ! 🎨");
+            showToast("Prompt IA Premium envoyé ! 🎨");
         });
     }
 }
-    }
 
     function buildCC(c, sc, sl, pw, isHome) {
         var mH = '';
