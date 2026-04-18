@@ -2939,11 +2939,11 @@ function renderAdminHistory() {
                 htmlActive += cardBaseHtml(displayStatus, btns);
             }
         } else {
-            // TERMINÉ (PUBLIC) - NOUVEAU BOUTON TELEGRAM VICTOIRE
+            // TERMINÉ (PUBLIC) - BOUTONS TELEGRAM & INSTA IA
             let btns = `
             <button onclick="sendTelegramWin('${c.id}')" style="background:var(--green); color:#000; font-weight:bold; padding:6px 10px;" title="Envoyer sur Telegram"><i class="fab fa-telegram-plane"></i> Gagné</button>
-            <button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue); padding:6px 10px;" title="Éditer"><i class="fas fa-edit"></i></button>
-            <button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(255,61,61,0.15); color:var(--red); border:1px solid rgba(255,61,61,0.4); padding:6px 10px;" title="Score API"><i class="fas fa-satellite-dish"></i></button>
+            <button onclick="sendInstaPrompt('${c.id}')" style="background:linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color:#fff; font-weight:bold; padding:6px 10px;" title="Prompt Insta IA"><i class="fab fa-instagram"></i> IA</button>
+            <button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue); padding:6px 10px;" title="Éditer"><i class="fas fa-edit"></i></button><button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(255,61,61,0.15); color:var(--red); border:1px solid rgba(255,61,61,0.4); padding:6px 10px;" title="Score API"><i class="fas fa-satellite-dish"></i></button>
             <button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red); padding:6px 10px;" title="Supprimer"><i class="fas fa-trash"></i></button>`;
             htmlPast += cardBaseHtml(displayStatus, btns);
         }
@@ -3014,6 +3014,61 @@ ${matchLines}
                 showToast("Message de victoire envoyé sur Telegram ! 🍾");
             });
         }
+    // ============================================================
+// GÉNÉRATION DU PROMPT IA POUR BANNIÈRE INSTAGRAM
+// ============================================================
+function sendInstaPrompt(id) {
+    var c = allCombineds.find(x => x.id == id);
+    if (!c) { showToast("Combiné introuvable", true); return; }
+
+    let detailsMatchs = "";
+
+    if (c.matches && c.matches.length > 0) {
+        c.matches.forEach((m, index) => {
+            let teams = m.teams.split('-');
+            let scores = m.score.split('-');
+            
+            // Logique pour déterminer le gagnant
+            if (teams.length === 2 && scores.length === 2) {
+                let eqA = teams[0].trim(); let eqB = teams[1].trim();
+                let scA = parseInt(scores[0].trim()); let scB = parseInt(scores[1].trim());
+                
+                let vainqueur = "";
+                if (scA > scB) vainqueur = `victoire de ${eqA}`;
+                else if (scB > scA) vainqueur = `victoire de ${eqB}`;
+                else vainqueur = `match nul`;
+
+                detailsMatchs += `- Match ${index + 1} : ${eqA} contre ${eqB}. Mentionner la ${vainqueur} avec le score exact de ${m.score}.\n`;
+            } else {
+                detailsMatchs += `- Match ${m.teams} avec le score exact de ${m.score}.\n`;
+            }
+        });
+    }
+
+    // Le prompt anglais (souvent plus performant pour Midjourney/DALL-E) combiné aux instructions françaises
+    let aiPrompt = 
+`Je veux créer une bannière Instagram très visuelle et dynamique pour annoncer une victoire de paris sportifs (score exact). 
+Voici le contenu à intégrer visuellement dans l'image :
+${detailsMatchs}
+
+Contexte de l'image :
+"Sports graphic design, instagram post, victory banner for football match, epic stadium lighting, players celebrating in the background, neon accents, highly detailed, aggressive sports typography, dramatic contrast, photorealistic, 8k resolution, --ar 4:5"`;
+
+    let telegramText = 
+`🎨 *PROMPT IA BANNIÈRE INSTA* 🎨
+
+Voici ton prompt prêt à l'emploi. Copie le texte ci-dessous et colle-le dans ChatGPT (DALL-E) ou Midjourney :
+
+\`\`\`
+${aiPrompt}
+\`\`\``;
+
+    if (confirm("Envoyer le prompt IA Instagram sur Telegram ?")) {
+        sendAdminTelegram(telegramText).then(() => {
+            showToast("Prompt IA envoyé sur Telegram ! 🎨");
+        });
+    }
+}
     }
 
     function buildCC(c, sc, sl, pw, isHome) {
