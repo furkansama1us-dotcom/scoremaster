@@ -1668,7 +1668,7 @@ async function fetchMatchesFromAPI() {
 
     try {
         var dateStr = dateVal.replace(/-/g, '');
-        const RAPIDAPI_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
+        const RAPIDAPI_KEY = 'f8209623408840be688b35e7bcf34edb';
 
         var response = await fetch(`https://free-api-live-football-data.p.rapidapi.com/football-get-matches-by-date?date=${dateStr}`, {
             method: 'GET',
@@ -1876,7 +1876,7 @@ async function fetchMatchesFromAPI() {
     // ============================================================
 // LIVE SCORES — RapidAPI Free Football + Notif Telegram
 // ============================================================
-const RAPIDAPI_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
+const RAPIDAPI_KEY = 'f8209623408840be688b35e7bcf34edb';
 
 let livePollingInterval = null;
 let liveFinalNotifSent  = false;
