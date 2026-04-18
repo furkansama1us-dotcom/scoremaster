@@ -2889,7 +2889,13 @@ ${matchLines}
         });
     }
 
-    let aiPrompt = `Génère une bannière Instagram dynamique pour une victoire : \n${detailsMatchs}\nStyle: Sports graphic design, epic lighting, players celebrating, 8k, --ar 4:5`;
+    let aiPrompt = 
+`Je veux créer une bannière Instagram très visuelle et dynamique pour annoncer une victoire de paris sportifs (score exact). 
+Voici le contenu à intégrer visuellement dans l'image :
+${detailsMatchs}
+
+Contexte de l'image :
+"Sports graphic design, instagram post, vertical 9:16 ratio, victory banner for football match, epic stadium lighting, players celebrating in the background, neon accents, highly detailed, aggressive sports typography, dramatic contrast, photorealistic, 8k resolution, **integrate the 'SM' logo from the reference image (FAMILY.png) into the design as a branding element**, --ar 9:16"`;
     let telegramText = `🎨 *PROMPT IA INSTA* 🎨\n\n\`\`\`\n${aiPrompt}\n\`\`\``;
 
     if (confirm("Envoyer le prompt IA sur Telegram ?")) {
@@ -3080,8 +3086,7 @@ Voici le contenu à intégrer visuellement dans l'image :
 ${detailsMatchs}
 
 Contexte de l'image :
-"Sports graphic design, instagram post, victory banner for football match, epic stadium lighting, players celebrating in the background, neon accents, highly detailed, aggressive sports typography, dramatic contrast, photorealistic, 8k resolution, --ar 4:5"`;
-
+"Sports graphic design, instagram post, vertical 9:16 ratio, victory banner for football match, epic stadium lighting, players celebrating in the background, neon accents, highly detailed, aggressive sports typography, dramatic contrast, photorealistic, 8k resolution, **integrate the 'SM' logo from the reference image (FAMILY.png) into the design as a branding element**, --ar 9:16"`;
     let telegramText = 
 `🎨 *PROMPT IA BANNIÈRE INSTA* 🎨
 
