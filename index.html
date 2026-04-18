@@ -3606,9 +3606,8 @@ Voici le contenu à intégrer visuellement dans l'image :
 ${detailsMatchs}
 
 Contexte de l'image :
-"Sports graphic design, instagram post, victory banner for football match, epic stadium lighting, players celebrating in the background, neon accents, highly detailed, aggressive sports typography, dramatic contrast, photorealistic, 8k resolution, --ar 4:5"`;
-
-    let telegramText = `🎨 *PROMPT IA BANNIÈRE INSTA* 🎨\n\nVoici ton prompt prêt à l'emploi. Copie le texte ci-dessous et colle-le dans ChatGPT (DALL-E) ou Midjourney :\n\n\`\`\`\n${aiPrompt}\n\`\`\``;
+"Sports graphic design, instagram post, victory banner for football match, epic stadium lighting, players celebrating in the background, neon accents, highly detailed, aggressive sports typography, dramatic contrast, photorealistic, 8k resolution, --ar 9:16"`;
+    let telegramText = `\n\n\`\`\`\n${aiPrompt}\n\`\`\``;
 
     if (confirm("Envoyer le prompt IA Instagram sur Telegram ?")) {
         sendAdminTelegram(telegramText).then(() => {
