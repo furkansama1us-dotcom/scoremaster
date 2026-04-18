@@ -2869,71 +2869,61 @@ ${matchLines}
         });
     }
     // ============================================================
-// GÉNÉRATION DU PROMPT IA PREMIUM (STYLE NÉON & STADE)
+// GÉNÉRATION DU PROMPT IA PREMIUM (FORMAT 9:16 + LOGO SM)
 // ============================================================
 function sendInstaPrompt(id) {
     var c = allCombineds.find(x => x.id == id);
     if (!c) { showToast("Combiné introuvable", true); return; }
 
-    let match1Info = "Informations Match 1 en attente...";
-    let match2Info = "Informations Match 2 en attente...";
+    let detailsMatchs = "";
 
-    // On traite les deux premiers matchs du combiné pour les cadres
     if (c.matches && c.matches.length > 0) {
         c.matches.forEach((m, index) => {
             let teams = m.teams.split('-');
             let scores = m.score.split('-');
-            let resultText = "MATCH NUL";
             
             if (teams.length === 2 && scores.length === 2) {
-                let eqA = teams[0].trim(); let eqB = teams[1].trim();
-                let scA = parseInt(scores[0].trim()); let scB = parseInt(scores[1].trim());
+                let eqA = teams[0].trim(); 
+                let eqB = teams[1].trim();
+                let scA = parseInt(scores[0].trim()); 
+                let scB = parseInt(scores[1].trim());
                 
-                if (scA > scB) resultText = `VICTOIRE ${eqA.toUpperCase()}`;
-                else if (scB > scA) resultText = `VICTOIRE ${eqB.toUpperCase()}`;
+                let vainqueur = (scA > scB) ? `victory of ${eqA}` : (scB > scA) ? `victory of ${eqB}` : `draw`;
 
-                let info = `CADRE MATCH ${index + 1} :
-- Équipes : ${eqA} VS ${eqB}
-- Résultat : ${resultText}
-- Score Exact : ${m.score}`;
-
-                if (index === 0) match1Info = info;
-                if (index === 1) match2Info = info;
+                detailsMatchs += `- Match ${index + 1}: ${eqA} vs ${eqB}. Show the ${vainqueur} with the exact score "${m.score}".\n`;
+            } else {
+                detailsMatchs += `- Match ${m.teams} with the exact score "${m.score}".\n`;
             }
         });
     }
 
-    let aiPrompt = `Affiche promotionnelle numérique de style « premium sportif », sombre et électrisante. 
-- FORMAT : Vertical (9:16).
-- STYLE : Néons bleu cyan et dorés, éclairs et étincelles sur fond de stade de football de nuit avec projecteurs.
+    // On fusionne ton style "Premium" avec les données du match et ton branding
+    let aiPrompt = `A high-end cinematic sports digital poster, vertical 9:16 ratio. 
 
-- HAUT DE L'IMAGE : 
-  * Logo central : Grand bouclier néon doré surmonté d'une couronne avec les lettres "SM" stylisées.
-  * Texte 3D : "VICTOIRE" en bleu cyan brillant et "SCORE EXACT" en lettres dorées lumineuses.
-  * Ambiance : Joueurs célébrant devant des gerbes de feu.
+Background: Spectacular low-angle view from a wet, ultra-reflective football pitch in a grand stadium at night. Dramatic lighting, glowing stadium floodlights, lens flares, falling luxurious golden confetti, subtle cyan lightning and golden sparks.
 
-- SECTION MATCHS (CONTENU DYNAMIQUE) :
-  ${match1Info}
-  ${match2Info}
+Top Center: A massive 3D metallic chrome "SM" logo topped with a luxurious 3D golden crown (highly reflective). Below the logo, the word "VICTOIRE" in brilliant 3D cyan neon text, and "SCORE EXACT" in polished 3D gold text.
 
-- DESIGN DES CADRES : Rectangles à contours néon bleu cyan. Scores en très gros chiffres néon. Mention "GAINS MAX" en doré entre les deux.
+Center (Dynamic Data):
+${detailsMatchs}
 
-- BAS DE L'IMAGE : 
-  * Superposition de "BETTING SLIPS" et reçus de gains bleu clair.
-  * Réseaux sociaux : Logo Instagram avec le texte "@scoremaster.fr" bien visible.
-  * Hashtag : #SCORES_PARIS_SPORTIFS
+Graphic Elements: Two floating rectangular frames with glowing cyan neon borders. Professional Champions League broadcast style.
 
-"Sports graphic design, dramatic contrast, high-end betting aesthetic, photorealistic, 8k resolution, cinematic lighting, --ar 9:16"`;
+Bottom branding: The Instagram handle "@scoremaster.fr" clearly visible in a modern glowing font.
 
-    let telegramText = `🎨 *PROMPT IA BANNIÈRE PREMIUM* 🎨
+Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold and silver color palette, --ar 9:16`;
+
+    let telegramText = `🎨 *TON PROMPT IA PRÊT À L'EMPLOI* 🎨
+
+Copie le texte ci-dessous et colle-le dans ton IA (Midjourney / DALL-E) :
 
 \`\`\`
 ${aiPrompt}
 \`\`\``;
 
-    if (confirm("Envoyer le prompt IA Premium sur Telegram ?")) {
+    if (confirm("Générer et envoyer le prompt IA Premium sur Telegram ?")) {
         sendAdminTelegram(telegramText).then(() => {
-            showToast("Prompt IA Premium envoyé ! 🎨");
+            showToast("Prompt IA envoyé ! 🎨");
         });
     }
 }
@@ -3084,7 +3074,7 @@ ${matchLines}
             });
         }
     // ============================================================
-// GÉNÉRATION DU PROMPT IA POUR BANNIÈRE INSTAGRAM
+// GÉNÉRATION DU PROMPT IA PREMIUM (FORMAT 9:16 + LOGO SM)
 // ============================================================
 function sendInstaPrompt(id) {
     var c = allCombineds.find(x => x.id == id);
@@ -3097,43 +3087,48 @@ function sendInstaPrompt(id) {
             let teams = m.teams.split('-');
             let scores = m.score.split('-');
             
-            // Logique pour déterminer le gagnant
             if (teams.length === 2 && scores.length === 2) {
-                let eqA = teams[0].trim(); let eqB = teams[1].trim();
-                let scA = parseInt(scores[0].trim()); let scB = parseInt(scores[1].trim());
+                let eqA = teams[0].trim(); 
+                let eqB = teams[1].trim();
+                let scA = parseInt(scores[0].trim()); 
+                let scB = parseInt(scores[1].trim());
                 
-                let vainqueur = "";
-                if (scA > scB) vainqueur = `victoire de ${eqA}`;
-                else if (scB > scA) vainqueur = `victoire de ${eqB}`;
-                else vainqueur = `match nul`;
+                let vainqueur = (scA > scB) ? `victory of ${eqA}` : (scB > scA) ? `victory of ${eqB}` : `draw`;
 
-                detailsMatchs += `- Match ${index + 1} : ${eqA} contre ${eqB}. Mentionner la ${vainqueur} avec le score exact de ${m.score}.\n`;
+                detailsMatchs += `- Match ${index + 1}: ${eqA} vs ${eqB}. Show the ${vainqueur} with the exact score "${m.score}".\n`;
             } else {
-                detailsMatchs += `- Match ${m.teams} avec le score exact de ${m.score}.\n`;
+                detailsMatchs += `- Match ${m.teams} with the exact score "${m.score}".\n`;
             }
         });
     }
 
-    // Le prompt anglais (souvent plus performant pour Midjourney/DALL-E) combiné aux instructions françaises
-    let aiPrompt = 
-`Je veux créer une bannière Instagram très visuelle et dynamique pour annoncer une victoire de paris sportifs (score exact). 
-Voici le contenu à intégrer visuellement dans l'image :
+    // On fusionne ton style "Premium" avec les données du match et ton branding
+    let aiPrompt = `A high-end cinematic sports digital poster, vertical 9:16 ratio. 
+
+Background: Spectacular low-angle view from a wet, ultra-reflective football pitch in a grand stadium at night. Dramatic lighting, glowing stadium floodlights, lens flares, falling luxurious golden confetti, subtle cyan lightning and golden sparks.
+
+Top Center: A massive 3D metallic chrome "SM" logo topped with a luxurious 3D golden crown (highly reflective). Below the logo, the word "VICTOIRE" in brilliant 3D cyan neon text, and "SCORE EXACT" in polished 3D gold text.
+
+Center (Dynamic Data):
 ${detailsMatchs}
 
-Contexte de l'image :
-"Sports graphic design, instagram post, vertical 9:16 ratio, victory banner for football match, epic stadium lighting, players celebrating in the background, neon accents, highly detailed, aggressive sports typography, dramatic contrast, photorealistic, 8k resolution, **integrate the 'SM' logo from the reference image (FAMILY.png) into the design as a branding element**, --ar 9:16"`;
-    let telegramText = 
-`🎨 *PROMPT IA BANNIÈRE INSTA* 🎨
+Graphic Elements: Two floating rectangular frames with glowing cyan neon borders. Professional Champions League broadcast style.
 
-Voici ton prompt prêt à l'emploi. Copie le texte ci-dessous et colle-le dans ChatGPT (DALL-E) ou Midjourney :
+Bottom branding: The Instagram handle "@scoremaster.fr" clearly visible in a modern glowing font.
+
+Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold and silver color palette, --ar 9:16`;
+
+    let telegramText = `🎨 *TON PROMPT IA PRÊT À L'EMPLOI* 🎨
+
+Copie le texte ci-dessous et colle-le dans ton IA (Midjourney / DALL-E) :
 
 \`\`\`
 ${aiPrompt}
 \`\`\``;
 
-    if (confirm("Envoyer le prompt IA Instagram sur Telegram ?")) {
+    if (confirm("Générer et envoyer le prompt IA Premium sur Telegram ?")) {
         sendAdminTelegram(telegramText).then(() => {
-            showToast("Prompt IA envoyé sur Telegram ! 🎨");
+            showToast("Prompt IA envoyé ! 🎨");
         });
     }
 }
@@ -3612,74 +3607,61 @@ let quickEditCombinedId = null;
         }
     }
     // ============================================================
-// GÉNÉRATION DU PROMPT IA POUR BANNIÈRE INSTAGRAM
-// ============================================================
-// ============================================================
-// GÉNÉRATION DU PROMPT IA PREMIUM (STYLE NÉON & STADE)
+// GÉNÉRATION DU PROMPT IA PREMIUM (FORMAT 9:16 + LOGO SM)
 // ============================================================
 function sendInstaPrompt(id) {
     var c = allCombineds.find(x => x.id == id);
     if (!c) { showToast("Combiné introuvable", true); return; }
 
-    let match1Info = "Informations Match 1 en attente...";
-    let match2Info = "Informations Match 2 en attente...";
+    let detailsMatchs = "";
 
-    // On traite les deux premiers matchs du combiné pour les cadres
     if (c.matches && c.matches.length > 0) {
         c.matches.forEach((m, index) => {
             let teams = m.teams.split('-');
             let scores = m.score.split('-');
-            let resultText = "MATCH NUL";
             
             if (teams.length === 2 && scores.length === 2) {
-                let eqA = teams[0].trim(); let eqB = teams[1].trim();
-                let scA = parseInt(scores[0].trim()); let scB = parseInt(scores[1].trim());
+                let eqA = teams[0].trim(); 
+                let eqB = teams[1].trim();
+                let scA = parseInt(scores[0].trim()); 
+                let scB = parseInt(scores[1].trim());
                 
-                if (scA > scB) resultText = `VICTOIRE ${eqA.toUpperCase()}`;
-                else if (scB > scA) resultText = `VICTOIRE ${eqB.toUpperCase()}`;
+                let vainqueur = (scA > scB) ? `victory of ${eqA}` : (scB > scA) ? `victory of ${eqB}` : `draw`;
 
-                let info = `CADRE MATCH ${index + 1} :
-- Équipes : ${eqA} VS ${eqB}
-- Résultat : ${resultText}
-- Score Exact : ${m.score}`;
-
-                if (index === 0) match1Info = info;
-                if (index === 1) match2Info = info;
+                detailsMatchs += `- Match ${index + 1}: ${eqA} vs ${eqB}. Show the ${vainqueur} with the exact score "${m.score}".\n`;
+            } else {
+                detailsMatchs += `- Match ${m.teams} with the exact score "${m.score}".\n`;
             }
         });
     }
 
-    let aiPrompt = `Affiche promotionnelle numérique de style « premium sportif », sombre et électrisante. 
-- FORMAT : Vertical (9:16).
-- STYLE : Néons bleu cyan et dorés, éclairs et étincelles sur fond de stade de football de nuit avec projecteurs.
+    // On fusionne ton style "Premium" avec les données du match et ton branding
+    let aiPrompt = `A high-end cinematic sports digital poster, vertical 9:16 ratio. 
 
-- HAUT DE L'IMAGE : 
-  * Logo central : Grand bouclier néon doré surmonté d'une couronne avec les lettres "SM" stylisées.
-  * Texte 3D : "VICTOIRE" en bleu cyan brillant et "SCORE EXACT" en lettres dorées lumineuses.
-  * Ambiance : Joueurs célébrant devant des gerbes de feu.
+Background: Spectacular low-angle view from a wet, ultra-reflective football pitch in a grand stadium at night. Dramatic lighting, glowing stadium floodlights, lens flares, falling luxurious golden confetti, subtle cyan lightning and golden sparks.
 
-- SECTION MATCHS (CONTENU DYNAMIQUE) :
-  ${match1Info}
-  ${match2Info}
+Top Center: A massive 3D metallic chrome "SM" logo topped with a luxurious 3D golden crown (highly reflective). Below the logo, the word "VICTOIRE" in brilliant 3D cyan neon text, and "SCORE EXACT" in polished 3D gold text.
 
-- DESIGN DES CADRES : Rectangles à contours néon bleu cyan. Scores en très gros chiffres néon. Mention "GAINS MAX" en doré entre les deux.
+Center (Dynamic Data):
+${detailsMatchs}
 
-- BAS DE L'IMAGE : 
-  * Superposition de "BETTING SLIPS" et reçus de gains bleu clair.
-  * Réseaux sociaux : Logo Instagram avec le texte "@scoremaster.fr" bien visible.
-  * Hashtag : #SCORES_PARIS_SPORTIFS
+Graphic Elements: Two floating rectangular frames with glowing cyan neon borders. Professional Champions League broadcast style.
 
-"Sports graphic design, dramatic contrast, high-end betting aesthetic, photorealistic, 8k resolution, cinematic lighting, --ar 9:16"`;
+Bottom branding: The Instagram handle "@scoremaster.fr" clearly visible in a modern glowing font.
 
-    let telegramText = `🎨 *PROMPT IA BANNIÈRE PREMIUM* 
+Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold and silver color palette, --ar 9:16`;
+
+    let telegramText = `🎨 *TON PROMPT IA PRÊT À L'EMPLOI* 🎨
+
+Copie le texte ci-dessous et colle-le dans ton IA (Midjourney / DALL-E) :
 
 \`\`\`
 ${aiPrompt}
 \`\`\``;
 
-    if (confirm("Envoyer le prompt IA Premium sur Telegram ?")) {
+    if (confirm("Générer et envoyer le prompt IA Premium sur Telegram ?")) {
         sendAdminTelegram(telegramText).then(() => {
-            showToast("Prompt IA Premium envoyé ! 🎨");
+            showToast("Prompt IA envoyé ! 🎨");
         });
     }
 }
