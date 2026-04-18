@@ -2868,6 +2868,34 @@ ${matchLines}
             showToast("Message de victoire envoyé sur Telegram ! 🍾");
         });
     }
+    function sendInstaPrompt(id) {
+    var c = allCombineds.find(x => x.id == id);
+    if (!c) { showToast("Combiné introuvable", true); return; }
+
+    let detailsMatchs = "";
+    if (c.matches && c.matches.length > 0) {
+        c.matches.forEach((m, index) => {
+            let teams = m.teams.split('-');
+            let scores = m.score.split('-');
+            let vainqueur = "match nul";
+            if (teams.length === 2 && scores.length === 2) {
+                let scA = parseInt(scores[0].trim()); let scB = parseInt(scores[1].trim());
+                if (scA > scB) vainqueur = `victoire de ${teams[0].trim()}`;
+                else if (scB > scA) vainqueur = `victoire de ${teams[1].trim()}`;
+                detailsMatchs += `- Match ${index + 1} : ${m.teams}. Mentionner la ${vainqueur} (${m.score}).\n`;
+            } else {
+                detailsMatchs += `- Match ${m.teams} (${m.score}).\n`;
+            }
+        });
+    }
+
+    let aiPrompt = `Génère une bannière Instagram dynamique pour une victoire : \n${detailsMatchs}\nStyle: Sports graphic design, epic lighting, players celebrating, 8k, --ar 4:5`;
+    let telegramText = `🎨 *PROMPT IA INSTA* 🎨\n\n\`\`\`\n${aiPrompt}\n\`\`\``;
+
+    if (confirm("Envoyer le prompt IA sur Telegram ?")) {
+        sendAdminTelegram(telegramText).then(() => { showToast("Prompt IA envoyé ! 🎨"); });
+    }
+}
 }
     
     // ============================================================
