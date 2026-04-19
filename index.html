@@ -1433,9 +1433,7 @@ async function fetchApiScore(id, dateRaw) {
 <div id="info-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
     <div style="background:var(--bg-card);padding:30px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);position:relative;">
         <i class="fas fa-times" onclick="closeInfoPopup()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
-        
         <div id="info-popup-icon" style="width:65px;height:65px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px auto;font-size:26px;"></div>
-        
         <h3 id="info-popup-title" style="font-size:20px;font-weight:800;margin-bottom:12px;color:#fff;font-family:'Montserrat',sans-serif;">Titre</h3>
         <p id="info-popup-desc" style="font-size:14px;color:var(--text-gray);margin-bottom:20px;line-height:1.6;">Description détaillée...</p>
         <div id="info-popup-extra" style="background:var(--bg-input); padding:18px; border-radius:12px; font-size:13px; color:var(--text-white); font-weight:600; margin-bottom:20px; border:1px solid var(--border-color);"></div>
@@ -1662,6 +1660,7 @@ async function fetchMatchesFromAPI() {
     var dateVal = document.getElementById('admin-date').value;
     if (!dateVal) { showToast("Choisis une date d'abord", true); return; }
 
+    // 1. Formatage de la date (JJ/MM/AAAA -> AAAA-MM-JJ)
     var formattedDate = dateVal;
     if (dateVal.includes('/')) {
         var parts = dateVal.split('/');
@@ -1672,32 +1671,31 @@ async function fetchMatchesFromAPI() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche...';
 
     try {
-        // ON A CHANGÉ LE NOM ICI POUR ÉVITER LE CONFLIT (SPORT_API_KEY)
-        const SPORT_API_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
-        const HOST = 'sportapi7.p.rapidapi.com';
+        const RAPIDAPI_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
+const HOST = 'sportapi7.p.rapidapi.com';
 
-        const TARGET_URL = `https://${HOST}/api/v1/sport/football/scheduled-events/${formattedDate}`;
+const TARGET_URL = `https://${HOST}/api/v1/sport/football/scheduled-events/${formattedDate}`;
 
-        var response = await fetch(TARGET_URL, {
-            method: 'GET',
-            headers: {
-                'x-rapidapi-host': HOST,
-                'x-rapidapi-key': SPORT_API_KEY
-            }
-        });
+var response = await fetch(TARGET_URL, {
+    method: 'GET',
+    headers: {
+        'x-rapidapi-host': HOST,
+        'x-rapidapi-key': RAPIDAPI_KEY
+    }
+});
 
-        if (!response.ok) throw new Error("Erreur réseau");
+        if (!response.ok) throw new Error("Erreur réseau ou Proxy");
 
         var data = await response.json();
         var matches = (data.events || []).filter(function(m) {
-            if (!m.startTimestamp) return true;
-            var d = new Date(m.startTimestamp * 1000);
-            var hours = d.getHours();
-            var minutes = d.getMinutes();
-            return hours > 18 || (hours === 18 && minutes === 0);
-        }).sort(function(a, b) {
-            return (a.startTimestamp || 0) - (b.startTimestamp || 0);
-        });
+    if (!m.startTimestamp) return true;
+    var d = new Date(m.startTimestamp * 1000);
+    var hours = d.getHours();
+    var minutes = d.getMinutes();
+    return hours > 18 || (hours === 18 && minutes === 0);
+}).sort(function(a, b) {
+    return (a.startTimestamp || 0) - (b.startTimestamp || 0);
+});
 
         if (matches.length === 0) {
             showToast("Aucun match trouvé pour le " + formattedDate, true);
@@ -1707,6 +1705,7 @@ async function fetchMatchesFromAPI() {
 
         var matchesHtml = '<div style="background:#2A2A2A; padding:10px; border-radius:8px; margin-bottom:10px; max-height:300px; overflow-y:auto;">';
         matchesHtml += `<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px; display:flex; justify-content:space-between;"><span>Matchs trouvés (${matches.length})</span><span style="color:var(--primary-yellow); cursor:pointer;" onclick="document.getElementById('api-matches-container').innerHTML=''">Fermer</span></div>`;
+        
         // Fonction pour obtenir le drapeau emoji selon le pays/ligue
         function getLeagueFlag(m) {
             var country = (m.tournament && m.tournament.category && m.tournament.category.name) ? m.tournament.category.name.toLowerCase() : '';
@@ -1773,6 +1772,7 @@ async function fetchMatchesFromAPI() {
             var fullMatchName = `${home} - ${away}`;
             var btnId = 'mb-' + Math.random().toString(36).substr(2, 8);
             
+            // On génère le drapeau et on le sécurise pour l'envoyer au bouton
             var flag = getLeagueFlag(m);
             var safeFlag = encodeURIComponent(flag);
 
@@ -1800,7 +1800,7 @@ async function fetchMatchesFromAPI() {
 
     } catch (error) {
         console.error("Erreur API:", error);
-        showToast("Erreur de connexion à l'API", true);
+        showToast("Impossible d'accéder à l'API (Blocage CORS ou réseau)", true);
     }
     btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs';
 }
@@ -3024,6 +3024,7 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
         });
     }
 }
+}
     
     // ============================================================
 // AFFICHAGE DE L'HISTORIQUE ADMIN (AVEC BOUTON VICTOIRE TELEGRAM)
@@ -3209,7 +3210,13 @@ Bottom branding: The Instagram handle "@scoremaster.fr" clearly visible in a mod
 
 Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold and silver color palette, --ar 9:16`;
 
-    let telegramText = `\`\`\`\n${aiPrompt}\n\`\`\``;
+    let telegramText = `🎨 *TON PROMPT IA PRÊT À L'EMPLOI* 🎨
+
+Copie le texte ci-dessous et colle-le dans ton IA (Midjourney / DALL-E) :
+
+\`\`\`
+${aiPrompt}
+\`\`\``;
 
     if (confirm("Générer et envoyer le prompt IA Premium sur Telegram ?")) {
         sendAdminTelegram(telegramText).then(() => {
@@ -3217,6 +3224,7 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
         });
     }
 }
+    }
 
     function buildCC(c, sc, sl, pw, isHome) {
         var mH = '';
@@ -3739,11 +3747,11 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
     let telegramText = `\`\`\`\n${aiPrompt}\n\`\`\``;
 
     if (confirm("Générer et envoyer le prompt IA Premium sur Telegram ?")) {
-            sendAdminTelegram(telegramText).then(() => {
-                showToast("Prompt IA envoyé ! 🎨");
-            });
-        }
+        sendAdminTelegram(telegramText).then(() => {
+            showToast("Prompt IA envoyé ! 🎨");
+        });
     }
+}
 </script>
 </body>
 </html>
