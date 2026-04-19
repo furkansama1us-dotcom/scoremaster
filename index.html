@@ -4643,6 +4643,9 @@ function renderInstaTexts() {
     }
 
     var earliestTime = '21h00';
+    var teamsString = 'L\'affiche du jour';
+    var teamA = 'Équipe A', teamB = 'Équipe B';
+
     if (activeCombined && activeCombined.matches && activeCombined.matches.length > 0) {
         var earliest = '23:59';
         activeCombined.matches.forEach(function(m) {
@@ -4650,42 +4653,39 @@ function renderInstaTexts() {
             if (extracted && extracted[0] < earliest) earliest = extracted[0];
         });
         earliestTime = earliest.replace(':', 'h');
+
+        // Récupérer les noms pour les sondages
+        let firstMatch = activeCombined.matches[0];
+        if (firstMatch && firstMatch.teams) {
+            teamsString = firstMatch.teams;
+            let parts = firstMatch.teams.split(/\s+-\s+|\s+vs\.?\s+/i);
+            if (parts.length >= 2) {
+                teamA = parts[0].trim();
+                teamB = parts[1].trim();
+            }
+        }
     }
 
     var texts = [
-        { label: '🔥 Story 1 — Accroche mystère', color: '#f97316', items: [
-            `🔒 Le combiné de ce soir est disponible.\n\nOn a fait le travail. T'as plus qu'à suivre.\n\n👉 Lien en bio`,
-            `⚡ Ce soir on joue gros.\n\nLe combiné est prêt. Les cotes sont élevées.\n\nT'es in ou t'es out ? 👇`,
-            `🎯 Analyse faite. Combiné validé.\n\nIl reste des places VIP+.\n\n🔗 Lien en bio avant qu'il soit trop tard.`
+        { label: '📊 Story 1 — Interaction & Algorithme (À mettre avec un Sondage/Curseur)', color: '#8b5cf6', items: [
+            `Qui prend les 3 points ce soir ? 👇\n[Mettre un sticker Sondage : ${teamA} ou ${teamB}]\n\nNotre algorithme a déjà rendu son verdict 🤫`,
+            `Un pronostic pour ce choc ? ✍️\n[Mettre un sticker Boîte à questions]\n\nNous, on a déjà validé le score exact 🎯`,
+            `Tu vois combien de buts dans ce match ? ⚽️\n[Mettre un curseur à glisser]\n\nL'analyse est bouclée. C'est du lourd ce soir 💸`
         ]},
-        { label: '🛡️ Story 2 — Texte sur écusson équipe A', color: '#a855f7', items: [
-            `Ce maillot va peser lourd ce soir 👀\n\nOn a tout analysé. Le score exact est dans le combiné.\n\n📲 Lien en bio`,
-            `Cette équipe a été scrutée sous toutes les coutures 🔍\n\nNotre analyse est sans appel.\n\n👉 Combiné disponible — lien en bio`,
-            `Ils entrent sur le terrain ce soir 🏟️\n\nOn connaît le score. Rejoins le VIP+ pour le voir.\n\n🔗 Lien en bio`,
-            `L'écusson parle. L'analyse aussi. 💎\n\nCombiné score exact ce soir — accès VIP+ lien en bio`
+        { label: '⚡ Story 2 — Hype & Clash (Parfait sur l\'animation vidéo)', color: '#f97316', items: [
+            `Le choc de la soirée ⚡️\n\nL'analyse est terminée. Le score exact est verrouillé dans le VIP+ 🤫\n\n👉 Lien en bio`,
+            `Ce soir la terre tremble 🌍\nMais notre algorithme reste de glace 🥶\n\nScore exact publié 🔒`,
+            `Une affiche de rêve. Une analyse de maître 💎\n\nLe combiné est prêt.\n📲 Accède au VIP+ via le lien en bio`
         ]},
-        { label: '🛡️ Story 3 — Texte sur écusson équipe B', color: '#a855f7', items: [
-            `L'autre adversaire du soir 🎯\n\nOn a analysé leurs stats, leur forme, leur historique.\n\nRésultat ? Dans le combiné VIP+. Lien en bio 👇`,
-            `Cette équipe va tout donner ce soir 💪\n\nEt nous on sait exactement comment ça va finir.\n\n📲 Lien en bio — places limitées`,
-            `2ème match du combiné. 2ème analyse béton. 🔒\n\nAccède au score exact — lien en bio`,
-            `Pas de hasard ici. Que de l'analyse pure. 📊\n\nCe soir, le combiné score exact est disponible.\n\n👉 Lien en bio`
+        { label: '👑 Story 3 — Autorité & Confiance (Flex)', color: '#22c55e', items: [
+            `Pas de hasard. Que des mathématiques et de l'analyse 🧬\n\nLe ticket du soir est une vraie pépite 💎\n👉 Lien en bio`,
+            `Pendant qu'ils parient au hasard, on investit intelligemment 🧠\n\nScore exact validé par nos experts 🦅\nRejoins l'élite ⬇️`,
+            `100% Data. 0% Émotion.\n\nLe verdict de ce soir est tombé. 🏛️\nTicket VIP+ disponible.`
         ]},
-        { label: '⏰ Story 4 — Urgence', color: '#ef4444', items: [
-            `⏰ Début du premier match à ${earliestTime}.\n\nIl te reste peu de temps.\n\nLe combiné score exact est disponible maintenant — lien en bio 👇`,
-            `🚨 DERNIÈRE CHANCE\n\nLe combiné ferme dans peu de temps.\n\nAccède maintenant — lien en bio`,
-            `T'attendais quoi ? ⏳\n\nLe combiné est disponible. Le match commence bientôt.\n\nPrends ta place — lien en bio 🔗`
-        ]},
-        { label: '🏆 Story 5 — Preuve sociale', color: '#22c55e', items: [
-            `Nos membres VIP+ ont déjà accès au combiné de ce soir ✅\n\nTu rejoins quand ? 👇 Lien en bio`,
-            `📈 Semaine après semaine, nos VIP+ valident.\n\nCe soir c'est encore parti.\n\nRejoins-nous — lien en bio`,
-            `Pendant que tu hésites, les VIP+ encaissent 💰\n\nLe combiné de ce soir est déjà entre leurs mains.\n\n🔗 Lien en bio`,
-            `+1 200 membres VIP+ ont accès ce soir 👑\n\nToi aussi tu peux. Lien en bio.`
-        ]},
-        { label: '💎 Story 6 — Conversion finale', color: '#fbbf24', items: [
-            `VIP+ à vie. Un seul paiement. Accès illimité. 💎\n\nLe combiné de ce soir en fait partie.\n\n👉 Lien en bio`,
-            `Ce soir tu peux juste regarder.\n\nOu tu peux jouer avec nous. 🎯\n\nLe choix t'appartient — lien en bio`,
-            `Le combiné score exact c'est pas de la chance.\nC'est de l'analyse. 📊\n\nRejoins les VIP+ — lien en bio 🔗`,
-            `Satisfait ou remboursé 48h ✅\nAccès à vie 💎\nCombiné chaque semaine 🔥\n\nLe lien est en bio. Simple.`
+        { label: '⏳ Story 4 — FOMO & Urgence', color: '#ef4444', items: [
+            `⏳ Plus que quelques heures avant le coup d'envoi (${earliestTime}).\n\nLes VIP+ ont déjà le ticket en main 🎟️\nEt toi ? 👇`,
+            `🚨 Fermeture des accès imminente !\n\nTu vas encore rater ça ?\n👉 Rejoins le VIP+ avant le début du match`,
+            `Les cotes risquent de chuter. L'info est déjà dans l'espace membre 👑\n\nDernier appel avant le match ⏳`
         ]}
     ];
 
@@ -4694,10 +4694,10 @@ function renderInstaTexts() {
     var html = `
         <div style="background:rgba(225,48,108,0.1);border:1px solid rgba(225,48,108,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#f472b6;display:flex;align-items:center;gap:8px;flex-shrink:0;">
             <i class="fas fa-circle" style="font-size:8px;animation:pulse 2s infinite;"></i>
-            ${activeCombined ? 'Combiné EN COURS détecté — textes personnalisés' : 'Aucun combiné — textes génériques'}
+            ${activeCombined ? 'Combiné EN COURS détecté — textes ultra-optimisés' : 'Aucun combiné — textes génériques'}
         </div>
         <div style="font-size:11px;color:#6b7280;line-height:1.6;padding:2px;">
-            📱 <strong style="color:#fff;">Mode d'emploi :</strong> Choisissez un texte par story, copiez-le et collez-le dans l'éditeur Instagram.
+            📱 <strong style="color:#fff;">Astuce de Pro :</strong> Ne cachez pas l'animation ! Placez le texte en haut ou en bas de l'écran, et utilisez les stickers natifs Instagram (Sondages, Curseurs) pour booster la viralité.
         </div>`;
 
     texts.forEach(function(section, si) {
@@ -4711,13 +4711,11 @@ function renderInstaTexts() {
 
         section.items.forEach(function(txt, ti) {
             var btnId = 'btn-insta-' + si + '-' + ti;
-            // Échapper pour l'attribut data
-            var escaped = txt.replace(/'/g, "\\'").replace(/\n/g, '\\n');
             html += `
                 <div style="background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;">
                     <div style="font-size:13px;color:#f9fafb;line-height:1.8;white-space:pre-wrap;">${txt}</div>
                     <button id="${btnId}" onclick="copyInstaText(${si},${ti})" 
-                        style="width:100%;padding:10px;border-radius:10px;border:none;background:${section.color};color:#000;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">
+                        style="width:100%;padding:10px;border-radius:10px;border:none;background:${section.color};color:${si === 3 ? '#fff' : '#000'};font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s;">
                         📋 Copier ce texte
                     </button>
                 </div>`;
