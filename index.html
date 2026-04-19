@@ -2871,6 +2871,9 @@ ${matchLines}
     // ============================================================
 // GÉNÉRATION DU PROMPT IA PREMIUM (FORMAT 9:16 + LOGO SM)
 // ============================================================
+// ============================================================
+// GÉNÉRATION DU PROMPT IA PREMIUM (FORMAT 9:16 + LOGO SM + INSTA)
+// ============================================================
 function sendInstaPrompt(id) {
     var c = allCombineds.find(x => x.id == id);
     if (!c) { showToast("Combiné introuvable", true); return; }
@@ -2897,7 +2900,6 @@ function sendInstaPrompt(id) {
         });
     }
 
-    // On fusionne ton style "Premium" avec les données du match et ton branding
     let aiPrompt = `A high-end cinematic sports digital poster, vertical 9:16 ratio. 
 
 Background: Spectacular low-angle view from a wet, ultra-reflective football pitch in a grand stadium at night. Dramatic lighting, glowing stadium floodlights, lens flares, falling luxurious golden confetti, subtle cyan lightning and golden sparks.
@@ -2909,17 +2911,12 @@ ${detailsMatchs}
 
 Graphic Elements: Two floating rectangular frames with glowing cyan neon borders. Professional Champions League broadcast style.
 
-Bottom branding: The Instagram handle "@scoremaster.fr" clearly visible in a modern glowing font.
+Bottom branding: The official 3D Instagram camera logo icon placed directly next to the handle "@scoremaster.fr", both clearly visible in a modern glowing style.
 
 Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold and silver color palette, --ar 9:16`;
 
-    let telegramText = `🎨 *TON PROMPT IA PRÊT À L'EMPLOI* 🎨
-
-Copie le texte ci-dessous et colle-le dans ton IA (Midjourney / DALL-E) :
-
-\`\`\`
-${aiPrompt}
-\`\`\``;
+    // Uniquement le prompt formaté dans un bloc de code Telegram pour un tap-to-copy rapide
+    let telegramText = `\`\`\`\n${aiPrompt}\n\`\`\``;
 
     if (confirm("Générer et envoyer le prompt IA Premium sur Telegram ?")) {
         sendAdminTelegram(telegramText).then(() => {
@@ -3607,7 +3604,7 @@ let quickEditCombinedId = null;
         }
     }
     // ============================================================
-// GÉNÉRATION DU PROMPT IA PREMIUM (FORMAT 9:16 + LOGO SM)
+// GÉNÉRATION DU PROMPT IA PREMIUM (FORMAT 9:16 + LOGO SM + INSTA)
 // ============================================================
 function sendInstaPrompt(id) {
     var c = allCombineds.find(x => x.id == id);
@@ -3635,7 +3632,6 @@ function sendInstaPrompt(id) {
         });
     }
 
-    // On fusionne ton style "Premium" avec les données du match et ton branding
     let aiPrompt = `A high-end cinematic sports digital poster, vertical 9:16 ratio. 
 
 Background: Spectacular low-angle view from a wet, ultra-reflective football pitch in a grand stadium at night. Dramatic lighting, glowing stadium floodlights, lens flares, falling luxurious golden confetti, subtle cyan lightning and golden sparks.
@@ -3647,17 +3643,12 @@ ${detailsMatchs}
 
 Graphic Elements: Two floating rectangular frames with glowing cyan neon borders. Professional Champions League broadcast style.
 
-Bottom branding: The Instagram handle "@scoremaster.fr" clearly visible in a modern glowing font.
+Bottom branding: The official 3D Instagram camera logo icon placed directly next to the handle "@scoremaster.fr", both clearly visible in a modern glowing style.
 
 Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold and silver color palette, --ar 9:16`;
 
-    let telegramText = `🎨 *TON PROMPT IA PRÊT À L'EMPLOI* 🎨
-
-Copie le texte ci-dessous et colle-le dans ton IA (Midjourney / DALL-E) :
-
-\`\`\`
-${aiPrompt}
-\`\`\``;
+    // Uniquement le prompt formaté dans un bloc de code Telegram pour un tap-to-copy rapide
+    let telegramText = `\`\`\`\n${aiPrompt}\n\`\`\``;
 
     if (confirm("Générer et envoyer le prompt IA Premium sur Telegram ?")) {
         sendAdminTelegram(telegramText).then(() => {
