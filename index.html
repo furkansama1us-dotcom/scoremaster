@@ -3988,38 +3988,34 @@ let quickEditCombinedId = null;
 
     var earliestFormatted = earliestTime.replace(':', 'h');
 
+    // Extraction d'un joueur et club aléatoire parmi les équipes
+    var allTeams = [];
+    matches.forEach(function(m) {
+        if (m.teams) {
+            var parts = m.teams.split(/\s*[-vs]+\s*/i);
+            parts.forEach(function(t) { if(t.trim()) allTeams.push(t.trim()); });
+        }
+    });
+    var randomTeam = allTeams[Math.floor(Math.random() * allTeams.length)] || 'a top football club';
+    var randomPlayer = getRandomPlayer(randomTeam);
+
     output.prompt =
-'Create a clean, professional football match announcement graphic, vertical 9:16 format, designed for direct Instagram posting.\n\n' +
+'Cinematic back view shot of footballer ' + randomPlayer + ' from ' + randomTeam + ' emerging from stadium tunnel onto illuminated football pitch, captured by professional sports photographer using dynamic low-angle perspective with subject centered in frame, dramatic nocturnal stadium lighting creating volumetric god rays and atmospheric mist, high detail rendering showing player\'s kit textures and muscular definition against moody blue-purple ambient glow, club emblem visible on tunnel wall banner in selective focus, stadium crowd banners softly blurred in background stands, photorealistic depth of field with bokeh effects, wet concrete floor reflecting colored stadium lights transitioning to pristine grass, epic hero moment composition with strong leading lines from tunnel architecture opening to pitch, professional color grading with teal and orange cinematic LUT, 8K resolution sharp details, sports illustrated magazine cover quality, golden ratio composition placing player slightly off-center for visual tension, rim lighting separating subject from background, Canon EOS R5 aesthetic with 24-70mm f/2.8 lens characteristics, subtle lens flare from stadium floods, HDR tone mapping preserving shadow and highlight detail, artificial floodlights clearly illuminating player\'s back and shoulders.\n\n' +
 
-'BACKGROUND:\n' +
-'A football stadium at night with soft blur, bright floodlights, and subtle golden particles. Keep background simple to enhance readability. Dark overall tone.\n\n' +
+'OVERLAY TEXT TO ADD IN POST-PRODUCTION (do not render as part of the image background, place as clean graphic overlay):\n\n' +
 
-'TOP CENTER — SM LOGO:\n' +
-'A sharp metallic silver "SM" shield logo with a gold crown on top. The crown has 5 points with gold balls at the tips. The "SM" letters are bold, angular, chrome/silver colored inside a pointed shield shape. Clean, well-defined, not distorted. Same style as a luxury esports or football brand logo.\n\n' +
+'TOP CENTER: Metallic silver "SM" shield logo with gold crown (5 points, gold balls at tips). Sharp, not distorted.\n\n' +
 
-'MAIN TEXT:\n' +
-'- "COMBINE" (large 3D chrome metallic text, centered, bold)\n' +
-'- "DISPONIBLE" (just below, glowing orange neon text, #f97316)\n\n' +
+'MATCH ANNOUNCEMENT PANELS (glass panels with cyan neon border, centered in lower half):\n' +
+detailsMatchs.trim() + '\n\n' +
 
-'CENTER COMPOSITION — MATCH PANELS:\n' +
-'For each match below, display one clean glass panel with cyan neon border containing:\n' +
-'Left side: the national flag emoji of the league country\n' +
-'Center: the match teams and time in this exact format\n' +
-detailsMatchs.trim() + '\n' +
-'Each match on ONE single line. Time shown ONCE only.\n' +
-'Font: simple, thick, modern sans-serif, high contrast white text.\n\n' +
+'BOTTOM: Instagram gradient camera logo + "@scoremaster.fr" in bold white.\n\n' +
 
-'BOTTOM BRANDING:\n' +
-'Official Instagram camera logo (gradient purple/pink/orange) followed by "@scoremaster.fr" in bold white text.\n\n' +
-
-'CRITICAL INSTRUCTIONS:\n' +
-'- Use ONLY simple uppercase letters, NO accents, NO special characters\n' +
+'CRITICAL:\n' +
 '- NO scores, NO results, NO numbers except match times\n' +
-'- Text must be perfectly readable and correctly spelled\n' +
-'- Avoid distorted, stylized or fake-looking text\n' +
-'- Prioritize clarity over artistic effects\n' +
-'- Style: clean sports broadcast graphic, ultra sharp, high contrast, optimized for mobile, Instagram ready, 4K\n' +
-'- NO English words visible on the final image except team names\n\n' +
+'- All text in uppercase, no accents, no special characters\n' +
+'- Text must be sharp, readable, high contrast white\n' +
+'- Keep player silhouette as dominant visual\n' +
 '--ar 9:16 --style raw --v 6';
 
     output.insta =
@@ -4041,6 +4037,76 @@ instaMatches + '\n' +
     var ra = document.getElementById('pg-result-area');
     ra.style.display = 'flex';
     pgSwitchTab('prompt');
+}
+    function getRandomPlayer(teamName) {
+    var t = (teamName || '').toLowerCase();
+    var players = {
+        'napoli':           ['Kvaratskhelia', 'Osimhen', 'Di Lorenzo', 'Politano', 'Lobotka'],
+        'lazio':            ['Immobile', 'Luis Alberto', 'Milinkovic-Savic', 'Zaccagni', 'Romagnoli'],
+        'milan':            ['Leao', 'Giroud', 'Theo Hernandez', 'Pulisic', 'Reijnders'],
+        'inter':            ['Lautaro Martinez', 'Calhanoglu', 'Barella', 'Thuram', 'Bastoni'],
+        'juventus':         ['Vlahovic', 'Chiesa', 'Rabiot', 'Gatti', 'Cambiaso'],
+        'roma':             ['Dybala', 'Lukaku', 'Pellegrini', 'Mancini', 'Spinazzola'],
+        'atalanta':         ['Lookman', 'De Ketelaere', 'Retegui', 'Scalvini', 'Pasalic'],
+        'fiorentina':       ['Martinez Quarta', 'Nico Gonzalez', 'Sottil', 'Amrabat', 'Biraghi'],
+        'paris':            ['Mbappe', 'Neymar', 'Hakimi', 'Vitinha', 'Dembele'],
+        'psg':              ['Mbappe', 'Neymar', 'Hakimi', 'Vitinha', 'Dembele'],
+        'marseille':        ['Aubameyang', 'Sanchez', 'Gigot', 'Veretout', 'Nuno Tavares'],
+        'lyon':             ['Lacazette', 'Cherki', 'Caqueret', 'Tolisso', 'Tagliafico'],
+        'monaco':           ['Golovin', 'Ben Yedder', 'Akliouche', 'Minamino', 'Embolo'],
+        'lens':             ['Openda', 'Fofana', 'Frankowski', 'Salis', 'Gradit'],
+        'lille':            ['David', 'Cabella', 'Zhegrova', 'Gudmundsson', 'Tiago Santos'],
+        'real madrid':      ['Vinicius Jr', 'Bellingham', 'Rodrygo', 'Valverde', 'Modric'],
+        'barcelona':        ['Yamal', 'Lewandowski', 'Pedri', 'Gavi', 'Raphinha'],
+        'atletico':         ['Griezmann', 'Morata', 'De Paul', 'Koke', 'Gimenez'],
+        'sevilla':          ['En-Nesyri', 'Suso', 'Rakitic', 'Acuna', 'Navas'],
+        'manchester city':  ['Haaland', 'De Bruyne', 'Foden', 'Rodri', 'Bernardo Silva'],
+        'manchester united':['Rashford', 'Bruno Fernandes', 'Mainoo', 'Dalot', 'Hojlund'],
+        'arsenal':          ['Saka', 'Martinelli', 'Odegaard', 'Rice', 'Havertz'],
+        'chelsea':          ['Palmer', 'Jackson', 'Enzo Fernandez', 'Caicedo', 'James'],
+        'liverpool':        ['Salah', 'Nunez', 'Szoboszlai', 'Van Dijk', 'Trent Alexander-Arnold'],
+        'tottenham':        ['Son', 'Richarlison', 'Maddison', 'Kulusevski', 'Romero'],
+        'newcastle':        ['Isak', 'Gordon', 'Trippier', 'Bruno Guimaraes', 'Botman'],
+        'aston villa':      ['Watkins', 'McGinn', 'Tielemans', 'Diaby', 'Martinez'],
+        'bayern':           ['Kane', 'Musiala', 'Sane', 'Kimmich', 'Davies'],
+        'dortmund':         ['Sancho', 'Brandt', 'Reus', 'Hummels', 'Adeyemi'],
+        'leverkusen':       ['Wirtz', 'Grimaldo', 'Boniface', 'Granit Xhaka', 'Frimpong'],
+        'leipzig':          ['Werner', 'Openda', 'Dani Olmo', 'Laimer', 'Schlager'],
+        'frankfurt':        ['Kolo Muani', 'Kamada', 'Gotze', 'Koch', 'Lenz'],
+        'benfica':          ['Rafa Silva', 'Joao Mario', 'Aursnes', 'Florentino Luis', 'Kokcu'],
+        'porto':            ['Pepe', 'Taremi', 'Galeno', 'Pepê', 'Eustaquio'],
+        'sporting':         ['Pedro Goncalves', 'Trincao', 'Hjulmand', 'Coates', 'Matheus Nunes'],
+        'ajax':             ['Kudus', 'Bergwijn', 'Brobbey', 'Timber', 'Tadic'],
+        'psv':              ['Gakpo', 'Zahavi', 'Sangaré', 'Dest', 'Veerman'],
+        'galatasaray':      ['Icardi', 'Mertens', 'Torreira', 'Ziyech', 'Kerem Akturkoglu'],
+        'fenerbahce':       ['Dzeko', 'Tadic', 'Fred', 'Osayi-Samuel', 'Lincoln'],
+        'besiktas':         ['Gedson Fernandes', 'Romain Saiss', 'Dele Alli', 'Al-Musrati', 'Immobile'],
+        'sparta praha':     ['Kuchta', 'Haraslin', 'Soucek', 'Vindahl', 'Birmancevic'],
+        'slavia':           ['Coufal', 'Sevcik', 'Holes', 'Masopust', 'Lingr'],
+        'jablonec':         ['Kratochvil', 'Smejkal', 'Hanus', 'Houska', 'Polidar'],
+        'celtic':           ['Kyogo', 'Maeda', 'Hatate', 'O\'Riley', 'Scales'],
+        'rangers':          ['Tavernier', 'Cantwell', 'Tillman', 'Danilo', 'McCausland'],
+        'salzburg':         ['Okafor', 'Sucic', 'Kjaergaard', 'Sesko', 'Capaldo'],
+        'anderlecht':       ['Refaelov', 'Verschaeren', 'Dreyer', 'Stroeykens', 'N\'Diaye'],
+        'club brugge':      ['Skov Olsen', 'Jutgla', 'Vanaken', 'Buchanan', 'Onyedika'],
+        'olympiakos':       ['El-Arabi', 'Podence', 'Fortounis', 'Camara', 'Retsos'],
+        'panathinaikos':    ['Ioannidis', 'Maksimovic', 'Babunski', 'Vagiannidis', 'Hola'],
+        'flamengo':         ['Gabi', 'De Arrascaeta', 'Everton Ribeiro', 'Pedro', 'Vidal'],
+        'palmeiras':        ['Dudu', 'Raphael Veiga', 'Gustavo Scarpa', 'Rony', 'Zé Rafael'],
+        'boca':             ['Benedetto', 'Cavani', 'Pol Fernandez', 'Villa', 'Medina'],
+        'river plate':      ['Borré', 'Alvarez', 'Montiel', 'Enzo Perez', 'De La Cruz'],
+    };
+
+    // Cherche dans les clés
+    for (var key in players) {
+        if (t.includes(key)) {
+            var list = players[key];
+            return list[Math.floor(Math.random() * list.length)];
+        }
+    }
+    // Joueur générique si équipe inconnue
+    var generic = ['a top striker', 'an elite midfielder', 'a star defender', 'the team captain', 'a key player'];
+    return generic[Math.floor(Math.random() * generic.length)];
 }
 
 function detectFlag(teams) {
