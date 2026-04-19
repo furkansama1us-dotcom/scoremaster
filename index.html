@@ -1702,13 +1702,10 @@ var response = await fetch(TARGET_URL, {
         
         matches.forEach(function(m) {
             var home = m.homeTeam?.name || m.home_name || m.home || "Domicile";
-var away = m.awayTeam?.name || m.away_name || m.away || "Extérieur";
-            var homeId = m.homeTeam ? m.homeTeam.id : null;
-var awayId = m.awayTeam ? m.awayTeam.id : null;
-var homeLogo = `https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/${homeId}.png&w=40&h=40&scale=crop&cquality=40`;
-var awayLogo = `https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/${awayId}.png&w=40&h=40&scale=crop&cquality=40`;
+            var away = m.awayTeam?.name || m.away_name || m.away || "Extérieur";
             var fullMatchName = `${home} - ${away}`;
-            
+            var btnId = 'mb-' + Math.random().toString(36).substr(2, 8);
+
             var timeStr = "18:00";
             if (m.startTimestamp) {
                 var dateObj = new Date(m.startTimestamp * 1000);
@@ -1716,16 +1713,27 @@ var awayLogo = `https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/${a
             }
 
             matchesHtml += `
-            <button type="button" onclick="addMatchFromAPI('${fullMatchName.replace(/'/g, "\\'")}', '${timeStr}', '')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer;">
-                <div style="font-size:13px; font-weight:600; display:flex; align-items:center;">
-                    <span style="color:var(--primary-yellow); margin-right:8px; width:45px;"><i class="fas fa-clock"></i> ${timeStr}</span>
-                    ${homeLogo ? `<img src="${homeLogo}" style="width:18px;height:18px;object-fit:contain;border-radius:3px;" onerror="this.style.display='none'">` : ''}
-<span>${home}</span>
-<span style="color:var(--text-gray);margin:0 4px;">-</span>
-${awayLogo ? `<img src="${awayLogo}" style="width:18px;height:18px;object-fit:contain;border-radius:3px;" onerror="this.style.display='none'">` : ''}
-<span>${away}</span>
+            <button type="button" id="${btnId}" onclick="addMatchFromAPI('${fullMatchName.replace(/'/g, "\\'")}', '${timeStr}', '')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer;">
+                <div style="font-size:13px; font-weight:600; display:flex; align-items:center; gap:5px;">
+                    <span style="color:var(--primary-yellow); width:45px; flex-shrink:0;"><i class="fas fa-clock"></i> ${timeStr}</span>
+                    <img id="lh-${btnId}" style="width:16px;height:16px;object-fit:contain;display:none;">
+                    <span>${home}</span>
+                    <span style="color:var(--text-gray);">-</span>
+                    <img id="la-${btnId}" style="width:16px;height:16px;object-fit:contain;display:none;">
+                    <span>${away}</span>
                 </div>
             </button>`;
+
+            setTimeout(function() {
+                fetchTeamLogo(home).then(function(url) {
+                    var el = document.getElementById('lh-' + btnId);
+                    if (el && url) { el.src = url; el.style.display = 'inline-block'; }
+                });
+                fetchTeamLogo(away).then(function(url) {
+                    var el = document.getElementById('la-' + btnId);
+                    if (el && url) { el.src = url; el.style.display = 'inline-block'; }
+                });
+            }, 200);
         });
 
         matchesHtml += '</div>';
