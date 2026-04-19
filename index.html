@@ -1689,7 +1689,13 @@ var response = await fetch(TARGET_URL, {
         if (!response.ok) throw new Error("Erreur réseau ou Proxy");
 
         var data = await response.json();
-        var matches = data.events || [];
+        var matches = (data.events || []).filter(function(m) {
+    if (!m.startTimestamp) return true;
+    var d = new Date(m.startTimestamp * 1000);
+    var hours = d.getHours();
+    var minutes = d.getMinutes();
+    return hours > 18 || (hours === 18 && minutes === 0);
+});
 
         if (matches.length === 0) {
             showToast("Aucun match trouvé pour le " + formattedDate, true);
