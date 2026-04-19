@@ -613,16 +613,15 @@
             return;
         }
 
+        // 1. Préparation de la liste des matchs
         let matchLines = "";
         if (c.matches && c.matches.length > 0) {
-            c.matches.forEach(m => { 
-                let emoji = getEmojiFromFlagHtml(m.league_flag);
-                matchLines += `${emoji} ${m.teams}\n`; 
-            });
+            c.matches.forEach(m => { matchLines += `⚽️ ${m.teams}\n`; });
         } else {
             matchLines = "⚽️ Matchs confidentiels\n";
         }
 
+        // 2. Calcul des heures
         let earliestTime = '23:59';
         if (c.matches && c.matches.length > 0) {
             c.matches.forEach(m => {
@@ -638,18 +637,21 @@
             deadlineStr = String(deadlineDateTime.getHours()).padStart(2, '0') + ':' + String(deadlineDateTime.getMinutes()).padStart(2, '0');
         }
 
+        // 3. Calcul du jour (aujourd'hui, demain, ou date précise)
         let today = new Date();
         let tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
         let dayContext = "le " + new Date(c.date).toLocaleDateString('fr-FR');
         if (c.date === today.toISOString().split('T')[0]) dayContext = "aujourd'hui";
         else if (c.date === tomorrow.toISOString().split('T')[0]) dayContext = "demain";
 
+        // 4. Le fameux bloc d'infos précis (Équipes, Heure, Deadline)
         let infoBlock = 
 `🏆 *AU PROGRAMME :*
 ${matchLines}
 ⚠️ Début des matchs : ${dayContext} à *${earliestTime}*
 ⛔️ *FERMETURE STRICTE DES ACCÈS : ${deadlineStr}* ❗️`;
 
+        // 5. Modèles de relance dynamiques (AVEC infoBlock PARTOUT)
         const reminders = [
             `⏳ *L'heure approche !*\n\nPlus que quelques heures avant le coup d'envoi de notre combiné.\n\n${infoBlock}\n\nChez ScoreMaster tout est professionnel :\n- Analyses détaillées 📈\n- Suivi de la rencontre 📲\n- Gestion de bankroll 📊\n\n👉 Contact : @ScoreMasterOfficiel`,
             
@@ -659,7 +661,7 @@ ${matchLines}
             
             `⏰ *DERNIER APPEL !*\n\nLa validation approche à grands pas. Nos experts ont finalisé leur sélection :\n\n${infoBlock}\n\nRejoins la communauté et gère tes paris intelligemment 📊.\n\n👉 Pour nous rejoindre : @ScoreMasterOfficiel`
         ];
-
+        // Sélection aléatoire du message
         let telegramText = reminders[Math.floor(Math.random() * reminders.length)];
 
         if (confirm("Veux-tu envoyer un message de relance...")) {
@@ -1771,10 +1773,7 @@ var response = await fetch(TARGET_URL, {
             var away = m.awayTeam?.name || m.away_name || m.away || "Extérieur";
             var fullMatchName = `${home} - ${away}`;
             var btnId = 'mb-' + Math.random().toString(36).substr(2, 8);
-            
-            // On génère le drapeau et on le sécurise pour l'envoyer au bouton
             var flag = getLeagueFlag(m);
-            var safeFlag = encodeURIComponent(flag);
 
             var timeStr = "18:00";
             if (m.startTimestamp) {
@@ -1783,7 +1782,7 @@ var response = await fetch(TARGET_URL, {
             }
 
             matchesHtml += `
-            <button type="button" id="${btnId}" onclick="addMatchFromAPI('${fullMatchName.replace(/'/g, "\\'")}', '${timeStr}', '', '${safeFlag}')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer;">
+            <button type="button" id="${btnId}" onclick="addMatchFromAPI('${fullMatchName.replace(/'/g, "\\'")}', '${timeStr}', '')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer;">
                 <div style="font-size:13px; font-weight:600; display:flex; align-items:center; gap:5px;">
                     <span style="color:var(--primary-yellow); width:45px; flex-shrink:0;"><i class="fas fa-clock"></i> ${timeStr}</span>
                     <span style="flex-shrink:0; display:inline-flex; align-items:center;">${flag}</span>
@@ -1804,11 +1803,10 @@ var response = await fetch(TARGET_URL, {
     }
     btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs';
 }
-    function addMatchFromAPI(teams, time, logo, encodedFlag = '') {
+    function addMatchFromAPI(teams, time, logo) {
         let onlyTime = time.match(/\d{2}:\d{2}/);
         let cleanTime = onlyTime ? onlyTime[0] : time;
-        let decodedFlag = encodedFlag ? decodeURIComponent(encodedFlag) : '';
-        addMatchEntry({ teams: teams, score: '2 - 1', odds: '7.00', time: cleanTime, logo: logo, league_flag: decodedFlag });
+        addMatchEntry({ teams: teams, score: '2 - 1', odds: '7.00', time: cleanTime, logo: logo });
         showToast('Match ajouté !');
     }
 
@@ -2511,15 +2509,12 @@ async function autoFetchFinalScores(combined) {
         var e = document.createElement('div');
         e.className = 'match-entry';
         
-        var flagVal = (data && data.league_flag) ? data.league_flag : '';
-        var logoVal = (data && data.logo) ? data.logo : '';
-
+        // Formulaire allégé : on a retiré le select du statut individuel
         e.innerHTML = '<div class="match-entry-header">' + 
             '<span class="match-entry-number"><i class="fas fa-futbol"></i> Match ' + matchEntryCount + '</span>' +
             '<button type="button" class="match-entry-remove" onclick="removeMatchEntry(this)"><i class="fas fa-trash"></i></button>' +
             '</div>'
-            + '<input type="hidden" class="match-logo-input" value="' + logoVal.replace(/"/g, '&quot;') + '">'
-            + '<input type="hidden" class="match-flag-input" value="' + flagVal.replace(/"/g, '&quot;') + '">'
+            + '<input type="hidden" class="match-logo-input" value="' + (data && data.logo ? data.logo : '') + '">'
             + '<div class="admin-field"><div class="admin-label"><i class="fas fa-users"></i> Équipes</div><input type="text" class="admin-input match-teams-input" placeholder="Équipe A - Équipe B" value="' + (data ? data.teams : '') + '" oninput="calculateGains()"></div>'
             + '<div class="admin-row"><div class="admin-field"><div class="admin-label"><i class="fas fa-bullseye"></i> Score exact</div><input type="text" class="admin-input match-score-input" placeholder="2 - 1" value="' + (data ? data.score : '') + '" oninput="calculateGains()"></div>'
             + '<div class="admin-field"><div class="admin-label"><i class="fas fa-chart-line"></i> Cote</div><input type="text" inputmode="decimal" class="admin-input match-odds-input" placeholder="7.00" value="' + (data ? data.odds : '') + '" oninput="calculateGains()"></div></div>'
@@ -2569,7 +2564,7 @@ async function autoFetchFinalScores(combined) {
     async function publishCombined() {
         var entries = document.querySelectorAll('.match-entry');
         var date = document.getElementById('admin-date').value;
-        var status = document.getElementById('admin-status').value;
+        var status = document.getElementById('admin-status').value; // C'est le champ caché 'en-cours'
         var miseVal = document.getElementById('admin-mise').value.replace(',', '.');
         var mise = parseFloat(miseVal) || 0;
 
@@ -2587,15 +2582,15 @@ async function autoFetchFinalScores(combined) {
             var ti = e.querySelector('.match-time-input').value.trim();
             var l = e.querySelector('.match-logo-input').value;
             
-            var flagInput = e.querySelector('.match-flag-input');
-            var f = flagInput ? flagInput.value : '';
-            
+            // CORRECTIF : On ne cherche plus le menu déroulant, on force "en-cours" !
             var mStatus = 'en-cours';
             
             if (!t || !s || o <= 0) valid = false;
 
-            matches.push({ teams: t, score: s, odds: o, time: ti, logo: l, league_flag: f, match_status: mStatus });
-            publicMatches.push({ teams: t, time: ti, score: '?-?', odds: 0, logo: l, league_flag: f, match_status: mStatus });
+            matches.push({ teams: t, score: s, odds: o, time: ti, logo: l, match_status: mStatus });
+
+            // Puisqu'on ne fait que créer, on masque toujours le score et la cote pour le public au départ
+            publicMatches.push({ teams: t, time: ti, score: '?-?', odds: 0, logo: l, match_status: mStatus });
 
             var extracted = ti.match(/\d{2}:\d{2}/);
             if (extracted && extracted[0] < earliestTime) earliestTime = extracted[0];
@@ -2606,6 +2601,7 @@ async function autoFetchFinalScores(combined) {
         var tot = 1; matches.forEach(function (m) { tot *= m.odds; });
         var gains = mise * tot;
 
+        // === CRÉATION DU NOUVEAU COMBINÉ EN BASE DE DONNÉES ===
         var pubRes = await supabaseClient.from('combineds_public').insert([{ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }]).select().single();
         if (pubRes.error) { showToast('Erreur Création', true); return; }
         
@@ -2628,12 +2624,9 @@ async function autoFetchFinalScores(combined) {
         else if (date === tomorrow.toISOString().split('T')[0]) dayContext = "demain";
 
         let matchLines = "";
-        matches.forEach(m => { 
-            let emoji = getEmojiFromFlagHtml(m.league_flag);
-            matchLines += `${emoji} ${m.teams}\n`; 
-        });
+        matches.forEach(m => { matchLines += `⚽️ ${m.teams}\n`; });
 
-        const intros = [
+            const intros = [
             "Salut l’équipe ! 🔥 L'analyse est tombée. Le nouveau combiné est officiellement disponible dans votre espace VIP+.",
             "Nos experts ont validé les choix du jour. Le ticket est prêt avec une excellente fiabilité. Filez vite sur l'app !",
             "💎 LE TICKET SCORE EXACT D'AUJOURD'HUI EST EN LIGNE ! L'étude des probabilités est très favorable.",
@@ -2655,8 +2648,7 @@ async function autoFetchFinalScores(combined) {
             "Le combiné VIP+ est en ligne et il est magnifique.",
             "L'équipe de passionnés est prête ? Le nouveau ticket vient de tomber."
         ];
-        
-        const outros = [
+            const outros = [
             "C’est le moment parfait pour prendre de l’avance. Ne laissez pas passer cette belle opportunité ! 🙌⚡️",
             "Faites vite avant que les cotes ne chutent ! L'horloge tourne. ⏱️",
             "💣 COTES ÉTUDIÉES\n💯 FORTE CONFIANCE\nPrêt à faire partie de l'équipe ?",
@@ -2680,6 +2672,9 @@ async function autoFetchFinalScores(combined) {
         ];
         
         let telegramDraft =
+            `📝 *BROUILLON CANAL PUBLIC :*\n` +
+            `_(À copier/coller sur votre canal)_\n\n` +
+            `---\n\n` +
             `${intros[Math.floor(Math.random() * intros.length)]}\n\n` +
             `🏆 *AU PROGRAMME :*\n` +
             `${matchLines}\n` +
@@ -2692,31 +2687,13 @@ async function autoFetchFinalScores(combined) {
 
         sendAdminTelegram(telegramDraft);
 
+        // On nettoie l'éditeur après publication
         resetEditor();
+
         await chargerDonnees();
         switchAdminTab('dashboard');
         renderAdminHistory();
     }
-
-    function getEmojiFromFlagHtml(html) {
-    if (!html) return '⚽️';
-    let match = html.match(/flagcdn\.com\/20x15\/([a-z-]+)\.png/);
-    if (!match) return '⚽️';
-    let code = match[1];
-    const emojiMap = {
-        'gb-eng': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'gb-sct': '🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'fr': '🇫🇷', 'es': '🇪🇸', 'de': '🇩🇪',
-        'it': '🇮🇹', 'pt': '🇵🇹', 'nl': '🇳🇱', 'be': '🇧🇪', 'tr': '🇹🇷',
-        'ru': '🇷🇺', 'ar': '🇦🇷', 'br': '🇧🇷', 'us': '🇺🇸', 'mx': '🇲🇽',
-        'co': '🇨🇴', 'cl': '🇨🇱', 'jp': '🇯🇵', 'kr': '🇰🇷', 'sa': '🇸🇦',
-        'ma': '🇲🇦', 'eg': '🇪🇬', 'au': '🇦🇺', 'eu': '🇪🇺', 'gr': '🇬🇷',
-        'pl': '🇵🇱', 'rs': '🇷🇸', 'hr': '🇭🇷', 'at': '🇦🇹', 'ch': '🇨🇭',
-        'se': '🇸🇪', 'no': '🇳🇴', 'dk': '🇩🇰', 'il': '🇮🇱', 'ua': '🇺🇦',
-        'hu': '🇭🇺', 'cz': '🇨🇿', 'ro': '🇷🇴', 'sk': '🇸🇰', 'ng': '🇳🇬',
-        'cn': '🇨🇳', 've': '🇻🇪', 'pe': '🇵🇪', 'ec': '🇪🇨', 'py': '🇵🇾',
-        'uy': '🇺🇾', 'bo': '🇧🇴'
-    };
-    return emojiMap[code] || '⚽️';
-}
     
     async function deleteSpecificCombined(id) {
         if(confirm("Es-tu sûr de vouloir supprimer ce combiné définitivement ?")) {
@@ -3117,16 +3094,19 @@ function sendTelegramWin(id) {
     var c = allCombineds.find(x => x.id == id);
     if (!c) { showToast("Combiné introuvable", true); return; }
 
+
+    // Formatage de la date du ticket
     const ticketDate = new Date(c.date).toLocaleDateString('fr-FR');
 
+    // Récupération des scores du combiné
     let matchLines = "";
     if (c.matches && c.matches.length > 0) {
         c.matches.forEach(m => { 
-            let emoji = getEmojiFromFlagHtml(m.league_flag);
-            matchLines += `✅ ${emoji} *${m.teams}* | Score : ${m.score}\n`; 
+            matchLines += `✅ *${m.teams}* | Score : ${m.score}\n`; 
         });
     }
 
+    // 20 Messages de victoire différents
     const winMessages = [
         `BOOM ! 💥 Encore un ticket validé ! Félicitations à tous ceux qui ont suivi le combiné du ${ticketDate}. L'algorithme a encore frappé fort ! 💸`,
         `✅ ENCAISSÉ ! Le travail paie toujours. On vient de plumer les bookmakers sur le ticket du ${ticketDate}. Qui est prêt pour le prochain ? 💰`,
@@ -3150,8 +3130,10 @@ function sendTelegramWin(id) {
         `🔥 BOUM BOUM BOUM ! Le réseau VIP+ a encore frappé. Le ticket score exact est validé. Quelle soirée !`
     ];
 
+    // Sélection aléatoire d'un message
     let randomWinMessage = winMessages[Math.floor(Math.random() * winMessages.length)];
 
+    // Assemblage du message final Telegram
     let telegramText = 
 `${randomWinMessage}
 
@@ -3159,12 +3141,12 @@ function sendTelegramWin(id) {
 ${matchLines}
 🚀 *Rejoignez l'élite sur l'application :* https://scoremaster.fr/`;
 
+   // Envoi via Supabase (Sécurisé)
     if (confirm("Envoyer le message de VICTOIRE sur Telegram pour ce combiné ?")) {
-        sendAdminTelegram(telegramText).then(() => {
-            showToast("Message de victoire envoyé sur Telegram ! 🍾");
-        });
-    }
-}
+            sendAdminTelegram(telegramText).then(() => {
+                showToast("Message de victoire envoyé sur Telegram ! 🍾");
+            });
+        }
     // ============================================================
 // GÉNÉRATION DU PROMPT IA PREMIUM (FORMAT 9:16 + LOGO SM)
 // ============================================================
@@ -3239,44 +3221,46 @@ ${aiPrompt}
         else if (combinDate.toDateString() === tomorrow.toDateString()) smartPrefix = "Dem. ";
         else smartPrefix = fmtD(c.date) + " ";
 
+        // Détection du lieu d'affichage
         var isHomeObscured = (isHome && sc === 'en-cours');
         var isVipObscured = (!isHome && sc === 'en-cours');
 
         matchesToDisplay.forEach(function (m) {
             var mStatus = m.match_status || (sc === 'en-cours' ? 'en-cours' : sc);
+            
+            // Sécurité : l'accueil a des étoiles, le VIP a le vrai score mais flouté
             var displayScore = isHomeObscured ? '*** - ***' : m.score;
             var displayOdds = isHomeObscured ? '**.**' : m.odds.toFixed(2);
             
             var blurClass = (isHomeObscured || isVipObscured) ? 'blurred-value' : '';
             var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<span style="margin-right:4px;">⚽</span>`);
             
-            // AFFICHAGE DU DRAPEAU ICI
-            var flagDisplay = m.league_flag ? `<span style="margin-right:6px; display:inline-flex; align-items:center; vertical-align:middle;">${m.league_flag}</span>` : '';
-            
             let cleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : "--:--";
             let finalTimeDisplay = smartPrefix + (cleanTime ? cleanTime[0] : "");
 
             mH += `<div class="match-row">
-                    <div class="match-row-top" style="display:flex; justify-content:space-between; align-items:center;">
-                        <div class="match-type" style="white-space:nowrap;">
-                            <i class="fas fa-futbol" style="color: #fff; margin-right: 6px; font-size: 14px;"></i> 
-                            Score exact <span class="${blurClass}" style="margin-left:5px; font-weight:700; color:var(--green); transition: filter 0.5s ease;">${displayScore}</span>
-                        </div>
-                        <div class="match-odds ${blurClass}" style="transition: filter 0.5s ease;">${displayOdds}</div>
+                <div class="match-row-top" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="match-type" style="white-space:nowrap;">
+                        <i class="fas fa-futbol" style="color: #fff; margin-right: 6px; font-size: 14px;"></i> 
+                        Score exact <span class="${blurClass}" style="margin-left:5px; font-weight:700; color:var(--green); transition: filter 0.5s ease;">${displayScore}</span>
                     </div>
-                    <div class="match-row-bottom" style="display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%;">
-                        <div class="match-teams" style="color:#fff; flex:1; min-width:0; display:flex; align-items:center; gap:6px;">
-                            ${logoDisplay}
-                            ${flagDisplay}
-                            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; width:100%;">${m.teams || 'Équipes'}</span>
-                        </div>
-                        <div class="match-time" style="color:var(--text-gray); flex-shrink:0; white-space:nowrap;">${finalTimeDisplay}</div>
+                    <div class="match-odds ${blurClass}" style="transition: filter 0.5s ease;">${displayOdds}</div>
+                </div>
+                
+                <div class="match-row-bottom" style="display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%;">
+                    <div class="match-teams" style="color:#fff; flex:1; min-width:0; display:flex; align-items:center; gap:6px;">
+                        ${logoDisplay} 
+                        <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; width:100%;">${m.teams || 'Équipes'}</span>
                     </div>
-                   </div>`;
+                    <div class="match-time" style="color:var(--text-gray); flex-shrink:0; white-space:nowrap;">${finalTimeDisplay}</div>
+                </div>
+               </div>`;
         });
         
         var pc = sc === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : sc === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
+        
         var blurClass = (isHomeObscured || isVipObscured) ? 'blurred-value' : '';
+        
         var displayGains = isHomeObscured ? '***,** €' : fmtC(c.gains || 0);
         var displayMise = isHomeObscured ? '***,** €' : fmtC(c.mise || 0);
         var displayTotalOdds = isHomeObscured ? '***.**' : (c.total_odds || 0).toFixed(2);
@@ -3298,6 +3282,7 @@ ${aiPrompt}
         var ctaBtn = (isHome && !isLocked && sc === 'en-cours') ? `<a href="${TELEGRAM_LINK}" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>` : '';
         if (isHome && isLocked && sc === 'en-cours') ctaBtn = `<button class="combined-cta-btn" style="background: var(--bg-input); color: var(--text-gray); cursor: not-allowed;"><i class="fas fa-lock"></i> Trop tard, match commencé !</button>`;
 
+        // LE BOUTON DE RÉVÉLATION VIP
         var vipRevealBtn = isVipObscured ? `<button id="reveal-btn-${c.id}" onclick="unblurVipCard('combined-card-vip-${c.id}', 'reveal-btn-${c.id}')" class="combined-cta-btn" style="background:linear-gradient(135deg, #FFD700, #E6C200); color:#000; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);"><i class="fas fa-eye" style="margin-right:6px;"></i> Cliquer ici pour déflouter les scores</button>` : '';
 
         return `
