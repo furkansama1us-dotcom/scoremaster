@@ -3795,85 +3795,143 @@ let quickEditCombinedId = null;
    // ============================================================
 // 1. FONCTION PRINCIPALE DU GÉNÉRATEUR PROMO WEB APP (MODIFIÉE)
 // ============================================================
-function renderPromoWebAppContent() {
-    var container = document.getElementById('promo-webapp-main-content');
+function renderPromoTelegramContent() {
+    var container = document.getElementById('promo-telegram-main-content');
     
-    // Si tu avais un sidebar spécifique, tu peux le peupler ici aussi
-    var sidebarContainer = document.getElementById('promo-webapp-sidebar-container');
-    sidebarContainer.innerHTML = `
-        <div style="background:rgba(168,85,247,0.08); border-radius:12px; padding:16px; border:1px solid rgba(168,85,247,0.2); flex-shrink:0; margin-bottom:12px;">
-            <div style="font-size:14px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-                <i class="fas fa-lightbulb" style="color:#c084fc;"></i> Astuces Promo
-            </div>
-            <div style="font-size:11px; color:#9ca3af; line-height:1.7;">
-                • Variez les messages (Tension, Data, Flex) pour ne pas lasser.<br>
-                • Utilisez toujours une image pour Telegram !<br>
-                • Les meilleurs moments : matin (8h) ou soir (21h).<br>
-                • Utilisez toujours le bouton "Prompt IA" juste en dessous de chaque texte pour générer le visuel parfait.
-            </div>
-        </div>
-    `;
+    // Si tu as un sidebar pour cette section (ou s'il n'existe pas, on gère l'affichage principal)
+    if (!container) {
+        // Fallback au cas où l'ID serait différent dans ton HTML (par ex promo-webapp-main-content)
+        container = document.getElementById('promo-webapp-main-content') || document.querySelector('.promo-content-area');
+    }
+    if (!container) return;
 
     // --- ÉTAPE A : ÉTAT DU GÉNÉRATEUR ---
     var htmlStatut = `
         <div style="background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); border-radius:10px; padding:10px 14px; font-size:12px; color:#4ade80; display:flex; align-items:center; gap:8px; flex-shrink:0; margin-bottom: 20px;">
             <i class="fas fa-bullhorn" style="font-size:12px; animation:pulse 2s infinite;"></i>
-            🛠️ 20 Textes Viraux & Prompts IA disponibles — Aucun token requis
+            🛠️ 20 Textes Viraux & Prompts IA disponibles — Aucun token Make.com requis
         </div>
         <div style="font-size:11px;color:#6b7280;line-height:1.6;padding:2px; margin-bottom: 20px; flex-shrink:0;">
-            📣 <strong style="color:#fff;">Mode d'emploi :</strong> Ne publiez pas à l'aveugle. Copiez un texte, puis utilisez le bouton <strong style="color:#c084fc;">🖼️ Prompt IA</strong> juste en dessous pour générer l'image parfaite pour ce message. Collez les deux directement sur Telegram !
+            📣 <strong style="color:#fff;">Mode d'emploi :</strong> Choisissez votre angle d'attaque. Copiez le texte pour Telegram, puis générez l'image d'illustration avec le bouton <strong style="color:#c084fc;">🖼️ Prompt IA</strong> !
         </div>`;
 
-    // --- ÉTAPE B : CONGFIGURATION DES 20 TEXTES VIRAUX + PROMPTS IA (GÉNÉRIQUES, PAS DE LIVE MATCH DATA) ---
+    // --- ÉTAPE B : LES 20 TEXTES VIRAUX & PROMPTS IA ---
     var viralPromoContent = [
-        // 1. Flex & Résultats (Violet)
+        // --- 🏆 FLEX & RÉSULTATS ---
         { 
-            label: "🏆 Story 1 — Flex & Résultats Mathématiques", color: "#8b5cf6", type: "flex", 
-            txt: "Le hasard n'a pas sa place ici 🧬\n\nPendant que d'autres parient, nos experts VIP+ analysent les mathématiques. Voici les bénéfices réels de la semaine 👇\n\n[Mettre capture d'écran de tes gains]\n\nLes données ont déjà rendu leur verdict pour ce soir.\nRejoins l'élite via le lien en bio. 👑",
-            prompt: "ENGLISH PROMPT: Ultra-high quality, photorealistic cinematic macro shot [16:9]. A pile of expensive luxury watches and stacks of money next to a glowing futuristic sports betting interface. Dramatic chiaroscuro lighting, intense highlights on metallic parts. High resolution stitching detail on fabrics. Moody, rich, and high-status vibe. No text overlays. --ar 16:9 --style raw --v 6"
+            label: "🏆 Story 1 — Flex : L'argent intelligent", color: "#8b5cf6", type: "flex", 
+            txt: "L'argent intelligent se place avant la masse 💸\n\nPendant que 95% des parieurs perdent en misant sur leurs émotions, notre cercle VIP+ encaisse grâce aux mathématiques.\n\nLes données ont déjà rendu leur verdict pour ce soir.\nRejoins l'élite 👑 👇\n👉 Lien en bio.",
+            prompt: "ENGLISH PROMPT: Ultra-high quality, photorealistic cinematic macro shot [16:9]. A heavy futuristic vault door partially open, revealing stacks of money and a glowing data dashboard inside. Dramatic chiaroscuro lighting, purple and gold neon accents. Moody, rich, and high-status vibe. No text overlays. --ar 16:9 --style raw --v 6"
         },
-        // 2. Data & Technologie (Bleu)
         { 
-            label: "🔬 Story 2 — Data & Algorithme de Maître", color: "#0ea5e9", type: "data", 
-            txt: "Data. 0% Émotion.\n\nNotre algorithme a analysé plus de 50 000 données historiques pour le combiné d'aujourd'hui. Les scores exacts sont verrouillés 🏛️\n\n[Mettre capture de l'algorithme qui tourne]\n\nNe parie plus, investis inteligemment avec les meilleurs outils data 👇\n👉 Lien en bio",
-            prompt: "ENGLISH PROMPT: Cinematic [16:9] shot of a stylized robotic hand holding a glowing spherical data cluster with football symbols inside. Cyberpunk laboratory background with blue glowing circuits. Ultra-close-up, extreme detail on complex mechanisms and holographic projections. Soft bokeh lens flares. The vibe is advanced, intelligent and high-tech. No additional typography or watermarks. --ar 16:9 --style raw --v 6"
+            label: "🏆 Story 2 — Flex : Vert sur vert", color: "#8b5cf6", type: "flex", 
+            txt: "📈 Vert sur vert.\n\nEncore une soirée où l'algorithme a fait le travail à notre place. L'historique ne ment pas.\n\nLe combiné data du jour est en ligne.\nNe reste pas sur le quai 🚂 👇\n👉 Accès au VIP+ en bio.",
+            prompt: "ENGLISH PROMPT: Cinematic [16:9] shot of abstract glowing green neon chart lines ascending sharply in a dark, luxurious futuristic room. Reflections on a sleek black marble floor. Success and wealth atmosphere. No text, ultra-detailed. --ar 16:9 --style raw --v 6"
         },
-        // 3. FOMO & Urgence (Orange)
         { 
-            label: "⏳ Story 3 — Urgence Absolue avant Coup d'envoi", color: "#f97316", type: "fomo", 
-            txt: "⏳ Tic-tac. L'occasion ne se présente qu'une fois.\n\nFermeture imminente des accès VIP+ pour l'analyse du soir !\nLe ticket de données est déjà entre les mains des membres 🎟️\n\n👉 Accède à l'espace VIP+ avant qu'il ne soit trop tard. Lien en bio",
-            prompt: "ENGLISH PROMPT: A dramatic [16:9] cinematic composition. An intricate antique golden clock on a dark velvet surface is breaking and exploding into particles of gold and smoke. Shallow depth of field focusing on the fragmented pieces. Chiaroscuro lighting emphasizing texture and motion. Mood is tense, fleeting and urgent. High detail on metallic fragments. No text. --ar 16:9 --style raw --v 6"
+            label: "🏆 Story 3 — Flex : La valeur de l'information", color: "#8b5cf6", type: "flex", 
+            txt: "💎 L'information a un prix. L'ignorance coûte plus cher.\n\nNos membres ont accès aux scores exacts générés par la plus grande base de données sportives.\n\nCe soir, l'opportunité est massive.\n👉 Rejoins le cercle maintenant.",
+            prompt: "ENGLISH PROMPT: A photorealistic, high-impact macro shot [16:9] of a perfectly cut glowing diamond hovering over a high-tech smartphone displaying abstract data holographic projections. Dark background, shallow depth of field. Premium, elite feeling. --ar 16:9 --style raw --v 6"
         },
-        // 4. Autorité & Confiance (Vert)
         { 
-            label: "🦅 Story 4 — L'Aigle de l'Analyse VIP+", color: "#22c55e", type: "autorité", 
-            txt: "🦅 Notre oeil ne rate rien.\n\nNos experts ont validé le combiné du jour après des heures d'analyse data. C'est du lourd 💎\n\nRejoins la communauté la plus intelligente en bio 👇\n100% transparence, 100% expertise.",
-            prompt: "ENGLISH PROMPT: A high-impact, photorealistic close-up shot of a magnificent golden eagle soaring over a massive futuristic data-driven football stadium at sunset. Ultra-sharp detail on feathers and metallic stadium textures. Intense warm lighting from the setting sun creating dynamic shadows. Floating holographic data points in the air adding depth. Mood is authoritative, powerful and successful. No logos, no text. --ar 16:9 --style raw --v 6"
+            label: "🏆 Story 4 — Flex : Le hasard est mort", color: "#8b5cf6", type: "flex", 
+            txt: "Le hasard n'a pas sa place ici 🧬\n\nLe ticket du soir est une masterclass algorithmique. Tout est millimétré, rien n'est laissé à la chance.\n\n👉 Accède au combiné sécurisé via le lien en bio.",
+            prompt: "ENGLISH PROMPT: A sleek, luxurious futuristic betting terminal on a dark velvet surface. A cinematic glow illuminates metallic edges. Glowing DNA strands morphing into sports data floating above it. High-end, hyper-realistic. --ar 16:9 --style raw --v 6"
         },
-        // 5. Tension & Clash (Rouge)
-        { 
-            label: "🔥 Story 5 — Tension & Clash (Agressif)", color: "#ef4444", type: "clash", 
-            txt: "🔥 Ce soir, la terre tremble.\n\nLes plus grandes affiches analysées par l'algorithme le plus puissant. Nous on a déjà validé le score exact 🔒\n\nPréparez-vous au choc.\nLe ticket est dans le VIP+ 👇\nLien en bio",
-            prompt: "ENGLISH PROMPT: A dramatic [16:9] cinematic split composition. Image is divided by a sharp dynamic diagonal line. Left half shows an intense embroidered football emblem on dark textured fabric. Right half shows another contrasting emblem on premium black mesh. A subtle shimmering light energy effect at the diagonal intersection. Chiaroscuro lighting with intense highlights. Floating micro-dust particles and subtle bokeh lens flares. Agreesive, dynamic and high-energy mood. Ultra-close-up extreme detail on stitching, shallow depth of field. No additional text, no watermarks. --ar 16:9 --style raw --v 6"
-        },
-        // AJOUTE ICI TES 15 AUTRES TEXTES/PROMPTS EN SUIVANT CE MODÈLE
-    ];
-    
-    // Si la liste est plus courte que 20 pour l'exemple, l'ajouter ici
-    while(viralPromoContent.length < 20) {
-        viralPromoContent.push({
-            label: "💡 Story " + (viralPromoContent.length + 1) + " — Message Viral Complémentaire", color: "#6b7280", type: "générique", 
-            txt: "Le combiné du soir est prêt dans le VIP+ 👀\nL'algorithme a parlé, les données sont claires.\n👉 Rejoins-nous via le lien en bio.",
-            prompt: "ENGLISH PROMPT: Photorealistic cinematic macro shot [16:9]. A metallic silver stylized monogram with a luxurious gold crown on top. Rendered with glassmorphism or holographic shimmer effect. Slightly elevated above a dark textured fabric background with soft drop shadow. soft lighting emphasizing depth. Premium watermark vibe, elegant and not overpowering. No text overlays. --ar 16:9 --style raw --v 6"
-        });
-    }
 
-    // Stockage global original
+        // --- 🔬 DATA & TECH ---
+        { 
+            label: "🔬 Story 5 — Data : 0% Émotion", color: "#0ea5e9", type: "data", 
+            txt: "Data. 0% Émotion. 🧠\n\nNotre algorithme a analysé plus de 50 000 données historiques pour l'affiche d'aujourd'hui. Les scores exacts sont verrouillés 🏛️\n\nInvestis intelligemment avec les meilleurs outils data 👇\n👉 Lien en bio",
+            prompt: "ENGLISH PROMPT: Cinematic [16:9] shot of a stylized robotic hand holding a glowing spherical data cluster with abstract football elements inside. Cyberpunk laboratory background with blue glowing circuits. Ultra-close-up, extreme detail. --ar 16:9 --style raw --v 6"
+        },
+        { 
+            label: "🔬 Story 6 — Data : Si tu paries au feeling...", color: "#0ea5e9", type: "data", 
+            txt: "📊 Si tu paries au feeling, tu as déjà perdu.\n\nL'algorithme vient de détecter une anomalie massive sur les cotes de ce soir. La faille est exploitée, le ticket est prêt.\n\n👉 Récupère l'analyse complète dans le VIP+.",
+            prompt: "ENGLISH PROMPT: Holographic futuristic data dashboard displaying complex glowing geometry and sports analytics, floating in a dark cinematic room. Sleek blue and cyan lighting. Ultra-detailed UI/UX concept, photorealistic. No readable text. --ar 16:9 --style raw --v 6"
+        },
+        { 
+            label: "🔬 Story 7 — Data : Analyse au microscope", color: "#0ea5e9", type: "data", 
+            txt: "🔬 Analyse au microscope terminée.\n\nChaque blessure, chaque statistique, chaque historique a été digéré par notre IA. Le verdict est sans appel.\n\nLe ticket est validé.\n👉 Dispo dans l'espace membre.",
+            prompt: "ENGLISH PROMPT: High-tech futuristic microscope scanning a glowing ethereal football. Laser beams and holographic data rings surrounding the object. Cinematic lighting, dark background, highly detailed technology. --ar 16:9 --style raw --v 6"
+        },
+        { 
+            label: "🔬 Story 8 — Data : L'IA ne dort jamais", color: "#0ea5e9", type: "data", 
+            txt: "🤖 L'IA ne dort jamais.\n\nPendant que les bookmakers ajustent leurs lignes, notre système a déjà trouvé la value du jour.\n\nUn combiné en béton armé t'attend.\n👉 Clique sur le lien en bio.",
+            prompt: "ENGLISH PROMPT: A glowing, stylized artificial intelligence brain constructed of optical fibers and neon lights. Inside the transparent brain, a miniature glowing football stadium. Cyberpunk aesthetics, deep blue and purple hues. --ar 16:9 --style raw --v 6"
+        },
+
+        // --- ⏳ FOMO & URGENCE ---
+        { 
+            label: "⏳ Story 9 — Urgence : Tic-Tac", color: "#f97316", type: "fomo", 
+            txt: "⏳ Tic-tac. L'occasion ne se présente qu'une fois.\n\nFermeture imminente des accès VIP+ pour l'analyse du soir ! Le ticket est déjà entre les mains des membres 🎟️\n\n👉 Accède à l'espace avant qu'il ne soit trop tard.",
+            prompt: "ENGLISH PROMPT: A dramatic [16:9] cinematic composition. An intricate antique golden clock on a dark velvet surface is breaking and exploding into particles of gold and smoke. Shallow depth of field. Mood is tense, fleeting and urgent. --ar 16:9 --style raw --v 6"
+        },
+        { 
+            label: "⏳ Story 10 — Urgence : Plus que 30 min", color: "#f97316", type: "fomo", 
+            txt: "🚨 ALERTE : Le coup d'envoi approche !\n\nLes cotes risquent de s'effondrer d'une minute à l'autre. Le score exact a été publié.\n\n👉 Ne sois pas celui qui regarde les autres encaisser demain matin.",
+            prompt: "ENGLISH PROMPT: A cinematic, high-end hourglass with glowing gold dust falling instead of sand. Dark background with intense red and orange neon backlighting. High contrast, dramatic shadows, extreme detail on glass reflections. --ar 16:9 --style raw --v 6"
+        },
+        { 
+            label: "⏳ Story 11 — Urgence : Les portes se ferment", color: "#f97316", type: "fomo", 
+            txt: "🚪 Les portes se ferment.\n\nNous limitons l'accès au VIP+ pour protéger les cotes de nos analyses. Le ticket du soir est exclusif.\n\n👉 Dernière chance d'entrer avant le match.",
+            prompt: "ENGLISH PROMPT: A heavy, futuristic vault door slowly closing, emitting a powerful intense orange and purple glow from the inside crack. Cinematic lighting, metallic textures, moody and exclusive atmosphere. --ar 16:9 --style raw --v 6"
+        },
+        { 
+            label: "⏳ Story 12 — Urgence : Le train est parti", color: "#f97316", type: "fomo", 
+            txt: "🚂 Le train de la rentabilité n'attend pas les retardataires.\n\nL'algorithme a généré une masterclass. Le combiné est validé.\n\n👉 Rejoins-nous ou regarde-nous faire.",
+            prompt: "ENGLISH PROMPT: A sleek, ultra-modern futuristic bullet train speeding through a dark cyberpunk city at night. Blurred neon lights creating a sense of extreme speed and urgency. Photorealistic, dynamic motion blur. --ar 16:9 --style raw --v 6"
+        },
+
+        // --- 👑 AUTORITÉ & CONFIANCE ---
+        { 
+            label: "🦅 Story 13 — Autorité : L'Aigle", color: "#22c55e", type: "autorité", 
+            txt: "🦅 Notre oeil ne rate rien.\n\nNos experts ont validé le combiné du jour après des heures d'analyse data. C'est du lourd 💎\n\n100% transparence, 100% expertise.\n👉 Rejoins l'élite en bio.",
+            prompt: "ENGLISH PROMPT: A high-impact, photorealistic close-up shot of a magnificent golden eagle soaring over a massive futuristic data-driven football stadium at night. Intense lighting, glowing green data particles floating. Authoritative mood. --ar 16:9 --style raw --v 6"
+        },
+        { 
+            label: "👑 Story 14 — Autorité : La différence", color: "#22c55e", type: "autorité", 
+            txt: "👑 La différence entre les amateurs et l'élite ? L'information.\n\nNous ne devinons pas l'avenir, nous le calculons.\nLe score exact de ce soir est disponible.\n\n👉 Accès direct dans le VIP+.",
+            prompt: "ENGLISH PROMPT: A luxurious, photorealistic golden crown resting elegantly on top of a dark, high-tech computer server rack. Cinematic lighting, soft shadows, elite and powerful vibe. Shallow depth of field. --ar 16:9 --style raw --v 6"
+        },
+        { 
+            label: "🏛️ Story 15 — Autorité : Le temple", color: "#22c55e", type: "autorité", 
+            txt: "🏛️ Le temple du pronostic.\n\nIci, on ne vend pas de rêve, on livre des statistiques. Notre IA vient de rendre son verdict pour le choc de ce soir.\n\n👉 Viens chercher ton ticket.",
+            prompt: "ENGLISH PROMPT: An epic cinematic wide shot of an ancient Greek temple seamlessly integrated with glowing cyberpunk neon lines and holographic sports data. Monumental scale, dark and moody atmosphere. --ar 16:9 --style raw --v 6"
+        },
+        { 
+            label: "♟️ Story 16 — Autorité : Échec et mat", color: "#22c55e", type: "autorité", 
+            txt: "♟️ Échec et mat contre les bookmakers.\n\nL'analyse est complète. Chaque variable a été prise en compte. Le coup parfait est prêt à être joué.\n\n👉 Ton accès t'attend dans la bio.",
+            prompt: "ENGLISH PROMPT: Extreme macro close-up of a premium glass chess board in a dark room. The winning piece is glowing with intense green light. Cinematic depth of field, photorealistic reflections, strategic and intelligent mood. --ar 16:9 --style raw --v 6"
+        },
+
+        // --- 🔥 TENSION & CLASH ---
+        { 
+            label: "🔥 Story 17 — Clash : La foudre va frapper", color: "#ef4444", type: "clash", 
+            txt: "⚡ La foudre va frapper ce soir.\n\nUne affiche monstrueuse, une analyse chirurgicale. L'algorithme a tranché et le ticket est terrifiant 🥶\n\n👉 Ne manque pas ça. VIP+ en bio.",
+            prompt: "ENGLISH PROMPT: Dramatic cinematic [16:9] shot of intense red lightning striking the center of a massive, dark football stadium. Ominous storm clouds, heavy rain, epic chiaroscuro lighting. High tension atmosphere. --ar 16:9 --style raw --v 6"
+        },
+        { 
+            label: "🔥 Story 18 — Clash : Éruption imminente", color: "#ef4444", type: "clash", 
+            txt: "🌋 Éruption imminente.\n\nLe match de ce soir va faire des dégâts. Mais nous sommes du bon côté de l'histoire grâce à la data.\n\nScore exact publié.\n👉 Rejoins le côté obscur des bookmakers.",
+            prompt: "ENGLISH PROMPT: Cinematic landscape shot of a dark, craggy volcano erupting, but instead of lava, it is spewing glowing neon red and orange digital data streams into a stormy sky. Photorealistic, epic scale. --ar 16:9 --style raw --v 6"
+        },
+        { 
+            label: "⚔️ Story 19 — Clash : Un duel au sommet", color: "#ef4444", type: "clash", 
+            txt: "⚔️ Un duel au sommet.\n\nDeux géants s'affrontent, mais l'algorithme a déjà trouvé le gagnant. La cote est folle.\n\n👉 Le ticket complet t'attend dans l'espace VIP+.",
+            prompt: "ENGLISH PROMPT: Cinematic macro shot of two glowing neon energy swords (one red, one blue) clashing violently over a miniaturized photorealistic football pitch. Sparks and data particles flying in slow motion. Aggressive mood. --ar 16:9 --style raw --v 6"
+        },
+        { 
+            label: "🔥 Story 20 — Clash : La terre tremble", color: "#ef4444", type: "clash", 
+            txt: "🔥 Ce soir, la terre tremble.\n\nLes plus grandes affiches analysées par l'algorithme le plus puissant. Nous, on a déjà validé le combiné parfait 🔒\n\nPréparez-vous au choc.\n👉 Lien en bio.",
+            prompt: "ENGLISH PROMPT: A dynamic [16:9] cinematic shot. The ground of a photorealistic football pitch is cracking open, revealing a glowing, molten core of high-tech data servers underneath. Intense lighting, dramatic and aggressive. --ar 16:9 --style raw --v 6"
+        }
+    ];
+
     window._promoWebAppTexts = viralPromoContent; 
 
     // --- ÉTAPE C : CONSTRUCTION DU CONTENU DES 20 CARTES ---
-    var htmlCartes = `
-        <div style="display:flex;flex-direction:column;gap:12px;">`;
+    var htmlCartes = `<div style="display:flex;flex-direction:column;gap:12px;">`;
 
     viralPromoContent.forEach(function(e, i) {
         htmlCartes += `
@@ -3890,13 +3948,13 @@ function renderPromoWebAppContent() {
                 
                 <button id="btn-copy-promo-text-${i}" onclick="copyPromoText(${i})" 
                     style="width:100%;padding:10px;border-radius:10px;border:none;background:${e.color};color:#000;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px; transition:all 0.2s; flex-shrink:0;">
-                    📋 Copier ce texte
+                    📋 Copier le Message (Pour Telegram)
                 </button>
                 
                 <div style="padding:4px 0;">
                     <button id="btn-copy-promo-prompt-${i}" onclick="copyPromoPrompt(${i})" 
                         style="width:100%;padding:8px;border-radius:10px;border:1px solid rgba(168,85,247,0.5);background:none;color:#c084fc;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px; transition:all 0.2s; flex-shrink:0;">
-                        🖼️ Copier le Prompt IA (Lumière)
+                        🖼️ Copier le Prompt IA associé (Midjourney / DALL-E)
                     </button>
                 </div>
                 
@@ -3906,23 +3964,22 @@ function renderPromoWebAppContent() {
 
     htmlCartes += `</div>`;
 
-    // --- RENDU FINAL ---
     container.innerHTML = htmlStatut + htmlCartes;
 }
 
 // -------------------------------------------------------------
-// FONCTIONS DE COPIE (ADAPTÉES POUR PROMO WEB APP)
+// FONCTIONS DE COPIE (POUR TELEGRAM / PROMO WEB APP)
 // -------------------------------------------------------------
 function handlePromoCopyFeedback(btnId, defaultColor, defaultBorder, isPrompt = false) {
     var btn = document.getElementById(btnId);
     if (btn) {
-        btn.textContent = isPrompt ? '✅ Prompt Copié !' : '✅ Texte Copié !';
+        btn.textContent = isPrompt ? '✅ Prompt Copié !' : '✅ Message Copié !';
         btn.style.background = 'rgba(34,197,94,0.2)';
         btn.style.borderColor = '#22c55e';
         btn.style.color = '#4ade80';
         setTimeout(function() {
-            btn.textContent = isPrompt ? '🖼️ Copier le Prompt IA (Lumière)' : '📋 Copier ce texte';
-            btn.style.background = isPrompt ? 'none' : defaultBorder.replace('rgba','rgb').replace(',0.5',')'); // Pas propre mais rapide
+            btn.textContent = isPrompt ? '🖼️ Copier le Prompt IA associé (Midjourney / DALL-E)' : '📋 Copier le Message (Pour Telegram)';
+            btn.style.background = isPrompt ? 'none' : defaultBorder.replace('rgba','rgb').replace(',0.5',')'); 
             btn.style.borderColor = defaultBorder;
             btn.style.color = defaultColor;
         }, 2000);
