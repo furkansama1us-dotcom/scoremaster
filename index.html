@@ -1657,7 +1657,7 @@ async function fetchApiScore(id, dateRaw) {
     }
 
     // ============================================================
-// CHARGEMENT DES MATCHS EUROPÉENS UNIQUEMENT (ÉDITEUR)
+// CHARGEMENT VIA LA NOUVELLE API (FOOTBALL PREDICTION)
 // ============================================================
 async function fetchMatchesFromAPI() {
     var dateVal = document.getElementById('admin-date').value;
@@ -1667,64 +1667,59 @@ async function fetchMatchesFromAPI() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche...';
 
     try {
-        var dateStr = dateVal.replace(/-/g, '');
-        const RAPIDAPI_KEY = 'f8209623408840be688b35e7bcf34edb';
+        // Ta nouvelle clé API
+        const NEW_RAPIDAPI_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
+        // Le nouvel hôte d'après ton image
+        const NEW_HOST = 'football-prediction-api.p.rapidapi.com';
 
-        var response = await fetch(`https://free-api-live-football-data.p.rapidapi.com/football-get-matches-by-date?date=${dateStr}`, {
+        // L'URL de ton nouveau site (on utilise le marché 'classic' par défaut)
+        var response = await fetch(`https://${NEW_HOST}/api/v2/predictions?market=classic&iso_date=${dateVal}`, {
             method: 'GET',
             headers: {
-                'x-rapidapi-host': 'free-api-live-football-data.p.rapidapi.com',
-                'x-rapidapi-key': RAPIDAPI_KEY
+                'x-rapidapi-host': NEW_HOST,
+                'x-rapidapi-key': NEW_RAPIDAPI_KEY
             }
         });
 
         var data = await response.json();
 
-        // Liste des IDs des ligues européennes détectées dans vos données
-        var europeanLeagueIds = [
-            47, 53, 54, 55, 42, 61, 88, 39, 40, 848, 146, 203, 165, 208, 228, 67, 59, 123, 253, 252, 197, 262, 250, 118, 212, 168, 
-            891007, 891422, 886204, 890366, 889985, 889986, 886179, 886311, 886205, 890011, 890012, 890013, 890014, 890015, 890016, 
-            891355, 885641, 885916, 886182, 887979, 891505, 891506, 891504, 885921, 886309, 885914, 8935, 885642, 886195, 885643, 
-            886194, 890692, 890694, 886345, 891165, 886271, 9084, 890398, 890399, 10068, 886197, 891684, 891685, 8970, 886312, 
-            886314, 886313, 886473, 891368, 891372, 9195, 890375, 885908, 885912, 885911, 885917, 885962, 9096, 886653, 886655, 
-            886656, 886659, 890406, 10065, 891209, 891210, 891466, 891467, 891468
-        ];
+        // Cette API renvoie souvent ses données dans 'data.data'
+        var matches = data.data || [];
 
-        // FILTRAGE : Uniquement les matchs >= 18:00 ET appartenant à une ligue européenne
-        var filteredMatches = data.response.matches.filter(function(match) {
-            var timeMatch = match.time ? match.time.match(/\d{2}:\d{2}/) : null;
-            var isLateEnough = timeMatch && timeMatch[0] >= "18:00";
-            var isEuropean = europeanLeagueIds.includes(match.leagueId);
-            return isLateEnough && isEuropean;
-        });
-
-        filteredMatches.sort((a, b) => a.time.localeCompare(b.time));
+        if (matches.length === 0) {
+            showToast("Aucun match trouvé pour cette date", true);
+            btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs';
+            return;
+        }
 
         var matchesHtml = '<div style="background:#2A2A2A; padding:10px; border-radius:8px; margin-bottom:10px; max-height:300px; overflow-y:auto;">';
-        matchesHtml += `<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px; display:flex; justify-content:space-between;"><span>Matchs européens (${filteredMatches.length})</span><span style="color:var(--primary-yellow); cursor:pointer;" onclick="document.getElementById('api-matches-container').innerHTML=''">Fermer</span></div>`;
+        matchesHtml += `<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px; display:flex; justify-content:space-between;"><span>Matchs trouvés (${matches.length})</span><span style="color:var(--primary-yellow); cursor:pointer;" onclick="document.getElementById('api-matches-container').innerHTML=''">Fermer</span></div>`;
         
-        for(var i=0; i < Math.min(filteredMatches.length, 100); i++) {
-            var m = filteredMatches[i];
-            var hName = m.home.name.replace(/'/g, "\\'");
-            var aName = m.away.name.replace(/'/g, "\\'");
-            var timeStr = m.time.match(/\d{2}:\d{2}/)[0];
-            var fullMatchName = `${hName} - ${aName}`;
+        matches.forEach(function(m) {
+            // On adapte le nom des propriétés selon la nouvelle API
+            var home = m.home_team || "Domicile";
+            var away = m.away_team || "Extérieur";
+            var fullMatchName = `${home} - ${away}`;
+            var timeStr = m.start_date ? new Date(m.start_date).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'}) : "18:00";
 
             matchesHtml += `
-            <button type="button" onclick="addMatchFromAPI('${fullMatchName}', '${timeStr}', '')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer;">
+            <button type="button" onclick="addMatchFromAPI('${fullMatchName.replace(/'/g, "\\'")}', '${timeStr}', '')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer;">
                 <div style="font-size:13px; font-weight:600; display:flex; align-items:center;">
                     <span style="color:var(--primary-yellow); margin-right:8px; width:45px;"><i class="fas fa-clock"></i> ${timeStr}</span>
-                    <span><i class="fas fa-shield-alt" style="color:var(--text-gray); margin-right:6px;"></i> ${fullMatchName}</span>
+                    <span>${fullMatchName}</span>
                 </div>
             </button>`;
-        }
+        });
+
         matchesHtml += '</div>';
         document.getElementById('api-matches-container').innerHTML = matchesHtml;
-        showToast('Matchs européens chargés !');
+        showToast('Matchs chargés avec succès !');
+
     } catch (error) {
-        showToast('Erreur API', true);
+        console.error("Erreur API:", error);
+        showToast('Erreur de connexion à la nouvelle API', true);
     }
-    btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs du jour (API)';
+    btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs';
 }
     function addMatchFromAPI(teams, time, logo) {
         let onlyTime = time.match(/\d{2}:\d{2}/);
