@@ -2083,6 +2083,35 @@ async function startLiveScores() {
 // ============================================================
 const logosCache = {};
 
+    function getLeagueFlag(m) {
+    if (!m) return '<span style="font-size:14px;">⚽</span>';
+    var country = (m.tournament && m.tournament.category && m.tournament.category.name) ? m.tournament.category.name.toLowerCase() : '';
+    var tournament = (m.tournament && m.tournament.name) ? m.tournament.name.toLowerCase() : '';
+    var c = country + ' ' + tournament;
+    var code = null;
+    if (c.includes('england') || c.includes('premier league') || c.includes('championship') || c.includes('fa cup')) code = 'gb-eng';
+    else if (c.includes('scotland') || c.includes('scottish')) code = 'gb-sct';
+    else if (c.includes('france') || c.includes('ligue 1') || c.includes('ligue 2') || c.includes('coupe de france')) code = 'fr';
+    else if (c.includes('spain') || c.includes('espa') || c.includes('laliga') || c.includes('la liga') || c.includes('copa del rey')) code = 'es';
+    else if (c.includes('germany') || c.includes('deutschland') || c.includes('bundesliga') || c.includes('dfb')) code = 'de';
+    else if (c.includes('italy') || c.includes('italia') || c.includes('serie a') || c.includes('coppa italia')) code = 'it';
+    else if (c.includes('portugal') || c.includes('primeira liga') || c.includes('liga nos')) code = 'pt';
+    else if (c.includes('netherlands') || c.includes('holland') || c.includes('eredivisie')) code = 'nl';
+    else if (c.includes('belgium') || c.includes('belgique') || c.includes('jupiler')) code = 'be';
+    else if (c.includes('turkey') || c.includes('turquie') || c.includes('super lig')) code = 'tr';
+    else if (c.includes('russia') || c.includes('russie') || c.includes('premier liga')) code = 'ru';
+    else if (c.includes('argentina') || c.includes('argentine') || c.includes('liga profesional')) code = 'ar';
+    else if (c.includes('brazil') || c.includes('brasil') || c.includes('brasileirao')) code = 'br';
+    else if (c.includes('usa') || c.includes('mls') || c.includes('united states')) code = 'us';
+    else if (c.includes('mexico') || c.includes('mexique') || c.includes('liga mx')) code = 'mx';
+    else if (c.includes('champions league') || c.includes('europa league') || c.includes('conference league') || c.includes('uefa')) code = 'eu';
+    
+    if (code) {
+        return '<img src="https://flagcdn.com/20x15/' + code + '.png" style="width:20px;height:15px;object-fit:cover;border-radius:2px;flex-shrink:0;" onerror="this.style.display=&quot;none&quot;">';
+    }
+    return '<span style="font-size:14px;">⚽</span>';
+}
+
 async function fetchTeamLogo(teamName) {
     if (!teamName || teamName === 'Domicile' || teamName === 'Extérieur') return null;
     if (logosCache[teamName]) {
@@ -3235,16 +3264,12 @@ ${aiPrompt}
             var displayOdds = isHomeObscured ? '**.**' : m.odds.toFixed(2);
             var blurClass = (isHomeObscured || isVipObscured) ? 'blurred-value' : '';
             
-            // 👇 1. AJOUTE CETTE LIGNE ICI pour récupérer le drapeau
+            // LA VARIABLE EST DÉCLARÉE ICI
             var flagImg = getLeagueFlag(m);
-            
-            // (Tu peux garder logoDisplay si tu en as besoin ailleurs, sinon tu peux l'enlever)
-            var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<span style="margin-right:4px;">⚽</span>`);
             
             let cleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : "--:--";
             let finalTimeDisplay = smartPrefix + (cleanTime ? cleanTime[0] : "");
 
-            // 👇 2. La variable ${flagImg} fonctionnera maintenant sans crasher le code
             mH += `<div class="match-row">
                     <div class="match-row-top" style="display:flex; justify-content:space-between; align-items:center;">
                         <div class="match-type" style="white-space:nowrap;">
