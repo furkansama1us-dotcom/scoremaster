@@ -1716,11 +1716,11 @@ var response = await fetch(TARGET_URL, {
             <button type="button" id="${btnId}" onclick="addMatchFromAPI('${fullMatchName.replace(/'/g, "\\'")}', '${timeStr}', '')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer;">
                 <div style="font-size:13px; font-weight:600; display:flex; align-items:center; gap:5px;">
                     <span style="color:var(--primary-yellow); width:45px; flex-shrink:0;"><i class="fas fa-clock"></i> ${timeStr}</span>
-                    <img id="lh-${btnId}" style="width:16px;height:16px;object-fit:contain;display:none;">
-                    <span>${home}</span>
-                    <span style="color:var(--text-gray);">-</span>
-                    <img id="la-${btnId}" style="width:16px;height:16px;object-fit:contain;display:none;">
-                    <span>${away}</span>
+                    <span style="width:20px;height:20px;border-radius:4px;background:linear-gradient(135deg,#FFD700,#E6C200);display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;color:#000;flex-shrink:0;">${home.substr(0,2).toUpperCase()}</span>
+<span>${home}</span>
+<span style="color:var(--text-gray);">-</span>
+<span style="width:20px;height:20px;border-radius:4px;background:linear-gradient(135deg,#4A90D9,#2E6AAD);display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;color:#fff;flex-shrink:0;">${away.substr(0,2).toUpperCase()}</span>
+<span>${away}</span>
                 </div>
             </button>`;
 
