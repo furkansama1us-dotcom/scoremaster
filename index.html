@@ -3792,6 +3792,24 @@ let quickEditCombinedId = null;
         }
     }
 
+    // ============================================================
+// OUVERTURE ET FERMETURE DU PANNEAU PROMO TELEGRAM
+// ============================================================
+function sendPromoNotification() {
+    var overlay = document.getElementById('promo-telegram-overlay');
+    if(overlay) {
+        overlay.style.display = 'flex';
+        // On lance la création des 20 textes une fois la fenêtre ouverte
+        renderPromoTelegramContent(); 
+    }
+}
+
+function closePromoTelegram() {
+    var overlay = document.getElementById('promo-telegram-overlay');
+    if(overlay) {
+        overlay.style.display = 'none';
+    }
+}
    // ============================================================
 // 1. GÉNÉRATEUR TELEGRAM VIRAL (CORRECTION AFFICHAGE)
 // ============================================================
