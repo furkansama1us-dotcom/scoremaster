@@ -1659,6 +1659,9 @@ async function fetchApiScore(id, dateRaw) {
     // ============================================================
 // CHARGEMENT VIA LA NOUVELLE API (FOOTBALL PREDICTION)
 // ============================================================
+// ============================================================
+// CHARGEMENT VIA LA NOUVELLE API (SPORTSCORE)
+// ============================================================
 async function fetchMatchesFromAPI() {
     var dateVal = document.getElementById('admin-date').value;
     if (!dateVal) { showToast("Choisis une date d'abord", true); return; }
@@ -1667,13 +1670,12 @@ async function fetchMatchesFromAPI() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche...';
 
     try {
-        // Ta nouvelle clé API
         const NEW_RAPIDAPI_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
-        // Le nouvel hôte d'après ton image
-        const NEW_HOST = 'football-prediction-api.p.rapidapi.com';
+        // Le nouvel hôte SportScore
+        const NEW_HOST = 'sportscore1.p.rapidapi.com';
 
-        // L'URL de ton nouveau site (on utilise le marché 'classic' par défaut)
-        var response = await fetch(`https://${NEW_HOST}/api/v2/predictions?market=classic&iso_date=${dateVal}`, {
+        // L'URL de la nouvelle API (sports/1 correspond au Football)
+        var response = await fetch(`https://${NEW_HOST}/sports/1/events/date/${dateVal}`, {
             method: 'GET',
             headers: {
                 'x-rapidapi-host': NEW_HOST,
@@ -1681,10 +1683,10 @@ async function fetchMatchesFromAPI() {
             }
         });
 
-        var data = await response.json();
+        var responseData = await response.json();
 
-        // 1. D'après ta capture, l'API range les résultats dans "data"
-        var matches = data.data || [];
+        // SportScore range les matchs dans "data"
+        var matches = responseData.data || [];
 
         if (matches.length === 0) {
             showToast("Aucun match trouvé pour cette date", true);
@@ -1696,15 +1698,17 @@ async function fetchMatchesFromAPI() {
         matchesHtml += `<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px; display:flex; justify-content:space-between;"><span>Matchs trouvés (${matches.length})</span><span style="color:var(--primary-yellow); cursor:pointer;" onclick="document.getElementById('api-matches-container').innerHTML=''">Fermer</span></div>`;
         
         matches.forEach(function(m) {
-            // 2. D'après ta capture, les noms sont dans "home_team" et "away_team"
-            var home = m.home_team || "Domicile";
-            var away = m.away_team || "Extérieur";
+            // Lecture des noms des équipes selon le format de SportScore
+            var home = (m.home_team && m.home_team.name) ? m.home_team.name : "Domicile";
+            var away = (m.away_team && m.away_team.name) ? m.away_team.name : "Extérieur";
             var fullMatchName = `${home} - ${away}`;
             
-            // 3. D'après ta capture, la date est dans "start_date" (ex: "2024-04-19T20:00:00")
+            // Formatage de l'heure (SportScore envoie ex: "2026-04-19 15:00:00")
             var timeStr = "18:00";
-            if (m.start_date) {
-                var dateObj = new Date(m.start_date);
+            if (m.start_at) {
+                // On remplace l'espace par un T pour assurer la compatibilité sur tous les navigateurs
+                var safeDateStr = m.start_at.replace(' ', 'T');
+                var dateObj = new Date(safeDateStr);
                 timeStr = dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
             }
 
