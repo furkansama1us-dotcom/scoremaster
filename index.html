@@ -3019,7 +3019,8 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
 
     if (c.matches && c.matches.length > 0) {
         c.matches.forEach((m, index) => {
-            detailsMatchs += `- Match ${index + 1}: ${m.teams} starting at ${m.time}.\n`;
+            // On force le texte en français avec le "à" et on met des guillemets pour l'IA
+            detailsMatchs += `- Text: "${m.teams} à ${m.time}"\n`;
             instaMatches += `🏆 ${m.teams}\n`;
             
             let extracted = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
@@ -3027,19 +3028,21 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
         });
     }
 
-    // Le Prompt pour l'image IA
+    // Le Prompt optimisé pour forcer le français et le logo Instagram
     let aiPrompt = `A high-end cinematic sports promotional poster, vertical 9:16 ratio. 
 
 Background: High-energy stadium atmosphere at dusk, volumetric floodlights rays, energetic orange and cyan color grade.
 
-Top Center: A massive 3D metallic chrome "SM" logo with a 3D golden crown. Below it, the text "COMBINÉ" in aggressive 3D white typography and "DISPONIBLE" in glowing 3D orange neon.
+Top Center: A massive 3D metallic chrome "SM" logo with a 3D golden crown. Below it, the exact text "COMBINÉ" in aggressive 3D white typography and the exact text "DISPONIBLE" in glowing 3D orange neon.
 
-Center: Two professional glass-morphism panels displaying:
+Center: Professional glass-morphism panels displaying exactly this French text:
 ${detailsMatchs}
 
 Graphic Elements: Digital countdown timer aesthetic, floating sparks, high-quality lens flares, sleek motion lines.
 
-Style: Ultra-realistic, 8k, cinematic promotional art, --ar 9:16`;
+Bottom branding: A highly recognizable 3D Instagram camera logo icon placed directly next to the exact text "@scoremaster.fr" in a modern glowing white font.
+
+Style: Ultra-realistic, 8k, cinematic promotional art, typography focused, text must be strictly in French, --ar 9:16 --v 6.0`;
 
     // Le texte pour ta bio ou légende Insta
     let instaText = `🔥 COMBINÉ SCORE EXACT DISPONIBLE !\n\n${instaMatches}⏰ Début du premier match à ${earliestTime}\n\nLien en bio pour accéder au VIP+ et valider tes gains ! 🚀💰\n@scoremaster.fr`;
@@ -3051,7 +3054,6 @@ Style: Ultra-realistic, 8k, cinematic promotional art, --ar 9:16`;
             showToast("Prompt Promo envoyé ! 🚀");
         });
     }
-}
     
     // ============================================================
 // AFFICHAGE DE L'HISTORIQUE ADMIN (AVEC BOUTON VICTOIRE TELEGRAM)
