@@ -1671,8 +1671,8 @@ async function fetchMatchesFromAPI() {
         // Le Host SofaScore tiré de ta capture
         const HOST = 'sofascore.p.rapidapi.com';
 
-        // L'URL exacte avec les bons paramètres de recherche
-        const API_URL = `https://${HOST}/matches/v2/list-by-date?date=${dateVal}&sport=football`;
+        // On simplifie l'URL au maximum (juste la date)
+const API_URL = `https://${HOST}/matches/v2/list-by-date?date=${dateVal}`;
 
         var response = await fetch(API_URL, {
             method: 'GET',
