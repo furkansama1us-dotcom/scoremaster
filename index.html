@@ -1703,6 +1703,10 @@ var response = await fetch(TARGET_URL, {
         matches.forEach(function(m) {
             var home = m.homeTeam?.name || m.home_name || m.home || "Domicile";
 var away = m.awayTeam?.name || m.away_name || m.away || "Extérieur";
+            var homeId = m.homeTeam ? m.homeTeam.id : null;
+var awayId = m.awayTeam ? m.awayTeam.id : null;
+var homeLogo = homeId ? `https://api.sofascore.app/api/v1/team/${homeId}/image` : '';
+var awayLogo = awayId ? `https://api.sofascore.app/api/v1/team/${awayId}/image` : '';
             var fullMatchName = `${home} - ${away}`;
             
             var timeStr = "18:00";
@@ -1715,7 +1719,11 @@ var away = m.awayTeam?.name || m.away_name || m.away || "Extérieur";
             <button type="button" onclick="addMatchFromAPI('${fullMatchName.replace(/'/g, "\\'")}', '${timeStr}', '')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer;">
                 <div style="font-size:13px; font-weight:600; display:flex; align-items:center;">
                     <span style="color:var(--primary-yellow); margin-right:8px; width:45px;"><i class="fas fa-clock"></i> ${timeStr}</span>
-                    <span>${fullMatchName}</span>
+                    ${homeLogo ? `<img src="${homeLogo}" style="width:18px;height:18px;object-fit:contain;border-radius:3px;" onerror="this.style.display='none'">` : ''}
+<span>${home}</span>
+<span style="color:var(--text-gray);margin:0 4px;">-</span>
+${awayLogo ? `<img src="${awayLogo}" style="width:18px;height:18px;object-fit:contain;border-radius:3px;" onerror="this.style.display='none'">` : ''}
+<span>${away}</span>
                 </div>
             </button>`;
         });
