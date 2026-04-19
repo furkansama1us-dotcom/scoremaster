@@ -3260,11 +3260,13 @@ ${aiPrompt}
         matchesToDisplay.forEach(function (m) {
             var mStatus = m.match_status || (sc === 'en-cours' ? 'en-cours' : sc);
             
+            // Sécurité : l'accueil a des étoiles, le VIP a le vrai score mais flouté
             var displayScore = isHomeObscured ? '*** - ***' : m.score;
             var displayOdds = isHomeObscured ? '**.**' : m.odds.toFixed(2);
+            
             var blurClass = (isHomeObscured || isVipObscured) ? 'blurred-value' : '';
             
-            // LA VARIABLE EST DÉCLARÉE ICI
+            // LE DRAPEAU EST BIEN DÉCLARÉ ICI
             var flagImg = getLeagueFlag(m);
             
             let cleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : "--:--";
@@ -3287,8 +3289,6 @@ ${aiPrompt}
         
         var pc = sc === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : sc === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
         
-        var blurClass = (isHomeObscured || isVipObscured) ? 'blurred-value' : '';
-        
         var displayGains = isHomeObscured ? '***,** €' : fmtC(c.gains || 0);
         var displayMise = isHomeObscured ? '***,** €' : fmtC(c.mise || 0);
         var displayTotalOdds = isHomeObscured ? '***.**' : (c.total_odds || 0).toFixed(2);
@@ -3310,7 +3310,6 @@ ${aiPrompt}
         var ctaBtn = (isHome && !isLocked && sc === 'en-cours') ? `<a href="${TELEGRAM_LINK}" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>` : '';
         if (isHome && isLocked && sc === 'en-cours') ctaBtn = `<button class="combined-cta-btn" style="background: var(--bg-input); color: var(--text-gray); cursor: not-allowed;"><i class="fas fa-lock"></i> Trop tard, match commencé !</button>`;
 
-        // LE BOUTON DE RÉVÉLATION VIP
         var vipRevealBtn = isVipObscured ? `<button id="reveal-btn-${c.id}" onclick="unblurVipCard('combined-card-vip-${c.id}', 'reveal-btn-${c.id}')" class="combined-cta-btn" style="background:linear-gradient(135deg, #FFD700, #E6C200); color:#000; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);"><i class="fas fa-eye" style="margin-right:6px;"></i> Cliquer ici pour déflouter les scores</button>` : '';
 
         return `
