@@ -4434,103 +4434,95 @@ function closeInstaTexts() {
 function renderInstaTexts() {
     var container = document.getElementById('insta-texts-content');
 
-    // Récupérer le combiné en cours
     var activeCombined = null;
     if (window.allCombineds && window.allCombineds.length > 0) {
         activeCombined = window.allCombineds.find(c => c.status === 'en-cours');
     }
 
-    // Infos dynamiques
-    var matchInfo = '';
-    var teamsList = '';
     var earliestTime = '21h00';
-
     if (activeCombined && activeCombined.matches && activeCombined.matches.length > 0) {
-        var teams = [];
         var earliest = '23:59';
         activeCombined.matches.forEach(function(m) {
-            if (m.teams) teams.push(m.teams);
             var extracted = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
             if (extracted && extracted[0] < earliest) earliest = extracted[0];
         });
-        teamsList = teams.join(' + ');
         earliestTime = earliest.replace(':', 'h');
-        matchInfo = teams.length > 0 ? ' sur ' + teamsList : '';
     }
 
     var texts = [
-        // STORY 1 — Accroche mystère
-        { label: '🔥 Story 1 — Accroche mystère', color: '#f97316', texts: [
+        { label: '🔥 Story 1 — Accroche mystère', color: '#f97316', items: [
             `🔒 Le combiné de ce soir est disponible.\n\nOn a fait le travail. T'as plus qu'à suivre.\n\n👉 Lien en bio`,
             `⚡ Ce soir on joue gros.\n\nLe combiné est prêt. Les cotes sont élevées.\n\nT'es in ou t'es out ? 👇`,
-            `🎯 Analyse faite. Combiné validé.\n\nIl reste des places VIP+.\n\n🔗 Lien en bio avant qu'il soit trop tard.`,
+            `🎯 Analyse faite. Combiné validé.\n\nIl reste des places VIP+.\n\n🔗 Lien en bio avant qu'il soit trop tard.`
         ]},
-        // STORY 2 — Écusson équipe A
-        { label: '🛡️ Story 2 — Texte sur écusson équipe', color: '#a855f7', texts: [
+        { label: '🛡️ Story 2 — Texte sur écusson équipe A', color: '#a855f7', items: [
             `Ce maillot va peser lourd ce soir 👀\n\nOn a tout analysé. Le score exact est dans le combiné.\n\n📲 Lien en bio`,
             `Cette équipe a été scrutée sous toutes les coutures 🔍\n\nNotre analyse est sans appel.\n\n👉 Combiné disponible — lien en bio`,
             `Ils entrent sur le terrain ce soir 🏟️\n\nOn connaît le score. Rejoins le VIP+ pour le voir.\n\n🔗 Lien en bio`,
-            `L'écusson parle. L'analyse aussi. 💎\n\nCombine score exact ce soir — accès VIP+ lien en bio`,
+            `L'écusson parle. L'analyse aussi. 💎\n\nCombiné score exact ce soir — accès VIP+ lien en bio`
         ]},
-        // STORY 3 — Écusson équipe B
-        { label: '🛡️ Story 3 — Texte sur écusson équipe', color: '#a855f7', texts: [
+        { label: '🛡️ Story 3 — Texte sur écusson équipe B', color: '#a855f7', items: [
             `L'autre adversaire du soir 🎯\n\nOn a analysé leurs stats, leur forme, leur historique.\n\nRésultat ? Dans le combiné VIP+. Lien en bio 👇`,
             `Cette équipe va tout donner ce soir 💪\n\nEt nous on sait exactement comment ça va finir.\n\n📲 Lien en bio — places limitées`,
             `2ème match du combiné. 2ème analyse béton. 🔒\n\nAccède au score exact — lien en bio`,
-            `Pas de hasard ici. Que de l'analyse pure. 📊\n\nCe soir, le combiné score exact est disponible.\n\n👉 Lien en bio`,
+            `Pas de hasard ici. Que de l'analyse pure. 📊\n\nCe soir, le combiné score exact est disponible.\n\n👉 Lien en bio`
         ]},
-        // STORY 4 — Urgence / dernière chance
-        { label: '⏰ Story 4 — Urgence', color: '#ef4444', texts: [
+        { label: '⏰ Story 4 — Urgence', color: '#ef4444', items: [
             `⏰ Début du premier match à ${earliestTime}.\n\nIl te reste peu de temps.\n\nLe combiné score exact est disponible maintenant — lien en bio 👇`,
-            `🚨 DERNIÈRE CHANCE\n\nLe combiné${matchInfo} ferme dans peu de temps.\n\nAccède maintenant — lien en bio`,
-            `T'attendais quoi ? ⏳\n\nLe combiné est disponible. Le match commence bientôt.\n\nPrends ta place — lien en bio 🔗`,
+            `🚨 DERNIÈRE CHANCE\n\nLe combiné ferme dans peu de temps.\n\nAccède maintenant — lien en bio`,
+            `T'attendais quoi ? ⏳\n\nLe combiné est disponible. Le match commence bientôt.\n\nPrends ta place — lien en bio 🔗`
         ]},
-        // STORY 5 — Social proof / résultats
-        { label: '🏆 Story 5 — Preuve sociale', color: '#22c55e', texts: [
+        { label: '🏆 Story 5 — Preuve sociale', color: '#22c55e', items: [
             `Nos membres VIP+ ont déjà accès au combiné de ce soir ✅\n\nTu rejoins quand ? 👇 Lien en bio`,
             `📈 Semaine après semaine, nos VIP+ valident.\n\nCe soir c'est encore parti.\n\nRejoins-nous — lien en bio`,
             `Pendant que tu hésites, les VIP+ encaissent 💰\n\nLe combiné de ce soir est déjà entre leurs mains.\n\n🔗 Lien en bio`,
-            `+1 200 membres VIP+ ont accès ce soir 👑\n\nToi aussi tu peux. Lien en bio.`,
+            `+1 200 membres VIP+ ont accès ce soir 👑\n\nToi aussi tu peux. Lien en bio.`
         ]},
-        // STORY 6 — Close / conversion
-        { label: '💎 Story 6 — Conversion finale', color: '#fbbf24', texts: [
+        { label: '💎 Story 6 — Conversion finale', color: '#fbbf24', items: [
             `VIP+ à vie. Un seul paiement. Accès illimité. 💎\n\nLe combiné de ce soir en fait partie.\n\n👉 Lien en bio`,
             `Ce soir tu peux juste regarder.\n\nOu tu peux jouer avec nous. 🎯\n\nLe choix t'appartient — lien en bio`,
             `Le combiné score exact c'est pas de la chance.\nC'est de l'analyse. 📊\n\nRejoins les VIP+ — lien en bio 🔗`,
-            `Satisfait ou remboursé 48h ✅\nAccès à vie 💎\nCombinés chaque semaine 🔥\n\nLe lien est en bio. Simple.`,
+            `Satisfait ou remboursé 48h ✅\nAccès à vie 💎\nCombiné chaque semaine 🔥\n\nLe lien est en bio. Simple.`
         ]}
     ];
 
+    window._instaTexts = texts;
+
     var html = `
-        <div style="background:rgba(225,48,108,0.1);border:1px solid rgba(225,48,108,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#f472b6;display:flex;align-items:center;gap:8px;">
+        <div style="background:rgba(225,48,108,0.1);border:1px solid rgba(225,48,108,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#f472b6;display:flex;align-items:center;gap:8px;flex-shrink:0;">
             <i class="fas fa-circle" style="font-size:8px;animation:pulse 2s infinite;"></i>
-            ${activeCombined ? 'Combiné EN COURS détecté — textes personnalisés' : 'Aucun combiné en cours — textes génériques'}
+            ${activeCombined ? 'Combiné EN COURS détecté — textes personnalisés' : 'Aucun combiné — textes génériques'}
         </div>
-        <div style="font-size:11px;color:#6b7280;line-height:1.6;padding:4px 2px;">
-            📱 <strong style="color:#fff;">Mode d'emploi :</strong> Postez vos stories dans l'ordre. Copiez le texte voulu → collez-le dans l'éditeur de texte Instagram sur votre story.
+        <div style="font-size:11px;color:#6b7280;line-height:1.6;padding:2px;">
+            📱 <strong style="color:#fff;">Mode d'emploi :</strong> Choisissez un texte par story, copiez-le et collez-le dans l'éditeur Instagram.
         </div>`;
 
     texts.forEach(function(section, si) {
-        html += `<div style="background:rgba(17,24,39,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:14px;overflow:hidden;">
-            <div style="padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;gap:8px;">
-                <div style="width:8px;height:8px;border-radius:50%;background:${section.color};flex-shrink:0;"></div>
-                <div style="font-size:12px;font-weight:800;color:#fff;">${section.label}</div>
+        html += `
+        <div style="background:rgba(17,24,39,0.9);border:1px solid rgba(255,255,255,0.1);border-radius:14px;overflow:hidden;flex-shrink:0;">
+            <div style="padding:12px 14px;background:rgba(0,0,0,0.3);display:flex;align-items:center;gap:8px;">
+                <div style="width:10px;height:10px;border-radius:50%;background:${section.color};flex-shrink:0;"></div>
+                <div style="font-size:13px;font-weight:800;color:#fff;">${section.label}</div>
             </div>
-            <div style="padding:10px;display:flex;flex-direction:column;gap:8px;">`;
+            <div style="padding:10px;display:flex;flex-direction:column;gap:10px;">`;
 
-        section.texts.forEach(function(txt, ti) {
-            var id = 'btn-insta-' + si + '-' + ti;
+        section.items.forEach(function(txt, ti) {
+            var btnId = 'btn-insta-' + si + '-' + ti;
+            // Échapper pour l'attribut data
+            var escaped = txt.replace(/'/g, "\\'").replace(/\n/g, '\\n');
             html += `
-                <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px;">
-                    <div style="font-size:12px;color:#e5e7eb;line-height:1.7;white-space:pre-wrap;margin-bottom:10px;">${txt}</div>
-                    <button id="${id}" onclick="copyInstaText(${si},${ti})" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(225,48,108,0.4);color:#f472b6;background:none;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">📋 Copier ce texte</button>
+                <div style="background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;">
+                    <div style="font-size:13px;color:#f9fafb;line-height:1.8;white-space:pre-wrap;">${txt}</div>
+                    <button id="${btnId}" onclick="copyInstaText(${si},${ti})" 
+                        style="width:100%;padding:10px;border-radius:10px;border:none;background:${section.color};color:#000;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">
+                        📋 Copier ce texte
+                    </button>
                 </div>`;
         });
 
         html += `</div></div>`;
     });
 
-    window._instaTexts = texts;
     container.innerHTML = html;
 }
 
