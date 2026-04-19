@@ -1654,7 +1654,10 @@ async function fetchApiScore(id, dateRaw) {
         document.getElementById('admin-tab-' + tabName).classList.add('active');
         document.getElementById('btn-tab-' + tabName).classList.add('active');
     }
-
+    function flagImg(code) {
+    if (!code || code.startsWith('<')) return '<span style="font-size:13px;margin-right:4px;">⚽</span>';
+    return '<img src="[flagcdn.com](https://flagcdn.com/20x15/)' + code + '.png" style="height:13px;border-radius:2px;margin-right:5px;vertical-align:middle;">';
+}
     // ============================================================
 // CHARGEMENT VIA SOFASCORE (AVEC CONTOURNEMENT CORS)
 // ============================================================
@@ -1763,12 +1766,6 @@ var response = await fetch(TARGET_URL, {
             else if (c.includes('uruguay')) code = 'uy';
             else if (c.includes('bolivia')) code = 'bo';
             return code || null;
-        }
-
-        // Helper global : code ISO -> balise img drapeau
-        function flagImg(code) {
-            if (!code || code.startsWith('<')) return '<span style="font-size:13px;margin-right:4px;">⚽</span>';
-            return '<img src="https://flagcdn.com/20x15/' + code + '.png" style="height:13px;border-radius:2px;margin-right:5px;vertical-align:middle;">';
         }
 
         matches.forEach(function(m) {
