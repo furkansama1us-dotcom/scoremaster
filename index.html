@@ -1676,8 +1676,7 @@ async function fetchMatchesFromAPI() {
         const RAPIDAPI_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
         const HOST = 'sofascore.p.rapidapi.com';
 
-        // Appel direct à RapidAPI (supporte le CORS nativement)
-        const TARGET_URL = `https://${HOST}/matches/v2/list-by-date?date=${formattedDate}&sport=football`;
+        const TARGET_URL = `https://${HOST}/matches/detail?matchId=8897222`;
 
         var response = await fetch(TARGET_URL, {
             method: 'GET',
