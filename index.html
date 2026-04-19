@@ -1683,8 +1683,8 @@ async function fetchMatchesFromAPI() {
 
         var data = await response.json();
 
-        // 1. La nouvelle API range les matchs dans "events"
-        var matches = data.events || [];
+        // 1. D'après ta capture, l'API range les résultats dans "data"
+        var matches = data.data || [];
 
         if (matches.length === 0) {
             showToast("Aucun match trouvé pour cette date", true);
@@ -1696,15 +1696,15 @@ async function fetchMatchesFromAPI() {
         matchesHtml += `<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px; display:flex; justify-content:space-between;"><span>Matchs trouvés (${matches.length})</span><span style="color:var(--primary-yellow); cursor:pointer;" onclick="document.getElementById('api-matches-container').innerHTML=''">Fermer</span></div>`;
         
         matches.forEach(function(m) {
-            // 2. Les nouveaux tiroirs pour les noms des équipes
-            var home = (m.homeTeam && m.homeTeam.name) ? m.homeTeam.name : "Domicile";
-            var away = (m.awayTeam && m.awayTeam.name) ? m.awayTeam.name : "Extérieur";
+            // 2. D'après ta capture, les noms sont dans "home_team" et "away_team"
+            var home = m.home_team || "Domicile";
+            var away = m.away_team || "Extérieur";
             var fullMatchName = `${home} - ${away}`;
             
-            // 3. Le nouveau format d'heure (startTimestamp est en secondes, on le convertit en millisecondes pour JS)
+            // 3. D'après ta capture, la date est dans "start_date" (ex: "2024-04-19T20:00:00")
             var timeStr = "18:00";
-            if (m.startTimestamp) {
-                var dateObj = new Date(m.startTimestamp * 1000);
+            if (m.start_date) {
+                var dateObj = new Date(m.start_date);
                 timeStr = dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
             }
 
