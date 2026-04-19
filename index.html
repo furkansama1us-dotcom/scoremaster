@@ -22,36 +22,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
     <style>
-/* Styles pour le Générateur d'Écussons */
-.ecussons-modal {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-    z-index: 10002; display: none; flex-direction: column;
-    animation: fadeIn 0.3s ease;
-}
-.ecussons-content {
-    flex: 1; overflow-y: auto; padding: 20px;
-}
-.team-crest-card {
-    background: #1a1a1a; border: 1px solid #333; border-radius: 16px;
-    padding: 20px; margin-bottom: 20px;
-}
-.team-name-title {
-    color: var(--primary-yellow); font-size: 18px; font-weight: 800;
-    margin-bottom: 15px; display: flex; align-items: center; gap: 10px;
-}
-.prompt-box {
-    background: #0d0d0d; border-radius: 10px; padding: 12px;
-    font-size: 12px; color: #ccc; font-family: monospace;
-    margin-bottom: 10px; border: 1px solid #222;
-    white-space: pre-wrap; word-break: break-all;
-}
-.copy-badge-btn {
-    width: 100%; padding: 10px; border-radius: 8px; border: none;
-    font-weight: 700; cursor: pointer; display: flex;
-    align-items: center; justify-content: center; gap: 8px;
-    margin-bottom: 8px; transition: all 0.2s;
-}
-        
         .combined-card { display: flex; flex-direction: column; }
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
         
@@ -752,51 +722,6 @@ async function fetchApiScore(id, dateRaw) {
         showToast("Erreur lors de la récupération.", true);
     }
 }
-    function openEcussonsFromEditor() {
-    const inputs = document.querySelectorAll('.match-teams-input');
-    let teams = [];
-    
-    inputs.forEach(input => {
-        if (input.value.trim()) {
-            let parts = input.value.split(' - ');
-            parts.forEach(t => { if(t.trim()) teams.push(t.trim()); });
-        }
-    });
-
-    if (teams.length === 0) {
-        showToast("Ajoute d'abord des matchs pour générer les écussons", true);
-        return;
-    }
-
-    const container = document.getElementById('ecussons-list-container');
-    container.innerHTML = '';
-
-    teams.forEach((team, index) => {
-        const promptImg = `A luxurious 3D metallic chrome football crest of ${team}. Dark carbon background, cinematic lighting, 8k, octane render.`;
-        const promptVid = `[0s – 3.5s] INTRODUCTION — L'écusson de ${team} apparaît au centre d'un stade plongé dans le noir. Des particules dorées flottent.\n[3.5s – 7s] DÉTAILS — Gros plan macro sur les reflets du logo.\n[7s – 8s] CLÔTURE — Fondu vers le noir.`;
-
-        container.innerHTML += `
-            <div class="team-crest-card">
-                <div class="team-name-title">🛡️ ${team}</div>
-                <div class="prompt-box">${promptImg}</div>
-                <button class="copy-badge-btn" style="background:#333; color:#fff; margin-bottom:8px;" onclick="copyToClipboard('${promptImg.replace(/'/g, "\\'")}', this)">Copier Image</button>
-                <div class="prompt-box">${promptVid}</div>
-                <button class="copy-badge-btn" style="background:linear-gradient(135deg,#f97316,#ea580c); color:#fff;" onclick="copyToClipboard('${promptVid.replace(/'/g, "\\'")}', this)">Copier Vidéo (Kling)</button>
-            </div>`;
-    });
-
-    document.getElementById('ecussons-tool').style.display = 'flex';
-}
-
-function closeEcussonsTool() { document.getElementById('ecussons-tool').style.display = 'none'; }
-
-function copyToClipboard(text, btn) {
-    navigator.clipboard.writeText(text).then(() => {
-        const old = btn.innerHTML;
-        btn.innerHTML = '✓ Copié !';
-        setTimeout(() => { btn.innerHTML = old; }, 2000);
-    });
-}
 </script>
 
 <!-- SPLASH -->
@@ -1338,16 +1263,10 @@ function copyToClipboard(text, btn) {
 
         <div class="admin-section">
             <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs du combiné</div>
-            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-    <button id="btn-fetch-api" onclick="fetchMatchesFromAPI()" style="flex: 2; padding:12px; background:rgba(74, 144, 217, 0.15); color:var(--blue); border:1px solid rgba(74, 144, 217, 0.3); border-radius:10px; cursor:pointer; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px;">
-        <i class="fas fa-plug"></i> Charger API
-    </button>
-    
-    <button onclick="openEcussonsFromEditor()" style="flex: 1; padding:12px; background:linear-gradient(135deg, #f97316, #ea580c); color:#fff; border:none; border-radius:10px; cursor:pointer; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px;">
-        <i class="fas fa-shield-alt"></i> Écussons
-    </button>
-</div>
-<div id="api-matches-container"></div>
+            <button id="btn-fetch-api" onclick="fetchMatchesFromAPI()" style="width:100%; padding:12px; background:rgba(74, 144, 217, 0.15); color:var(--blue); border:1px solid rgba(74, 144, 217, 0.3); border-radius:10px; cursor:pointer; margin-bottom:15px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
+                <i class="fas fa-plug"></i> Charger les matchs du jour (API)
+            </button>
+            <div id="api-matches-container"></div>
             <div id="admin-matches"></div>
             <button class="admin-add-match-btn" onclick="addMatchEntry()"><i class="fas fa-plus"></i> Ajouter un match manuellement</button>
         </div>
@@ -1448,38 +1367,15 @@ function copyToClipboard(text, btn) {
                 </div>
             </div>
             
-            <!-- BOUTON 2 : GÉNÉRATEUR PROMPT IA -->
-            <div class="admin-card" style="padding:15px; border-left:4px solid #f97316; margin-bottom:10px; cursor:pointer; transition:all 0.2s;" onclick="openPromptGenerator()" onmouseover="this.style.background='var(--bg-input)'" onmouseout="this.style.background='var(--bg-card)'">
-                <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff; display:flex; justify-content:space-between; align-items:center;">
-                    <span><i class="fas fa-magic" style="color:#f97316; margin-right:5px;"></i> Générateur Prompt IA</span>
-                    <i class="fas fa-chevron-right" style="color:var(--text-gray); font-size:12px;"></i>
+            <!-- BOUTON 2 : EMPLACEMENT FUTUR -->
+            <div class="admin-card" style="padding:15px; border-left:4px solid var(--text-gray); margin-bottom:10px; opacity:0.5;">
+                <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff;">
+                    <i class="fas fa-plus"></i> Autre relance (à venir)
                 </div>
                 <div style="font-size:12px; color:var(--text-gray);">
-                    Génère automatiquement un prompt IA pour l'affiche du combiné en cours.
+                    Emplacement pour de futures notifications spécifiques.
                 </div>
             </div>
-        <!-- BOUTON 3 : GÉNÉRATEUR ÉCUSSON BRODÉ -->
-            <div class="admin-card" style="padding:15px; border-left:4px solid #a855f7; margin-bottom:10px; cursor:pointer; transition:all 0.2s;" onclick="openEcussonGenerator()" onmouseover="this.style.background='var(--bg-input)'" onmouseout="this.style.background='var(--bg-card)'">
-                <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff; display:flex; justify-content:space-between; align-items:center;">
-                    <span><i class="fas fa-shield-alt" style="color:#a855f7; margin-right:5px;"></i> Générateur Écusson Brodé</span>
-                    <i class="fas fa-chevron-right" style="color:var(--text-gray); font-size:12px;"></i>
-                </div>
-                <div style="font-size:12px; color:var(--text-gray);">
-                    Génère un prompt écusson brodé premium pour chaque équipe du combiné.
-        </div>
-            </div>
-
-            <!-- BOUTON 4 : GÉNÉRATEUR TEXTES INSTAGRAM -->
-            <div class="admin-card" style="padding:15px; border-left:4px solid #e1306c; margin-bottom:10px; cursor:pointer; transition:all 0.2s;" onclick="openInstaTexts()" onmouseover="this.style.background='var(--bg-input)'" onmouseout="this.style.background='var(--bg-card)'">
-                <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff; display:flex; justify-content:space-between; align-items:center;">
-                    <span><i class="fab fa-instagram" style="color:#e1306c; margin-right:5px;"></i> Textes Story Instagram</span>
-                    <i class="fas fa-chevron-right" style="color:var(--text-gray); font-size:12px;"></i>
-                </div>
-                <div style="font-size:12px; color:var(--text-gray);">
-                    Génère 20 accroches stories pour motiver à acheter le combiné.
-                </div>
-            </div>
-
         </div>
     </div>
 </div> <!-- FIN DU PANEL ADMIN -->
@@ -3897,543 +3793,6 @@ let quickEditCombinedId = null;
         }
     }
 
-    // ============================================================
-    // GÉNÉRATEUR PROMPT IA — INTÉGRÉ (données du combiné en cours)
-    // ============================================================
-    function openPromptGenerator() {
-        // Chercher le combiné "en cours"
-        var activeCombined = null;
-        if (window.allCombineds && window.allCombineds.length > 0) {
-            activeCombined = window.allCombineds.find(c => c.status === 'en-cours');
-        }
-
-        var overlay = document.getElementById('prompt-gen-overlay');
-        overlay.style.display = 'flex';
-        setTimeout(() => overlay.classList.add('visible'), 10);
-
-        var pgMatches = [];
-        if (activeCombined && activeCombined.matches && activeCombined.matches.length > 0) {
-            activeCombined.matches.forEach(function(m) {
-                pgMatches.push({ teams: m.teams || '', time: m.time || '21:00' });
-            });
-        }
-
-        window._pgMatches = pgMatches;
-        window._pgOutput = { prompt: '', insta: '', telegram: '' };
-        window._pgActiveTab = 'prompt';
-
-        renderPGContent(activeCombined);
-    }
-
-    function closePG() {
-        var overlay = document.getElementById('prompt-gen-overlay');
-        overlay.classList.remove('visible');
-        setTimeout(() => overlay.style.display = 'none', 300);
-    }
-    function openEcussonGenerator() {
-    var overlay = document.getElementById('ecusson-gen-overlay');
-    overlay.style.display = 'flex';
-    setTimeout(() => overlay.classList.add('visible'), 10);
-    renderEcussonContent();
-}
-
-function closeEcusson() {
-    var overlay = document.getElementById('ecusson-gen-overlay');
-    overlay.classList.remove('visible');
-    setTimeout(() => overlay.style.display = 'none', 300);
-}
-
-function renderEcussonContent() {
-    var container = document.getElementById('ecusson-main-content');
-
-    // Récupérer le combiné en cours
-    var activeCombined = null;
-    if (window.allCombineds && window.allCombineds.length > 0) {
-        activeCombined = window.allCombineds.find(c => c.status === 'en-cours');
-    }
-
-    if (!activeCombined || !activeCombined.matches || activeCombined.matches.length === 0) {
-        container.innerHTML = `
-            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:40px 20px;flex:1;">
-                <div style="width:80px;height:80px;border-radius:20px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);display:flex;align-items:center;justify-content:center;font-size:36px;">⏳</div>
-                <div style="font-size:18px;font-weight:700;color:#fff;">Pas de combiné en cours</div>
-                <div style="font-size:13px;color:#6b7280;max-width:320px;line-height:1.6;">Publiez un combiné depuis l'onglet <strong style="color:#a855f7;">Vue</strong> pour générer les écussons.</div>
-            </div>`;
-        return;
-    }
-
-    // Extraire toutes les équipes
-    var allTeams = [];
-    activeCombined.matches.forEach(function(m) {
-        if (m.teams) {
-            var parts = m.teams.split(/\s*[-vs]+\s*/i);
-            parts.forEach(function(t) { if(t.trim()) allTeams.push(t.trim()); });
-        }
-    });
-
-    // Dédupliquer
-    allTeams = [...new Set(allTeams)];
-
-    // Générer les prompts pour chaque équipe
-    var ecussons = allTeams.map(function(team) {
-        return {
-            team: team,
-            prompt: generateEcussonPrompt(team),
-            copied: false
-        };
-    });
-
-    // Stocker globalement
-    window._ecussons = ecussons;
-
-    // Render
-    var html = `
-        <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#c084fc;display:flex;align-items:center;gap:8px;">
-            <i class="fas fa-circle" style="font-size:8px;animation:pulse 2s infinite;"></i>
-            ${allTeams.length} équipe(s) détectée(s) — Un prompt par équipe
-        </div>
-        <div style="font-size:11px;color:#6b7280;line-height:1.6;padding:4px 2px;">
-            📋 Copiez chaque prompt, puis collez-le dans <strong style="color:#fff;">ChatGPT / Midjourney / DALL·E 3</strong> avec le logo de l'équipe en pièce jointe.
-        </div>`;
-
-    ecussons.forEach(function(e, i) {
-        var flag = detectFlag(e.team + ' ' + e.team);
-        html += `
-        <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(168,85,247,0.2);border-radius:16px;overflow:hidden;">
-            <!-- Card header -->
-            <div style="padding:14px 16px;border-bottom:1px solid rgba(168,85,247,0.15);display:flex;align-items:center;justify-content:space-between;">
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#a855f7,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;">🛡️</div>
-                    <div>
-                        <div style="font-size:14px;font-weight:800;color:#fff;">${flag} ${e.team}</div>
-                        <div style="font-size:11px;color:#6b7280;">Prompt écusson brodé premium</div>
-                    </div>
-                </div>
-                <button id="btn-copy-ecusson-${i}" onclick="copyEcusson(${i})" style="padding:8px 14px;border-radius:10px;border:1px solid rgba(168,85,247,0.5);color:#c084fc;background:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;">📋 Copier</button>
-            </div>
-            <!-- Prompt preview -->
-            <div style="padding:14px 16px;">
-                <div style="background:rgba(0,0,0,0.4);border:1px solid rgba(168,85,247,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:160px;overflow-y:auto;white-space:pre-wrap;">${e.prompt}</div>
-            </div>
-            <!-- Instruction -->
-            <div style="padding:0 16px 14px;">
-                <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.15);border-radius:8px;padding:10px 12px;font-size:11px;color:#9ca3af;line-height:1.5;">
-                    <strong style="color:#c084fc;">💡 Mode d'emploi :</strong> Copiez ce prompt → ouvrez ChatGPT ou DALL·E 3 → joignez le logo officiel de <strong style="color:#fff;">${e.team}</strong> → collez le prompt → générez.
-                </div>
-            </div>
-        </div>`;
-    });
-
-    container.innerHTML = html;
-}
-
-function generateEcussonPrompt(teamName) {
-    return `Create a photorealistic [16:9] aspect ratio image using the uploaded logo of ${teamName} as the exact source identity. Preserve the logo's original shape, proportions, symbol geometry, layout and color structure precisely, with no redesign, distortion or reinterpretation. Transform the uploaded logo into a high-end embroidered emblem with realistic, dense stitching and premium embroidery detail. The emblem should be the central focus, placed on a premium, textured fabric surface that complements ${teamName}'s official colors. Use a dynamic close-up perspective with subtle depth of field, where the foreground embroidery is sharply in focus and the fabric softly blurs into the background. Apply natural, soft lighting that casts gentle shadows to emphasize stitch depth, thread texture and fabric weave. The final image should feel luxurious, tactile, modern and suitable for a premium brand or sports identity presentation. No text overlays, no watermarks, no additional typography. The logo must remain instantly recognizable as the official ${teamName} logo. --ar 3:4 --style raw --v 6`;
-}
-
-function copyEcusson(i) {
-    var e = window._ecussons[i];
-    if (!e) return;
-    pgCopyText(e.prompt, function() {
-        var btn = document.getElementById('btn-copy-ecusson-' + i);
-        if (btn) {
-            btn.textContent = '✅ Copié !';
-            btn.style.background = 'rgba(34,197,94,0.2)';
-            btn.style.borderColor = '#22c55e';
-            btn.style.color = '#4ade80';
-            setTimeout(function() {
-                btn.textContent = '📋 Copier';
-                btn.style.background = 'none';
-                btn.style.borderColor = 'rgba(168,85,247,0.5)';
-                btn.style.color = '#c084fc';
-            }, 2000);
-        }
-    });
-}
-    function renderPGContent(activeCombined) {
-    var container = document.getElementById('pg-main-content');
-
-    if (!activeCombined) {
-        container.innerHTML = `
-            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:40px 20px;flex:1;">
-                <div style="width:80px;height:80px;border-radius:20px;background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.2);display:flex;align-items:center;justify-content:center;font-size:36px;">⏳</div>
-                <div style="font-size:18px;font-weight:700;color:#fff;">Pas de combiné en cours</div>
-                <div style="font-size:13px;color:#6b7280;max-width:320px;line-height:1.6;">Aucun combiné avec le statut <strong style="color:#f97316;">EN COURS</strong> n'a été trouvé.<br>Publiez un combiné depuis l'onglet Vue pour utiliser ce générateur.</div>
-            </div>`;
-        return;
-    }
-
-    // Construction du HTML des matchs
-    var matchesHtml = '';
-    (window._pgMatches || []).forEach(function(m, i) {
-        var tf = m.time ? m.time.replace(':', 'H') : '21H00';
-        matchesHtml += `
-        <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px;margin-bottom:10px;">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-                <div style="width:22px;height:22px;border-radius:50%;background:rgba(249,115,22,0.2);border:1px solid rgba(249,115,22,0.4);color:#fb923c;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;">${i+1}</div>
-                <div style="font-size:11px;color:#6b7280;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Match ${i+1}</div>
-            </div>
-            <div style="margin-bottom:8px;">
-                <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Équipes</label>
-                <input style="width:100%;background:#1f2937;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:9px 12px;font-size:13px;color:#fff;outline:none;font-family:inherit;" 
-                    value="${pgEsc(m.teams)}" oninput="pgUpdateTeams(${i}, this.value)" placeholder="Équipe A vs Équipe B" />
-            </div>
-            <div style="margin-bottom:8px;">
-                <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">⏰ Horaire</label>
-                <input type="time" style="width:100%;background:#1f2937;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:9px 12px;font-size:13px;color:#fff;outline:none;font-family:inherit;" 
-                    value="${m.time || '21:00'}" oninput="pgUpdateTime(${i}, this.value)" />
-            </div>
-            <div style="background:rgba(0,0,0,0.4);border:1px solid rgba(249,115,22,0.2);border-radius:8px;padding:8px 12px;font-size:11px;color:#fdba74;font-family:'Courier New',monospace;">• ${pgEsc(m.teams)} (${tf})</div>
-        </div>`;
-    });
-
-    container.innerHTML = `
-    <div style="display:flex;flex-direction:column;width:100%;height:100%;overflow-y:auto;">
-
-        <div style="background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#4ade80;display:flex;align-items:center;gap:8px;margin:16px 16px 0;">
-            <i class="fas fa-circle" style="font-size:8px;animation:pulse 2s infinite;"></i>
-            Combiné EN COURS détecté — ${(window._pgMatches||[]).length} match(s) importé(s)
-        </div>
-
-        <div style="font-size:10px;font-weight:800;color:#6b7280;letter-spacing:2px;text-transform:uppercase;padding:16px 16px 8px;">Matchs du combiné</div>
-
-        <div style="padding:0 16px;">
-            ${matchesHtml}
-        </div>
-
-        <div style="padding:16px;">
-            <button onclick="pgGenerate()" id="pgBtnGenerate" style="width:100%;padding:16px;border-radius:18px;border:none;background:linear-gradient(90deg,#f97316,#fbbf24);color:#000;font-size:16px;font-weight:900;cursor:pointer;box-shadow:0 4px 24px rgba(249,115,22,0.35);font-family:inherit;">
-                🚀 Générer le Prompt IA
-            </button>
-        </div>
-
-        <div id="pg-empty-state" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:30px 20px;">
-            <div style="width:70px;height:70px;border-radius:18px;background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.2);display:flex;align-items:center;justify-content:center;font-size:32px;">🎨</div>
-            <p style="font-size:15px;color:#9ca3af;">Clique sur <strong style="color:#fb923c;">Générer le Prompt IA</strong></p>
-            <p style="font-size:12px;color:#4b5563;max-width:300px;line-height:1.6;">Le prompt sera optimisé pour Midjourney / DALL·E 3 — 100% en français.</p>
-        </div>
-
-        <div id="pg-result-area" style="display:none;flex-direction:column;gap:12px;padding:0 16px 24px;">
-            <div style="display:flex;gap:4px;border-bottom:1px solid rgba(255,255,255,0.08);">
-                <button id="pg-tab-prompt" onclick="pgSwitchTab('prompt')" style="padding:10px 14px;border-radius:10px 10px 0 0;border:none;border-bottom:2px solid #fb923c;background:rgba(249,115,22,0.08);font-size:12px;font-weight:700;color:#fb923c;cursor:pointer;font-family:inherit;">🤖 Prompt IA</button>
-                <button id="pg-tab-insta" onclick="pgSwitchTab('insta')" style="padding:10px 14px;border-radius:10px 10px 0 0;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:700;color:#6b7280;cursor:pointer;font-family:inherit;">📸 Instagram</button>
-                <button id="pg-tab-telegram" onclick="pgSwitchTab('telegram')" style="padding:10px 14px;border-radius:10px 10px 0 0;border:none;border-bottom:2px solid transparent;background:none;font-size:12px;font-weight:700;color:#6b7280;cursor:pointer;font-family:inherit;">✈️ Telegram</button>
-            </div>
-            <div style="background:rgba(17,24,39,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:18px;overflow:hidden;position:relative;">
-                <div style="position:absolute;top:10px;right:10px;z-index:5;display:flex;gap:6px;">
-                    <span style="padding:3px 8px;border-radius:8px;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);color:#4ade80;font-size:10px;font-weight:800;">🇫🇷 FR</span>
-                    <button id="pgBtnCopy" onclick="pgCopyTab()" style="padding:4px 10px;border-radius:8px;border:none;background:rgba(255,255,255,0.1);color:#fff;font-size:11px;font-weight:700;cursor:pointer;">📋 Copier</button>
-                </div>
-                <div id="pg-output-text" style="padding:50px 14px 16px;font-size:11.5px;color:#e5e7eb;white-space:pre-wrap;line-height:1.7;overflow-y:auto;max-height:300px;font-family:'Courier New',monospace;"></div>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:8px;">
-                <button onclick="pgCopySection('prompt')" style="width:100%;padding:12px;border-radius:14px;border:1px solid rgba(249,115,22,0.5);color:#fb923c;background:none;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">🤖 Copier le Prompt IA</button>
-                <button onclick="pgCopySection('telegram')" style="width:100%;padding:12px;border-radius:14px;border:1px solid rgba(59,130,246,0.5);color:#60a5fa;background:none;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">✈️ Copier pour Telegram</button>
-                <button onclick="pgCopySection('insta')" style="width:100%;padding:12px;border-radius:14px;border:1px solid rgba(236,72,153,0.5);color:#f472b6;background:none;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;">📸 Copier pour Instagram</button>
-            </div>
-        </div>
-    </div>`;
-};
-
-        container.innerHTML = `
-        <div style="display:flex;gap:20px;flex:1;overflow:hidden;">
-            <!-- Sidebar -->
-            <div style="width:340px;flex-shrink:0;border-right:1px solid rgba(255,255,255,0.08);padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;">
-                <div style="background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#4ade80;display:flex;align-items:center;gap:8px;">
-                    <i class="fas fa-circle" style="font-size:8px;animation:pulse 2s infinite;"></i>
-                    Combiné EN COURS détecté — ${(window._pgMatches||[]).length} match(s) importé(s)
-                </div>
-                <div>
-                    <div style="font-size:10px;font-weight:800;color:#6b7280;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">Matchs du combiné</div>
-                    ${matchesHtml}
-                </div>
-                <button onclick="pgGenerate()" id="pgBtnGenerate" style="width:100%;padding:16px;border-radius:18px;border:none;background:linear-gradient(90deg,#f97316,#fbbf24);color:#000;font-size:16px;font-weight:900;cursor:pointer;box-shadow:0 4px 24px rgba(249,115,22,0.35);">
-                    🚀 Générer le Prompt IA
-                </button>
-            </div>
-            <!-- Output Area -->
-            <div style="flex:1;display:flex;flex-direction:column;padding:20px;gap:16px;overflow:hidden;">
-                <div id="pg-empty-state" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;">
-                    <div style="width:80px;height:80px;border-radius:20px;background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.2);display:flex;align-items:center;justify-content:center;font-size:36px;">🎨</div>
-                    <p style="font-size:17px;color:#9ca3af;">Clique sur <strong style="color:#fb923c;">Générer le Prompt IA</strong></p>
-                    <p style="font-size:13px;color:#4b5563;max-width:380px;line-height:1.6;">Le prompt sera optimisé pour Midjourney / DALL·E 3 — 100% en français.</p>
-                </div>
-                <div id="pg-result-area" style="display:none;flex:1;flex-direction:column;gap:16px;">
-                    <div style="display:flex;gap:4px;border-bottom:1px solid rgba(255,255,255,0.08);">
-                        <button class="pg-tab-btn active" id="pg-tab-prompt" onclick="pgSwitchTab('prompt')" style="padding:10px 16px;border-radius:10px 10px 0 0;border:none;border-bottom:2px solid #fb923c;background:rgba(249,115,22,0.08);font-size:13px;font-weight:700;color:#fb923c;cursor:pointer;font-family:inherit;">🤖 Prompt IA</button>
-                        <button class="pg-tab-btn" id="pg-tab-insta" onclick="pgSwitchTab('insta')" style="padding:10px 16px;border-radius:10px 10px 0 0;border:none;border-bottom:2px solid transparent;background:none;font-size:13px;font-weight:700;color:#6b7280;cursor:pointer;font-family:inherit;">📸 Instagram</button>
-                        <button class="pg-tab-btn" id="pg-tab-telegram" onclick="pgSwitchTab('telegram')" style="padding:10px 16px;border-radius:10px 10px 0 0;border:none;border-bottom:2px solid transparent;background:none;font-size:13px;font-weight:700;color:#6b7280;cursor:pointer;font-family:inherit;">✈️ Telegram</button>
-                    </div>
-                    <div style="flex:1;background:rgba(17,24,39,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:18px;overflow:hidden;position:relative;min-height:200px;">
-                        <div style="position:absolute;top:12px;right:12px;z-index:5;display:flex;gap:8px;">
-                            <span style="padding:4px 10px;border-radius:8px;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);color:#4ade80;font-size:11px;font-weight:800;">🇫🇷 Français</span>
-                            <button id="pgBtnCopy" onclick="pgCopyTab()" style="padding:5px 12px;border-radius:8px;border:none;background:rgba(255,255,255,0.1);color:#fff;font-size:11px;font-weight:700;cursor:pointer;">📋 Copier</button>
-                        </div>
-                        <div id="pg-output-text" style="height:100%;padding:20px;padding-top:52px;font-size:12.5px;color:#e5e7eb;white-space:pre-wrap;line-height:1.7;overflow-y:auto;font-family:'Courier New',monospace;"></div>
-                    </div>
-                    <div style="display:flex;gap:10px;">
-                        <button onclick="pgCopySection('prompt')" style="flex:1;padding:12px;border-radius:14px;border:1px solid rgba(249,115,22,0.5);color:#fb923c;background:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">🤖 Copier le Prompt IA</button>
-                        <button onclick="pgCopySection('telegram')" style="flex:1;padding:12px;border-radius:14px;border:1px solid rgba(59,130,246,0.5);color:#60a5fa;background:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">✈️ Copier pour Telegram</button>
-                        <button onclick="pgCopySection('insta')" style="flex:1;padding:12px;border-radius:14px;border:1px solid rgba(236,72,153,0.5);color:#f472b6;background:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">📸 Copier pour Insta</button>
-                    </div>
-                </div>
-            </div>
-        </div>`;
-
-    function pgEsc(str) { 
-        if (!str) return '';
-        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-    function pgUpdateTeams(i, val) { if(window._pgMatches) window._pgMatches[i].teams = val; }
-    function pgUpdateTime(i, val) { if(window._pgMatches) window._pgMatches[i].time = val; }
-
-    function pgGenerate() {
-    var matches = window._pgMatches || [];
-    var output = window._pgOutput;
-    var detailsMatchs = '';
-    var instaMatches = '';
-    var earliestTime = '23:59';
-
-    matches.forEach(function(m) {
-        var tf = m.time ? m.time.replace(':', 'H') : '21H00';
-        var tfInsta = tf.replace('H', 'h');
-        
-        // Détection du drapeau selon les équipes
-        var flag = detectFlag(m.teams);
-        var flagStr = flag ? flag + ' ' : '';
-        
-        detailsMatchs += '• ' + flagStr + m.teams + ' (' + tf + ')\n';
-        instaMatches  += '⚽ ' + flagStr + m.teams + ' — ' + tfInsta + '\n';
-        var extracted = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
-        if (extracted && extracted[0] < earliestTime) earliestTime = extracted[0];
-    });
-
-    var earliestFormatted = earliestTime.replace(':', 'h');
-
-    // Extraction d'un joueur et club aléatoire parmi les équipes
-    var allTeams = [];
-    matches.forEach(function(m) {
-        if (m.teams) {
-            var parts = m.teams.split(/\s*[-vs]+\s*/i);
-            parts.forEach(function(t) { if(t.trim()) allTeams.push(t.trim()); });
-        }
-    });
-    var randomTeam = allTeams[Math.floor(Math.random() * allTeams.length)] || 'a top football club';
-    var randomPlayer = getRandomPlayer(randomTeam);
-
-    output.prompt =
-'Cinematic back view shot of footballer ' + randomPlayer + ' from ' + randomTeam + ' emerging from stadium tunnel onto illuminated football pitch, captured by professional sports photographer using dynamic low-angle perspective with subject centered in frame, dramatic nocturnal stadium lighting creating volumetric god rays and atmospheric mist, high detail rendering showing player\'s kit textures and muscular definition against moody blue-purple ambient glow, club emblem visible on tunnel wall banner in selective focus, stadium crowd banners softly blurred in background stands, photorealistic depth of field with bokeh effects, wet concrete floor reflecting colored stadium lights transitioning to pristine grass, epic hero moment composition with strong leading lines from tunnel architecture opening to pitch, professional color grading with teal and orange cinematic LUT, 8K resolution sharp details, sports illustrated magazine cover quality, golden ratio composition placing player slightly off-center for visual tension, rim lighting separating subject from background, Canon EOS R5 aesthetic with 24-70mm f/2.8 lens characteristics, subtle lens flare from stadium floods, HDR tone mapping preserving shadow and highlight detail, artificial floodlights clearly illuminating player\'s back and shoulders.\n\n' +
-
-'GRAPHIC OVERLAY ELEMENTS (clean, sharp, placed on top of the photo):\n\n' +
-
-'TOP CENTER:\n' +
-'Metallic silver "SM" shield logo with gold crown (5 points, gold balls at tips). Sharp, not distorted. Logo size: about 1/6 of image height.\n\n' +
-
-'JUST BELOW THE SM LOGO — CALL TO ACTION TEXT BLOCK:\n' +
-'"COMBINE DISPONIBLE" in large bold white uppercase letters, slight metallic chrome effect.\n' +
-'On the same line just after or just below: the Instagram camera icon (gradient purple/pink/orange) + the Telegram paper plane icon (blue #0088cc), both clean vector style, same size.\n' +
-'This entire block must be centered, clearly readable, high contrast against the background.\n\n' +
-
-'MATCH PANELS (lower half of image, two glass panels with glowing cyan neon border):\n' +
-detailsMatchs.trim() + '\n' +
-'Each match on ONE line. Time shown ONCE only in parentheses. Flag emoji on the left of each panel.\n' +
-'Font: bold, modern sans-serif, white uppercase, sharp and readable.\n\n' +
-
-'BOTTOM BRANDING:\n' +
-'Instagram gradient camera logo + "@scoremaster.fr" in bold white text, centered.\n\n' +
-
-'CRITICAL RULES:\n' +
-'- NO scores, NO results, NO numbers except match times\n' +
-'- All text uppercase, no accents, no special characters\n' +
-'- Text perfectly readable, high contrast\n' +
-'- Player silhouette remains the dominant visual element\n' +
-'- NO English words in the main visual except team names and "COMBINE DISPONIBLE"\n' +
-'--ar 9:16 --style raw --v 6';
-
-    output.insta =
-'🔥 COMBINÉ DISPONIBLE CE SOIR !\n' +
-'━━━━━━━━━━━━━━━━━━━━\n\n' +
-instaMatches + '\n' +
-'⏰ Début du premier match à ' + earliestFormatted + '\n\n' +
-'━━━━━━━━━━━━━━━━━━━━\n' +
-'👉 Lien en bio pour rejoindre le VIP+ et valider tes gains ! 💰🚀\n\n' +
-'📲 @scoremaster.fr';
-
-    output.telegram =
-'🎨 *PROMPT IA — POSTER PROMO :*\n' +
-'```\n' + output.prompt + '\n```\n\n' +
-'📝 *TEXTE INSTAGRAM / BIO :*\n' +
-'```\n' + output.insta + '\n```';
-
-    document.getElementById('pg-empty-state').style.display = 'none';
-    var ra = document.getElementById('pg-result-area');
-    ra.style.display = 'flex';
-    pgSwitchTab('prompt');
-}
-    function getRandomPlayer(teamName) {
-    var t = (teamName || '').toLowerCase();
-    var players = {
-        'napoli':           ['Kvaratskhelia', 'Osimhen', 'Di Lorenzo', 'Politano', 'Lobotka'],
-        'lazio':            ['Immobile', 'Luis Alberto', 'Milinkovic-Savic', 'Zaccagni', 'Romagnoli'],
-        'milan':            ['Leao', 'Giroud', 'Theo Hernandez', 'Pulisic', 'Reijnders'],
-        'inter':            ['Lautaro Martinez', 'Calhanoglu', 'Barella', 'Thuram', 'Bastoni'],
-        'juventus':         ['Vlahovic', 'Chiesa', 'Rabiot', 'Gatti', 'Cambiaso'],
-        'roma':             ['Dybala', 'Lukaku', 'Pellegrini', 'Mancini', 'Spinazzola'],
-        'atalanta':         ['Lookman', 'De Ketelaere', 'Retegui', 'Scalvini', 'Pasalic'],
-        'fiorentina':       ['Martinez Quarta', 'Nico Gonzalez', 'Sottil', 'Amrabat', 'Biraghi'],
-        'paris':            ['Mbappe', 'Neymar', 'Hakimi', 'Vitinha', 'Dembele'],
-        'psg':              ['Mbappe', 'Neymar', 'Hakimi', 'Vitinha', 'Dembele'],
-        'marseille':        ['Aubameyang', 'Sanchez', 'Gigot', 'Veretout', 'Nuno Tavares'],
-        'lyon':             ['Lacazette', 'Cherki', 'Caqueret', 'Tolisso', 'Tagliafico'],
-        'monaco':           ['Golovin', 'Ben Yedder', 'Akliouche', 'Minamino', 'Embolo'],
-        'lens':             ['Openda', 'Fofana', 'Frankowski', 'Salis', 'Gradit'],
-        'lille':            ['David', 'Cabella', 'Zhegrova', 'Gudmundsson', 'Tiago Santos'],
-        'real madrid':      ['Vinicius Jr', 'Bellingham', 'Rodrygo', 'Valverde', 'Modric'],
-        'barcelona':        ['Yamal', 'Lewandowski', 'Pedri', 'Gavi', 'Raphinha'],
-        'atletico':         ['Griezmann', 'Morata', 'De Paul', 'Koke', 'Gimenez'],
-        'sevilla':          ['En-Nesyri', 'Suso', 'Rakitic', 'Acuna', 'Navas'],
-        'manchester city':  ['Haaland', 'De Bruyne', 'Foden', 'Rodri', 'Bernardo Silva'],
-        'manchester united':['Rashford', 'Bruno Fernandes', 'Mainoo', 'Dalot', 'Hojlund'],
-        'arsenal':          ['Saka', 'Martinelli', 'Odegaard', 'Rice', 'Havertz'],
-        'chelsea':          ['Palmer', 'Jackson', 'Enzo Fernandez', 'Caicedo', 'James'],
-        'liverpool':        ['Salah', 'Nunez', 'Szoboszlai', 'Van Dijk', 'Trent Alexander-Arnold'],
-        'tottenham':        ['Son', 'Richarlison', 'Maddison', 'Kulusevski', 'Romero'],
-        'newcastle':        ['Isak', 'Gordon', 'Trippier', 'Bruno Guimaraes', 'Botman'],
-        'aston villa':      ['Watkins', 'McGinn', 'Tielemans', 'Diaby', 'Martinez'],
-        'bayern':           ['Kane', 'Musiala', 'Sane', 'Kimmich', 'Davies'],
-        'dortmund':         ['Sancho', 'Brandt', 'Reus', 'Hummels', 'Adeyemi'],
-        'leverkusen':       ['Wirtz', 'Grimaldo', 'Boniface', 'Granit Xhaka', 'Frimpong'],
-        'leipzig':          ['Werner', 'Openda', 'Dani Olmo', 'Laimer', 'Schlager'],
-        'frankfurt':        ['Kolo Muani', 'Kamada', 'Gotze', 'Koch', 'Lenz'],
-        'benfica':          ['Rafa Silva', 'Joao Mario', 'Aursnes', 'Florentino Luis', 'Kokcu'],
-        'porto':            ['Pepe', 'Taremi', 'Galeno', 'Pepê', 'Eustaquio'],
-        'sporting':         ['Pedro Goncalves', 'Trincao', 'Hjulmand', 'Coates', 'Matheus Nunes'],
-        'ajax':             ['Kudus', 'Bergwijn', 'Brobbey', 'Timber', 'Tadic'],
-        'psv':              ['Gakpo', 'Zahavi', 'Sangaré', 'Dest', 'Veerman'],
-        'galatasaray':      ['Icardi', 'Mertens', 'Torreira', 'Ziyech', 'Kerem Akturkoglu'],
-        'fenerbahce':       ['Dzeko', 'Tadic', 'Fred', 'Osayi-Samuel', 'Lincoln'],
-        'besiktas':         ['Gedson Fernandes', 'Romain Saiss', 'Dele Alli', 'Al-Musrati', 'Immobile'],
-        'sparta praha':     ['Kuchta', 'Haraslin', 'Soucek', 'Vindahl', 'Birmancevic'],
-        'slavia':           ['Coufal', 'Sevcik', 'Holes', 'Masopust', 'Lingr'],
-        'jablonec':         ['Kratochvil', 'Smejkal', 'Hanus', 'Houska', 'Polidar'],
-        'celtic':           ['Kyogo', 'Maeda', 'Hatate', 'O\'Riley', 'Scales'],
-        'rangers':          ['Tavernier', 'Cantwell', 'Tillman', 'Danilo', 'McCausland'],
-        'salzburg':         ['Okafor', 'Sucic', 'Kjaergaard', 'Sesko', 'Capaldo'],
-        'anderlecht':       ['Refaelov', 'Verschaeren', 'Dreyer', 'Stroeykens', 'N\'Diaye'],
-        'club brugge':      ['Skov Olsen', 'Jutgla', 'Vanaken', 'Buchanan', 'Onyedika'],
-        'olympiakos':       ['El-Arabi', 'Podence', 'Fortounis', 'Camara', 'Retsos'],
-        'panathinaikos':    ['Ioannidis', 'Maksimovic', 'Babunski', 'Vagiannidis', 'Hola'],
-        'flamengo':         ['Gabi', 'De Arrascaeta', 'Everton Ribeiro', 'Pedro', 'Vidal'],
-        'palmeiras':        ['Dudu', 'Raphael Veiga', 'Gustavo Scarpa', 'Rony', 'Zé Rafael'],
-        'boca':             ['Benedetto', 'Cavani', 'Pol Fernandez', 'Villa', 'Medina'],
-        'river plate':      ['Borré', 'Alvarez', 'Montiel', 'Enzo Perez', 'De La Cruz'],
-    };
-
-    // Cherche dans les clés
-    for (var key in players) {
-        if (t.includes(key)) {
-            var list = players[key];
-            return list[Math.floor(Math.random() * list.length)];
-        }
-    }
-    // Joueur générique si équipe inconnue
-    var generic = ['a top striker', 'an elite midfielder', 'a star defender', 'the team captain', 'a key player'];
-    return generic[Math.floor(Math.random() * generic.length)];
-}
-
-function detectFlag(teams) {
-    if (!teams) return '';
-    var t = teams.toLowerCase();
-    // Italie
-    if (t.includes('napoli') || t.includes('lazio') || t.includes('milan') || t.includes('juventus') || t.includes('inter') || t.includes('roma') || t.includes('fiorentina') || t.includes('atalanta')) return '🇮🇹';
-    // France
-    if (t.includes('paris') || t.includes('psg') || t.includes('marseille') || t.includes('lyon') || t.includes('monaco') || t.includes('lens') || t.includes('lille') || t.includes('rennes') || t.includes('nice') || t.includes('nantes')) return '🇫🇷';
-    // Espagne
-    if (t.includes('real madrid') || t.includes('barcelona') || t.includes('atletico') || t.includes('sevilla') || t.includes('valencia') || t.includes('bilbao') || t.includes('betis') || t.includes('villarreal')) return '🇪🇸';
-    // Angleterre
-    if (t.includes('manchester') || t.includes('arsenal') || t.includes('chelsea') || t.includes('liverpool') || t.includes('tottenham') || t.includes('newcastle') || t.includes('west ham') || t.includes('aston villa')) return '🏴󠁧󠁢󠁥󠁮󠁧󠁿';
-    // Allemagne
-    if (t.includes('bayern') || t.includes('dortmund') || t.includes('leverkusen') || t.includes('frankfurt') || t.includes('leipzig') || t.includes('gladbach') || t.includes('wolfsburg')) return '🇩🇪';
-    // Portugal
-    if (t.includes('benfica') || t.includes('porto') || t.includes('sporting') || t.includes('braga')) return '🇵🇹';
-    // Pays-Bas
-    if (t.includes('ajax') || t.includes('psv') || t.includes('feyenoord')) return '🇳🇱';
-    // Belgique
-    if (t.includes('anderlecht') || t.includes('club brugge') || t.includes('gent')) return '🇧🇪';
-    // Turquie
-    if (t.includes('galatasaray') || t.includes('fenerbahce') || t.includes('besiktas') || t.includes('trabzon')) return '🇹🇷';
-    // République Tchèque
-    if (t.includes('sparta praha') || t.includes('slavia') || t.includes('jablonec') || t.includes('plzen')) return '🇨🇿';
-    // Grèce
-    if (t.includes('olympiakos') || t.includes('panathinaikos') || t.includes('paok') || t.includes('aek')) return '🇬🇷';
-    // Ecosse
-    if (t.includes('celtic') || t.includes('rangers')) return '🏴󠁧󠁢󠁳󠁣󠁴󠁿';
-    // Autriche
-    if (t.includes('salzburg') || t.includes('rapid wien') || t.includes('austria wien')) return '🇦🇹';
-    // Russie
-    if (t.includes('spartak') || t.includes('cska') || t.includes('zenit') || t.includes('lokomotiv')) return '🇷🇺';
-    // Brésil
-    if (t.includes('flamengo') || t.includes('palmeiras') || t.includes('santos') || t.includes('corinthians') || t.includes('sao paulo')) return '🇧🇷';
-    // Argentine
-    if (t.includes('boca') || t.includes('river plate') || t.includes('racing') || t.includes('independiente')) return '🇦🇷';
-    // Maroc
-    if (t.includes('wydad') || t.includes('raja') || t.includes('fus')) return '🇲🇦';
-    // Champions League / Europa
-    if (t.includes('champions') || t.includes('europa')) return '🏆';
-    return '';
-}
-
-    function pgSwitchTab(tab) {
-        window._pgActiveTab = tab;
-        ['prompt','insta','telegram'].forEach(function(t) {
-            var btn = document.getElementById('pg-tab-' + t);
-            if (!btn) return;
-            if (t === tab) {
-                btn.style.borderBottomColor = '#fb923c';
-                btn.style.color = '#fb923c';
-                btn.style.background = 'rgba(249,115,22,0.08)';
-            } else {
-                btn.style.borderBottomColor = 'transparent';
-                btn.style.color = '#6b7280';
-                btn.style.background = 'none';
-            }
-        });
-        var ot = document.getElementById('pg-output-text');
-        if (ot) ot.textContent = (window._pgOutput && window._pgOutput[tab]) ? window._pgOutput[tab] : '';
-        var cb = document.getElementById('pgBtnCopy');
-        if (cb) { cb.textContent = '📋 Copier'; cb.style.background = 'rgba(255,255,255,0.1)'; }
-    }
-
-    function pgCopyTab() {
-        var text = (window._pgOutput && window._pgOutput[window._pgActiveTab]) ? window._pgOutput[window._pgActiveTab] : '';
-        pgCopyText(text, function() {
-            var cb = document.getElementById('pgBtnCopy');
-            if (cb) { cb.textContent = '✅ Copié !'; cb.style.background = '#22c55e'; }
-            setTimeout(function() { 
-                if (cb) { cb.textContent = '📋 Copier'; cb.style.background = 'rgba(255,255,255,0.1)'; }
-            }, 2000);
-        });
-    }
-
-    function pgCopySection(section) {
-        var text = (window._pgOutput && window._pgOutput[section]) ? window._pgOutput[section] : '';
-        pgCopyText(text, function() { showToast('✅ Copié dans le presse-papiers !'); });
-    }
-
-    function pgCopyText(text, cb) {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(text).then(function() { showToast('✅ Copié !'); if(cb) cb(); }).catch(function() { pgFallbackCopy(text, cb); });
-        } else { pgFallbackCopy(text, cb); }
-    }
-
-    function pgFallbackCopy(text, cb) {
-        var ta = document.createElement('textarea');
-        ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px';
-        document.body.appendChild(ta); ta.focus(); ta.select();
-        try { document.execCommand('copy'); showToast('✅ Copié !'); if(cb) cb(); } catch(e) {}
-        document.body.removeChild(ta);
-    }
-
     // --- GESTION DU FORMULAIRE DE LA PAGE CONTACT (SÉCURISÉ VIA SUPABASE) ---
     function selectContactPagePref(type) {
         document.querySelectorAll('input[name="contact-page-pref"]').forEach(function(radio) {
@@ -4471,6 +3830,7 @@ function detectFlag(teams) {
         }
 
         try {
+            // ENVOI 100% SÉCURISÉ VERS SUPABASE (Aucune API Telegram ici)
             const { error } = await supabaseClient
                 .from('contact_messages')
                 .insert([{ 
@@ -4481,9 +3841,11 @@ function detectFlag(teams) {
 
             if (error) throw error;
 
+            // Vide les champs
             document.getElementById('contact-page-info').value = '';
             document.getElementById('contact-page-message').value = '';
             
+            // Affiche le popup de succès existant, mais avec un texte adapté
             var successPopup = document.getElementById('success-popup');
             successPopup.querySelector('h3').textContent = 'Message envoyé !';
             successPopup.querySelector('p').textContent = 'Votre message a été transmis de manière sécurisée. Nous vous répondrons très vite !';
@@ -4495,64 +3857,59 @@ function detectFlag(teams) {
             showToast('Erreur lors de l\'envoi. Réessayez.', true);
         }
     }
+    // ============================================================
+// GÉNÉRATION DU PROMPT IA PREMIUM (FORMAT 9:16 + LOGO SM + INSTA)
+// ============================================================
+function sendInstaPrompt(id) {
+    var c = allCombineds.find(x => x.id == id);
+    if (!c) { showToast("Combiné introuvable", true); return; }
 
-    // ============================================================
-    // NOUVELLES FONCTIONS : GÉNÉRATEUR ÉCUSSONS
-    // ============================================================
-    function openEcussonsFromEditor() {
-        const inputs = document.querySelectorAll('.match-teams-input');
-        let teams = [];
-        
-        inputs.forEach(input => {
-            if (input.value.trim()) {
-                let parts = input.value.split(' - ');
-                parts.forEach(t => { if(t.trim()) teams.push(t.trim()); });
+    let detailsMatchs = "";
+
+    if (c.matches && c.matches.length > 0) {
+        c.matches.forEach((m, index) => {
+            let teams = m.teams.split('-');
+            let scores = m.score.split('-');
+            
+            if (teams.length === 2 && scores.length === 2) {
+                let eqA = teams[0].trim(); 
+                let eqB = teams[1].trim();
+                let scA = parseInt(scores[0].trim()); 
+                let scB = parseInt(scores[1].trim());
+                
+                let vainqueur = (scA > scB) ? `victory of ${eqA}` : (scB > scA) ? `victory of ${eqB}` : `draw`;
+
+                detailsMatchs += `- Match ${index + 1}: ${eqA} vs ${eqB}. Show the ${vainqueur} with the exact score "${m.score}".\n`;
+            } else {
+                detailsMatchs += `- Match ${m.teams} with the exact score "${m.score}".\n`;
             }
         });
-
-        if (teams.length === 0) {
-            showToast("Ajoute d'abord des matchs pour générer les écussons", true);
-            return;
-        }
-
-        const container = document.getElementById('ecussons-list-container');
-        container.innerHTML = '';
-
-        teams.forEach((team, index) => {
-            const promptImg = `A luxurious 3D metallic chrome football crest of ${team}. Dark carbon background, cinematic lighting, 8k, octane render.`;
-            const promptVid = `[0s – 3.5s] INTRODUCTION — L'écusson de ${team} apparaît au centre d'un stade plongé dans le noir. Des particules dorées flottent.\n[3.5s – 7s] DÉTAILS — Gros plan macro sur les reflets du logo.\n[7s – 8s] CLÔTURE — Fondu vers le noir.`;
-
-            container.innerHTML += `
-                <div class="team-crest-card">
-                    <div class="team-name-title">🛡️ ${team}</div>
-                    <div style="color:#888; font-size:11px; margin-bottom:5px; text-transform:uppercase; font-weight:700;">Prompt Image</div>
-                    <div class="prompt-box">${promptImg}</div>
-                    <button class="copy-badge-btn" style="background:#333; color:#fff; margin-bottom:12px;" onclick="copyToClipboard('${promptImg.replace(/'/g, "\\'")}', this)">Copier Image</button>
-                    
-                    <div style="color:#888; font-size:11px; margin-bottom:5px; text-transform:uppercase; font-weight:700;">Prompt Vidéo (Kling AI)</div>
-                    <div class="prompt-box">${promptVid}</div>
-                    <button class="copy-badge-btn" style="background:linear-gradient(135deg,#f97316,#ea580c); color:#fff;" onclick="copyToClipboard('${promptVid.replace(/'/g, "\\'")}', this)">Copier Vidéo</button>
-                </div>`;
-        });
-
-        document.getElementById('ecussons-tool').style.display = 'flex';
     }
 
-    function closeEcussonsTool() { 
-        document.getElementById('ecussons-tool').style.display = 'none'; 
-    }
+    let aiPrompt = `A high-end cinematic sports digital poster, vertical 9:16 ratio. 
 
-    function copyToClipboard(text, btn) {
-        navigator.clipboard.writeText(text).then(() => {
-            const old = btn.innerHTML;
-            btn.innerHTML = '✓ Copié !';
-            btn.style.background = '#00C853';
-            setTimeout(() => { 
-                btn.innerHTML = old; 
-                btn.style.background = '';
-            }, 2000);
+Background: Spectacular low-angle view from a wet, ultra-reflective football pitch in a grand stadium at night. Dramatic lighting, glowing stadium floodlights, lens flares, falling luxurious golden confetti, subtle cyan lightning and golden sparks.
+
+Top Center: A massive 3D metallic chrome "SM" logo topped with a luxurious 3D golden crown (highly reflective). Below the logo, the word "VICTOIRE" in brilliant 3D cyan neon text, and "SCORE EXACT" in polished 3D gold text.
+
+Center (Dynamic Data):
+${detailsMatchs}
+
+Graphic Elements: Two floating rectangular frames with glowing cyan neon borders. Professional Champions League broadcast style.
+
+Bottom branding: The official 3D Instagram camera logo icon placed directly next to the handle "@scoremaster.fr", both clearly visible in a modern glowing style.
+
+Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold and silver color palette, --ar 9:16`;
+
+    // Uniquement le prompt formaté dans un bloc de code Telegram pour un tap-to-copy rapide
+    let telegramText = `\`\`\`\n${aiPrompt}\n\`\`\``;
+
+    if (confirm("Générer et envoyer le prompt IA Premium sur Telegram ?")) {
+        sendAdminTelegram(telegramText).then(() => {
+            showToast("Prompt IA envoyé ! 🎨");
         });
     }
+}
 </script>
 </body>
 </html>
