@@ -3012,6 +3012,9 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
     // ============================================================
 // GÉNÉRATION DU PROMPT IA PROMO (POUR ANNONCER LE TICKET)
 // ============================================================
+// ============================================================
+// GÉNÉRATION DU PROMPT IA PROMO (POUR ANNONCER LE TICKET)
+// ============================================================
 function sendPromoPrompt(id) {
     var c = allCombineds.find(x => x.id == id);
     if (!c) { showToast("Combiné introuvable", true); return; }
@@ -3022,8 +3025,11 @@ function sendPromoPrompt(id) {
 
     if (c.matches && c.matches.length > 0) {
         c.matches.forEach((m, index) => {
-            // Format ultra-simple pour que l'IA ne se trompe pas sur le texte
-            detailsMatchs += `"${m.teams} à ${m.time}", `;
+            // ASTUCE IA : On remplace le "à" par un tiret et "21:00" par "21H00" 
+            // pour éviter que l'IA n'écrive des "0" ou se trompe de langue.
+            let timeFormatted = m.time ? m.time.replace(':', 'H') : "21H00";
+            
+            detailsMatchs += `"${m.teams} - ${timeFormatted}", `;
             instaMatches += `🏆 ${m.teams}\n`;
             
             let extracted = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
@@ -3031,13 +3037,13 @@ function sendPromoPrompt(id) {
         });
     }
 
-    // PROMPT ULTRA-OPTIMISÉ (Pour Leonardo, Midjourney v6, DALL-E 3 ou Ideogram)
+    // PROMPT BÉTON ARMÉ CONTRE L'ANGLAIS
     let aiPrompt = `A premium cinematic sports betting promotional poster. 
-Main Title: A massive glowing 3D text reading "COMBINÉ" in bold white chrome, and below it the text "DISPONIBLE" in vibrant glowing orange neon. 
+Main Title: A massive glowing 3D text reading exactly "COMBINE" in bold white chrome, and below it the text exactly "DISPONIBLE" in vibrant glowing orange neon. 
 Background: An epic football stadium at night, blurred crowd out of focus, dramatic volumetric floodlights shining down, orange and cyan cinematic color grading, floating golden sparks. 
 Center Area: Sleek translucent glass panels displaying exactly this text: ${detailsMatchs}
 Bottom Area: The official Instagram purple-orange gradient logo icon placed directly next to the exact text "@scoremaster.fr" in a clean white font. 
-Style: Ultra-realistic, Unreal Engine 5 render, highly detailed, commercial sports graphic design, flawless typography, --ar 9:16 --style raw --v 6.0`;
+Style: Ultra-realistic, Unreal Engine 5 render, highly detailed, commercial sports graphic design, flawless typography, strictly no english words, --ar 9:16 --style raw --v 6.0`;
 
     // Le texte pour ta bio ou légende Insta
     let instaText = `🔥 COMBINÉ SCORE EXACT DISPONIBLE !\n\n${instaMatches}⏰ Début du premier match à ${earliestTime}\n\nLien en bio pour accéder au VIP+ et valider tes gains ! 🚀💰\n@scoremaster.fr`;
