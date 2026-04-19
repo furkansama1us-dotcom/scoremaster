@@ -1398,7 +1398,15 @@ async function fetchApiScore(id, dateRaw) {
                     Génère 20 accroches stories pour motiver à acheter le combiné.
                 </div>
             </div>
-
+            <div class="admin-card" style="padding:15px; border-left:4px solid #0ea5e9; margin-bottom:10px; cursor:pointer;" onclick="openTelegramLaunch()">
+    <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff; display:flex; justify-content:space-between; align-items:center;">
+        <span><i class="fab fa-telegram-plane" style="color:#0ea5e9; margin-right:5px;"></i> Annonce Telegram VIP+</span>
+        <i class="fas fa-chevron-right" style="color:var(--text-gray); font-size:12px;"></i>
+    </div>
+    <div style="font-size:12px; color:var(--text-gray);">
+        Génère les messages d'annonce pour le canal avec les infos des matchs (équipes, horaires).
+    </div>
+</div>
         </div>
     </div>
 </div> <!-- FIN DU PANEL ADMIN -->
@@ -1522,6 +1530,98 @@ async function fetchApiScore(id, dateRaw) {
             userPlatform = d.platform || 'BETCLIC';
         }
     }
+
+    function openTelegramLaunch() {
+    var overlay = document.getElementById('telegram-launch-overlay');
+    if(overlay) {
+        overlay.style.display = 'flex';
+        setTimeout(() => overlay.style.opacity = "1", 10);
+        renderTelegramLaunchTexts();
+    }
+}
+
+function closeTelegramLaunch() {
+    var overlay = document.getElementById('telegram-launch-overlay');
+    if(overlay) {
+        overlay.style.opacity = "0";
+        setTimeout(() => overlay.style.display = 'none', 300);
+    }
+}
+
+function renderTelegramLaunchTexts() {
+    var container = document.getElementById('telegram-launch-content');
+    if (!container) return;
+
+    var activeCombined = null;
+    if (window.allCombineds && window.allCombineds.length > 0) {
+        activeCombined = window.allCombineds.find(c => c.status === 'en-cours');
+    }
+
+    // Récupération des infos dynamiques
+    var matchInfo = "du jour";
+    var earliestTime = "ce soir";
+    
+    if (activeCombined && activeCombined.matches && activeCombined.matches.length > 0) {
+        let m = activeCombined.matches[0];
+        matchInfo = m.teams ? m.teams : "du jour";
+        earliestTime = m.time ? m.time.replace(':', 'h') : "ce soir";
+    }
+
+    var signature = "\n\n🌐 Site Web : https://scoremaster.fr/\n➡️ Telegram : @ScoreMasterOfficiel";
+
+    var messages = [
+        `🚨 LE COMBINÉ EST DISPONIBLE !\n\nL'affiche : ${matchInfo}\nDébut des hostilités à ${earliestTime}.\n\nC'est maintenant qu'il faut parier sur votre espace VIP+ Score Master ! 👑` + signature,
+        `Le verdict est tombé pour ${matchInfo} ! 🏛️\n\nL'algorithme a validé le ticket. Tout est prêt dans l'espace membre.\n\nCoup d'envoi à ${earliestTime}. Ne ratez pas ça !` + signature,
+        `Analyse terminée pour ${matchInfo} ✅\n\nLe combiné VIP+ est en ligne. On part sur une grosse confiance ce soir.\n\nRendez-vous sur le site pour valider avant ${earliestTime}.` + signature,
+        `🔥 ALERTE VIP+ : Le ticket est publié !\n\nMatch au programme : ${matchInfo}\nDébut à ${earliestTime}.\n\nLes données sont claires, le score exact est verrouillé. 🔒` + signature,
+        `Dernière ligne droite avant le match ${matchInfo} ! ⏳\n\nLe combiné est dispo. Les cotes risquent de bouger, validez vite vos tickets sur l'espace VIP+.` + signature,
+        `100% DATA. 0% HASARD. 🧬\n\nLe combiné pour ${matchInfo} est en ligne.\nOn se retrouve dans l'espace membre pour le verdict final.` + signature,
+        `Prêts pour le choc ${matchInfo} ? ⚽️\n\nNotre ticket spécial Score Master est publié.\nDébut des matchs : ${earliestTime}.` + signature,
+        `L'info est tombée. 🦅\n\nLe combiné pour ${matchInfo} est validé et publié sur scoremaster.fr.\n\nPrenez votre ticket avant ${earliestTime} !` + signature,
+        `Le combiné du jour est officiellement DISPONIBLE ! 🎟️\n\nFocus sur : ${matchInfo}\nCoup d'envoi à ${earliestTime}.\n\nRejoignez l'élite sur le VIP+.` + signature,
+        `🚨 NE MANQUEZ PAS LE TICKET DU SOIR !\n\nAnalyse bouclée pour ${matchInfo}.\nLe combiné est en ligne sur votre espace membre.` + signature,
+        `Cotes analysées. Matchs validés. ✅\n\nLe ticket pour ${matchInfo} est disponible sur Score Master.\n\nDébut à ${earliestTime}.` + signature,
+        `Le travail est fait pour ${matchInfo}. 💼\n\nLe combiné est en ligne sur l'espace SM VIP+. Ne perdez pas de temps, début à ${earliestTime} !` + signature,
+        `Les experts ont tranché pour ${matchInfo} ⚔️\n\nLe combiné du jour est publié dans l'Espace VIP+.\n\nAccès direct via le lien ci-dessous.` + signature,
+        `La pépite du jour est en ligne ! 💎\n\nAnalyse spéciale pour ${matchInfo}.\nOn valide ça maintenant sur l'espace VIP+.` + signature,
+        `Tic-Tac... ${earliestTime} approche ! ⏳\n\nLe ticket pour ${matchInfo} est déjà entre les mains des membres VIP+.\n\nEt toi ?` + signature,
+        `Verdict de l'IA pour ${matchInfo} : DISPONIBLE. 🤖\n\nLe combiné est prêt. On fonce sur le site pour voir le score exact.` + signature,
+        `Grosse confiance sur le combiné de ce soir ! 🔥\n\nAffiche : ${matchInfo}\nDébut à ${earliestTime}.\n\nTout est sur le site.` + signature,
+        `L'attente est terminée ! 🏁\n\nLe combiné pour ${matchInfo} est publié.\nRendez-vous sur l'Espace VIP+ pour valider !` + signature,
+        `Score Master ne dort jamais. 🤖\n\nAnalyse validée pour ${matchInfo}. Le ticket est disponible.` + signature,
+        `Dernier appel pour le combiné de ${earliestTime} ! 📢\n\nL'affiche ${matchInfo} est dans le viseur. Le ticket est sur le VIP+.` + signature
+    ];
+
+    var html = `
+        <div style="background:rgba(14,165,233,0.1);border:1px solid rgba(14,165,233,0.3);border-radius:10px;padding:12px;color:#0ea5e9;font-size:12px;margin-bottom:20px;">
+            <i class="fas fa-info-circle"></i> Données détectées : <strong>${matchInfo}</strong> à <strong>${earliestTime}</strong>.
+        </div>`;
+
+    messages.forEach((msg, i) => {
+        html += `
+        <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(14,165,233,0.2);border-radius:16px;padding:16px;margin-bottom:12px;">
+            <div style="font-size:13px;color:#f9fafb;line-height:1.7;white-space:pre-wrap;margin-bottom:12px;">${msg}</div>
+            <button onclick="copyRawText(this, ${i})" data-text="${encodeURIComponent(msg)}" style="width:100%;padding:10px;border-radius:10px;border:none;background:#0ea5e9;color:#fff;font-size:13px;font-weight:800;cursor:pointer;">
+                📋 Copier pour Telegram
+            </button>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+}
+
+function copyRawText(btn, i) {
+    var text = decodeURIComponent(btn.getAttribute('data-text'));
+    navigator.clipboard.writeText(text).then(() => {
+        var oldText = btn.innerHTML;
+        btn.innerHTML = "✅ Copié !";
+        btn.style.background = "#22c55e";
+        setTimeout(() => {
+            btn.innerHTML = oldText;
+            btn.style.background = "#0ea5e9";
+        }, 2000);
+    });
+}
     
     function saveState() { 
         localStorage.setItem('scoreMasterData', JSON.stringify({ stats: appStats, platform: userPlatform })); 
@@ -5148,6 +5248,17 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
         <button onclick="closePromoTelegram()" style="margin-left:auto;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
     <div id="promo-telegram-content" style="flex:1; overflow-y:auto; padding:20px; padding-bottom:100px;"></div>
+</div>
+    <div id="telegram-launch-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:99999;flex-direction:column;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(10px);">
+    <div style="border-bottom:1px solid rgba(14,165,233,0.3); background:#0a0a0a; padding:50px 20px 14px; display:flex; align-items:center; gap:14px; flex-shrink:0;">
+        <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#0ea5e9,#2563eb);display:flex;align-items:center;justify-content:center;font-size:18px;">🚀</div>
+        <div>
+            <div style="font-size:17px;font-weight:900;color:#fff;">Annonce <span style="color:#0ea5e9;">Telegram</span></div>
+            <div style="font-size:11px;color:#6b7280;">Messages live avec infos matchs</div>
+        </div>
+        <button onclick="closeTelegramLaunch()" style="margin-left:auto;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:18px;cursor:pointer;">✕</button>
+    </div>
+    <div id="telegram-launch-content" style="flex:1; overflow-y:auto; padding:20px; padding-bottom:100px;"></div>
 </div>
     
 <style>
