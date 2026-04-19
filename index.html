@@ -1654,10 +1654,7 @@ async function fetchApiScore(id, dateRaw) {
         document.getElementById('admin-tab-' + tabName).classList.add('active');
         document.getElementById('btn-tab-' + tabName).classList.add('active');
     }
-    function flagImg(code) {
-    if (!code || code.startsWith('<')) return '<span style="font-size:13px;margin-right:4px;">⚽</span>';
-    return '<img src="[flagcdn.com](https://flagcdn.com/20x15/)' + code + '.png" style="height:13px;border-radius:2px;margin-right:5px;vertical-align:middle;">';
-}
+
     // ============================================================
 // CHARGEMENT VIA SOFASCORE (AVEC CONTOURNEMENT CORS)
 // ============================================================
@@ -1765,7 +1762,10 @@ var response = await fetch(TARGET_URL, {
             else if (c.includes('paraguay')) code = 'py';
             else if (c.includes('uruguay')) code = 'uy';
             else if (c.includes('bolivia')) code = 'bo';
-            return code || null;
+            if (code) {
+                return '<img src="https://flagcdn.com/20x15/' + code + '.png" style="width:20px;height:15px;object-fit:cover;border-radius:2px;flex-shrink:0;" onerror="this.style.display=&quot;none&quot;">';
+            }
+            return '<span style="font-size:14px;">⚽</span>';
         }
 
         matches.forEach(function(m) {
@@ -1785,7 +1785,7 @@ var response = await fetch(TARGET_URL, {
             <button type="button" id="${btnId}" onclick="addMatchFromAPI('${fullMatchName.replace(/'/g, "\\'")}', '${timeStr}', '')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer;">
                 <div style="font-size:13px; font-weight:600; display:flex; align-items:center; gap:5px;">
                     <span style="color:var(--primary-yellow); width:45px; flex-shrink:0;"><i class="fas fa-clock"></i> ${timeStr}</span>
-                    <span style="flex-shrink:0; display:inline-flex; align-items:center;">${flagImg(flag)}</span>
+                    <span style="flex-shrink:0; display:inline-flex; align-items:center;">${flag}</span>
                     <span>${home}</span>
                     <span style="color:var(--text-gray);">-</span>
                     <span>${away}</span>
@@ -2080,35 +2080,6 @@ async function startLiveScores() {
 // ============================================================
 const logosCache = {};
 
-    function getLeagueFlag(m) {
-    if (!m) return '<span style="font-size:14px;">⚽</span>';
-    var country = (m.tournament && m.tournament.category && m.tournament.category.name) ? m.tournament.category.name.toLowerCase() : '';
-    var tournament = (m.tournament && m.tournament.name) ? m.tournament.name.toLowerCase() : '';
-    var c = country + ' ' + tournament;
-    var code = null;
-    if (c.includes('england') || c.includes('premier league') || c.includes('championship') || c.includes('fa cup')) code = 'gb-eng';
-    else if (c.includes('scotland') || c.includes('scottish')) code = 'gb-sct';
-    else if (c.includes('france') || c.includes('ligue 1') || c.includes('ligue 2') || c.includes('coupe de france')) code = 'fr';
-    else if (c.includes('spain') || c.includes('espa') || c.includes('laliga') || c.includes('la liga') || c.includes('copa del rey')) code = 'es';
-    else if (c.includes('germany') || c.includes('deutschland') || c.includes('bundesliga') || c.includes('dfb')) code = 'de';
-    else if (c.includes('italy') || c.includes('italia') || c.includes('serie a') || c.includes('coppa italia')) code = 'it';
-    else if (c.includes('portugal') || c.includes('primeira liga') || c.includes('liga nos')) code = 'pt';
-    else if (c.includes('netherlands') || c.includes('holland') || c.includes('eredivisie')) code = 'nl';
-    else if (c.includes('belgium') || c.includes('belgique') || c.includes('jupiler')) code = 'be';
-    else if (c.includes('turkey') || c.includes('turquie') || c.includes('super lig')) code = 'tr';
-    else if (c.includes('russia') || c.includes('russie') || c.includes('premier liga')) code = 'ru';
-    else if (c.includes('argentina') || c.includes('argentine') || c.includes('liga profesional')) code = 'ar';
-    else if (c.includes('brazil') || c.includes('brasil') || c.includes('brasileirao')) code = 'br';
-    else if (c.includes('usa') || c.includes('mls') || c.includes('united states')) code = 'us';
-    else if (c.includes('mexico') || c.includes('mexique') || c.includes('liga mx')) code = 'mx';
-    else if (c.includes('champions league') || c.includes('europa league') || c.includes('conference league') || c.includes('uefa')) code = 'eu';
-    
-    if (code) {
-        return '<img src="https://flagcdn.com/20x15/' + code + '.png" style="width:20px;height:15px;object-fit:cover;border-radius:2px;flex-shrink:0;" onerror="this.style.display=&quot;none&quot;">';
-    }
-    return '<span style="font-size:14px;">⚽</span>';
-}
-
 async function fetchTeamLogo(teamName) {
     if (!teamName || teamName === 'Domicile' || teamName === 'Extérieur') return null;
     if (logosCache[teamName]) {
@@ -2352,7 +2323,7 @@ async function autoFetchFinalScores(combined) {
 
         if(c.matches && c.matches.length > 0) {
             c.matches.forEach((m, index) => {
-                let logoDisplay = flagImg(m.logo);
+                let logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:18px;height:18px;object-fit:contain;margin-right:8px;vertical-align:middle;">` : `<span style="margin-right:6px;">⚽</span>`);
                 let currentOdds = m.odds ? m.odds.toFixed(2) : '0.00';
                 
                 // J'ajoute le champ "Cote finale" et un événement "oninput" pour recalculer le total
@@ -2805,7 +2776,7 @@ function renderHistory() {
                 var mStatus = m.match_status || (sc === 'en-cours' ? 'en-cours' : sc);
                 var scoreColor = mStatus === 'termine' ? 'var(--green)' : (mStatus === 'perdu' ? 'var(--red)' : 'var(--text-white)');
                 
-                var logoDisplay = flagImg(m.logo);
+                var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:12px;height:12px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<span style="margin-right:4px;">⚽</span>`);
                 
                 matchesHtml += `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; align-items:center;">
                     <span style="color:var(--text-light-gray);">${logoDisplay}${m.teams || 'Équipes'}</span>
@@ -2853,7 +2824,7 @@ function renderAdminHistory() {
         if (c.matches && c.matches.length > 0) {
             matchesDetailsHtml = '<div style="margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px;">';
             c.matches.forEach(m => {
-                let logoImg = flagImg(m.logo);
+                let logoImg = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<span style="margin-right:4px;">⚽</span>`);
                 
                 let scoreDisplay = '';
                 if (c.status === 'termine' || c.status === 'perdu') {
@@ -3053,7 +3024,7 @@ function renderAdminHistory() {
         if (c.matches && c.matches.length > 0) {
             matchesDetailsHtml = '<div style="margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px;">';
             c.matches.forEach(m => {
-                let logoImg = flagImg(m.logo);
+                let logoImg = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<span style="margin-right:4px;">⚽</span>`);
                 
                 let scoreDisplay = '';
                 if (c.status === 'termine' || c.status === 'perdu') {
@@ -3240,9 +3211,7 @@ ${aiPrompt}
     function buildCC(c, sc, sl, pw, isHome) {
         var mH = '';
         var matchesToDisplay = c.matches ? c.matches : Array(c.nombre_matchs || 2).fill({ teams: 'Match en attente', time: '--:--', odds: 0 });
-        var isHomeObscured = (isHome && sc === 'en-cours');
-    var isVipObscured = (!isHome && sc === 'en-cours');
-    var blurClass = (isHomeObscured || isVipObscured) ? 'blurred-value' : '';
+        
         let today = new Date();
         let tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
         let combinDate = new Date(c.date);
@@ -3262,9 +3231,8 @@ ${aiPrompt}
             // Sécurité : l'accueil a des étoiles, le VIP a le vrai score mais flouté
             var displayScore = isHomeObscured ? '*** - ***' : m.score;
             var displayOdds = isHomeObscured ? '**.**' : m.odds.toFixed(2);
-            var blurClass = (isHomeObscured || isVipObscured) ? 'blurred-value' : '';
             
-            // ✅ UTILISATION DE m.logo : C'est la seule méthode 100% fiable pour ne pas crasher
+            var blurClass = (isHomeObscured || isVipObscured) ? 'blurred-value' : '';
             var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<span style="margin-right:4px;">⚽</span>`);
             
             let cleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : "--:--";
@@ -3287,6 +3255,8 @@ ${aiPrompt}
         
         var pc = sc === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : sc === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
         
+        var blurClass = (isHomeObscured || isVipObscured) ? 'blurred-value' : '';
+        
         var displayGains = isHomeObscured ? '***,** €' : fmtC(c.gains || 0);
         var displayMise = isHomeObscured ? '***,** €' : fmtC(c.mise || 0);
         var displayTotalOdds = isHomeObscured ? '***.**' : (c.total_odds || 0).toFixed(2);
@@ -3308,6 +3278,7 @@ ${aiPrompt}
         var ctaBtn = (isHome && !isLocked && sc === 'en-cours') ? `<a href="${TELEGRAM_LINK}" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>` : '';
         if (isHome && isLocked && sc === 'en-cours') ctaBtn = `<button class="combined-cta-btn" style="background: var(--bg-input); color: var(--text-gray); cursor: not-allowed;"><i class="fas fa-lock"></i> Trop tard, match commencé !</button>`;
 
+        // LE BOUTON DE RÉVÉLATION VIP
         var vipRevealBtn = isVipObscured ? `<button id="reveal-btn-${c.id}" onclick="unblurVipCard('combined-card-vip-${c.id}', 'reveal-btn-${c.id}')" class="combined-cta-btn" style="background:linear-gradient(135deg, #FFD700, #E6C200); color:#000; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);"><i class="fas fa-eye" style="margin-right:6px;"></i> Cliquer ici pour déflouter les scores</button>` : '';
 
         return `
@@ -3525,7 +3496,7 @@ let quickEditCombinedId = null;
 
         if(c.matches && c.matches.length > 0) {
             c.matches.forEach((m, index) => {
-                let logoDisplay = flagImg(m.logo);
+                let logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:18px;height:18px;object-fit:contain;margin-right:8px;vertical-align:middle;">` : `<span style="margin-right:6px;">⚽</span>`);
                 let currentOdds = m.odds ? m.odds.toFixed(2) : '0.00';
                 
                 let matchHtml = `
