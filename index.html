@@ -3833,125 +3833,125 @@ function renderPromoTelegramContent() {
     var htmlStatut = `
         <div style="background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); border-radius:10px; padding:10px 14px; font-size:12px; color:#4ade80; display:flex; align-items:center; gap:8px; flex-shrink:0; margin-bottom: 20px;">
             <i class="fas fa-paint-brush" style="font-size:12px; animation:pulse 2s infinite;"></i>
-            🛠️ 20 Textes Viraux & Prompts Style Illustration Dessin (Format Carré)
+            🛠️ 20 Textes & Prompts (Style Dessin + Branding "SM" & Couronne)
         </div>
         <div style="font-size:11px;color:#6b7280;line-height:1.6;padding:2px; margin-bottom: 20px; flex-shrink:0;">
-            📣 <strong style="color:#fff;">Mode d'emploi :</strong> Choisissez votre angle d'attaque. Copiez le texte pour Telegram, puis générez l'image d'illustration (style dessin/comics avec contours marqués) avec le bouton <strong style="color:#c084fc;">🖼️ Prompt IA</strong> !
+            📣 <strong style="color:#fff;">Mode d'emploi :</strong> Le logo (lettres "SM" + couronne dorée) est désormais intégré intelligemment dans chaque scène (sur une carte, un mur, un écran...). Copiez et générez !
         </div>`;
 
     // --- DÉFINITION DU STYLE ILLUSTRATIF À UTILISER DANS TOUS LES PROMPTS ---
     const styleHeader = " Detailed stylized digital illustration drawing with bold dark outlines, high-contrast ink wash and textured watercolor coloring, comic book art style.";
 
-    // --- ÉTAPE B : LES 20 TEXTES VIRAUX & PROMPTS IA (NOUVEAU STYLE ILLUSTRATION) ---
+    // --- ÉTAPE B : LES 20 TEXTES VIRAUX & PROMPTS IA (AVEC BRANDING) ---
     var viralPromoContent = [
         // --- 🏆 FLEX & RÉSULTATS ---
         { 
             label: "🏆 Story 1 — Flex : L'argent intelligent", color: "#8b5cf6", type: "flex", 
             txt: "L'argent intelligent se place avant la masse 💸\n\nPendant que 95% des parieurs perdent en misant sur leurs émotions, notre cercle VIP+ encaisse grâce aux mathématiques.\n\nLes données ont déjà rendu leur verdict pour ce soir.\nRejoins l'élite 👑 👇\n👉 Lien en bio.",
-            prompt: `${styleHeader} A sharp-dressed, confident young man with dark curly hair (like in image_b10800.jpg) smiles subtly in a stylized modern penthouse, looking at a glowing holographic sports data dashboard floating above his smartphone. High contrast, dynamic lighting. No text. --ar 1:1 --style raw --v 6`
+            prompt: `${styleHeader} A sharp-dressed, confident young man with dark curly hair smiles subtly in a stylized modern penthouse, looking at a glowing holographic sports data dashboard floating above his smartphone. A subtle luxury logo featuring the letters "SM" topped with a golden crown is engraved on his phone case. High contrast. --ar 1:1 --style raw --v 6`
         },
         { 
             label: "🏆 Story 2 — Flex : Vert sur vert", color: "#8b5cf6", type: "flex", 
             txt: "📈 Vert sur vert.\n\nEncore une soirée où l'algorithme a fait le travail à notre place. L'historique ne ment pas.\n\nLe combiné data du jour est en ligne.\nNe reste pas sur le quai 🚂 👇\n👉 Accès au VIP+ en bio.",
-            prompt: `${styleHeader} A group of diverse friends in a high-end sports bar cheering enthusiastically, holding up a smartphone showing abstract glowing green ascending chart lines. High energy, dynamic outlines, textured coloring. Joy and celebration. No text. --ar 1:1 --style raw --v 6`
+            prompt: `${styleHeader} A group of diverse friends in a high-end sports bar cheering enthusiastically, holding up a smartphone showing abstract glowing green ascending chart lines. A neon sign in the background wall displays the letters "SM" under a bright golden crown. Joy and celebration. --ar 1:1 --style raw --v 6`
         },
         { 
             label: "🏆 Story 3 — Flex : La valeur de l'information", color: "#8b5cf6", type: "flex", 
             txt: "💎 L'information a un prix. L'ignorance coûte plus cher.\n\nNos membres ont accès aux scores exacts générés par la plus grande base de données sportives.\n\nCe soir, l'opportunité est massive.\n👉 Rejoins le cercle maintenant.",
-            prompt: `${styleHeader} A close-up portrait of a sophisticated person in a dimly lit, exclusive VIP lounge, smiling knowingly while holding a sleek, glowing black and gold VIP card. Luxurious atmosphere with textured coloring, bold inking. No text. --ar 1:1 --style raw --v 6`
+            prompt: `${styleHeader} A close-up portrait of a sophisticated person in a dimly lit, exclusive VIP lounge, smiling knowingly while holding a sleek, glowing black VIP card. The card features a prominent golden crown logo directly above the letters "SM". Luxurious atmosphere, bold inking. --ar 1:1 --style raw --v 6`
         },
         { 
             label: "🏆 Story 4 — Flex : Le hasard est mort", color: "#8b5cf6", type: "flex", 
             txt: "Le hasard n'a pas sa place ici 🧬\n\nLe ticket du soir est une masterclass algorithmique. Tout est millimétré, rien n'est laissé à la chance.\n\n👉 Accède au combiné sécurisé via le lien en bio.",
-            prompt: `${styleHeader} An intelligent-looking man with curly hair in a modern dark office, surrounded by stylized floating holographic sports statistics and mathematical equations. Inked contours, comic book depth, focused expression. No text. --ar 1:1 --style raw --v 6`
+            prompt: `${styleHeader} An intelligent-looking man with curly hair in a modern dark office, surrounded by stylized floating holographic sports statistics. A stylish leather notebook on his desk is embossed with the letters "SM" and a golden crown. Inked contours, focused expression. --ar 1:1 --style raw --v 6`
         },
 
         // --- 🔬 DATA & TECH ---
         { 
             label: "🔬 Story 5 — Data : 0% Émotion", color: "#0ea5e9", type: "data", 
             txt: "Data. 0% Émotion. 🧠\n\nNotre algorithme a analysé plus de 50 000 données historiques pour l'affiche d'aujourd'hui. Les scores exacts sont verrouillés 🏛️\n\nInvestis intelligemment avec les meilleurs outils data 👇\n👉 Lien en bio",
-            prompt: `${styleHeader} A focused data scientist with dark curly hair in a dark, high-tech control room, meticulously analyzing complex football statistics on multiple glowing transparent screens. Cool cyan and blue lighting, high-contrast digital drawing. No text. --ar 1:1 --style raw --v 6`
+            prompt: `${styleHeader} A focused data scientist with dark curly hair in a dark, high-tech control room, analyzing complex football statistics on transparent screens. The main screen prominently displays a glowing logo of the letters "SM" topped with a golden crown. Cool cyan lighting. --ar 1:1 --style raw --v 6`
         },
         { 
             label: "🔬 Story 6 — Data : Feeling vs Data", color: "#0ea5e9", type: "data", 
             txt: "📊 Si tu paries au feeling, tu as déjà perdu.\n\nL'algorithme vient de détecter une anomalie massive sur les cotes de ce soir. La faille est exploitée, le ticket est prêt.\n\n👉 Récupère l'analyse complète dans le VIP+.",
-            prompt: `${styleHeader} A split screen style digital illustration. Left side: a stressed, frustrated person holding a losing betting ticket with messy outlines. Right side: a calm, confident person smiling at an advanced glowing AI sports dashboard on a tablet with clean bold outlines. Dynamic contrast. No text. --ar 1:1 --style raw --v 6`
+            prompt: `${styleHeader} Split screen digital illustration. Left side: a stressed person holding a losing betting ticket. Right side: a calm, confident person smiling at an advanced glowing AI sports dashboard on a tablet. The tablet's interface features a sleek "SM" logo with a golden crown. --ar 1:1 --style raw --v 6`
         },
         { 
             label: "🔬 Story 7 — Data : Analyse au microscope", color: "#0ea5e9", type: "data", 
             txt: "🔬 Analyse au microscope terminée.\n\nChaque blessure, chaque statistique, chaque historique a été digéré par notre IA. Le verdict est sans appel.\n\nLe ticket est validé.\n👉 Dispo dans l'espace membre.",
-            prompt: `${styleHeader} A macro close-up of a human eye with inked details reflecting glowing neon sports data, green soccer fields, and complex algorithms. Highly detailed illustrative rendering, analytical vibe. No text. --ar 1:1 --style raw --v 6`
+            prompt: `${styleHeader} A macro close-up of a human eye with inked details reflecting glowing neon sports data and complex algorithms. Inside the pupil reflection, a tiny glowing golden crown above the letters "SM" is visible. Highly detailed analytical vibe. --ar 1:1 --style raw --v 6`
         },
         { 
             label: "🔬 Story 8 — Data : L'IA ne dort jamais", color: "#0ea5e9", type: "data", 
             txt: "🤖 L'IA ne dort jamais.\n\nPendant que les bookmakers ajustent leurs lignes, notre système a déjà trouvé la value du jour.\n\nUn combiné en béton armé t'attend.\n👉 Clique sur le lien en bio.",
-            prompt: `${styleHeader} An over-the-shoulder shot of a person using a modern smartphone resting on a dark desk, projecting a glowing AI hologram of a football stadium. Moody late-night lighting with bold sketched contours, high contrast ink wash. No text. --ar 1:1 --style raw --v 6`
+            prompt: `${styleHeader} An over-the-shoulder shot of a person using a modern smartphone resting on a dark desk, projecting a glowing AI hologram of a football stadium. A luxury metallic pen holder on the desk features the engraved letters "SM" and a golden crown. High contrast ink wash. --ar 1:1 --style raw --v 6`
         },
 
         // --- ⏳ FOMO & URGENCE ---
         { 
             label: "⏳ Story 9 — Urgence : Tic-Tac", color: "#f97316", type: "fomo", 
             txt: "⏳ Tic-tac. L'occasion ne se présente qu'une fois.\n\nFermeture imminente des accès VIP+ pour l'analyse du soir ! Le ticket est déjà entre les mains des membres 🎟️\n\n👉 Accède à l'espace avant qu'il ne soit trop tard.",
-            prompt: `${styleHeader} A close-up shot of a person's hand nervously checking a stylized luxury wristwatch in a dark, moody environment. Sketched contours, high contrast orange and red glow from the watch face. Tension. No text. --ar 1:1 --style raw --v 6`
+            prompt: `${styleHeader} A close-up shot of a person's hand nervously checking a stylized luxury wristwatch in a dark, moody environment. The watch dial explicitly features the letters "SM" under a tiny, elegant golden crown. Tension, sketched contours, high contrast orange glow. --ar 1:1 --style raw --v 6`
         },
         { 
             label: "⏳ Story 10 — Urgence : Plus que 30 min", color: "#f97316", type: "fomo", 
             txt: "🚨 ALERTE : Le coup d'envoi approche !\n\nLes cotes risquent de s'effondrer d'une minute à l'autre. Le score exact a été publié.\n\n👉 Ne sois pas celui qui regarde les autres encaisser demain matin.",
-            prompt: `${styleHeader} A dynamic illustrative close-up of a person's hand with inked details pressing a glowing red \"VALIDATE\" button on a futuristic smartphone sports betting interface. Dynamic sketched outlines, high tension, neon red glow. No text. --ar 1:1 --style raw --v 6`
+            prompt: `${styleHeader} A dynamic illustrative close-up of a person's hand pressing a glowing red "VALIDATE" button on a futuristic sports betting app interface. The top header of the app displays a sleek golden crown over the letters "SM". Dynamic outlines, neon red glow. --ar 1:1 --style raw --v 6`
         },
         { 
             label: "⏳ Story 11 — Urgence : Les portes se ferment", color: "#f97316", type: "fomo", 
             txt: "🚪 Les portes se ferment.\n\nNous limitons l'accès au VIP+ pour protéger les cotes de nos analyses. Le ticket du soir est exclusif.\n\n👉 Dernière chance d'entrer avant le match.",
-            prompt: `${styleHeader} A shot from behind a person with curly hair walking urgently towards a massive, glowing illustrative VIP door that is slowly closing. Dramatic sketched outlines, bright spilled golden light from inside. Exclusive atmosphere. No text. --ar 1:1 --style raw --v 6`
+            prompt: `${styleHeader} A shot from behind a person walking urgently towards a massive, glowing illustrative VIP door that is slowly closing. The heavy metal door is decorated with a large golden crown and the initials "SM". Bright spilled golden light, exclusive atmosphere. --ar 1:1 --style raw --v 6`
         },
         { 
             label: "⏳ Story 12 — Urgence : Le train est parti", color: "#f97316", type: "fomo", 
             txt: "🚂 Le train de la rentabilité n'attend pas les retardataires.\n\nL'algorithme a généré une masterclass. Le combiné est validé.\n\n👉 Rejoins-nous ou regarde-nous faire.",
-            prompt: `${styleHeader} A silhouette of a person running with dynamic sketched lines to catch a sleek, futuristic glowing bullet train at night. Heavy textured watercolor speed lines, neon city lights, strong sense of missing out. No text. --ar 1:1 --style raw --v 6`
+            prompt: `${styleHeader} A silhouette of a person running with dynamic sketched lines to catch a sleek, futuristic glowing bullet train at night. The side of the train is painted with a prominent golden crown over the letters "SM". Heavy textured speed lines, neon city lights. --ar 1:1 --style raw --v 6`
         },
 
         // --- 👑 AUTORITÉ & CONFIANCE ---
         { 
             label: "🦅 Story 13 — Autorité : Vision Globale", color: "#22c55e", type: "autorité", 
             txt: "🦅 Notre oeil ne rate rien.\n\nNos experts ont validé le combiné du jour après des heures d'analyse data. C'est du lourd 💎\n\n100% transparence, 100% expertise.\n👉 Rejoins l'élite en bio.",
-            prompt: `${styleHeader} A shot of a confident man with curly hair standing at a high penthouse window, looking down at a glowing, illuminated football stadium in the city far below at night. View from behind, powerful sketched contours, authoritative mood. No text. --ar 1:1 --style raw --v 6`
+            prompt: `${styleHeader} A confident man with curly hair standing at a high penthouse window, looking down at a glowing football stadium in the city far below at night. A subtle glowing holographic projection of the letters "SM" with a golden crown floats in the room behind him. Authoritative mood. --ar 1:1 --style raw --v 6`
         },
         { 
             label: "👑 Story 14 — Autorité : La différence", color: "#22c55e", type: "autorité", 
             txt: "👑 La différence entre les amateurs et l'élite ? L'information.\n\nNous ne devinons pas l'avenir, nous le calculons.\nLe score exact de ce soir est disponible.\n\n👉 Accès direct dans le VIP+.",
-            prompt: `${styleHeader} A portrait drawing of a charismatic, successful individual in a sharp suit, sitting in a leather chair in a dark, luxurious room, giving a subtle, confident smile to the camera. Warm comic book lighting, elite vibe, highly detailed. No text. --ar 1:1 --style raw --v 6`
+            prompt: `${styleHeader} A portrait drawing of a charismatic individual in a sharp suit, sitting in a leather chair in a luxurious room, smiling confidently. He wears an elegant, detailed golden crown lapel pin with the letters "SM" inside. Elite vibe, highly detailed ink work. --ar 1:1 --style raw --v 6`
         },
         { 
             label: "🏛️ Story 15 — Autorité : Le Savoir", color: "#22c55e", type: "autorité", 
             txt: "🏛️ Le temple du pronostic.\n\nIci, on ne vend pas de rêve, on livre des statistiques. Notre IA vient de rendre son verdict pour le choc de ce soir.\n\n👉 Viens chercher ton ticket.",
-            prompt: `${styleHeader} A modernized mentor figure explaining a winning illustrative strategy on a glowing interactive tabletop display to a highly focused student with curly hair. Dark luxury environment with bold contours, glowing data lines. No text. --ar 1:1 --style raw --v 6`
+            prompt: `${styleHeader} A modernized mentor figure explaining a winning strategy on a glowing interactive tabletop display to a highly focused student. The glowing center of the digital table prominently displays an "SM" logo topped with a golden crown. Dark luxury environment. --ar 1:1 --style raw --v 6`
         },
         { 
             label: "♟️ Story 16 — Autorité : Échec et mat", color: "#22c55e", type: "autorité", 
             txt: "♟️ Échec et mat contre les bookmakers.\n\nL'analyse est complète. Chaque variable a été prise en compte. Le coup parfait est prêt à être joué.\n\n👉 Ton accès t'attend dans la bio.",
-            prompt: `${styleHeader} A close-up of a person's hand with inked details decisively moving a glowing glass chess piece on a futuristic board with abstract glowing football field lines underneath. Highly detailed illustrative style, strategic mood. No text. --ar 1:1 --style raw --v 6`
+            prompt: `${styleHeader} A close-up of a person's hand decisively moving a glowing glass chess piece on a futuristic board. The base of the winning chess piece is engraved with the letters "SM" and a golden crown. Highly detailed illustrative style, strategic mood. --ar 1:1 --style raw --v 6`
         },
 
         // --- 🔥 TENSION & CLASH ---
         { 
             label: "🔥 Story 17 — Clash : L'adrénaline", color: "#ef4444", type: "clash", 
             txt: "⚡ La foudre va frapper ce soir.\n\nUne affiche monstrueuse, une analyse chirurgicale. L'algorithme a tranché et le ticket est terrifiant 🥶\n\n👉 Ne manque pas ça. VIP+ en bio.",
-            prompt: `${styleHeader} A portrait of a passionate football fan screaming in intense excitement with harsh dynamic red and blue stadium floodlights hitting their face. Heavily inked sketched contours, high energy, dynamic outlines. No text. --ar 1:1 --style raw --v 6`
+            prompt: `${styleHeader} A portrait of a passionate football fan screaming in intense excitement with harsh dynamic red and blue stadium floodlights hitting their face. The fan wears a premium jacket with an embroidered patch showing the letters "SM" and a golden crown. High energy. --ar 1:1 --style raw --v 6`
         },
         { 
             label: "🔥 Story 18 — Clash : Le face à face", color: "#ef4444", type: "clash", 
             txt: "🌋 Éruption imminente.\n\nLe match de ce soir va faire des dégâts. Mais nous sommes du bon côté de l'histoire grâce à la data.\n\nScore exact publié.\n👉 Rejoins le côté obscur des bookmakers.",
-            prompt: `${styleHeader} A dynamic close-up drawing of two rival football fans facing off, intense stares, dynamic inking. Smoky background, fiery neon orange and red lighting. Highly competitive and aggressive mood. No text. --ar 1:1 --style raw --v 6`
+            prompt: `${styleHeader} A dynamic close-up drawing of two rival football fans facing off, intense stares. In the dark, smoky concrete background, a stylized graffiti tag displays the letters "SM" wearing a golden crown. Fiery neon orange lighting, aggressive mood. --ar 1:1 --style raw --v 6`
         },
         { 
             label: "⚔️ Story 19 — Clash : Un duel au sommet", color: "#ef4444", type: "clash", 
             txt: "⚔️ Un duel au sommet.\n\nDeux géants s'affrontent, mais l'algorithme a déjà trouvé le gagnant. La cote est folle.\n\n👉 Le ticket complet t'attend dans l'espace VIP+.",
-            prompt: `${styleHeader} A low-angle action illustration drawing of two anonymous football players aggressively clashing for the ball in heavy rain. Epic sketched outlines, stadium lights, heavy rain streaks, high energy clash. No text. --ar 1:1 --style raw --v 6`
+            prompt: `${styleHeader} A low-angle action illustration of two anonymous football players aggressively clashing for the ball in heavy rain. The classic black and white match ball clearly has the letters "SM" and a golden crown printed on it. Epic stadium lights, high energy. --ar 1:1 --style raw --v 6`
         },
         { 
             label: "🔥 Story 20 — Clash : La ferveur", color: "#ef4444", type: "clash", 
             txt: "🔥 Ce soir, la terre tremble.\n\nLes plus grandes affiches analysées par l'algorithme le plus puissant. Nous, on a déjà validé le combiné parfait 🔒\n\nPréparez-vous au choc.\n👉 Lien en bio.",
-            prompt: `${styleHeader} A shot from behind a fan overlooking an incredibly massive, roaring stadium crowd illuminated by intense red flares and glowing smoke. Heavily textured ink and watercolor drawing, epic atmosphere of ferveur. No text. --ar 1:1 --style raw --v 6`
+            prompt: `${styleHeader} A shot from behind a fan overlooking an incredibly massive, roaring stadium crowd illuminated by intense red flares. A massive tifo banner unfurled in the crowd boldly displays the letters "SM" beneath a giant golden crown. Epic atmosphere of ferveur. --ar 1:1 --style raw --v 6`
         }
     ];
 
@@ -3981,7 +3981,7 @@ function renderPromoTelegramContent() {
                 <div style="padding:4px 0;">
                     <button id="btn-copy-promo-prompt-${i}" onclick="copyPromoPrompt(${i})" 
                         style="width:100%;padding:8px;border-radius:10px;border:1px solid rgba(168,85,247,0.5);background:none;color:#c084fc;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px; transition:all 0.2s; flex-shrink:0;">
-                        🖼️ Copier le Prompt Illustration (DESSIN)
+                        🖼️ Copier le Prompt Illustration (+ Branding SM)
                     </button>
                 </div>
                 
