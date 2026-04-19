@@ -4527,22 +4527,73 @@ function renderInstaTexts() {
 }
 
 function copyInstaText(si, ti) {
-    var txt = window._instaTexts[si].texts[ti];
-    pgCopyText(txt, function() {
-        var btn = document.getElementById('btn-insta-' + si + '-' + ti);
-        if (btn) {
-            btn.textContent = '✅ Copié !';
-            btn.style.background = 'rgba(34,197,94,0.2)';
-            btn.style.borderColor = '#22c55e';
-            btn.style.color = '#4ade80';
-            setTimeout(function() {
-                btn.textContent = '📋 Copier ce texte';
-                btn.style.background = 'none';
-                btn.style.borderColor = 'rgba(225,48,108,0.4)';
-                btn.style.color = '#f472b6';
-            }, 2000);
+    // Récupère les données directement depuis window._instaTexts
+    if (!window._instaTexts) {
+        console.error("_instaTexts non défini !");
+        showToast("Erreur : textes non chargés.", true);
+        return;
+    }
+
+    var section = window._instaTexts[si];
+    if (!section) {
+        console.error("Section introuvable à l'index", si);
+        showToast("Erreur : section introuvable.", true);
+        return;
+    }
+
+    var txt = section.items[ti];
+    if (!txt) {
+        console.error("Texte introuvable à l'index", ti);
+        showToast("Erreur : texte introuvable.", true);
+        return;
+    }
+
+    // Copie dans le presse-papier
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(function() {
+            showToast("✅ Texte copié !");
+            // Feedback visuel sur le bouton
+            var btn = document.getElementById('btn-insta-' + si + '-' + ti);
+            if (btn) {
+                var original = btn.innerHTML;
+                btn.innerHTML = "✅ Copié !";
+                btn.style.background = "#22c55e";
+                setTimeout(function() {
+                    btn.innerHTML = original;
+                    btn.style.background = window._instaTexts[si].color;
+                }, 2000);
+            }
+        }).catch(function(err) {
+            console.error("Clipboard API échouée :", err);
+            fallbackCopy(txt);
+        });
+    } else {
+        fallbackCopy(txt);
+    }
+}
+
+function fallbackCopy(txt) {
+    // Fallback pour les navigateurs sans Clipboard API
+    var el = document.createElement('textarea');
+    el.value = txt;
+    el.style.position = 'fixed';
+    el.style.top = '-9999px';
+    el.style.left = '-9999px';
+    document.body.appendChild(el);
+    el.focus();
+    el.select();
+    try {
+        var ok = document.execCommand('copy');
+        if (ok) {
+            showToast("✅ Texte copié !");
+        } else {
+            showToast("❌ Copie impossible sur ce navigateur.", true);
         }
-    });
+    } catch(e) {
+        showToast("❌ Erreur de copie.", true);
+        console.error(e);
+    }
+    document.body.removeChild(el);
 }
     // ============================================================
 // GÉNÉRATION DU PROMPT IA PREMIUM (FORMAT 9:16 + LOGO SM + INSTA)
