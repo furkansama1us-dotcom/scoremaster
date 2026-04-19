@@ -2327,7 +2327,7 @@ async function autoFetchFinalScores(combined) {
 
         if(c.matches && c.matches.length > 0) {
             c.matches.forEach((m, index) => {
-                let logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:18px;height:18px;object-fit:contain;margin-right:8px;vertical-align:middle;">` : `<span style="margin-right:6px;">⚽</span>`);
+                let logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:18px;height:18px;object-fit:contain;margin-right:8px;vertical-align:middle;">` : (m.league_flag ? `<span style="margin-right:6px; display:inline-flex; align-items:center; vertical-align:middle;">${m.league_flag}</span>` : `<span style="margin-right:6px;">⚽</span>`));
                 let currentOdds = m.odds ? m.odds.toFixed(2) : '0.00';
                 
                 // J'ajoute le champ "Cote finale" et un événement "oninput" pour recalculer le total
@@ -2783,7 +2783,7 @@ function renderHistory() {
                 var mStatus = m.match_status || (sc === 'en-cours' ? 'en-cours' : sc);
                 var scoreColor = mStatus === 'termine' ? 'var(--green)' : (mStatus === 'perdu' ? 'var(--red)' : 'var(--text-white)');
                 
-                var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:12px;height:12px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<span style="margin-right:4px;">⚽</span>`);
+                var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:12px;height:12px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : (m.league_flag ? `<span style="margin-right:6px; display:inline-flex; align-items:center; vertical-align:middle;">${m.league_flag}</span>` : `<span style="margin-right:4px;">⚽</span>`));
                 
                 matchesHtml += `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; align-items:center;">
                     <span style="color:var(--text-light-gray);">${logoDisplay}${m.teams || 'Équipes'}</span>
@@ -2831,7 +2831,7 @@ function renderAdminHistory() {
         if (c.matches && c.matches.length > 0) {
             matchesDetailsHtml = '<div style="margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px;">';
             c.matches.forEach(m => {
-                let logoImg = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<span style="margin-right:4px;">⚽</span>`);
+                let logoImg = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : (m.league_flag ? `<span style="margin-right:6px; display:inline-flex; align-items:center; vertical-align:middle;">${m.league_flag}</span>` : `<span style="margin-right:4px;">⚽</span>`));
                 
                 let scoreDisplay = '';
                 if (c.status === 'termine' || c.status === 'perdu') {
@@ -3237,7 +3237,7 @@ ${aiPrompt}
             var displayOdds = isHomeObscured ? '**.**' : m.odds.toFixed(2);
             
             var blurClass = (isHomeObscured || isVipObscured) ? 'blurred-value' : '';
-            var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<span style="margin-right:4px;">⚽</span>`);
+            var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : (m.league_flag ? '' : `<span style="margin-right:4px;">⚽</span>`));
             
             // AFFICHAGE DU DRAPEAU ICI
             var flagDisplay = m.league_flag ? `<span style="margin-right:6px; display:inline-flex; align-items:center; vertical-align:middle;">${m.league_flag}</span>` : '';
@@ -3504,7 +3504,7 @@ let quickEditCombinedId = null;
 
         if(c.matches && c.matches.length > 0) {
             c.matches.forEach((m, index) => {
-                let logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:18px;height:18px;object-fit:contain;margin-right:8px;vertical-align:middle;">` : `<span style="margin-right:6px;">⚽</span>`);
+                let logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:18px;height:18px;object-fit:contain;margin-right:8px;vertical-align:middle;">` : (m.league_flag ? `<span style="margin-right:6px; display:inline-flex; align-items:center; vertical-align:middle;">${m.league_flag}</span>` : `<span style="margin-right:6px;">⚽</span>`));
                 let currentOdds = m.odds ? m.odds.toFixed(2) : '0.00';
                 
                 let matchHtml = `
