@@ -1689,7 +1689,7 @@ var response = await fetch(TARGET_URL, {
         if (!response.ok) throw new Error("Erreur réseau ou Proxy");
 
         var data = await response.json();
-        var matches = data.events || [];
+        var matches = data.response || data.events || data.matches || [];
 
         if (matches.length === 0) {
             showToast("Aucun match trouvé pour le " + formattedDate, true);
@@ -1701,8 +1701,8 @@ var response = await fetch(TARGET_URL, {
         matchesHtml += `<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px; display:flex; justify-content:space-between;"><span>Matchs trouvés (${matches.length})</span><span style="color:var(--primary-yellow); cursor:pointer;" onclick="document.getElementById('api-matches-container').innerHTML=''">Fermer</span></div>`;
         
         matches.forEach(function(m) {
-            var home = (m.homeTeam && m.homeTeam.name) ? m.homeTeam.name : "Domicile";
-            var away = (m.awayTeam && m.awayTeam.name) ? m.awayTeam.name : "Extérieur";
+            var home = m.homeTeam?.name || m.home_name || m.home || "Domicile";
+var away = m.awayTeam?.name || m.away_name || m.away || "Extérieur";
             var fullMatchName = `${home} - ${away}`;
             
             var timeStr = "18:00";
