@@ -4488,32 +4488,42 @@ function renderInstaTexts() {
 
     window._instaTexts = texts;
 
+    // ✅ CORRECTION PRINCIPALE : le wrapper interne gère le scroll
     var html = `
-        <div style="background:rgba(225,48,108,0.1);border:1px solid rgba(225,48,108,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#f472b6;display:flex;align-items:center;gap:8px;flex-shrink:0;">
-            <i class="fas fa-circle" style="font-size:8px;animation:pulse 2s infinite;"></i>
-            ${activeCombined ? 'Combiné EN COURS détecté — textes personnalisés' : 'Aucun combiné — textes génériques'}
-        </div>
-        <div style="font-size:11px;color:#6b7280;line-height:1.6;padding:2px;">
-            📱 <strong style="color:#fff;">Mode d'emploi :</strong> Choisissez un texte par story, copiez-le et collez-le dans l'éditeur Instagram.
-        </div>`;
+        <div style="
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 4px 2px;
+            box-sizing: border-box;
+        ">
+            <div style="background:rgba(225,48,108,0.1);border:1px solid rgba(225,48,108,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#f472b6;display:flex;align-items:center;gap:8px;">
+                <i class="fas fa-circle" style="font-size:8px;animation:pulse 2s infinite;"></i>
+                ${activeCombined ? 'Combiné EN COURS détecté — textes personnalisés' : 'Aucun combiné — textes génériques'}
+            </div>
+            <div style="font-size:11px;color:#6b7280;line-height:1.6;padding:2px;">
+                📱 <strong style="color:#fff;">Mode d'emploi :</strong> Choisissez un texte par story, copiez-le et collez-le dans l'éditeur Instagram.
+            </div>`;
 
     texts.forEach(function(section, si) {
         html += `
-        <div style="background:rgba(17,24,39,0.9);border:1px solid rgba(255,255,255,0.1);border-radius:14px;overflow:hidden;flex-shrink:0;">
-            <div style="padding:12px 14px;background:rgba(0,0,0,0.3);display:flex;align-items:center;gap:8px;">
-                <div style="width:10px;height:10px;border-radius:50%;background:${section.color};flex-shrink:0;"></div>
-                <div style="font-size:13px;font-weight:800;color:#fff;">${section.label}</div>
-            </div>
-            <div style="padding:10px;display:flex;flex-direction:column;gap:10px;">`;
+            <div style="background:rgba(17,24,39,0.9);border:1px solid rgba(255,255,255,0.1);border-radius:14px;overflow:hidden;">
+                <div style="padding:12px 14px;background:rgba(0,0,0,0.3);display:flex;align-items:center;gap:8px;">
+                    <div style="width:10px;height:10px;border-radius:50%;background:${section.color};flex-shrink:0;"></div>
+                    <div style="font-size:13px;font-weight:800;color:#fff;">${section.label}</div>
+                </div>
+                <div style="padding:10px;display:flex;flex-direction:column;gap:10px;">`;
 
         section.items.forEach(function(txt, ti) {
             var btnId = 'btn-insta-' + si + '-' + ti;
-            // Échapper pour l'attribut data
             var escaped = txt.replace(/'/g, "\\'").replace(/\n/g, '\\n');
             html += `
                 <div style="background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;">
                     <div style="font-size:13px;color:#f9fafb;line-height:1.8;white-space:pre-wrap;">${txt}</div>
-                    <button id="${btnId}" onclick="copyInstaText(${si},${ti})" 
+                    <button id="${btnId}" onclick="copyInstaText(${si},${ti})"
                         style="width:100%;padding:10px;border-radius:10px;border:none;background:${section.color};color:#000;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">
                         📋 Copier ce texte
                     </button>
@@ -4522,6 +4532,8 @@ function renderInstaTexts() {
 
         html += `</div></div>`;
     });
+
+    html += `</div>`; // ✅ fermeture du wrapper scrollable
 
     container.innerHTML = html;
 }
