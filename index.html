@@ -3989,42 +3989,37 @@ let quickEditCombinedId = null;
     var earliestFormatted = earliestTime.replace(':', 'h');
 
     output.prompt =
-'Affiche promotionnelle sportive premium ultra réaliste, format vertical 9:16.\n\n' +
+'Create a clean, professional football match announcement graphic, vertical 9:16 format, designed for direct Instagram posting.\n\n' +
 
-'LOGO SCOREMASTER (élément central en haut) :\n' +
-'- Fond noir (#000000 pur)\n' +
-'- Couronne royale dorée (or brillant #FFD700) au-dessus du logo, avec 5 pointes et des boules dorées aux extrémités\n' +
-'- Sous la couronne : lettres "SM" en blanc pur, style bouclier/blason avec pointe vers le bas\n' +
-'- Le "S" : forme carrée arrondie avec une diagonale noire qui le traverse de haut-gauche à bas-droite\n' +
-'- Le "M" : forme en V inversé comme un bouclier pointu, avec deux traits en V à l\'intérieur\n' +
-'- Les deux lettres sont fusionnées dans un seul bouclier blanc avec pointe en bas\n' +
-'- Le tout fait environ 1/5 de la hauteur de l\'image, centré en haut\n\n' +
+'BACKGROUND:\n' +
+'A football stadium at night with soft blur, bright floodlights, and subtle golden particles. Keep background simple to enhance readability. Dark overall tone.\n\n' +
 
-'TEXTE PRINCIPAL :\n' +
-'- "COMBINÉ" : énorme texte 3D chromé argenté brillant, style métallique avec reflets\n' +
-'- "DISPONIBLE" : juste en dessous, néon orange lumineux (#f97316) avec lueur\n\n' +
+'TOP CENTER — SM LOGO:\n' +
+'A sharp metallic silver "SM" shield logo with a gold crown on top. The crown has 5 points with gold balls at the tips. The "SM" letters are bold, angular, chrome/silver colored inside a pointed shield shape. Clean, well-defined, not distorted. Same style as a luxury esports or football brand logo.\n\n' +
 
-'ARRIÈRE-PLAN :\n' +
-'- Stade de football de nuit vu du bas (angle dramatique)\n' +
-'- Projecteurs puissants avec lumière volumétrique bleue et orange\n' +
-'- Foule immense et floue en arrière-plan\n' +
-'- Étincelles et particules lumineuses orange\n' +
-'- Ambiance cinématographique type Unreal Engine 5\n\n' +
+'MAIN TEXT:\n' +
+'- "COMBINE" (large 3D chrome metallic text, centered, bold)\n' +
+'- "DISPONIBLE" (just below, glowing orange neon text, #f97316)\n\n' +
 
-'ZONE CENTRALE — PANNEAUX EN VERRE :\n' +
-'- Deux cadres en verre translucide futuriste avec bordures cyan lumineuses\n' +
-'- Afficher exactement ces matchs, un par panneau :\n' +
+'CENTER COMPOSITION — MATCH PANELS:\n' +
+'For each match below, display one clean glass panel with cyan neon border containing:\n' +
+'Left side: the national flag emoji of the league country\n' +
+'Center: the match teams and time in this exact format\n' +
 detailsMatchs.trim() + '\n' +
-'- Chaque match sur UNE SEULE LIGNE avec l\'horaire entre parenthèses\n\n' +
+'Each match on ONE single line. Time shown ONCE only.\n' +
+'Font: simple, thick, modern sans-serif, high contrast white text.\n\n' +
 
-'ZONE BASSE :\n' +
-'- Logo Instagram officiel (dégradé violet/rose/orange) suivi de "@scoremaster.fr" en blanc gras\n\n' +
+'BOTTOM BRANDING:\n' +
+'Official Instagram camera logo (gradient purple/pink/orange) followed by "@scoremaster.fr" in bold white text.\n\n' +
 
-'RÈGLES STRICTES :\n' +
-'- Zéro mot anglais visible sur l\'image\n' +
-'- Toutes les inscriptions en français\n' +
-'- Une seule heure par match, jamais dupliquée\n' +
-'- Format : Équipe A vs Équipe B (HHHMM)\n\n' +
+'CRITICAL INSTRUCTIONS:\n' +
+'- Use ONLY simple uppercase letters, NO accents, NO special characters\n' +
+'- NO scores, NO results, NO numbers except match times\n' +
+'- Text must be perfectly readable and correctly spelled\n' +
+'- Avoid distorted, stylized or fake-looking text\n' +
+'- Prioritize clarity over artistic effects\n' +
+'- Style: clean sports broadcast graphic, ultra sharp, high contrast, optimized for mobile, Instagram ready, 4K\n' +
+'- NO English words visible on the final image except team names\n\n' +
 '--ar 9:16 --style raw --v 6';
 
     output.insta =
