@@ -1695,6 +1695,8 @@ var response = await fetch(TARGET_URL, {
     var hours = d.getHours();
     var minutes = d.getMinutes();
     return hours > 18 || (hours === 18 && minutes === 0);
+}).sort(function(a, b) {
+    return (a.startTimestamp || 0) - (b.startTimestamp || 0);
 });
 
         if (matches.length === 0) {
