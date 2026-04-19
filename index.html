@@ -3243,7 +3243,9 @@ ${aiPrompt}
     function buildCC(c, sc, sl, pw, isHome) {
         var mH = '';
         var matchesToDisplay = c.matches ? c.matches : Array(c.nombre_matchs || 2).fill({ teams: 'Match en attente', time: '--:--', odds: 0 });
-        
+        var isHomeObscured = (isHome && sc === 'en-cours');
+    var isVipObscured = (!isHome && sc === 'en-cours');
+    var blurClass = (isHomeObscured || isVipObscured) ? 'blurred-value' : '';
         let today = new Date();
         let tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
         let combinDate = new Date(c.date);
