@@ -3240,6 +3240,7 @@ ${aiPrompt}
             
             let cleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : "--:--";
             let finalTimeDisplay = smartPrefix + (cleanTime ? cleanTime[0] : "");
+            let flagImg = getLeagueFlag(m);
 
             mH += `<div class="match-row">
                     <div class="match-row-top" style="display:flex; justify-content:space-between; align-items:center;">
