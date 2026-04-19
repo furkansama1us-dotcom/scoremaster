@@ -3009,7 +3009,10 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
     }
 }
 }
-    function sendPromoPrompt(id) {
+    // ============================================================
+// GÉNÉRATION DU PROMPT IA PROMO (POUR ANNONCER LE TICKET)
+// ============================================================
+function sendPromoPrompt(id) {
     var c = allCombineds.find(x => x.id == id);
     if (!c) { showToast("Combiné introuvable", true); return; }
 
@@ -3019,8 +3022,8 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
 
     if (c.matches && c.matches.length > 0) {
         c.matches.forEach((m, index) => {
-            // On force le texte en français avec le "à" et on met des guillemets pour l'IA
-            detailsMatchs += `- Text: "${m.teams} à ${m.time}"\n`;
+            // Format ultra-simple pour que l'IA ne se trompe pas sur le texte
+            detailsMatchs += `"${m.teams} à ${m.time}", `;
             instaMatches += `🏆 ${m.teams}\n`;
             
             let extracted = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
@@ -3028,21 +3031,13 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
         });
     }
 
-    // Le Prompt optimisé pour forcer le français et le logo Instagram
-    let aiPrompt = `A high-end cinematic sports promotional poster, vertical 9:16 ratio. 
-
-Background: High-energy stadium atmosphere at dusk, volumetric floodlights rays, energetic orange and cyan color grade.
-
-Top Center: A massive 3D metallic chrome "SM" logo with a 3D golden crown. Below it, the exact text "COMBINÉ" in aggressive 3D white typography and the exact text "DISPONIBLE" in glowing 3D orange neon.
-
-Center: Professional glass-morphism panels displaying exactly this French text:
-${detailsMatchs}
-
-Graphic Elements: Digital countdown timer aesthetic, floating sparks, high-quality lens flares, sleek motion lines.
-
-Bottom branding: A highly recognizable 3D Instagram camera logo icon placed directly next to the exact text "@scoremaster.fr" in a modern glowing white font.
-
-Style: Ultra-realistic, 8k, cinematic promotional art, typography focused, text must be strictly in French, --ar 9:16 --v 6.0`;
+    // PROMPT ULTRA-OPTIMISÉ (Pour Leonardo, Midjourney v6, DALL-E 3 ou Ideogram)
+    let aiPrompt = `A premium cinematic sports betting promotional poster. 
+Main Title: A massive glowing 3D text reading "COMBINÉ" in bold white chrome, and below it the text "DISPONIBLE" in vibrant glowing orange neon. 
+Background: An epic football stadium at night, blurred crowd out of focus, dramatic volumetric floodlights shining down, orange and cyan cinematic color grading, floating golden sparks. 
+Center Area: Sleek translucent glass panels displaying exactly this text: ${detailsMatchs}
+Bottom Area: The official Instagram purple-orange gradient logo icon placed directly next to the exact text "@scoremaster.fr" in a clean white font. 
+Style: Ultra-realistic, Unreal Engine 5 render, highly detailed, commercial sports graphic design, flawless typography, --ar 9:16 --style raw --v 6.0`;
 
     // Le texte pour ta bio ou légende Insta
     let instaText = `🔥 COMBINÉ SCORE EXACT DISPONIBLE !\n\n${instaMatches}⏰ Début du premier match à ${earliestTime}\n\nLien en bio pour accéder au VIP+ et valider tes gains ! 🚀💰\n@scoremaster.fr`;
@@ -3051,9 +3046,10 @@ Style: Ultra-realistic, 8k, cinematic promotional art, typography focused, text 
 
     if (confirm("Générer et envoyer le prompt de PROMOTION sur Telegram ?")) {
         sendAdminTelegram(telegramText).then(() => {
-            showToast("Prompt Promo envoyé ! 🚀");
+            showToast("Prompt Promo optimisé envoyé ! 🚀");
         });
     }
+}
     
     // ============================================================
 // AFFICHAGE DE L'HISTORIQUE ADMIN (AVEC BOUTON VICTOIRE TELEGRAM)
