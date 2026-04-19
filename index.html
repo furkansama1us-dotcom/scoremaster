@@ -3812,31 +3812,31 @@ function closePromoTelegram() {
     }
 }
    // ============================================================
-// 1. GÉNÉRATEUR TELEGRAM VIRAL (AVEC APERÇU DU COMBINÉ)
+// 2. GÉNÉRATEUR TELEGRAM VIRAL (AVEC BANNIÈRE FEED)
 // ============================================================
 function renderPromoTelegramContent() {
     var container = document.getElementById('promo-telegram-content') || document.getElementById('telegram-content');
-    
     if (!container) {
         var overlay = document.getElementById('promo-telegram-overlay');
-        if (overlay && overlay.children.length > 1) {
-            container = overlay.children[1]; 
-        }
+        if (overlay && overlay.children.length > 1) container = overlay.children[1]; 
     }
-
     if (!container) return;
 
     try {
-        // --- ÉTAPE 0 : APERÇU DU COMBINÉ EN COURS ---
         var activeCombined = null;
         if (window.allCombineds && window.allCombineds.length > 0) {
             activeCombined = window.allCombineds.find(c => c.status === 'en-cours');
         }
 
         let previewHtml = '';
+        var combinedTeamNames = [];
+
         if (activeCombined && activeCombined.matches && activeCombined.matches.length > 0) {
             let previewMatchesHtml = '';
             activeCombined.matches.forEach(m => {
+                let displayTeams = m.teams || "Équipes";
+                combinedTeamNames.push(displayTeams);
+
                 let logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : (m.league_flag ? `<span style="margin-right:6px; display:inline-flex; align-items:center; vertical-align:middle;">${m.league_flag}</span>` : `<span style="margin-right:4px;">⚽</span>`));
                 let displayTime = m.time || "--:--";
                 let displayScore = m.score || "-";
@@ -3868,146 +3868,64 @@ function renderPromoTelegramContent() {
                         <span style="background:var(--blue); color:#fff; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; text-transform:uppercase;">En cours</span>
                         <span style="font-size:15px; font-weight:700; color:#fff;">Aperçu du Combiné</span>
                     </div>
-                    <i class="fas fa-eye" style="color:var(--text-gray); font-size:16px;"></i>
                 </div>
                 <div style="padding:0 16px;">${previewMatchesHtml}</div>
             </div>`;
-        } else {
-             previewHtml = `
-             <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:10px 14px; font-size:12px; color:#ef4444; display:flex; align-items:center; gap:8px; flex-shrink:0; margin-bottom: 20px;">
-                <i class="fas fa-exclamation-triangle"></i> Aucun combiné en cours détecté. Les textes restent disponibles.
-             </div>`;
         }
 
-        // --- ÉTAPE A : ÉTAT DU GÉNÉRATEUR ---
-        var htmlStatut = `
-            <div style="background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); border-radius:10px; padding:10px 14px; font-size:12px; color:#4ade80; display:flex; align-items:center; gap:8px; flex-shrink:0; margin-bottom: 20px;">
-                <i class="fas fa-paint-brush" style="font-size:12px; animation:pulse 2s infinite;"></i>
-                🛠️ 20 Textes & Prompts (Style Dessin + Branding "SM" & Couronne)
-            </div>
-            <div style="font-size:11px;color:#6b7280;line-height:1.6;padding:2px; margin-bottom: 20px; flex-shrink:0;">
-                📣 <strong style="color:#fff;">Mode d'emploi :</strong> Le logo (lettres "SM" + couronne dorée) est désormais intégré intelligemment dans chaque scène (sur une carte, un mur, un écran...). Copiez et générez !
-            </div>`;
+        // --- BANNIÈRE FEED INSTAGRAM ---
+        let feedBannerHtml = '';
+        if (combinedTeamNames.length > 0) {
+            const styleHeader = "Detailed stylized digital illustration drawing with bold dark outlines, high-contrast ink wash and textured watercolor coloring, comic book art style.";
+            const match_list_str = combinedTeamNames.join(' and '); 
+            window._instaFeedPrompt = `ENGLISH PROMPT: ${styleHeader} A powerful cinematic composition [1:1] summarizing a sports combined masterclass. A stylized master analyst figure with dark curly hair overlooks multiple floating holographic screens showing dynamic illustrative sports clashes. The match names specifically visible on screens include ${match_list_str}. Intense golden and blue lighting, dramatic contrasts. Prominently displayed luxury "SM" monogram topped with a golden crown emblem. Highly detailed. No generic text. --ar 1:1 --style raw --v 6`;
 
-        // --- DÉFINITION DU STYLE ILLUSTRATIF À UTILISER DANS TOUS LES PROMPTS ---
+            feedBannerHtml = `
+                <div style="background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#22d3ee;display:flex;align-items:center;gap:8px; margin-bottom:12px; flex-shrink:0;">
+                    <i class="fas fa-camera-retro" style="font-size:12px;animation:pulse 2s infinite;"></i>
+                    Bannière Feed Instagram — Cover du Combiné
+                </div>
+                <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(6,182,212,0.2);border-radius:16px;overflow:hidden; flex-shrink:0; margin-bottom: 24px;">
+                    <div style="padding:14px 16px;border-bottom:1px solid rgba(6,182,212,0.15);display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                        <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
+                            <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#06b6d4,#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;color:#fff;"><i class="fas fa-th-large"></i></div>
+                            <div style="min-width:0;flex:1;"><div style="font-size:14px;font-weight:800;color:#fff;">Prompt Cover 1:1 du Combiné</div><div style="font-size:11px;color:#9ca3af;">Synthèse du combiné en style dessin</div></div>
+                        </div>
+                        <button id="btn-copy-insta-feed" onclick="copyInstaFeedPrompt()" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(6,182,212,0.5);color:#22d3ee;background:none;font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0;transition:all 0.2s;">📋 Copier</button>
+                    </div>
+                    <div style="padding:14px 16px;"><div style="background:rgba(0,0,0,0.4);border:1px solid rgba(6,182,212,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">${window._instaFeedPrompt}</div></div>
+                </div>`;
+        }
+
+        // --- LES 20 TEXTES VIRAUX ---
+        var htmlStatut = `<div style="background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); border-radius:10px; padding:10px 14px; font-size:12px; color:#4ade80; display:flex; align-items:center; gap:8px; flex-shrink:0; margin-bottom: 20px;"><i class="fas fa-paint-brush"></i> 20 Textes & Prompts (Style Dessin + Branding "SM")</div>`;
+        
+        // On récupère tes 20 textes (j'ai condensé le tableau pour la longueur, ce sont exactement les mêmes)
         const styleHeader = "Detailed stylized digital illustration drawing with bold dark outlines, high-contrast ink wash and textured watercolor coloring, comic book art style.";
-
-        // --- ÉTAPE B : LES 20 TEXTES VIRAUX & PROMPTS IA (AVEC BRANDING) ---
         var viralPromoContent = [
-            // --- 🏆 FLEX & RÉSULTATS ---
-            { 
-                label: "🏆 Story 1 — Flex : L'argent intelligent", color: "#8b5cf6", type: "flex", 
-                txt: "L'argent intelligent se place avant la masse 💸\n\nPendant que 95% des parieurs perdent en misant sur leurs émotions, notre cercle VIP+ encaisse grâce aux mathématiques.\n\nLes données ont déjà rendu leur verdict pour ce soir.\nRejoins l'élite 👑 👇\n👉 Lien en bio.",
-                prompt: `ENGLISH PROMPT: ${styleHeader} A sharp-dressed, confident young man with dark curly hair smiles subtly in a stylized modern penthouse, looking at a glowing holographic sports data dashboard floating above his smartphone. A subtle luxury logo featuring the letters "SM" topped with a golden crown is engraved on his phone case. High contrast. --ar 1:1 --style raw --v 6`
-            },
-            { 
-                label: "🏆 Story 2 — Flex : Vert sur vert", color: "#8b5cf6", type: "flex", 
-                txt: "📈 Vert sur vert.\n\nEncore une soirée où l'algorithme a fait le travail à notre place. L'historique ne ment pas.\n\nLe combiné data du jour est en ligne.\nNe reste pas sur le quai 🚂 👇\n👉 Accès au VIP+ en bio.",
-                prompt: `ENGLISH PROMPT: ${styleHeader} A group of diverse friends in a high-end sports bar cheering enthusiastically, holding up a smartphone showing abstract glowing green ascending chart lines. A neon sign in the background wall displays the letters "SM" under a bright golden crown. Joy and celebration. --ar 1:1 --style raw --v 6`
-            },
-            { 
-                label: "🏆 Story 3 — Flex : La valeur de l'information", color: "#8b5cf6", type: "flex", 
-                txt: "💎 L'information a un prix. L'ignorance coûte plus cher.\n\nNos membres ont accès aux scores exacts générés par la plus grande base de données sportives.\n\nCe soir, l'opportunité est massive.\n👉 Rejoins le cercle maintenant.",
-                prompt: `ENGLISH PROMPT: ${styleHeader} A close-up portrait of a sophisticated person in a dimly lit, exclusive VIP lounge, smiling knowingly while holding a sleek, glowing black VIP card. The card features a prominent golden crown logo directly above the letters "SM". Luxurious atmosphere, bold inking. --ar 1:1 --style raw --v 6`
-            },
-            { 
-                label: "🏆 Story 4 — Flex : Le hasard est mort", color: "#8b5cf6", type: "flex", 
-                txt: "Le hasard n'a pas sa place ici 🧬\n\nLe ticket du soir est une masterclass algorithmique. Tout est millimétré, rien n'est laissé à la chance.\n\n👉 Accède au combiné sécurisé via le lien en bio.",
-                prompt: `ENGLISH PROMPT: ${styleHeader} An intelligent-looking man with curly hair in a modern dark office, surrounded by stylized floating holographic sports statistics. A stylish leather notebook on his desk is embossed with the letters "SM" and a golden crown. Inked contours, focused expression. --ar 1:1 --style raw --v 6`
-            },
-
-            // --- 🔬 DATA & TECH ---
-            { 
-                label: "🔬 Story 5 — Data : 0% Émotion", color: "#0ea5e9", type: "data", 
-                txt: "Data. 0% Émotion. 🧠\n\nNotre algorithme a analysé plus de 50 000 données historiques pour l'affiche d'aujourd'hui. Les scores exacts sont verrouillés 🏛️\n\nInvestis intelligemment avec les meilleurs outils data 👇\n👉 Lien en bio",
-                prompt: `ENGLISH PROMPT: ${styleHeader} A focused data scientist with dark curly hair in a dark, high-tech control room, analyzing complex football statistics on transparent screens. The main screen prominently displays a glowing logo of the letters "SM" topped with a golden crown. Cool cyan lighting. --ar 1:1 --style raw --v 6`
-            },
-            { 
-                label: "🔬 Story 6 — Data : Feeling vs Data", color: "#0ea5e9", type: "data", 
-                txt: "📊 Si tu paries au feeling, tu as déjà perdu.\n\nL'algorithme vient de détecter une anomalie massive sur les cotes de ce soir. La faille est exploitée, le ticket est prêt.\n\n👉 Récupère l'analyse complète dans le VIP+.",
-                prompt: `ENGLISH PROMPT: ${styleHeader} Split screen digital illustration. Left side: a stressed person holding a losing betting ticket. Right side: a calm, confident person smiling at an advanced glowing AI sports dashboard on a tablet. The tablet's interface features a sleek "SM" logo with a golden crown. --ar 1:1 --style raw --v 6`
-            },
-            { 
-                label: "🔬 Story 7 — Data : Analyse au microscope", color: "#0ea5e9", type: "data", 
-                txt: "🔬 Analyse au microscope terminée.\n\nChaque blessure, chaque statistique, chaque historique a été digéré par notre IA. Le verdict est sans appel.\n\nLe ticket est validé.\n👉 Dispo dans l'espace membre.",
-                prompt: `ENGLISH PROMPT: ${styleHeader} A macro close-up of a human eye with inked details reflecting glowing neon sports data and complex algorithms. Inside the pupil reflection, a tiny glowing golden crown above the letters "SM" is visible. Highly detailed analytical vibe. --ar 1:1 --style raw --v 6`
-            },
-            { 
-                label: "🔬 Story 8 — Data : L'IA ne dort jamais", color: "#0ea5e9", type: "data", 
-                txt: "🤖 L'IA ne dort jamais.\n\nPendant que les bookmakers ajustent leurs lignes, notre système a déjà trouvé la value du jour.\n\nUn combiné en béton armé t'attend.\n👉 Clique sur le lien en bio.",
-                prompt: `ENGLISH PROMPT: ${styleHeader} An over-the-shoulder shot of a person using a modern smartphone resting on a dark desk, projecting a glowing AI hologram of a football stadium. A luxury metallic pen holder on the desk features the engraved letters "SM" and a golden crown. High contrast ink wash. --ar 1:1 --style raw --v 6`
-            },
-
-            // --- ⏳ FOMO & URGENCE ---
-            { 
-                label: "⏳ Story 9 — Urgence : Tic-Tac", color: "#f97316", type: "fomo", 
-                txt: "⏳ Tic-tac. L'occasion ne se présente qu'une fois.\n\nFermeture imminente des accès VIP+ pour l'analyse du soir ! Le ticket est déjà entre les mains des membres 🎟️\n\n👉 Accède à l'espace avant qu'il ne soit trop tard.",
-                prompt: `ENGLISH PROMPT: ${styleHeader} A close-up shot of a person's hand nervously checking a stylized luxury wristwatch in a dark, moody environment. The watch dial explicitly features the letters "SM" under a tiny, elegant golden crown. Tension, sketched contours, high contrast orange glow. --ar 1:1 --style raw --v 6`
-            },
-            { 
-                label: "⏳ Story 10 — Urgence : Plus que 30 min", color: "#f97316", type: "fomo", 
-                txt: "🚨 ALERTE : Le coup d'envoi approche !\n\nLes cotes risquent de s'effondrer d'une minute à l'autre. Le score exact a été publié.\n\n👉 Ne sois pas celui qui regarde les autres encaisser demain matin.",
-                prompt: `ENGLISH PROMPT: ${styleHeader} A dynamic illustrative close-up of a person's hand pressing a glowing red "VALIDATE" button on a futuristic sports betting app interface. The top header of the app displays a sleek golden crown over the letters "SM". Dynamic outlines, neon red glow. --ar 1:1 --style raw --v 6`
-            },
-            { 
-                label: "⏳ Story 11 — Urgence : Les portes se ferment", color: "#f97316", type: "fomo", 
-                txt: "🚪 Les portes se ferment.\n\nNous limitons l'accès au VIP+ pour protéger les cotes de nos analyses. Le ticket du soir est exclusif.\n\n👉 Dernière chance d'entrer avant le match.",
-                prompt: `ENGLISH PROMPT: ${styleHeader} A shot from behind a person walking urgently towards a massive, glowing illustrative VIP door that is slowly closing. The heavy metal door is decorated with a large golden crown and the initials "SM". Bright spilled golden light, exclusive atmosphere. --ar 1:1 --style raw --v 6`
-            },
-            { 
-                label: "⏳ Story 12 — Urgence : Le train est parti", color: "#f97316", type: "fomo", 
-                txt: "🚂 Le train de la rentabilité n'attend pas les retardataires.\n\nL'algorithme a généré une masterclass. Le combiné est validé.\n\n👉 Rejoins-nous ou regarde-nous faire.",
-                prompt: `ENGLISH PROMPT: ${styleHeader} A silhouette of a person running with dynamic sketched lines to catch a sleek, futuristic glowing bullet train at night. The side of the train is painted with a prominent golden crown over the letters "SM". Heavy textured speed lines, neon city lights. --ar 1:1 --style raw --v 6`
-            },
-
-            // --- 👑 AUTORITÉ & CONFIANCE ---
-            { 
-                label: "🦅 Story 13 — Autorité : Vision Globale", color: "#22c55e", type: "autorité", 
-                txt: "🦅 Notre oeil ne rate rien.\n\nNos experts ont validé le combiné du jour après des heures d'analyse data. C'est du lourd 💎\n\n100% transparence, 100% expertise.\n👉 Rejoins l'élite en bio.",
-                prompt: `ENGLISH PROMPT: ${styleHeader} A confident man with curly hair standing at a high penthouse window, looking down at a glowing football stadium in the city far below at night. A subtle glowing holographic projection of the letters "SM" with a golden crown floats in the room behind him. Authoritative mood. --ar 1:1 --style raw --v 6`
-            },
-            { 
-                label: "👑 Story 14 — Autorité : La différence", color: "#22c55e", type: "autorité", 
-                txt: "👑 La différence entre les amateurs et l'élite ? L'information.\n\nNous ne devinons pas l'avenir, nous le calculons.\nLe score exact de ce soir est disponible.\n\n👉 Accès direct dans le VIP+.",
-                prompt: `ENGLISH PROMPT: ${styleHeader} A portrait drawing of a charismatic individual in a sharp suit, sitting in a leather chair in a luxurious room, smiling confidently. He wears an elegant, detailed golden crown lapel pin with the letters "SM" inside. Elite vibe, highly detailed ink work. --ar 1:1 --style raw --v 6`
-            },
-            { 
-                label: "🏛️ Story 15 — Autorité : Le Savoir", color: "#22c55e", type: "autorité", 
-                txt: "🏛️ Le temple du pronostic.\n\nIci, on ne vend pas de rêve, on livre des statistiques. Notre IA vient de rendre son verdict pour le choc de ce soir.\n\n👉 Viens chercher ton ticket.",
-                prompt: `ENGLISH PROMPT: ${styleHeader} A modernized mentor figure explaining a winning strategy on a glowing interactive tabletop display to a highly focused student. The glowing center of the digital table prominently displays an "SM" logo topped with a golden crown. Dark luxury environment. --ar 1:1 --style raw --v 6`
-            },
-            { 
-                label: "♟️ Story 16 — Autorité : Échec et mat", color: "#22c55e", type: "autorité", 
-                txt: "♟️ Échec et mat contre les bookmakers.\n\nL'analyse est complète. Chaque variable a été prise en compte. Le coup parfait est prêt à être joué.\n\n👉 Ton accès t'attend dans la bio.",
-                prompt: `ENGLISH PROMPT: ${styleHeader} A close-up of a person's hand decisively moving a glowing glass chess piece on a futuristic board. The base of the winning chess piece is engraved with the letters "SM" and a golden crown. Highly detailed illustrative style, strategic mood. --ar 1:1 --style raw --v 6`
-            },
-
-            // --- 🔥 TENSION & CLASH ---
-            { 
-                label: "🔥 Story 17 — Clash : L'adrénaline", color: "#ef4444", type: "clash", 
-                txt: "⚡ La foudre va frapper ce soir.\n\nUne affiche monstrueuse, une analyse chirurgicale. L'algorithme a tranché et le ticket est terrifiant 🥶\n\n👉 Ne manque pas ça. VIP+ en bio.",
-                prompt: `ENGLISH PROMPT: ${styleHeader} A portrait of a passionate football fan screaming in intense excitement with harsh dynamic red and blue stadium floodlights hitting their face. The fan wears a premium jacket with an embroidered patch showing the letters "SM" and a golden crown. High energy. --ar 1:1 --style raw --v 6`
-            },
-            { 
-                label: "🔥 Story 18 — Clash : Le face à face", color: "#ef4444", type: "clash", 
-                txt: "🌋 Éruption imminente.\n\nLe match de ce soir va faire des dégâts. Mais nous sommes du bon côté de l'histoire grâce à la data.\n\nScore exact publié.\n👉 Rejoins le côté obscur des bookmakers.",
-                prompt: `ENGLISH PROMPT: ${styleHeader} A dynamic close-up drawing of two rival football fans facing off, intense stares. In the dark, smoky concrete background, a stylized graffiti tag displays the letters "SM" wearing a golden crown. Fiery neon orange lighting, aggressive mood. --ar 1:1 --style raw --v 6`
-            },
-            { 
-                label: "⚔️ Story 19 — Clash : Un duel au sommet", color: "#ef4444", type: "clash", 
-                txt: "⚔️ Un duel au sommet.\n\nDeux géants s'affrontent, mais l'algorithme a déjà trouvé le gagnant. La cote est folle.\n\n👉 Le ticket complet t'attend dans l'espace VIP+.",
-                prompt: `ENGLISH PROMPT: ${styleHeader} A low-angle action illustration of two anonymous football players aggressively clashing for the ball in heavy rain. The classic black and white match ball clearly has the letters "SM" and a golden crown printed on it. Epic stadium lights, high energy. --ar 1:1 --style raw --v 6`
-            },
-            { 
-                label: "🔥 Story 20 — Clash : La ferveur", color: "#ef4444", type: "clash", 
-                txt: "🔥 Ce soir, la terre tremble.\n\nLes plus grandes affiches analysées par l'algorithme le plus puissant. Nous, on a déjà validé le combiné parfait 🔒\n\nPréparez-vous au choc.\n👉 Lien en bio.",
-                prompt: `ENGLISH PROMPT: ${styleHeader} A shot from behind a fan overlooking an incredibly massive, roaring stadium crowd illuminated by intense red flares. A massive tifo banner unfurled in the crowd boldly displays the letters "SM" beneath a giant golden crown. Epic atmosphere of ferveur. --ar 1:1 --style raw --v 6`
-            }
+            { label: "🏆 Story 1 — Flex : L'argent intelligent", color: "#8b5cf6", type: "flex", txt: "L'argent intelligent se place avant la masse 💸\n\nPendant que 95% des parieurs perdent en misant sur leurs émotions, notre cercle VIP+ encaisse grâce aux mathématiques.\n\nLes données ont déjà rendu leur verdict pour ce soir.\nRejoins l'élite 👑 👇\n👉 Lien en bio.", prompt: `ENGLISH PROMPT: ${styleHeader} A sharp-dressed, confident young man with dark curly hair smiles subtly in a stylized modern penthouse, looking at a glowing holographic sports data dashboard floating above his smartphone. A subtle luxury logo featuring the letters "SM" topped with a golden crown is engraved on his phone case. High contrast. --ar 1:1 --style raw --v 6` },
+            { label: "🏆 Story 2 — Flex : Vert sur vert", color: "#8b5cf6", type: "flex", txt: "📈 Vert sur vert.\n\nEncore une soirée où l'algorithme a fait le travail à notre place. L'historique ne ment pas.\n\nLe combiné data du jour est en ligne.\nNe reste pas sur le quai 🚂 👇\n👉 Accès au VIP+ en bio.", prompt: `ENGLISH PROMPT: ${styleHeader} A group of diverse friends in a high-end sports bar cheering enthusiastically, holding up a smartphone showing abstract glowing green ascending chart lines. A neon sign in the background wall displays the letters "SM" under a bright golden crown. Joy and celebration. --ar 1:1 --style raw --v 6` },
+            { label: "🏆 Story 3 — Flex : La valeur de l'information", color: "#8b5cf6", type: "flex", txt: "💎 L'information a un prix. L'ignorance coûte plus cher.\n\nNos membres ont accès aux scores exacts générés par la plus grande base de données sportives.\n\nCe soir, l'opportunité est massive.\n👉 Rejoins le cercle maintenant.", prompt: `ENGLISH PROMPT: ${styleHeader} A close-up portrait of a sophisticated person in a dimly lit, exclusive VIP lounge, smiling knowingly while holding a sleek, glowing black VIP card. The card features a prominent golden crown logo directly above the letters "SM". Luxurious atmosphere, bold inking. --ar 1:1 --style raw --v 6` },
+            { label: "🏆 Story 4 — Flex : Le hasard est mort", color: "#8b5cf6", type: "flex", txt: "Le hasard n'a pas sa place ici 🧬\n\nLe ticket du soir est une masterclass algorithmique. Tout est millimétré, rien n'est laissé à la chance.\n\n👉 Accède au combiné sécurisé via le lien en bio.", prompt: `ENGLISH PROMPT: ${styleHeader} An intelligent-looking man with curly hair in a modern dark office, surrounded by stylized floating holographic sports statistics. A stylish leather notebook on his desk is embossed with the letters "SM" and a golden crown. Inked contours, focused expression. --ar 1:1 --style raw --v 6` },
+            { label: "🔬 Story 5 — Data : 0% Émotion", color: "#0ea5e9", type: "data", txt: "Data. 0% Émotion. 🧠\n\nNotre algorithme a analysé plus de 50 000 données historiques pour l'affiche d'aujourd'hui. Les scores exacts sont verrouillés 🏛️\n\nInvestis intelligemment avec les meilleurs outils data 👇\n👉 Lien en bio", prompt: `ENGLISH PROMPT: ${styleHeader} A focused data scientist with dark curly hair in a dark, high-tech control room, analyzing complex football statistics on transparent screens. The main screen prominently displays a glowing logo of the letters "SM" topped with a golden crown. Cool cyan lighting. --ar 1:1 --style raw --v 6` },
+            { label: "🔬 Story 6 — Data : Feeling vs Data", color: "#0ea5e9", type: "data", txt: "📊 Si tu paries au feeling, tu as déjà perdu.\n\nL'algorithme vient de détecter une anomalie massive sur les cotes de ce soir. La faille est exploitée, le ticket est prêt.\n\n👉 Récupère l'analyse complète dans le VIP+.", prompt: `ENGLISH PROMPT: ${styleHeader} Split screen digital illustration. Left side: a stressed person holding a losing betting ticket. Right side: a calm, confident person smiling at an advanced glowing AI sports dashboard on a tablet. The tablet's interface features a sleek "SM" logo with a golden crown. --ar 1:1 --style raw --v 6` },
+            { label: "🔬 Story 7 — Data : Analyse au microscope", color: "#0ea5e9", type: "data", txt: "🔬 Analyse au microscope terminée.\n\nChaque blessure, chaque statistique, chaque historique a été digéré par notre IA. Le verdict est sans appel.\n\nLe ticket est validé.\n👉 Dispo dans l'espace membre.", prompt: `ENGLISH PROMPT: ${styleHeader} A macro close-up of a human eye with inked details reflecting glowing neon sports data and complex algorithms. Inside the pupil reflection, a tiny glowing golden crown above the letters "SM" is visible. Highly detailed analytical vibe. --ar 1:1 --style raw --v 6` },
+            { label: "🔬 Story 8 — Data : L'IA ne dort jamais", color: "#0ea5e9", type: "data", txt: "🤖 L'IA ne dort jamais.\n\nPendant que les bookmakers ajustent leurs lignes, notre système a déjà trouvé la value du jour.\n\nUn combiné en béton armé t'attend.\n👉 Clique sur le lien en bio.", prompt: `ENGLISH PROMPT: ${styleHeader} An over-the-shoulder shot of a person using a modern smartphone resting on a dark desk, projecting a glowing AI hologram of a football stadium. A luxury metallic pen holder on the desk features the engraved letters "SM" and a golden crown. High contrast ink wash. --ar 1:1 --style raw --v 6` },
+            { label: "⏳ Story 9 — Urgence : Tic-Tac", color: "#f97316", type: "fomo", txt: "⏳ Tic-tac. L'occasion ne se présente qu'une fois.\n\nFermeture imminente des accès VIP+ pour l'analyse du soir ! Le ticket est déjà entre les mains des membres 🎟️\n\n👉 Accède à l'espace avant qu'il ne soit trop tard.", prompt: `ENGLISH PROMPT: ${styleHeader} A close-up shot of a person's hand nervously checking a stylized luxury wristwatch in a dark, moody environment. The watch dial explicitly features the letters "SM" under a tiny, elegant golden crown. Tension, sketched contours, high contrast orange glow. --ar 1:1 --style raw --v 6` },
+            { label: "⏳ Story 10 — Urgence : Plus que 30 min", color: "#f97316", type: "fomo", txt: "🚨 ALERTE : Le coup d'envoi approche !\n\nLes cotes risquent de s'effondrer d'une minute à l'autre. Le score exact a été publié.\n\n👉 Ne sois pas celui qui regarde les autres encaisser demain matin.", prompt: `ENGLISH PROMPT: ${styleHeader} A dynamic illustrative close-up of a person's hand pressing a glowing red "VALIDATE" button on a futuristic sports betting app interface. The top header of the app displays a sleek golden crown over the letters "SM". Dynamic outlines, neon red glow. --ar 1:1 --style raw --v 6` },
+            { label: "⏳ Story 11 — Urgence : Les portes se ferment", color: "#f97316", type: "fomo", txt: "🚪 Les portes se ferment.\n\nNous limitons l'accès au VIP+ pour protéger les cotes de nos analyses. Le ticket du soir est exclusif.\n\n👉 Dernière chance d'entrer avant le match.", prompt: `ENGLISH PROMPT: ${styleHeader} A shot from behind a person walking urgently towards a massive, glowing illustrative VIP door that is slowly closing. The heavy metal door is decorated with a large golden crown and the initials "SM". Bright spilled golden light, exclusive atmosphere. --ar 1:1 --style raw --v 6` },
+            { label: "⏳ Story 12 — Urgence : Le train est parti", color: "#f97316", type: "fomo", txt: "🚂 Le train de la rentabilité n'attend pas les retardataires.\n\nL'algorithme a généré une masterclass. Le combiné est validé.\n\n👉 Rejoins-nous ou regarde-nous faire.", prompt: `ENGLISH PROMPT: ${styleHeader} A silhouette of a person running with dynamic sketched lines to catch a sleek, futuristic glowing bullet train at night. The side of the train is painted with a prominent golden crown over the letters "SM". Heavy textured speed lines, neon city lights. --ar 1:1 --style raw --v 6` },
+            { label: "🦅 Story 13 — Autorité : Vision Globale", color: "#22c55e", type: "autorité", txt: "🦅 Notre oeil ne rate rien.\n\nNos experts ont validé le combiné du jour après des heures d'analyse data. C'est du lourd 💎\n\n100% transparence, 100% expertise.\n👉 Rejoins l'élite en bio.", prompt: `ENGLISH PROMPT: ${styleHeader} A confident man with curly hair standing at a high penthouse window, looking down at a glowing football stadium in the city far below at night. A subtle glowing holographic projection of the letters "SM" with a golden crown floats in the room behind him. Authoritative mood. --ar 1:1 --style raw --v 6` },
+            { label: "👑 Story 14 — Autorité : La différence", color: "#22c55e", type: "autorité", txt: "👑 La différence entre les amateurs et l'élite ? L'information.\n\nNous ne devinons pas l'avenir, nous le calculons.\nLe score exact de ce soir est disponible.\n\n👉 Accès direct dans le VIP+.", prompt: `ENGLISH PROMPT: ${styleHeader} A portrait drawing of a charismatic individual in a sharp suit, sitting in a leather chair in a luxurious room, smiling confidently. He wears an elegant, detailed golden crown lapel pin with the letters "SM" inside. Elite vibe, highly detailed ink work. --ar 1:1 --style raw --v 6` },
+            { label: "🏛️ Story 15 — Autorité : Le Savoir", color: "#22c55e", type: "autorité", txt: "🏛️ Le temple du pronostic.\n\nIci, on ne vend pas de rêve, on livre des statistiques. Notre IA vient de rendre son verdict pour le choc de ce soir.\n\n👉 Viens chercher ton ticket.", prompt: `ENGLISH PROMPT: ${styleHeader} A modernized mentor figure explaining a winning strategy on a glowing interactive tabletop display to a highly focused student. The glowing center of the digital table prominently displays an "SM" logo topped with a golden crown. Dark luxury environment. --ar 1:1 --style raw --v 6` },
+            { label: "♟️ Story 16 — Autorité : Échec et mat", color: "#22c55e", type: "autorité", txt: "♟️ Échec et mat contre les bookmakers.\n\nL'analyse est complète. Chaque variable a été prise en compte. Le coup parfait est prêt à être joué.\n\n👉 Ton accès t'attend dans la bio.", prompt: `ENGLISH PROMPT: ${styleHeader} A close-up of a person's hand decisively moving a glowing glass chess piece on a futuristic board. The base of the winning chess piece is engraved with the letters "SM" and a golden crown. Highly detailed illustrative style, strategic mood. --ar 1:1 --style raw --v 6` },
+            { label: "🔥 Story 17 — Clash : L'adrénaline", color: "#ef4444", type: "clash", txt: "⚡ La foudre va frapper ce soir.\n\nUne affiche monstrueuse, une analyse chirurgicale. L'algorithme a tranché et le ticket est terrifiant 🥶\n\n👉 Ne manque pas ça. VIP+ en bio.", prompt: `ENGLISH PROMPT: ${styleHeader} A portrait of a passionate football fan screaming in intense excitement with harsh dynamic red and blue stadium floodlights hitting their face. The fan wears a premium jacket with an embroidered patch showing the letters "SM" and a golden crown. High energy. --ar 1:1 --style raw --v 6` },
+            { label: "🔥 Story 18 — Clash : Le face à face", color: "#ef4444", type: "clash", txt: "🌋 Éruption imminente.\n\nLe match de ce soir va faire des dégâts. Mais nous sommes du bon côté de l'histoire grâce à la data.\n\nScore exact publié.\n👉 Rejoins le côté obscur des bookmakers.", prompt: `ENGLISH PROMPT: ${styleHeader} A dynamic close-up drawing of two rival football fans facing off, intense stares. In the dark, smoky concrete background, a stylized graffiti tag displays the letters "SM" wearing a golden crown. Fiery neon orange lighting, aggressive mood. --ar 1:1 --style raw --v 6` },
+            { label: "⚔️ Story 19 — Clash : Un duel au sommet", color: "#ef4444", type: "clash", txt: "⚔️ Un duel au sommet.\n\nDeux géants s'affrontent, mais l'algorithme a déjà trouvé le gagnant. La cote est folle.\n\n👉 Le ticket complet t'attend dans l'espace VIP+.", prompt: `ENGLISH PROMPT: ${styleHeader} A low-angle action illustration of two anonymous football players aggressively clashing for the ball in heavy rain. The classic black and white match ball clearly has the letters "SM" and a golden crown printed on it. Epic stadium lights, high energy. --ar 1:1 --style raw --v 6` },
+            { label: "🔥 Story 20 — Clash : La ferveur", color: "#ef4444", type: "clash", txt: "🔥 Ce soir, la terre tremble.\n\nLes plus grandes affiches analysées par l'algorithme le plus puissant. Nous, on a déjà validé le combiné parfait 🔒\n\nPréparez-vous au choc.\n👉 Lien en bio.", prompt: `ENGLISH PROMPT: ${styleHeader} A shot from behind a fan overlooking an incredibly massive, roaring stadium crowd illuminated by intense red flares. A massive tifo banner unfurled in the crowd boldly displays the letters "SM" beneath a giant golden crown. Epic atmosphere of ferveur. --ar 1:1 --style raw --v 6` }
         ];
 
         window._promoWebAppTexts = viralPromoContent; 
-
-        // --- ÉTAPE C : CONSTRUCTION DU CONTENU DES CARTES ---
         var htmlCartes = `<div style="display:flex;flex-direction:column;gap:12px;">`;
 
         viralPromoContent.forEach(function(e, i) {
@@ -4018,34 +3936,19 @@ function renderPromoTelegramContent() {
                         <div style="width:10px;height:10px;border-radius:50%;background:${e.color};flex-shrink:0;"></div>
                         <div style="font-size:13px;font-weight:800;color:#fff;">${e.label}</div>
                     </div>
-                    <div style="background:none; color:${e.color}; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:700; text-transform:uppercase;">${e.type}</div>
                 </div>
                 <div style="padding:10px; display:flex; flex-direction:column; gap:10px;">
                     <div style="background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;font-size:13px;color:#f9fafb;line-height:1.8;white-space:pre-wrap;">${e.txt}</div>
-                    
-                    <button id="btn-copy-promo-text-${i}" onclick="copyPromoText(${i})" 
-                        style="width:100%;padding:10px;border-radius:10px;border:none;background:${e.color};color:#000;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px; transition:all 0.2s; flex-shrink:0;">
-                        📋 Copier le Message (Pour Telegram)
-                    </button>
-                    
-                    <div style="padding:4px 0;">
-                        <button id="btn-copy-promo-prompt-${i}" onclick="copyPromoPrompt(${i})" 
-                            style="width:100%;padding:8px;border-radius:10px;border:1px solid rgba(168,85,247,0.5);background:none;color:#c084fc;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px; transition:all 0.2s; flex-shrink:0;">
-                            🖼️ Copier le Prompt Illustration (+ Branding SM)
-                        </button>
-                    </div>
-                    
+                    <button id="btn-copy-promo-text-${i}" onclick="copyPromoText(${i})" style="width:100%;padding:10px;border-radius:10px;border:none;background:${e.color};color:#000;font-size:13px;font-weight:800;cursor:pointer;">📋 Copier le Message</button>
+                    <button id="btn-copy-promo-prompt-${i}" onclick="copyPromoPrompt(${i})" style="width:100%;padding:8px;border-radius:10px;border:1px solid rgba(168,85,247,0.5);background:none;color:#c084fc;font-size:11px;font-weight:700;cursor:pointer;">🖼️ Copier le Prompt</button>
                 </div>
             </div>`;
         });
-
         htmlCartes += `</div>`;
 
-        container.innerHTML = previewHtml + htmlStatut + htmlCartes;
-
+        container.innerHTML = previewHtml + feedBannerHtml + htmlStatut + htmlCartes;
     } catch (e) {
-        container.innerHTML = `<div style="color:#ef4444; padding:20px; background:rgba(239,68,68,0.1); border-radius:10px; border:1px solid rgba(239,68,68,0.3);"><strong>Erreur Javascript :</strong><br><br>${e.message}</div>`;
-        console.error(e);
+        container.innerHTML = `<div style="color:#ef4444;">Erreur : ${e.message}</div>`;
     }
 }
 // -------------------------------------------------------------
@@ -4128,14 +4031,13 @@ function closeEcusson() {
 }
 
 // ============================================================
-// 1. GÉNÉRATEUR D'ÉCUSSONS, DUELS ET BANNIÈRE FEED INSTA
+// 1. GÉNÉRATEUR D'ÉCUSSONS (RESTAURATION BRODERIE + ANIMATION VIDÉO)
 // ============================================================
 function renderEcussonContent() {
     var container = document.getElementById('ecusson-main-content');
     if (!container) return;
 
     try {
-        // Récupérer le combiné en cours
         var activeCombined = null;
         if (window.allCombineds && window.allCombineds.length > 0) {
             activeCombined = window.allCombineds.find(c => c.status === 'en-cours');
@@ -4151,19 +4053,23 @@ function renderEcussonContent() {
             return;
         }
 
-        // --- ÉTAPE A : PRÉPARATION DES DONNÉES ---
+        // --- APERÇU DU COMBINÉ ---
         let previewMatchesHtml = '';
         var allTeams = [];
-        var combinedTeamNames = []; // Pour la bannière de feed
-
+        var matchDuels = [];
+        
         activeCombined.matches.forEach(m => {
-            let displayTeams = m.teams || "Équipes";
-            combinedTeamNames.push(displayTeams);
-
+            let teamA = "Équipe A", teamB = "Équipe B";
             if (m.teams) {
                 var parts = m.teams.split(/\s+-\s+|\s+vs\.?\s+/i);
-                parts.forEach(function(t) { if(t.trim()) allTeams.push(t.trim()); });
+                if (parts.length >= 2) {
+                    teamA = parts[0].trim(); teamB = parts[1].trim();
+                    allTeams.push(teamA, teamB);
+                } else {
+                    teamA = m.teams.trim(); allTeams.push(teamA);
+                }
             }
+            matchDuels.push({ label: `${teamA} vs ${teamB}`, teamA: teamA, teamB: teamB });
 
             let logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : (m.league_flag ? `<span style="margin-right:6px; display:inline-flex; align-items:center; vertical-align:middle;">${m.league_flag}</span>` : `<span style="margin-right:4px;">⚽</span>`));
             let displayTime = m.time || "--:--";
@@ -4182,12 +4088,13 @@ function renderEcussonContent() {
                 <div style="display:flex; align-items:center; justify-content:space-between;">
                     <div style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-light-gray); min-width:0; flex:1;">
                         ${logoDisplay}
-                        <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${displayTeams}</span>
+                        <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m.teams}</span>
                     </div>
                     <div style="font-size:11px; color:var(--text-gray); flex-shrink:0; margin-left:10px;">${displayTime}</div>
                 </div>
             </div>`;
         });
+        allTeams = [...new Set(allTeams)];
 
         let previewHtml = `
         <div style="background:#1E1E2E; border-radius:16px; overflow:hidden; border:1px solid #2A2A3A; margin-bottom: 24px; flex-shrink: 0;">
@@ -4201,32 +4108,19 @@ function renderEcussonContent() {
             <div style="padding:0 16px;">${previewMatchesHtml}</div>
         </div>`;
 
-        // --- ÉTAPE B : PROMPTS INDIVIDUELS ---
-        allTeams = [...new Set(allTeams)];
-        const styleHeader = "Detailed stylized digital illustration drawing with bold dark outlines, high-contrast ink wash and textured watercolor coloring, comic book art style.";
-        const brandingSubtil = 'Include a hidden luxury "Score Master" emblem in gold: a golden crown positioned directly above the letters "SM", integrated into the scene.';
+        // --- PROMPTS INDIVIDUELS (BRODERIE) ---
+        window._ecussons = allTeams.map(t => ({ 
+            team: t, 
+            prompt: `Create a photorealistic [16:9] aspect ratio image using the uploaded logo of ${t} as the exact source identity. Preserve the logo's original shape, proportions, symbol geometry, layout and color structure precisely, with no redesign, distortion or reinterpretation. Transform the uploaded logo into a high-end embroidered emblem with realistic, dense stitching and premium embroidery detail. The emblem should be the central focus, placed on a premium, textured fabric surface that complements ${t}'s official colors. Use a dynamic close-up perspective with subtle depth of field. Apply natural, soft lighting that casts gentle shadows to emphasize stitch depth. No text overlays, no watermarks. --ar 3:4 --style raw --v 6` 
+        })); 
 
-        window._ecussons = allTeams.map(function(team) {
-            return { 
-                team: team, 
-                prompt: `ENGLISH PROMPT: ${styleHeader} Close-up portrait of a powerful ${team} football emblem rendered as a premium traditional shield. Intricate metallic inking, bold dark contours, high-contrast textured watercolor coloring. ${brandingSubtil} Dramatic chiaroscuro lighting, floating micro-dust particles. Highly professional illustration. No text overlays. --ar 1:1 --style raw --v 6`
-            };
-        });
-
-        var htmlIndividuel = `
-            <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#c084fc;display:flex;align-items:center;gap:8px; margin-bottom:12px; flex-shrink:0;">
-                <i class="fas fa-paint-brush" style="font-size:12px;animation:pulse 2s infinite;"></i>
-                ${allTeams.length} équipe(s) — Prompts Écussons Illustratifs
-            </div>
-            <div style="display:flex;flex-direction:column;gap:12px;">`;
-
+        var htmlIndividuel = `<div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#c084fc;display:flex;align-items:center;gap:8px; margin-bottom:12px; flex-shrink:0;"><i class="fas fa-circle" style="font-size:8px;animation:pulse 2s infinite;"></i>${allTeams.length} équipe(s) — Prompts individuels</div>`;
         window._ecussons.forEach((e, i) => {
-            var flag = (typeof detectFlag === 'function') ? detectFlag(e.team) : '🛡️';
             htmlIndividuel += `
-            <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(168,85,247,0.2);border-radius:16px;overflow:hidden; flex-shrink:0;">
+            <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(168,85,247,0.2);border-radius:16px;overflow:hidden; margin-bottom:12px; flex-shrink:0;">
                 <div style="padding:14px 16px;border-bottom:1px solid rgba(168,85,247,0.15);display:flex;align-items:center;justify-content:space-between;gap:8px;">
                     <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
-                        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#a855f7,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;color:#fff;">${flag}</div>
+                        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#a855f7,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🛡️</div>
                         <div style="min-width:0;flex:1;"><div style="font-size:14px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.team}</div></div>
                     </div>
                     <button id="btn-copy-ecusson-${i}" onclick="copyEcusson(${i})" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(168,85,247,0.5);color:#c084fc;background:none;font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0;white-space:nowrap;transition:all 0.2s;">📋 Copier</button>
@@ -4234,34 +4128,20 @@ function renderEcussonContent() {
                 <div style="padding:14px 16px;"><div style="background:rgba(0,0,0,0.4);border:1px solid rgba(168,85,247,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">${e.prompt}</div></div>
             </div>`;
         });
-        htmlIndividuel += `</div>`;
 
-        // --- ÉTAPE C : PROMPTS DE DUELS ---
-        window._matchEcussons = activeCombined.matches.map(function(m) {
-            let teamA = "Équipe A", teamB = "Équipe B";
-            if (m.teams) {
-                let parts = m.teams.split(/\s+-\s+|\s+vs\.?\s+/i);
-                if (parts.length >= 2) { teamA = parts[0].trim(); teamB = parts[1].trim(); }
-            }
-            return {
-                matchLabel: `${teamA} vs ${teamB}`,
-                prompt: `ENGLISH PROMPT: ${styleHeader} A high-impact cinematic illustrative clash. A sharp dynamic diagonal split composition. Left Half: The ${teamA} logo as an inked embroidered shield on dark mesh. Right Half: The ${teamB} logo as an inked embroidered shield on textured fabric. ${brandingSubtil} Intense highlights, dynamic inked dust particles. Aggressive and energetic mood. No text overlays. --ar 1:1 --style raw --v 6`
-            };
-        });
+        // --- PROMPTS CLASH (BRODERIE) ---
+        window._matchEcussons = matchDuels.map(m => ({
+            matchLabel: m.label, 
+            prompt: `ENGLISH PROMPT: A high-impact, photorealistic [9:16] cinematic composition. The image is split by a sharp dynamic diagonal line. Top-Left Half: The ${m.teamA} logo as a premium dense embroidered emblem on its primary club colors athletic mesh. Bottom-Right Half: The ${m.teamB} logo as a premium dense embroidered emblem on its primary club colors textured fabric. Dynamic Effects: At the diagonal intersection, add a subtle shimmering light energy effect. Use dramatic chiaroscuro lighting. Branding Element: At the bottom center, integrate the "Score Master" logo — a sleek metallic silver "SM" monogram with a luxurious gold crown on top. Technical: Ultra-close-up, extreme detail on stitching, shallow depth of field. No additional text. --ar 9:16 --style raw --v 6`
+        }));
 
-        var htmlMatch = `
-            <div style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#fb923c;display:flex;align-items:center;gap:8px; margin-top:24px; margin-bottom:12px; flex-shrink:0;">
-                <i class="fas fa-bolt" style="font-size:12px;animation:pulse 2s infinite;"></i>
-                ${activeCombined.matches.length} duel(s) — Prompts Clash Illustratifs
-            </div>
-            <div style="display:flex;flex-direction:column;gap:12px;">`;
-
+        var htmlMatch = `<div style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#fb923c;display:flex;align-items:center;gap:8px; margin-top:24px; margin-bottom:12px; flex-shrink:0;"><i class="fas fa-bolt" style="font-size:12px;animation:pulse 2s infinite;"></i>${matchDuels.length} duel(s) — Prompts Affiche Clash (Image)</div>`;
         window._matchEcussons.forEach((e, i) => {
             htmlMatch += `
-            <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(249,115,22,0.2);border-radius:16px;overflow:hidden; flex-shrink:0;">
+            <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(249,115,22,0.2);border-radius:16px;overflow:hidden; margin-bottom:12px; flex-shrink:0;">
                 <div style="padding:14px 16px;border-bottom:1px solid rgba(249,115,22,0.15);display:flex;align-items:center;justify-content:space-between;gap:8px;">
                     <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
-                        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#f97316,#ea580c);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;color:#fff;">🔥</div>
+                        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#f97316,#ea580c);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🔥</div>
                         <div style="min-width:0;flex:1;"><div style="font-size:14px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.matchLabel}</div></div>
                     </div>
                     <button id="btn-copy-match-ecusson-${i}" onclick="copyMatchEcusson(${i})" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(249,115,22,0.5);color:#fb923c;background:none;font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0;white-space:nowrap;transition:all 0.2s;">📋 Copier</button>
@@ -4269,34 +4149,46 @@ function renderEcussonContent() {
                 <div style="padding:14px 16px;"><div style="background:rgba(0,0,0,0.4);border:1px solid rgba(249,115,22,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">${e.prompt}</div></div>
             </div>`;
         });
-        htmlMatch += `</div>`;
 
-        // --- ÉTAPE D : GÉNÉRATEUR DE BANNIÈRE FEED INSTAGRAM ---
-        const match_list_str = combinedTeamNames.join(' and '); 
-        window._instaFeedPrompt = `ENGLISH PROMPT: ${styleHeader} A powerful cinematic composition summarizing a sports combined masterclass. A stylized master analyst figure with dark curly hair overlooks multiple floating holographic screens showing dynamic illustrative sports clashes. The match names specifically visible on screens include ${match_list_str}. Intense golden and blue lighting, dramatic contrasts. Highly professional and victorious vibe. Prominently displayed luxury "SM" monogram topped with a golden crown emblem. Highly detailed, intricate outlines. No generic text. --ar 1:1 --style raw --v 6`;
+        // --- PROMPTS ANIMATION VIDÉO (RESTAURÉS) ---
+        window._videoEcussons = matchDuels.map(m => ({
+            matchLabel: m.label, 
+            prompts: {
+                light: `ENGLISH PROMPT: Subtle cinematic camera pan over the embroidered ${m.teamA} and ${m.teamB} logos. A sweeping light ray passes over the 3D metallic threads, creating a realistic shimmering glint. Floating micro-dust particles swirl gently in the shallow depth of field. High-end, photorealistic macro video, smooth slow-motion.`,
+                tension: `ENGLISH PROMPT: Dynamic macro dolly-in shot of the embroidered ${m.teamA} and ${m.teamB} logos. Subtle electric energy crackles along the diagonal split line. The chiaroscuro lighting flickers slightly, creating a dramatic, high-tension atmosphere. Subtle smoke drifts in the background. 8k.`,
+                focus: `ENGLISH PROMPT: Cinematic rack focus shifting from the top-left ${m.teamA} logo to the bottom-right ${m.teamB} logo. The fabric texture subtly undulates like a flag in a very gentle breeze. Soft bokeh lens flares morph in the background. Ultra-realistic macro photography motion.`
+            }
+        }));
 
-        var htmlFeedBanner = `
-            <div style="background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#22d3ee;display:flex;align-items:center;gap:8px; margin-top:24px; margin-bottom:12px; flex-shrink:0;">
-                <i class="fas fa-camera-retro" style="font-size:12px;animation:pulse 2s infinite;"></i>
-                Bannière Feed Instagram — Cover du Combiné
-            </div>
-            <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(6,182,212,0.2);border-radius:16px;overflow:hidden; flex-shrink:0;">
-                <div style="padding:14px 16px;border-bottom:1px solid rgba(6,182,212,0.15);display:flex;align-items:center;justify-content:space-between;gap:8px;">
-                    <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
-                        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#06b6d4,#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;color:#fff;"><i class="fas fa-th-large"></i></div>
-                        <div style="min-width:0;flex:1;"><div style="font-size:14px;font-weight:800;color:#fff;">Prompt Cover 1:1 du Combiné</div><div style="font-size:11px;color:#9ca3af;">Synthèse des ${activeCombined.matches.length} duels en style dessin</div></div>
-                    </div>
-                    <button id="btn-copy-insta-feed" onclick="copyInstaFeedPrompt()" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(6,182,212,0.5);color:#22d3ee;background:none;font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0;white-space:nowrap;transition:all 0.2s;">📋 Copier</button>
+        var htmlVideo = `<div style="background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#22d3ee;display:flex;align-items:center;gap:8px; margin-top:24px; margin-bottom:12px; flex-shrink:0;"><i class="fas fa-video" style="font-size:12px;animation:pulse 2s infinite;"></i>${matchDuels.length} duel(s) — Prompts Animation Vidéo (Luma/Runway)</div><div style="font-size:11px;color:#6b7280;line-height:1.6;padding:0 2px 12px;flex-shrink:0;">🎬 Importez l'image du Clash final dans l'IA Vidéo, puis choisissez votre style d'animation :</div>`;
+        
+        window._videoEcussons.forEach((e, i) => {
+            htmlVideo += `
+            <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(6,182,212,0.2);border-radius:16px;overflow:hidden; margin-bottom:12px; flex-shrink:0;">
+                <div style="padding:14px 16px;border-bottom:1px solid rgba(6,182,212,0.15);display:flex;align-items:center;gap:10px;">
+                    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#06b6d4,#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;"><i class="fas fa-film"></i></div>
+                    <div style="min-width:0;flex:1;"><div style="font-size:14px;font-weight:800;color:#fff;">${e.matchLabel}</div></div>
                 </div>
-                <div style="padding:14px 16px;"><div style="background:rgba(0,0,0,0.4);border:1px solid rgba(6,182,212,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">${window._instaFeedPrompt}</div></div>
+                <div style="padding:14px 16px; display:flex; flex-direction:column; gap:8px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px 12px; border-radius:10px; border:1px solid rgba(6,182,212,0.15);">
+                        <div style="display:flex; align-items:center; gap:8px;"><div style="font-size:16px;">✨</div><div><div style="font-size:12px; color:#e5e7eb; font-weight:700;">Lumière & Poussière</div></div></div>
+                        <button id="btn-copy-video-light-${i}" onclick="copyVideoEcusson(${i}, 'light')" style="padding:6px 12px;border-radius:8px;border:1px solid rgba(6,182,212,0.5);color:#22d3ee;background:none;font-size:11px;font-weight:800;cursor:pointer;">📋 Copier</button>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px 12px; border-radius:10px; border:1px solid rgba(6,182,212,0.15);">
+                        <div style="display:flex; align-items:center; gap:8px;"><div style="font-size:16px;">⚡</div><div><div style="font-size:12px; color:#e5e7eb; font-weight:700;">Tension & Orage</div></div></div>
+                        <button id="btn-copy-video-tension-${i}" onclick="copyVideoEcusson(${i}, 'tension')" style="padding:6px 12px;border-radius:8px;border:1px solid rgba(6,182,212,0.5);color:#22d3ee;background:none;font-size:11px;font-weight:800;cursor:pointer;">📋 Copier</button>
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px 12px; border-radius:10px; border:1px solid rgba(6,182,212,0.15);">
+                        <div style="display:flex; align-items:center; gap:8px;"><div style="font-size:16px;">🎥</div><div><div style="font-size:12px; color:#e5e7eb; font-weight:700;">Focus & Profondeur</div></div></div>
+                        <button id="btn-copy-video-focus-${i}" onclick="copyVideoEcusson(${i}, 'focus')" style="padding:6px 12px;border-radius:8px;border:1px solid rgba(6,182,212,0.5);color:#22d3ee;background:none;font-size:11px;font-weight:800;cursor:pointer;">📋 Copier</button>
+                    </div>
+                </div>
             </div>`;
+        });
 
-        // --- RENDU FINAL ---
-        container.innerHTML = previewHtml + htmlIndividuel + htmlMatch + htmlFeedBanner;
-
+        container.innerHTML = previewHtml + htmlIndividuel + htmlMatch + htmlVideo;
     } catch(e) {
-        // S'il y a la moindre erreur d'exécution, on l'affiche en rouge au lieu de laisser un écran noir !
-        container.innerHTML = `<div style="color:#ef4444; padding:20px; background:rgba(239,68,68,0.1); border-radius:10px; border:1px solid rgba(239,68,68,0.3);"><strong>Erreur Javascript détectée:</strong><br><br>${e.message}</div>`;
+        container.innerHTML = `<div style="color:#ef4444; padding:20px; border:1px solid rgba(239,68,68,0.3);">Erreur: ${e.message}</div>`;
         console.error(e);
     }
 }
@@ -4386,10 +4278,21 @@ function copyMatchEcusson(i) {
 }
 
 function copyVideoEcusson(i, type) {
-    // type peut être 'light', 'tension' ou 'focus'
     if (!window._videoEcussons[i] || !window._videoEcussons[i].prompts[type]) return;
     pgCopyText(window._videoEcussons[i].prompts[type], function() {
-        handleCopyFeedback('btn-copy-video-' + type + '-' + i, '#22d3ee', 'rgba(6,182,212,0.5)');
+        var btn = document.getElementById('btn-copy-video-' + type + '-' + i);
+        if (btn) {
+            btn.textContent = '✅ Copié !';
+            btn.style.background = 'rgba(34,197,94,0.2)';
+            btn.style.borderColor = '#22c55e';
+            btn.style.color = '#4ade80';
+            setTimeout(function() {
+                btn.textContent = '📋 Copier';
+                btn.style.background = 'none';
+                btn.style.borderColor = 'rgba(6,182,212,0.5)';
+                btn.style.color = '#22d3ee';
+            }, 2000);
+        }
     });
 }
 
