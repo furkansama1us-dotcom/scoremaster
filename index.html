@@ -3924,19 +3924,17 @@ function renderEcussonContent() {
     var allTeams = [];
     activeCombined.matches.forEach(function(m) {
         if (m.teams) {
-            // Séparation propre pour éviter de couper "Sporting" au niveau du 'S'
             var parts = m.teams.split(/\s+-\s+|\s+vs\.?\s+/i);
             parts.forEach(function(t) { if(t.trim()) allTeams.push(t.trim()); });
         }
     });
 
-    // Dédupliquer
     allTeams = [...new Set(allTeams)];
 
     var ecussons = allTeams.map(function(team) {
         return { team: team, prompt: generateEcussonPrompt(team), copied: false };
     });
-    window._ecussons = ecussons; // Stockage global original
+    window._ecussons = ecussons; 
 
     var htmlIndividuel = `
         <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#c084fc;display:flex;align-items:center;gap:8px; margin-bottom:12px;">
@@ -3981,7 +3979,7 @@ function renderEcussonContent() {
             prompt: generateMatchEcussonPrompt(teamA, teamB)
         };
     });
-    window._matchEcussons = matchPrompts; // Stockage global pour les matchs
+    window._matchEcussons = matchPrompts;
 
     var htmlMatch = `
         <div style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#fb923c;display:flex;align-items:center;gap:8px; margin-top:24px; margin-bottom:12px;">
