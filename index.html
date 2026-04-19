@@ -1674,9 +1674,9 @@ async function fetchMatchesFromAPI() {
 
     try {
         const RAPIDAPI_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
-const HOST = 'free-api-live-football-data.p.rapidapi.com';
+const HOST = 'sportapi7.p.rapidapi.com';
 
-const TARGET_URL = `https://${HOST}/football-get-matches-by-date?date=${formattedDate}`;
+const TARGET_URL = `https://${HOST}/api/v1/sport/football/scheduled-events/${formattedDate}`;
 
 var response = await fetch(TARGET_URL, {
     method: 'GET',
@@ -1689,7 +1689,7 @@ var response = await fetch(TARGET_URL, {
         if (!response.ok) throw new Error("Erreur réseau ou Proxy");
 
         var data = await response.json();
-        var matches = data.response || data.events || data.matches || [];
+        var matches = data.events || [];
 
         if (matches.length === 0) {
             showToast("Aucun match trouvé pour le " + formattedDate, true);
