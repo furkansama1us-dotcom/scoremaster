@@ -4471,7 +4471,6 @@ function detectFlag(teams) {
         }
 
         try {
-            // ENVOI 100% SÉCURISÉ VERS SUPABASE (Aucune API Telegram ici)
             const { error } = await supabaseClient
                 .from('contact_messages')
                 .insert([{ 
@@ -4482,11 +4481,9 @@ function detectFlag(teams) {
 
             if (error) throw error;
 
-            // Vide les champs
             document.getElementById('contact-page-info').value = '';
             document.getElementById('contact-page-message').value = '';
             
-            // Affiche le popup de succès existant, mais avec un texte adapté
             var successPopup = document.getElementById('success-popup');
             successPopup.querySelector('h3').textContent = 'Message envoyé !';
             successPopup.querySelector('p').textContent = 'Votre message a été transmis de manière sécurisée. Nous vous répondrons très vite !';
@@ -4499,375 +4496,63 @@ function detectFlag(teams) {
         }
     }
 
-    function openInstaTexts() {
-    var overlay = document.getElementById('insta-texts-overlay');
-    overlay.style.display = 'flex';
-    setTimeout(() => overlay.classList.add('visible'), 10);
-    renderInstaTexts();
-}
-
-function closeInstaTexts() {
-    var overlay = document.getElementById('insta-texts-overlay');
-    overlay.classList.remove('visible');
-    setTimeout(() => overlay.style.display = 'none', 300);
-}
-
-function renderInstaTexts() {
-    var container = document.getElementById('insta-texts-content');
-
-    var activeCombined = null;
-    if (window.allCombineds && window.allCombineds.length > 0) {
-        activeCombined = window.allCombineds.find(c => c.status === 'en-cours');
-    }
-
-    var earliestTime = '21h00';
-    if (activeCombined && activeCombined.matches && activeCombined.matches.length > 0) {
-        var earliest = '23:59';
-        activeCombined.matches.forEach(function(m) {
-            var extracted = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
-            if (extracted && extracted[0] < earliest) earliest = extracted[0];
+    // ============================================================
+    // NOUVELLES FONCTIONS : GÉNÉRATEUR ÉCUSSONS
+    // ============================================================
+    function openEcussonsFromEditor() {
+        const inputs = document.querySelectorAll('.match-teams-input');
+        let teams = [];
+        
+        inputs.forEach(input => {
+            if (input.value.trim()) {
+                let parts = input.value.split(' - ');
+                parts.forEach(t => { if(t.trim()) teams.push(t.trim()); });
+            }
         });
-        earliestTime = earliest.replace(':', 'h');
-    }
 
-    var texts = [
-        { label: '🔥 Story 1 — Accroche mystère', color: '#f97316', items: [
-            `🔒 Le combiné de ce soir est disponible.\n\nOn a fait le travail. T'as plus qu'à suivre.\n\n👉 Lien en bio`,
-            `⚡ Ce soir on joue gros.\n\nLe combiné est prêt. Les cotes sont élevées.\n\nT'es in ou t'es out ? 👇`,
-            `🎯 Analyse faite. Combiné validé.\n\nIl reste des places VIP+.\n\n🔗 Lien en bio avant qu'il soit trop tard.`
-        ]},
-        { label: '🛡️ Story 2 — Texte sur écusson équipe A', color: '#a855f7', items: [
-            `Ce maillot va peser lourd ce soir 👀\n\nOn a tout analysé. Le score exact est dans le combiné.\n\n📲 Lien en bio`,
-            `Cette équipe a été scrutée sous toutes les coutures 🔍\n\nNotre analyse est sans appel.\n\n👉 Combiné disponible — lien en bio`,
-            `Ils entrent sur le terrain ce soir 🏟️\n\nOn connaît le score. Rejoins le VIP+ pour le voir.\n\n🔗 Lien en bio`,
-            `L'écusson parle. L'analyse aussi. 💎\n\nCombiné score exact ce soir — accès VIP+ lien en bio`
-        ]},
-        { label: '🛡️ Story 3 — Texte sur écusson équipe B', color: '#a855f7', items: [
-            `L'autre adversaire du soir 🎯\n\nOn a analysé leurs stats, leur forme, leur historique.\n\nRésultat ? Dans le combiné VIP+. Lien en bio 👇`,
-            `Cette équipe va tout donner ce soir 💪\n\nEt nous on sait exactement comment ça va finir.\n\n📲 Lien en bio — places limitées`,
-            `2ème match du combiné. 2ème analyse béton. 🔒\n\nAccède au score exact — lien en bio`,
-            `Pas de hasard ici. Que de l'analyse pure. 📊\n\nCe soir, le combiné score exact est disponible.\n\n👉 Lien en bio`
-        ]},
-        { label: '⏰ Story 4 — Urgence', color: '#ef4444', items: [
-            `⏰ Début du premier match à ${earliestTime}.\n\nIl te reste peu de temps.\n\nLe combiné score exact est disponible maintenant — lien en bio 👇`,
-            `🚨 DERNIÈRE CHANCE\n\nLe combiné ferme dans peu de temps.\n\nAccède maintenant — lien en bio`,
-            `T'attendais quoi ? ⏳\n\nLe combiné est disponible. Le match commence bientôt.\n\nPrends ta place — lien en bio 🔗`
-        ]},
-        { label: '🏆 Story 5 — Preuve sociale', color: '#22c55e', items: [
-            `Nos membres VIP+ ont déjà accès au combiné de ce soir ✅\n\nTu rejoins quand ? 👇 Lien en bio`,
-            `📈 Semaine après semaine, nos VIP+ valident.\n\nCe soir c'est encore parti.\n\nRejoins-nous — lien en bio`,
-            `Pendant que tu hésites, les VIP+ encaissent 💰\n\nLe combiné de ce soir est déjà entre leurs mains.\n\n🔗 Lien en bio`,
-            `+1 200 membres VIP+ ont accès ce soir 👑\n\nToi aussi tu peux. Lien en bio.`
-        ]},
-        { label: '💎 Story 6 — Conversion finale', color: '#fbbf24', items: [
-            `VIP+ à vie. Un seul paiement. Accès illimité. 💎\n\nLe combiné de ce soir en fait partie.\n\n👉 Lien en bio`,
-            `Ce soir tu peux juste regarder.\n\nOu tu peux jouer avec nous. 🎯\n\nLe choix t'appartient — lien en bio`,
-            `Le combiné score exact c'est pas de la chance.\nC'est de l'analyse. 📊\n\nRejoins les VIP+ — lien en bio 🔗`,
-            `Satisfait ou remboursé 48h ✅\nAccès à vie 💎\nCombiné chaque semaine 🔥\n\nLe lien est en bio. Simple.`
-        ]}
-    ];
+        if (teams.length === 0) {
+            showToast("Ajoute d'abord des matchs pour générer les écussons", true);
+            return;
+        }
 
-    window._instaTexts = texts;
+        const container = document.getElementById('ecussons-list-container');
+        container.innerHTML = '';
 
-    var html = `
-        <div style="background:rgba(225,48,108,0.1);border:1px solid rgba(225,48,108,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#f472b6;display:flex;align-items:center;gap:8px;flex-shrink:0;">
-            <i class="fas fa-circle" style="font-size:8px;animation:pulse 2s infinite;"></i>
-            ${activeCombined ? 'Combiné EN COURS détecté — textes personnalisés' : 'Aucun combiné — textes génériques'}
-        </div>
-        <div style="font-size:11px;color:#6b7280;line-height:1.6;padding:2px;">
-            📱 <strong style="color:#fff;">Mode d'emploi :</strong> Choisissez un texte par story, copiez-le et collez-le dans l'éditeur Instagram.
-        </div>`;
+        teams.forEach((team, index) => {
+            const promptImg = `A luxurious 3D metallic chrome football crest of ${team}. Dark carbon background, cinematic lighting, 8k, octane render.`;
+            const promptVid = `[0s – 3.5s] INTRODUCTION — L'écusson de ${team} apparaît au centre d'un stade plongé dans le noir. Des particules dorées flottent.\n[3.5s – 7s] DÉTAILS — Gros plan macro sur les reflets du logo.\n[7s – 8s] CLÔTURE — Fondu vers le noir.`;
 
-    texts.forEach(function(section, si) {
-        html += `
-        <div style="background:rgba(17,24,39,0.9);border:1px solid rgba(255,255,255,0.1);border-radius:14px;overflow:hidden;flex-shrink:0;">
-            <div style="padding:12px 14px;background:rgba(0,0,0,0.3);display:flex;align-items:center;gap:8px;">
-                <div style="width:10px;height:10px;border-radius:50%;background:${section.color};flex-shrink:0;"></div>
-                <div style="font-size:13px;font-weight:800;color:#fff;">${section.label}</div>
-            </div>
-            <div style="padding:10px;display:flex;flex-direction:column;gap:10px;">`;
-
-        section.items.forEach(function(txt, ti) {
-            var btnId = 'btn-insta-' + si + '-' + ti;
-            // Échapper pour l'attribut data
-            var escaped = txt.replace(/'/g, "\\'").replace(/\n/g, '\\n');
-            html += `
-                <div style="background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;">
-                    <div style="font-size:13px;color:#f9fafb;line-height:1.8;white-space:pre-wrap;">${txt}</div>
-                    <button id="${btnId}" onclick="copyInstaText(${si},${ti})" 
-                        style="width:100%;padding:10px;border-radius:10px;border:none;background:${section.color};color:#000;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;">
-                        📋 Copier ce texte
-                    </button>
+            container.innerHTML += `
+                <div class="team-crest-card">
+                    <div class="team-name-title">🛡️ ${team}</div>
+                    <div style="color:#888; font-size:11px; margin-bottom:5px; text-transform:uppercase; font-weight:700;">Prompt Image</div>
+                    <div class="prompt-box">${promptImg}</div>
+                    <button class="copy-badge-btn" style="background:#333; color:#fff; margin-bottom:12px;" onclick="copyToClipboard('${promptImg.replace(/'/g, "\\'")}', this)">Copier Image</button>
+                    
+                    <div style="color:#888; font-size:11px; margin-bottom:5px; text-transform:uppercase; font-weight:700;">Prompt Vidéo (Kling AI)</div>
+                    <div class="prompt-box">${promptVid}</div>
+                    <button class="copy-badge-btn" style="background:linear-gradient(135deg,#f97316,#ea580c); color:#fff;" onclick="copyToClipboard('${promptVid.replace(/'/g, "\\'")}', this)">Copier Vidéo</button>
                 </div>`;
         });
 
-        html += `</div></div>`;
-    });
-
-    container.innerHTML = html;
-}
-
-function copyInstaText(si, ti) {
-    // Récupère les données directement depuis window._instaTexts
-    if (!window._instaTexts) {
-        console.error("_instaTexts non défini !");
-        showToast("Erreur : textes non chargés.", true);
-        return;
+        document.getElementById('ecussons-tool').style.display = 'flex';
     }
 
-    var section = window._instaTexts[si];
-    if (!section) {
-        console.error("Section introuvable à l'index", si);
-        showToast("Erreur : section introuvable.", true);
-        return;
+    function closeEcussonsTool() { 
+        document.getElementById('ecussons-tool').style.display = 'none'; 
     }
 
-    var txt = section.items[ti];
-    if (!txt) {
-        console.error("Texte introuvable à l'index", ti);
-        showToast("Erreur : texte introuvable.", true);
-        return;
-    }
-
-    // Copie dans le presse-papier
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(txt).then(function() {
-            showToast("✅ Texte copié !");
-            // Feedback visuel sur le bouton
-            var btn = document.getElementById('btn-insta-' + si + '-' + ti);
-            if (btn) {
-                var original = btn.innerHTML;
-                btn.innerHTML = "✅ Copié !";
-                btn.style.background = "#22c55e";
-                setTimeout(function() {
-                    btn.innerHTML = original;
-                    btn.style.background = window._instaTexts[si].color;
-                }, 2000);
-            }
-        }).catch(function(err) {
-            console.error("Clipboard API échouée :", err);
-            fallbackCopy(txt);
-        });
-    } else {
-        fallbackCopy(txt);
-    }
-}
-
-function fallbackCopy(txt) {
-    // Fallback pour les navigateurs sans Clipboard API
-    var el = document.createElement('textarea');
-    el.value = txt;
-    el.style.position = 'fixed';
-    el.style.top = '-9999px';
-    el.style.left = '-9999px';
-    document.body.appendChild(el);
-    el.focus();
-    el.select();
-    try {
-        var ok = document.execCommand('copy');
-        if (ok) {
-            showToast("✅ Texte copié !");
-        } else {
-            showToast("❌ Copie impossible sur ce navigateur.", true);
-        }
-    } catch(e) {
-        showToast("❌ Erreur de copie.", true);
-        console.error(e);
-    }
-    document.body.removeChild(el);
-}
-    // ============================================================
-// GÉNÉRATION DU PROMPT IA PREMIUM (FORMAT 9:16 + LOGO SM + INSTA)
-// ============================================================
-function sendInstaPrompt(id) {
-    var c = allCombineds.find(x => x.id == id);
-    if (!c) { showToast("Combiné introuvable", true); return; }
-
-    let detailsMatchs = "";
-
-    if (c.matches && c.matches.length > 0) {
-        c.matches.forEach((m, index) => {
-            let teams = m.teams.split('-');
-            let scores = m.score.split('-');
-            
-            if (teams.length === 2 && scores.length === 2) {
-                let eqA = teams[0].trim(); 
-                let eqB = teams[1].trim();
-                let scA = parseInt(scores[0].trim()); 
-                let scB = parseInt(scores[1].trim());
-                
-                let vainqueur = (scA > scB) ? `victory of ${eqA}` : (scB > scA) ? `victory of ${eqB}` : `draw`;
-
-                detailsMatchs += `- Match ${index + 1}: ${eqA} vs ${eqB}. Show the ${vainqueur} with the exact score "${m.score}".\n`;
-            } else {
-                detailsMatchs += `- Match ${m.teams} with the exact score "${m.score}".\n`;
-            }
+    function copyToClipboard(text, btn) {
+        navigator.clipboard.writeText(text).then(() => {
+            const old = btn.innerHTML;
+            btn.innerHTML = '✓ Copié !';
+            btn.style.background = '#00C853';
+            setTimeout(() => { 
+                btn.innerHTML = old; 
+                btn.style.background = '';
+            }, 2000);
         });
     }
-
-    let aiPrompt = `A high-end cinematic sports digital poster, vertical 9:16 ratio. 
-
-Background: Spectacular low-angle view from a wet, ultra-reflective football pitch in a grand stadium at night. Dramatic lighting, glowing stadium floodlights, lens flares, falling luxurious golden confetti, subtle cyan lightning and golden sparks.
-
-Top Center: A massive 3D metallic chrome "SM" logo topped with a luxurious 3D golden crown (highly reflective). Below the logo, the word "VICTOIRE" in brilliant 3D cyan neon text, and "SCORE EXACT" in polished 3D gold text.
-
-Center (Dynamic Data):
-${detailsMatchs}
-
-Graphic Elements: Two floating rectangular frames with glowing cyan neon borders. Professional Champions League broadcast style.
-
-Bottom branding: The official 3D Instagram camera logo icon placed directly next to the handle "@scoremaster.fr", both clearly visible in a modern glowing style.
-
-Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold and silver color palette, --ar 9:16`;
-
-    // Uniquement le prompt formaté dans un bloc de code Telegram pour un tap-to-copy rapide
-    let telegramText = `\`\`\`\n${aiPrompt}\n\`\`\``;
-
-    if (confirm("Générer et envoyer le prompt IA Premium sur Telegram ?")) {
-        sendAdminTelegram(telegramText).then(() => {
-            showToast("Prompt IA envoyé ! 🎨");
-        });
-    }
-}
-    // --- GÉNÉRATEUR ÉCUSSONS FILTRÉ SUR LE COMBINÉ ---
-function openEcussonsTool(id) {
-    const c = allCombineds.find(x => x.id == id);
-    if (!c || !c.matches) return;
-
-    const container = document.getElementById('ecussons-list-container');
-    container.innerHTML = '';
-
-    // Extraction des noms d'équipes uniques du combiné
-    let teams = [];
-    c.matches.forEach(m => {
-        let parts = m.teams.split(' - ');
-        parts.forEach(t => { if(t.trim()) teams.push(t.trim()); });
-    });
-
-    teams.forEach((team, index) => {
-        const promptImg = `A luxurious 3D metallic chrome football crest of ${team}. The crest is placed on a dark carbon fiber texture background. Dramatic studio lighting with golden rim light. 8k resolution, photorealistic, highly detailed, octane render.`;
-        
-        const promptVid = `[0s – 3.5s] INTRODUCTION — L'écusson de ${team} apparaît au centre d'un stade plongé dans le noir. Des particules dorées flottent. La caméra fait un zoom avant lent et majestueux.\n\n[3.5s – 7s] DÉTAILS — Gros plan macro sur les textures métalliques et les reflets du logo. Des éclairs de lumière balaient la surface.\n\n[7s – 8s] CLÔTURE — Fondu vers le noir progressif.\n\nSTYLE : Cinématique luxe, 4K, Unreal Engine 5 render.`;
-
-        container.innerHTML += `
-            <div class="team-crest-card">
-                <div class="team-name-title">🛡️ ${team}</div>
-                
-                <div style="color:#888; font-size:11px; margin-bottom:5px; text-transform:uppercase; font-weight:700;">Prompt Image (Midjourney/Flux)</div>
-                <div class="prompt-box" id="p-img-${index}">${promptImg}</div>
-                <button class="copy-badge-btn" style="background:#333; color:#fff;" onclick="copyToClipboard('${promptImg}', this)">
-                    <i class="far fa-copy"></i> Copier Prompt Image
-                </button>
-
-                <div style="color:#888; font-size:11px; margin:15px 0 5px; text-transform:uppercase; font-weight:700;">Prompt Vidéo Kling AI (Storyboard)</div>
-                <div class="prompt-box" id="p-vid-${index}">${promptVid}</div>
-                <button class="copy-badge-btn" style="background:linear-gradient(135deg,#f97316,#ea580c); color:#fff;" onclick="copyToClipboard('${promptVid}', this)">
-                    <i class="fas fa-video"></i> Copier Prompt Vidéo
-                </button>
-            </div>
-        `;
-    });
-
-    document.getElementById('ecussons-tool').style.display = 'flex';
-}
-
-function closeEcussonsTool() {
-    document.getElementById('ecussons-tool').style.display = 'none';
-}
-
-// Fonction utilitaire de copie
-function copyToClipboard(text, btn) {
-    navigator.clipboard.writeText(text).then(() => {
-        const originalHtml = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-check"></i> Copié !';
-        btn.style.background = '#00C853';
-        setTimeout(() => {
-            btn.innerHTML = originalHtml;
-            btn.style.background = '';
-        }, 2000);
-    });
-}
 </script>
-
-<!-- =====================================================
-     OVERLAY : GÉNÉRATEUR PROMPT IA
-     ===================================================== -->
-<div id="prompt-gen-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;flex-direction:column;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(8px);">
-    <!-- Header -->
-    <div style="border-bottom:1px solid rgba(249,115,22,0.3);background:#0a0a0a;padding:50px 20px 14px;display:flex;align-items:center;gap:14px;flex-shrink:0;">
-        <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#f97316,#fbbf24);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 18px rgba(249,115,22,0.35);">⚽</div>
-        <div>
-            <div style="font-size:17px;font-weight:900;letter-spacing:-0.5px;color:#fff;">Score<span style="color:#fb923c;">Master</span></div>
-            <div style="font-size:11px;color:#6b7280;">Générateur de Prompt Promo IA</div>
-        </div>
-        <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
-            <span style="padding:4px 10px;border-radius:99px;font-size:11px;font-weight:700;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.4);color:#4ade80;">✅ 100 % Français</span>
-            <span style="padding:4px 10px;border-radius:99px;font-size:11px;font-weight:700;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.4);color:#fb923c;">v2.1 Optimisé</span>
-            <button onclick="closePG()" style="margin-left:8px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
-        </div>
-    </div>
-    <!-- Main content (rendered dynamically) -->
-    <div id="pg-main-content" style="flex:1;display:flex;overflow:hidden;"></div>
-    <!-- Footer -->
-    <div style="border-top:1px solid rgba(255,255,255,0.04);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#374151;flex-shrink:0;">
-        <span>@scoremaster.fr — Générateur Prompt v2.1</span>
-        <span>Optimisé pour Midjourney · DALL·E 3 · Adobe Firefly</span>
-    </div>
-</div>
-
-    <!-- =====================================================
-     OVERLAY : GÉNÉRATEUR ÉCUSSON BRODÉ
-     ===================================================== -->
-<div id="ecusson-gen-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;flex-direction:column;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(8px);">
-    <!-- Header -->
-    <div style="border-bottom:1px solid rgba(168,85,247,0.3);background:#0a0a0a;padding:50px 20px 14px;display:flex;align-items:center;gap:14px;flex-shrink:0;">
-        <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#a855f7,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 18px rgba(168,85,247,0.35);">🛡️</div>
-        <div>
-            <div style="font-size:17px;font-weight:900;letter-spacing:-0.5px;color:#fff;">Score<span style="color:#a855f7;">Master</span></div>
-            <div style="font-size:11px;color:#6b7280;">Générateur d'Écusson Brodé Premium</div>
-        </div>
-        <button onclick="closeEcusson()" style="margin-left:auto;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
-    </div>
-    <!-- Main content -->
-    <div id="ecusson-main-content" style="flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:16px;gap:12px;"></div>
-    <!-- Footer -->
-    <div style="border-top:1px solid rgba(255,255,255,0.04);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#374151;flex-shrink:0;">
-        <span>@scoremaster.fr — Écusson Brodé v1.0</span>
-        <span>Optimisé pour ChatGPT · Midjourney · DALL·E 3</span>
-    </div>
-</div>
-    <div id="insta-texts-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;flex-direction:column;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(8px);">
-    <div style="border-bottom:1px solid rgba(225,48,108,0.3);background:#0a0a0a;padding:50px 20px 14px;display:flex;align-items:center;gap:14px;flex-shrink:0;">
-        <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 18px rgba(225,48,108,0.35);">📸</div>
-        <div>
-            <div style="font-size:17px;font-weight:900;color:#fff;">Score<span style="color:#e1306c;">Master</span></div>
-            <div style="font-size:11px;color:#6b7280;">Accroches Story Instagram</div>
-        </div>
-        <button onclick="closeInstaTexts()" style="margin-left:auto;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
-    </div>
-    <div id="insta-texts-content" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;"></div>
-    <div style="border-top:1px solid rgba(255,255,255,0.04);padding:10px 20px;font-size:11px;color:#374151;text-align:center;flex-shrink:0;">
-        @scoremaster.fr — Copiez et collez directement dans l'éditeur Instagram
-    </div>
-</div>
-    <div id="ecussons-tool" class="ecussons-modal">
-    <div style="background:#0a0a0a; padding:50px 20px 14px; display:flex; align-items:center; gap:14px; border-bottom:1px solid #333;">
-        <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#f97316,#ea580c);display:flex;align-items:center;justify-content:center;font-size:18px;">🛡️</div>
-        <div>
-            <div style="font-size:17px;font-weight:900;color:#fff;">Générateur <span style="color:#f97316;">Écussons</span></div>
-            <div style="font-size:11px;color:#6b7280;">Prompts IA pour Kling AI / Midjourney</div>
-        </div>
-        <button onclick="closeEcussonsTool()" style="margin-left:auto;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:18px;cursor:pointer;">✕</button>
-    </div>
-    <div class="ecussons-content" id="ecussons-list-container">
-        </div>
-</div>
-    
-<style>
-#prompt-gen-overlay.visible { opacity: 1 !important; }
-#ecusson-gen-overlay.visible { opacity: 1 !important; }
-#insta-texts-overlay.visible { opacity: 1 !important; }
-</style>
-
 </body>
 </html>
