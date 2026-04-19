@@ -1367,13 +1367,14 @@ async function fetchApiScore(id, dateRaw) {
                 </div>
             </div>
             
-            <!-- BOUTON 2 : EMPLACEMENT FUTUR -->
-            <div class="admin-card" style="padding:15px; border-left:4px solid var(--text-gray); margin-bottom:10px; opacity:0.5;">
-                <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff;">
-                    <i class="fas fa-plus"></i> Autre relance (à venir)
+            <!-- BOUTON 2 : GÉNÉRATEUR PROMPT IA -->
+            <div class="admin-card" style="padding:15px; border-left:4px solid #f97316; margin-bottom:10px; cursor:pointer; transition:all 0.2s;" onclick="openPromptGenerator()" onmouseover="this.style.background='var(--bg-input)'" onmouseout="this.style.background='var(--bg-card)'">
+                <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff; display:flex; justify-content:space-between; align-items:center;">
+                    <span><i class="fas fa-magic" style="color:#f97316; margin-right:5px;"></i> Générateur Prompt IA</span>
+                    <i class="fas fa-chevron-right" style="color:var(--text-gray); font-size:12px;"></i>
                 </div>
                 <div style="font-size:12px; color:var(--text-gray);">
-                    Emplacement pour de futures notifications spécifiques.
+                    Génère automatiquement un prompt IA pour l'affiche du combiné en cours.
                 </div>
             </div>
         </div>
@@ -3793,6 +3794,244 @@ let quickEditCombinedId = null;
         }
     }
 
+    // ============================================================
+    // GÉNÉRATEUR PROMPT IA — INTÉGRÉ (données du combiné en cours)
+    // ============================================================
+    function openPromptGenerator() {
+        // Chercher le combiné "en cours"
+        var activeCombined = null;
+        if (window.allCombineds && window.allCombineds.length > 0) {
+            activeCombined = window.allCombineds.find(c => c.status === 'en-cours');
+        }
+
+        var overlay = document.getElementById('prompt-gen-overlay');
+        overlay.style.display = 'flex';
+        setTimeout(() => overlay.classList.add('visible'), 10);
+
+        var pgMatches = [];
+        if (activeCombined && activeCombined.matches && activeCombined.matches.length > 0) {
+            activeCombined.matches.forEach(function(m) {
+                pgMatches.push({ teams: m.teams || '', time: m.time || '21:00' });
+            });
+        }
+
+        window._pgMatches = pgMatches;
+        window._pgOutput = { prompt: '', insta: '', telegram: '' };
+        window._pgActiveTab = 'prompt';
+
+        renderPGContent(activeCombined);
+    }
+
+    function closePG() {
+        var overlay = document.getElementById('prompt-gen-overlay');
+        overlay.classList.remove('visible');
+        setTimeout(() => overlay.style.display = 'none', 300);
+    }
+
+    function renderPGContent(activeCombined) {
+        var container = document.getElementById('pg-main-content');
+
+        if (!activeCombined) {
+            container.innerHTML = `
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:40px 20px;flex:1;">
+                    <div style="width:80px;height:80px;border-radius:20px;background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.2);display:flex;align-items:center;justify-content:center;font-size:36px;">⏳</div>
+                    <div style="font-size:18px;font-weight:700;color:#fff;">Pas de combiné en cours</div>
+                    <div style="font-size:13px;color:#6b7280;max-width:320px;line-height:1.6;">Aucun combiné avec le statut <strong style="color:#f97316;">EN COURS</strong> n'a été trouvé.<br>Publiez un combiné depuis l'onglet Vue pour utiliser ce générateur.</div>
+                </div>`;
+            return;
+        }
+
+        var matchesHtml = '';
+        (window._pgMatches || []).forEach(function(m, i) {
+            var tf = m.time ? m.time.replace(':', 'H') : '21H00';
+            matchesHtml += `
+            <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px;margin-bottom:10px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                    <div style="width:22px;height:22px;border-radius:50%;background:rgba(249,115,22,0.2);border:1px solid rgba(249,115,22,0.4);color:#fb923c;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;">${i+1}</div>
+                    <div style="font-size:11px;color:#6b7280;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Match ${i+1}</div>
+                </div>
+                <div style="margin-bottom:8px;">
+                    <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Équipes</label>
+                    <input style="width:100%;background:#1f2937;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:9px 12px;font-size:13px;color:#fff;outline:none;font-family:inherit;" 
+                        value="${pgEsc(m.teams)}" oninput="pgUpdateTeams(${i}, this.value)" placeholder="Équipe A vs Équipe B" />
+                </div>
+                <div style="margin-bottom:8px;">
+                    <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">⏰ Horaire</label>
+                    <input type="time" style="width:100%;background:#1f2937;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:9px 12px;font-size:13px;color:#fff;outline:none;font-family:inherit;" 
+                        value="${m.time || '21:00'}" oninput="pgUpdateTime(${i}, this.value)" />
+                </div>
+                <div style="background:rgba(0,0,0,0.4);border:1px solid rgba(249,115,22,0.2);border-radius:8px;padding:8px 12px;font-size:11px;color:#fdba74;font-family:'Courier New',monospace;">• ${pgEsc(m.teams)} (${tf})</div>
+            </div>`;
+        });
+
+        container.innerHTML = `
+        <div style="display:flex;gap:20px;flex:1;overflow:hidden;">
+            <!-- Sidebar -->
+            <div style="width:340px;flex-shrink:0;border-right:1px solid rgba(255,255,255,0.08);padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;">
+                <div style="background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#4ade80;display:flex;align-items:center;gap:8px;">
+                    <i class="fas fa-circle" style="font-size:8px;animation:pulse 2s infinite;"></i>
+                    Combiné EN COURS détecté — ${(window._pgMatches||[]).length} match(s) importé(s)
+                </div>
+                <div>
+                    <div style="font-size:10px;font-weight:800;color:#6b7280;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">Matchs du combiné</div>
+                    ${matchesHtml}
+                </div>
+                <button onclick="pgGenerate()" id="pgBtnGenerate" style="width:100%;padding:16px;border-radius:18px;border:none;background:linear-gradient(90deg,#f97316,#fbbf24);color:#000;font-size:16px;font-weight:900;cursor:pointer;box-shadow:0 4px 24px rgba(249,115,22,0.35);">
+                    🚀 Générer le Prompt IA
+                </button>
+            </div>
+            <!-- Output Area -->
+            <div style="flex:1;display:flex;flex-direction:column;padding:20px;gap:16px;overflow:hidden;">
+                <div id="pg-empty-state" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;">
+                    <div style="width:80px;height:80px;border-radius:20px;background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.2);display:flex;align-items:center;justify-content:center;font-size:36px;">🎨</div>
+                    <p style="font-size:17px;color:#9ca3af;">Clique sur <strong style="color:#fb923c;">Générer le Prompt IA</strong></p>
+                    <p style="font-size:13px;color:#4b5563;max-width:380px;line-height:1.6;">Le prompt sera optimisé pour Midjourney / DALL·E 3 — 100% en français.</p>
+                </div>
+                <div id="pg-result-area" style="display:none;flex:1;flex-direction:column;gap:16px;">
+                    <div style="display:flex;gap:4px;border-bottom:1px solid rgba(255,255,255,0.08);">
+                        <button class="pg-tab-btn active" id="pg-tab-prompt" onclick="pgSwitchTab('prompt')" style="padding:10px 16px;border-radius:10px 10px 0 0;border:none;border-bottom:2px solid #fb923c;background:rgba(249,115,22,0.08);font-size:13px;font-weight:700;color:#fb923c;cursor:pointer;font-family:inherit;">🤖 Prompt IA</button>
+                        <button class="pg-tab-btn" id="pg-tab-insta" onclick="pgSwitchTab('insta')" style="padding:10px 16px;border-radius:10px 10px 0 0;border:none;border-bottom:2px solid transparent;background:none;font-size:13px;font-weight:700;color:#6b7280;cursor:pointer;font-family:inherit;">📸 Instagram</button>
+                        <button class="pg-tab-btn" id="pg-tab-telegram" onclick="pgSwitchTab('telegram')" style="padding:10px 16px;border-radius:10px 10px 0 0;border:none;border-bottom:2px solid transparent;background:none;font-size:13px;font-weight:700;color:#6b7280;cursor:pointer;font-family:inherit;">✈️ Telegram</button>
+                    </div>
+                    <div style="flex:1;background:rgba(17,24,39,0.6);border:1px solid rgba(255,255,255,0.08);border-radius:18px;overflow:hidden;position:relative;min-height:200px;">
+                        <div style="position:absolute;top:12px;right:12px;z-index:5;display:flex;gap:8px;">
+                            <span style="padding:4px 10px;border-radius:8px;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);color:#4ade80;font-size:11px;font-weight:800;">🇫🇷 Français</span>
+                            <button id="pgBtnCopy" onclick="pgCopyTab()" style="padding:5px 12px;border-radius:8px;border:none;background:rgba(255,255,255,0.1);color:#fff;font-size:11px;font-weight:700;cursor:pointer;">📋 Copier</button>
+                        </div>
+                        <div id="pg-output-text" style="height:100%;padding:20px;padding-top:52px;font-size:12.5px;color:#e5e7eb;white-space:pre-wrap;line-height:1.7;overflow-y:auto;font-family:'Courier New',monospace;"></div>
+                    </div>
+                    <div style="display:flex;gap:10px;">
+                        <button onclick="pgCopySection('prompt')" style="flex:1;padding:12px;border-radius:14px;border:1px solid rgba(249,115,22,0.5);color:#fb923c;background:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">🤖 Copier le Prompt IA</button>
+                        <button onclick="pgCopySection('telegram')" style="flex:1;padding:12px;border-radius:14px;border:1px solid rgba(59,130,246,0.5);color:#60a5fa;background:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">✈️ Copier pour Telegram</button>
+                        <button onclick="pgCopySection('insta')" style="flex:1;padding:12px;border-radius:14px;border:1px solid rgba(236,72,153,0.5);color:#f472b6;background:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;">📸 Copier pour Insta</button>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+    }
+
+    function pgEsc(str) { 
+        if (!str) return '';
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function pgUpdateTeams(i, val) { if(window._pgMatches) window._pgMatches[i].teams = val; }
+    function pgUpdateTime(i, val) { if(window._pgMatches) window._pgMatches[i].time = val; }
+
+    function pgGenerate() {
+        var matches = window._pgMatches || [];
+        var output = window._pgOutput;
+        var detailsMatchs = '';
+        var instaMatches = '';
+        var earliestTime = '23:59';
+
+        matches.forEach(function(m) {
+            var tf = m.time ? m.time.replace(':', 'H') : '21H00';
+            var tfInsta = tf.replace('H', 'h');
+            detailsMatchs += '• ' + m.teams + ' (' + tf + ')\n';
+            instaMatches  += '⚽ ' + m.teams + ' — ' + tfInsta + '\n';
+            var extracted = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
+            if (extracted && extracted[0] < earliestTime) earliestTime = extracted[0];
+        });
+
+        var earliestFormatted = earliestTime.replace(':', 'h');
+
+        output.prompt =
+'Affiche promotionnelle sportive premium ultra réaliste.\n\n' +
+'TEXTE PRINCIPAL (OBLIGATOIRE ET EXACT) :\n' +
+'- "COMBINÉ" (énorme texte 3D blanc chromé brillant, style métallique)\n' +
+'- "DISPONIBLE" (juste en dessous, néon orange lumineux)\n\n' +
+'ARRIÈRE-PLAN :\n' +
+'- Stade de football de nuit\n' +
+'- Projecteurs puissants avec lumière volumétrique\n' +
+'- Foule floue en arrière-plan\n' +
+'- Ambiance cinématographique orange et bleu\n' +
+'- Particules lumineuses et étincelles dynamiques\n\n' +
+'ZONE CENTRALE :\n' +
+'- Panneaux en verre translucide futuriste\n' +
+'- Afficher clairement les matchs suivants :\n' +
+detailsMatchs.trim() + '\n\n' +
+'STYLE VISUEL :\n' +
+'- Ultra réaliste\n- Qualité Unreal Engine 5\n- Design graphique professionnel\n- Typographie parfaite et lisible\n- Composition centrée et équilibrée\n\n' +
+'ZONE BASSE :\n' +
+'- Icône Instagram dégradé violet/orange\n' +
+'- Texte exact : "@scoremaster.fr" en blanc\n\n' +
+'FORMAT OBLIGATOIRE POUR CHAQUE MATCH :\n• Nom équipe vs Nom équipe (HHHMM)\n\n' +
+'CONTRAINTES STRICTES :\n- Une seule heure par match\n- Ne jamais répéter ou dupliquer l\'horaire\n- Ne pas afficher l\'heure sur une ligne séparée\n- Chaque match doit être sur UNE seule ligne\n- Aucun mot anglais visible sur l\'image\n- Toutes les inscriptions sont en français\n\n' +
+'RÈGLE STRICTE :\n- Afficher UNE SEULE FOIS l\'heure par match\n- Ne jamais dupliquer les horaires\n- Format obligatoire : Nom équipe vs Nom équipe (HHHMM)\n\n' +
+'--ar 9:16 --style raw --v 6';
+
+        output.insta =
+'🔥 COMBINÉ DISPONIBLE CE SOIR !\n' +
+'━━━━━━━━━━━━━━━━━━━━\n\n' +
+instaMatches + '\n' +
+'⏰ Début du premier match à ' + earliestFormatted + '\n\n' +
+'━━━━━━━━━━━━━━━━━━━━\n' +
+'👉 Lien en bio pour rejoindre le VIP+ et valider tes gains ! 💰🚀\n\n' +
+'📲 @scoremaster.fr';
+
+        output.telegram =
+'🎨 *PROMPT IA — POSTER PROMO :*\n' +
+'```\n' + output.prompt + '\n```\n\n' +
+'📝 *TEXTE INSTAGRAM / BIO :*\n' +
+'```\n' + output.insta + '\n```';
+
+        document.getElementById('pg-empty-state').style.display = 'none';
+        var ra = document.getElementById('pg-result-area');
+        ra.style.display = 'flex';
+        pgSwitchTab('prompt');
+    }
+
+    function pgSwitchTab(tab) {
+        window._pgActiveTab = tab;
+        ['prompt','insta','telegram'].forEach(function(t) {
+            var btn = document.getElementById('pg-tab-' + t);
+            if (!btn) return;
+            if (t === tab) {
+                btn.style.borderBottomColor = '#fb923c';
+                btn.style.color = '#fb923c';
+                btn.style.background = 'rgba(249,115,22,0.08)';
+            } else {
+                btn.style.borderBottomColor = 'transparent';
+                btn.style.color = '#6b7280';
+                btn.style.background = 'none';
+            }
+        });
+        var ot = document.getElementById('pg-output-text');
+        if (ot) ot.textContent = (window._pgOutput && window._pgOutput[tab]) ? window._pgOutput[tab] : '';
+        var cb = document.getElementById('pgBtnCopy');
+        if (cb) { cb.textContent = '📋 Copier'; cb.style.background = 'rgba(255,255,255,0.1)'; }
+    }
+
+    function pgCopyTab() {
+        var text = (window._pgOutput && window._pgOutput[window._pgActiveTab]) ? window._pgOutput[window._pgActiveTab] : '';
+        pgCopyText(text, function() {
+            var cb = document.getElementById('pgBtnCopy');
+            if (cb) { cb.textContent = '✅ Copié !'; cb.style.background = '#22c55e'; }
+            setTimeout(function() { 
+                if (cb) { cb.textContent = '📋 Copier'; cb.style.background = 'rgba(255,255,255,0.1)'; }
+            }, 2000);
+        });
+    }
+
+    function pgCopySection(section) {
+        var text = (window._pgOutput && window._pgOutput[section]) ? window._pgOutput[section] : '';
+        pgCopyText(text, function() { showToast('✅ Copié dans le presse-papiers !'); });
+    }
+
+    function pgCopyText(text, cb) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function() { showToast('✅ Copié !'); if(cb) cb(); }).catch(function() { pgFallbackCopy(text, cb); });
+        } else { pgFallbackCopy(text, cb); }
+    }
+
+    function pgFallbackCopy(text, cb) {
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.style.position = 'fixed'; ta.style.left = '-9999px';
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        try { document.execCommand('copy'); showToast('✅ Copié !'); if(cb) cb(); } catch(e) {}
+        document.body.removeChild(ta);
+    }
+
     // --- GESTION DU FORMULAIRE DE LA PAGE CONTACT (SÉCURISÉ VIA SUPABASE) ---
     function selectContactPagePref(type) {
         document.querySelectorAll('input[name="contact-page-pref"]').forEach(function(radio) {
@@ -3911,5 +4150,36 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
     }
 }
 </script>
+
+<!-- =====================================================
+     OVERLAY : GÉNÉRATEUR PROMPT IA
+     ===================================================== -->
+<div id="prompt-gen-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;flex-direction:column;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(8px);">
+    <!-- Header -->
+    <div style="border-bottom:1px solid rgba(249,115,22,0.3);background:rgba(0,0,0,0.5);padding:14px 20px;display:flex;align-items:center;gap:14px;flex-shrink:0;">
+        <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#f97316,#fbbf24);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 18px rgba(249,115,22,0.35);">⚽</div>
+        <div>
+            <div style="font-size:17px;font-weight:900;letter-spacing:-0.5px;color:#fff;">Score<span style="color:#fb923c;">Master</span></div>
+            <div style="font-size:11px;color:#6b7280;">Générateur de Prompt Promo IA</div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
+            <span style="padding:4px 10px;border-radius:99px;font-size:11px;font-weight:700;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.4);color:#4ade80;">✅ 100 % Français</span>
+            <span style="padding:4px 10px;border-radius:99px;font-size:11px;font-weight:700;background:rgba(249,115,22,0.15);border:1px solid rgba(249,115,22,0.4);color:#fb923c;">v2.1 Optimisé</span>
+            <button onclick="closePG()" style="margin-left:8px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+        </div>
+    </div>
+    <!-- Main content (rendered dynamically) -->
+    <div id="pg-main-content" style="flex:1;display:flex;overflow:hidden;"></div>
+    <!-- Footer -->
+    <div style="border-top:1px solid rgba(255,255,255,0.04);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#374151;flex-shrink:0;">
+        <span>@scoremaster.fr — Générateur Prompt v2.1</span>
+        <span>Optimisé pour Midjourney · DALL·E 3 · Adobe Firefly</span>
+    </div>
+</div>
+
+<style>
+#prompt-gen-overlay.visible { opacity: 1 !important; }
+</style>
+
 </body>
 </html>
