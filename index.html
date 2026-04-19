@@ -3793,23 +3793,30 @@ let quickEditCombinedId = null;
     }
 
    // ============================================================
-// 1. FONCTION PRINCIPALE DU GÉNÉRATEUR PROMO WEB APP (MODIFIÉE)
+// 1. GÉNÉRATEUR TELEGRAM VIRAL (CORRECTION AFFICHAGE)
 // ============================================================
 function renderPromoTelegramContent() {
-    var container = document.getElementById('promo-telegram-main-content');
+    // CORRECTION : On cible le bon ID (et on met une sécurité pour forcer l'affichage)
+    var container = document.getElementById('promo-telegram-content') || document.getElementById('telegram-content');
     
-    // Si tu as un sidebar pour cette section (ou s'il n'existe pas, on gère l'affichage principal)
+    // Si jamais l'ID est introuvable, on force la recherche dans l'overlay
     if (!container) {
-        // Fallback au cas où l'ID serait différent dans ton HTML (par ex promo-webapp-main-content)
-        container = document.getElementById('promo-webapp-main-content') || document.querySelector('.promo-content-area');
+        var overlay = document.getElementById('promo-telegram-overlay');
+        if (overlay && overlay.children.length > 1) {
+            container = overlay.children[1]; // Cible la zone de contenu sous l'en-tête
+        }
     }
-    if (!container) return;
+
+    if (!container) {
+        console.error("Impossible de trouver le conteneur pour Telegram !");
+        return;
+    }
 
     // --- ÉTAPE A : ÉTAT DU GÉNÉRATEUR ---
     var htmlStatut = `
         <div style="background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); border-radius:10px; padding:10px 14px; font-size:12px; color:#4ade80; display:flex; align-items:center; gap:8px; flex-shrink:0; margin-bottom: 20px;">
             <i class="fas fa-bullhorn" style="font-size:12px; animation:pulse 2s infinite;"></i>
-            🛠️ 20 Textes Viraux & Prompts IA disponibles — Aucun token Make.com requis
+            🛠️ 20 Textes Viraux & Prompts IA disponibles — Aucun token requis
         </div>
         <div style="font-size:11px;color:#6b7280;line-height:1.6;padding:2px; margin-bottom: 20px; flex-shrink:0;">
             📣 <strong style="color:#fff;">Mode d'emploi :</strong> Choisissez votre angle d'attaque. Copiez le texte pour Telegram, puis générez l'image d'illustration avec le bouton <strong style="color:#c084fc;">🖼️ Prompt IA</strong> !
@@ -3930,7 +3937,7 @@ function renderPromoTelegramContent() {
 
     window._promoWebAppTexts = viralPromoContent; 
 
-    // --- ÉTAPE C : CONSTRUCTION DU CONTENU DES 20 CARTES ---
+    // --- ÉTAPE C : CONSTRUCTION DU CONTENU DES CARTES ---
     var htmlCartes = `<div style="display:flex;flex-direction:column;gap:12px;">`;
 
     viralPromoContent.forEach(function(e, i) {
@@ -3954,7 +3961,7 @@ function renderPromoTelegramContent() {
                 <div style="padding:4px 0;">
                     <button id="btn-copy-promo-prompt-${i}" onclick="copyPromoPrompt(${i})" 
                         style="width:100%;padding:8px;border-radius:10px;border:1px solid rgba(168,85,247,0.5);background:none;color:#c084fc;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px; transition:all 0.2s; flex-shrink:0;">
-                        🖼️ Copier le Prompt IA associé (Midjourney / DALL-E)
+                        🖼️ Copier le Prompt IA (Midjourney / DALL-E)
                     </button>
                 </div>
                 
