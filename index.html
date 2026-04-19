@@ -1724,11 +1724,6 @@ var response = await fetch(TARGET_URL, {
                 </div>
             </button>`;
 
-            setTimeout(function() {
-                fetchTeamLogo(home).then(function(url) {
-                    var el = document.getElementById('lh-' + btnId);
-                    if (el && url) { el.src = url; el.style.display = 'inline-block'; }
-                });
                 fetchTeamLogo(away).then(function(url) {
                     var el = document.getElementById('la-' + btnId);
                     if (el && url) { el.src = url; el.style.display = 'inline-block'; }
