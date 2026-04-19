@@ -616,7 +616,7 @@
         // 1. Préparation de la liste des matchs
         let matchLines = "";
         if (c.matches && c.matches.length > 0) {
-            c.matches.forEach(m => { var fl = (m.logo && m.logo.length <= 4) ? m.logo + ' ' : '⚽️ '; matchLines += fl + m.teams + '\n'; });
+            c.matches.forEach(m => { matchLines += `⚽️ ${m.teams}\n`; });
         } else {
             matchLines = "⚽️ Matchs confidentiels\n";
         }
@@ -1713,47 +1713,59 @@ var response = await fetch(TARGET_URL, {
             var country = (m.tournament && m.tournament.category && m.tournament.category.name) ? m.tournament.category.name.toLowerCase() : '';
             var tournament = (m.tournament && m.tournament.name) ? m.tournament.name.toLowerCase() : '';
             var c = country + ' ' + tournament;
-            if (c.includes('england') || c.includes('premier league') || c.includes('championship') || c.includes('fa cup')) return '🏴';
-            if (c.includes('france') || c.includes('ligue 1') || c.includes('ligue 2') || c.includes('coupe de france')) return '🇫🇷';
-            if (c.includes('spain') || c.includes('espa') || c.includes('laliga') || c.includes('la liga') || c.includes('copa del rey')) return '🇪🇸';
-            if (c.includes('germany') || c.includes('deutschland') || c.includes('bundesliga') || c.includes('dfb')) return '🇩🇪';
-            if (c.includes('italy') || c.includes('italia') || c.includes('serie a') || c.includes('serie b') || c.includes('coppa italia')) return '🇮🇹';
-            if (c.includes('portugal') || c.includes('liga nos') || c.includes('primeira liga')) return '🇵🇹';
-            if (c.includes('netherlands') || c.includes('holland') || c.includes('eredivisie')) return '🇳🇱';
-            if (c.includes('belgium') || c.includes('belgique') || c.includes('jupiler') || c.includes('pro league')) return '🇧🇪';
-            if (c.includes('turkey') || c.includes('turquie') || c.includes('super lig')) return '🇹🇷';
-            if (c.includes('russia') || c.includes('russie') || c.includes('premier liga')) return '🇷🇺';
-            if (c.includes('argentina') || c.includes('argentine') || c.includes('liga profesional')) return '🇦🇷';
-            if (c.includes('brazil') || c.includes('brasil') || c.includes('brasileirao')) return '🇧🇷';
-            if (c.includes('usa') || c.includes('mls') || c.includes('united states')) return '🇺🇸';
-            if (c.includes('mexico') || c.includes('mexique') || c.includes('liga mx')) return '🇲🇽';
-            if (c.includes('colombia') || c.includes('liga betplay')) return '🇨🇴';
-            if (c.includes('chile') || c.includes('primera division chile')) return '🇨🇱';
-            if (c.includes('japan') || c.includes('j-league') || c.includes('j league') || c.includes('j1')) return '🇯🇵';
-            if (c.includes('south korea') || c.includes('k league')) return '🇰🇷';
-            if (c.includes('saudi') || c.includes('arabie') || c.includes('roshn')) return '🇸🇦';
-            if (c.includes('morocco') || c.includes('maroc') || c.includes('botola')) return '🇲🇦';
-            if (c.includes('egypt') || c.includes('égypte') || c.includes('egyptian premier')) return '🇪🇬';
-            if (c.includes('australia') || c.includes('a-league')) return '🇦🇺';
-            if (c.includes('scotland') || c.includes('scottish premiership')) return '🏴';
-            if (c.includes('champions league') || c.includes('europa league') || c.includes('conference league') || c.includes('uefa')) return '🇪🇺';
-            if (c.includes('world cup') || c.includes('coupe du monde')) return '🌍';
-            if (c.includes('greece') || c.includes('super league greece')) return '🇬🇷';
-            if (c.includes('poland') || c.includes('pologne') || c.includes('ekstraklasa')) return '🇵🇱';
-            if (c.includes('serbia') || c.includes('serbie')) return '🇷🇸';
-            if (c.includes('croatia') || c.includes('croatie') || c.includes('hnl')) return '🇭🇷';
-            if (c.includes('austria') || c.includes('autriche')) return '🇦🇹';
-            if (c.includes('switzerland') || c.includes('suisse')) return '🇨🇭';
-            if (c.includes('sweden') || c.includes('allsvenskan')) return '🇸🇪';
-            if (c.includes('norway') || c.includes('eliteserien')) return '🇳🇴';
-            if (c.includes('denmark') || c.includes('danemark')) return '🇩🇰';
-            if (c.includes('israel') || c.includes('israël')) return '🇮🇱';
-            if (c.includes('ukraine') || c.includes('ukrainian')) return '🇺🇦';
-            if (c.includes('hungary') || c.includes('hongrie')) return '🇭🇺';
-            if (c.includes('czech') || c.includes('tchèque')) return '🇨🇿';
-            if (c.includes('romania') || c.includes('roumanie')) return '🇷🇴';
-            if (c.includes('slovakia') || c.includes('slovaquie')) return '🇸🇰';
-            return '⚽';
+            // Retourne un code pays ISO 2 lettres pour flagcdn.com
+            var code = null;
+            if (c.includes('england') || c.includes('premier league') || c.includes('championship') || c.includes('fa cup')) code = 'gb-eng';
+            else if (c.includes('scotland') || c.includes('scottish')) code = 'gb-sct';
+            else if (c.includes('france') || c.includes('ligue 1') || c.includes('ligue 2') || c.includes('coupe de france')) code = 'fr';
+            else if (c.includes('spain') || c.includes('espa') || c.includes('laliga') || c.includes('la liga') || c.includes('copa del rey')) code = 'es';
+            else if (c.includes('germany') || c.includes('deutschland') || c.includes('bundesliga') || c.includes('dfb')) code = 'de';
+            else if (c.includes('italy') || c.includes('italia') || c.includes('serie a') || c.includes('coppa italia')) code = 'it';
+            else if (c.includes('portugal') || c.includes('primeira liga') || c.includes('liga nos')) code = 'pt';
+            else if (c.includes('netherlands') || c.includes('holland') || c.includes('eredivisie')) code = 'nl';
+            else if (c.includes('belgium') || c.includes('belgique') || c.includes('jupiler')) code = 'be';
+            else if (c.includes('turkey') || c.includes('turquie') || c.includes('super lig')) code = 'tr';
+            else if (c.includes('russia') || c.includes('russie') || c.includes('premier liga')) code = 'ru';
+            else if (c.includes('argentina') || c.includes('argentine') || c.includes('liga profesional')) code = 'ar';
+            else if (c.includes('brazil') || c.includes('brasil') || c.includes('brasileirao')) code = 'br';
+            else if (c.includes('usa') || c.includes('mls') || c.includes('united states')) code = 'us';
+            else if (c.includes('mexico') || c.includes('mexique') || c.includes('liga mx')) code = 'mx';
+            else if (c.includes('colombia') || c.includes('liga betplay')) code = 'co';
+            else if (c.includes('chile')) code = 'cl';
+            else if (c.includes('japan') || c.includes('j-league') || c.includes('j1 league')) code = 'jp';
+            else if (c.includes('south korea') || c.includes('k league')) code = 'kr';
+            else if (c.includes('saudi') || c.includes('arabie') || c.includes('roshn')) code = 'sa';
+            else if (c.includes('morocco') || c.includes('maroc') || c.includes('botola')) code = 'ma';
+            else if (c.includes('egypt') || c.includes('egyptian')) code = 'eg';
+            else if (c.includes('australia') || c.includes('a-league')) code = 'au';
+            else if (c.includes('champions league') || c.includes('europa league') || c.includes('conference league') || c.includes('uefa')) code = 'eu';
+            else if (c.includes('greece') || c.includes('super league greece')) code = 'gr';
+            else if (c.includes('poland') || c.includes('pologne') || c.includes('ekstraklasa')) code = 'pl';
+            else if (c.includes('serbia') || c.includes('serbie')) code = 'rs';
+            else if (c.includes('croatia') || c.includes('croatie') || c.includes('hnl')) code = 'hr';
+            else if (c.includes('austria') || c.includes('autriche')) code = 'at';
+            else if (c.includes('switzerland') || c.includes('suisse')) code = 'ch';
+            else if (c.includes('sweden') || c.includes('allsvenskan')) code = 'se';
+            else if (c.includes('norway') || c.includes('eliteserien')) code = 'no';
+            else if (c.includes('denmark') || c.includes('danemark') || c.includes('superliga')) code = 'dk';
+            else if (c.includes('israel')) code = 'il';
+            else if (c.includes('ukraine') || c.includes('ukrainian')) code = 'ua';
+            else if (c.includes('hungary') || c.includes('hongrie')) code = 'hu';
+            else if (c.includes('czech') || c.includes('tchèque')) code = 'cz';
+            else if (c.includes('romania') || c.includes('roumanie')) code = 'ro';
+            else if (c.includes('slovakia') || c.includes('slovaquie')) code = 'sk';
+            else if (c.includes('nigeria') || c.includes('npfl')) code = 'ng';
+            else if (c.includes('china') || c.includes('chine') || c.includes('chinese super')) code = 'cn';
+            else if (c.includes('venezuela')) code = 've';
+            else if (c.includes('peru') || c.includes('pérou')) code = 'pe';
+            else if (c.includes('ecuador') || c.includes('équateur')) code = 'ec';
+            else if (c.includes('paraguay')) code = 'py';
+            else if (c.includes('uruguay')) code = 'uy';
+            else if (c.includes('bolivia')) code = 'bo';
+            if (code) {
+                return '<img src="https://flagcdn.com/20x15/' + code + '.png" style="width:20px;height:15px;object-fit:cover;border-radius:2px;flex-shrink:0;" onerror="this.style.display=&quot;none&quot;">';
+            }
+            return '<span style="font-size:14px;">⚽</span>';
         }
 
         matches.forEach(function(m) {
@@ -1773,7 +1785,7 @@ var response = await fetch(TARGET_URL, {
             <button type="button" id="${btnId}" onclick="addMatchFromAPI('${fullMatchName.replace(/'/g, "\\'")}', '${timeStr}', '')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer;">
                 <div style="font-size:13px; font-weight:600; display:flex; align-items:center; gap:5px;">
                     <span style="color:var(--primary-yellow); width:45px; flex-shrink:0;"><i class="fas fa-clock"></i> ${timeStr}</span>
-                    <span style="font-size:16px; flex-shrink:0;">${flag}</span>
+                    <span style="flex-shrink:0; display:inline-flex; align-items:center;">${flag}</span>
                     <span>${home}</span>
                     <span style="color:var(--text-gray);">-</span>
                     <span>${away}</span>
@@ -2117,7 +2129,7 @@ async function fetchAndRenderLiveScores(matches) {
         const homeLogoUrl = await fetchTeamLogo(homeTeamStr);
         const awayLogoUrl = await fetchTeamLogo(awayTeamStr);
 
-        const defaultShield = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-size:28px;">⚽</div>`;
+        const defaultShield = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:50%;border:1px solid var(--border-color);"><i class="fas fa-shield-alt" style="font-size:18px;color:var(--text-gray);"></i></div>`;
         const homeLogoTag = homeLogoUrl ? `<img src="${homeLogoUrl}" style="width:40px; height:40px; object-fit:contain; margin-bottom:8px;" crossorigin="anonymous">` : defaultShield;
         const awayLogoTag = awayLogoUrl ? `<img src="${awayLogoUrl}" style="width:40px; height:40px; object-fit:contain; margin-bottom:8px;" crossorigin="anonymous">` : defaultShield;
 
@@ -2211,7 +2223,7 @@ async function autoFetchFinalScores(combined) {
         const homeLogoUrl = await fetchTeamLogo(homeTeamStr);
         const awayLogoUrl = await fetchTeamLogo(awayTeamStr);
 
-        const defaultShield = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-size:28px;">⚽</div>`;
+        const defaultShield = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:50%;border:1px solid var(--border-color);"><i class="fas fa-shield-alt" style="font-size:18px;color:var(--text-gray);"></i></div>`;
         const homeLogoTag = homeLogoUrl ? `<img src="${homeLogoUrl}" style="width:40px; height:40px; object-fit:contain; margin-bottom:8px;" crossorigin="anonymous">` : defaultShield;
         const awayLogoTag = awayLogoUrl ? `<img src="${awayLogoUrl}" style="width:40px; height:40px; object-fit:contain; margin-bottom:8px;" crossorigin="anonymous">` : defaultShield;
 
@@ -2311,7 +2323,7 @@ async function autoFetchFinalScores(combined) {
 
         if(c.matches && c.matches.length > 0) {
             c.matches.forEach((m, index) => {
-                let logoDisplay = (m.logo && m.logo.length > 4) ? `<img src="${m.logo}" style="width:18px;height:18px;object-fit:contain;margin-right:8px;vertical-align:middle;">` : `<span style="margin-right:6px;font-size:15px;">${m.logo || "⚽"}</span>`;
+                let logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:18px;height:18px;object-fit:contain;margin-right:8px;vertical-align:middle;">` : `<span style="margin-right:6px;">⚽</span>`);
                 let currentOdds = m.odds ? m.odds.toFixed(2) : '0.00';
                 
                 // J'ajoute le champ "Cote finale" et un événement "oninput" pour recalculer le total
@@ -2612,7 +2624,7 @@ async function autoFetchFinalScores(combined) {
         else if (date === tomorrow.toISOString().split('T')[0]) dayContext = "demain";
 
         let matchLines = "";
-        matches.forEach(m => { var fl = (m.logo && m.logo.length <= 4) ? m.logo + ' ' : '⚽️ '; matchLines += fl + m.teams + '\n'; });
+        matches.forEach(m => { matchLines += `⚽️ ${m.teams}\n`; });
 
             const intros = [
             "Salut l’équipe ! 🔥 L'analyse est tombée. Le nouveau combiné est officiellement disponible dans votre espace VIP+.",
@@ -2764,7 +2776,7 @@ function renderHistory() {
                 var mStatus = m.match_status || (sc === 'en-cours' ? 'en-cours' : sc);
                 var scoreColor = mStatus === 'termine' ? 'var(--green)' : (mStatus === 'perdu' ? 'var(--red)' : 'var(--text-white)');
                 
-                var logoDisplay = (m.logo && m.logo.length > 4) ? `<img src="${m.logo}" style="width:12px;height:12px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<span style="margin-right:4px;font-size:14px;">${m.logo || "⚽"}</span>`;
+                var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:12px;height:12px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<span style="margin-right:4px;">⚽</span>`);
                 
                 matchesHtml += `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; align-items:center;">
                     <span style="color:var(--text-light-gray);">${logoDisplay}${m.teams || 'Équipes'}</span>
@@ -2812,7 +2824,7 @@ function renderAdminHistory() {
         if (c.matches && c.matches.length > 0) {
             matchesDetailsHtml = '<div style="margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px;">';
             c.matches.forEach(m => {
-                let logoImg = (m.logo && m.logo.length > 4) ? `<img src="${m.logo}" style="width:14px; height:14px; object-fit:contain; border-radius:2px; margin-right:6px; vertical-align:middle;" crossorigin="anonymous">` : `<span style="margin-right:4px;font-size:14px;">${m.logo || "⚽"}</span>`;
+                let logoImg = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<span style="margin-right:4px;">⚽</span>`);
                 
                 let scoreDisplay = '';
                 if (c.status === 'termine' || c.status === 'perdu') {
@@ -3012,7 +3024,7 @@ function renderAdminHistory() {
         if (c.matches && c.matches.length > 0) {
             matchesDetailsHtml = '<div style="margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px;">';
             c.matches.forEach(m => {
-                let logoImg = (m.logo && m.logo.length > 4) ? `<img src="${m.logo}" style="width:14px; height:14px; object-fit:contain; border-radius:2px; margin-right:6px; vertical-align:middle;" crossorigin="anonymous">` : `<span style="margin-right:4px;font-size:14px;">${m.logo || "⚽"}</span>`;
+                let logoImg = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<span style="margin-right:4px;">⚽</span>`);
                 
                 let scoreDisplay = '';
                 if (c.status === 'termine' || c.status === 'perdu') {
@@ -3221,7 +3233,7 @@ ${aiPrompt}
             var displayOdds = isHomeObscured ? '**.**' : m.odds.toFixed(2);
             
             var blurClass = (isHomeObscured || isVipObscured) ? 'blurred-value' : '';
-            var logoDisplay = (m.logo && m.logo.length > 4) ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;" crossorigin="anonymous">` : `<span style="margin-right:4px;font-size:14px;">${m.logo || "⚽"}</span>`;
+            var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<span style="margin-right:4px;">⚽</span>`);
             
             let cleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : "--:--";
             let finalTimeDisplay = smartPrefix + (cleanTime ? cleanTime[0] : "");
@@ -3484,7 +3496,7 @@ let quickEditCombinedId = null;
 
         if(c.matches && c.matches.length > 0) {
             c.matches.forEach((m, index) => {
-                let logoDisplay = (m.logo && m.logo.length > 4) ? `<img src="${m.logo}" style="width:18px;height:18px;object-fit:contain;margin-right:8px;vertical-align:middle;" crossorigin="anonymous">` : `<span style="margin-right:6px;font-size:15px;">${m.logo || "⚽"}</span>`;
+                let logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:18px;height:18px;object-fit:contain;margin-right:8px;vertical-align:middle;">` : `<span style="margin-right:6px;">⚽</span>`);
                 let currentOdds = m.odds ? m.odds.toFixed(2) : '0.00';
                 
                 let matchHtml = `
