@@ -3022,7 +3022,6 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
         });
     }
 }
-}
     
     // ============================================================
 // AFFICHAGE DE L'HISTORIQUE ADMIN (AVEC BOUTON VICTOIRE TELEGRAM)
@@ -3222,7 +3221,6 @@ ${aiPrompt}
         });
     }
 }
-    }
 
     function buildCC(c, sc, sl, pw, isHome) {
         var mH = '';
@@ -3745,11 +3743,11 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
     let telegramText = `\`\`\`\n${aiPrompt}\n\`\`\``;
 
     if (confirm("Générer et envoyer le prompt IA Premium sur Telegram ?")) {
-        sendAdminTelegram(telegramText).then(() => {
-            showToast("Prompt IA envoyé ! 🎨");
-        });
+            sendAdminTelegram(telegramText).then(() => {
+                showToast("Prompt IA envoyé ! 🎨");
+            });
+        }
     }
-}
 </script>
 </body>
 </html>
