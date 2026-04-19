@@ -4808,6 +4808,9 @@ function closeInstaTexts() {
     setTimeout(() => overlay.style.display = 'none', 300);
 }
 
+// ============================================================
+// TEXTES STORY INSTAGRAM & ANNONCES TELEGRAM
+// ============================================================
 function renderInstaTexts() {
     var container = document.getElementById('insta-texts-content');
     if (!container) return;
@@ -4840,9 +4843,31 @@ function renderInstaTexts() {
         }
     }
 
+    // Signature automatique pour Telegram
+    var contactSignature = "\n\n🌐 Site Web : https://scoremaster.fr/\n➡️ Telegram : @ScoreMasterOfficiel";
+
     var texts = [
-        // --- NOUVELLE RUBRIQUE : 20 MESSAGES PRÉSENTATION COMBINÉ ---
-        { label: '📢 Lancement Combiné (20 Accroches VIP+)', color: '#ec4899', items: [
+        // --- NOUVELLE RUBRIQUE : 15 MESSAGES TELEGRAM ---
+        { label: '✈️ Messages Telegram (Annonce Combiné)', color: '#0ea5e9', items: [
+            `Le nouveau combiné est dispo. C'est l'heure de passer au niveau supérieur. Vous savez où le trouver. 👑` + contactSignature,
+            `L'algorithme a parlé 🤖\nLe ticket parfait est en ligne dans votre espace Score Master.\n👉 Go valider ça !` + contactSignature,
+            `Cotes analysées. Matchs validés ✅\nLe combiné de ce soir vous attend sur le VIP+ ⚡️` + contactSignature,
+            `🚨 ALERTE PUBLICATION !\nLe combiné exclusif est dispo. Validez-le avant que les cotes ne chutent 📉` + contactSignature,
+            `On ne parie pas au hasard 🧬\nLe nouveau ticket VIP+ est disponible. À vous de jouer 💸` + contactSignature,
+            `Le travail est fait 💼\nLe combiné est en ligne sur l'espace SM VIP+. Ne perdez pas de temps !` + contactSignature,
+            `Les experts ont tranché ⚔️\nLe combiné du jour est publié dans l'Espace VIP+.` + contactSignature,
+            `Nouveau combiné dispo ! 🔥\nConnectez-vous à votre espace VIP+ et encaissez avec nous ce soir.` + contactSignature,
+            `Le verdict est tombé 🏛️\nLe ticket combiné est prêt sur votre espace membre SM VIP+.` + contactSignature,
+            `C'est l'heure ⏳\nLe combiné SM VIP+ est officiel et publié. Ne laissez pas passer l'occasion !` + contactSignature,
+            `L'analyse parfaite existe 🎯\nElle est dispo dès maintenant sur votre espace VIP+.` + contactSignature,
+            `Ticket du soir : PUBLIÉ ✅\nFoncez sur l'espace SM VIP+ avant le coup d'envoi à ${earliestTime} !` + contactSignature,
+            `Pas d'émotion, que des stats 📊\nLe combiné validé par l'IA est sur l'espace membre.` + contactSignature,
+            `Le choc ${teamsString} est dans notre combiné VIP+ 🔥\nDisponible tout de suite sur votre espace !` + contactSignature,
+            `Faites partie de l'élite 👑\nLe ticket Score Master est en ligne. C'est maintenant ou jamais !` + contactSignature
+        ]},
+
+        // --- RUBRIQUE 2 : 20 MESSAGES PRÉSENTATION COMBINÉ (INSTA) ---
+        { label: '📢 Lancement Combiné (Accroches Insta VIP+)', color: '#ec4899', items: [
             `Le combiné est DISPO sur votre espace SM VIP+ 👑\nC'est maintenant qu'il faut parier ! 👇\n👉 Lien en bio`,
             `L'algorithme a parlé 🤖\nLe ticket parfait est en ligne dans votre espace Score Master.\n👉 Go valider ça !`,
             `Cotes analysées. Matchs validés ✅\nLe combiné de ce soir vous attend sur le VIP+ ⚡️`,
@@ -4893,7 +4918,7 @@ function renderInstaTexts() {
             ${activeCombined ? 'Combiné EN COURS détecté — textes ultra-optimisés' : 'Aucun combiné — textes génériques'}
         </div>
         <div style="font-size:11px;color:#6b7280;line-height:1.6;padding:2px; margin-bottom: 12px;">
-            📱 <strong style="color:#fff;">Astuce :</strong> Copiez une des 20 accroches de présentation pour accompagner la publication de votre ticket sur le Feed ou en Story !
+            📱 <strong style="color:#fff;">Astuce :</strong> Copiez une accroche Telegram pré-formatée ou une phrase pour accompagner votre Story Instagram !
         </div>
         <div style="display:flex;flex-direction:column;gap:16px;">`;
 
@@ -4908,11 +4933,15 @@ function renderInstaTexts() {
 
         section.items.forEach(function(txt, ti) {
             var btnId = 'btn-insta-' + si + '-' + ti;
+            
+            // On adapte la couleur du texte du bouton selon la section pour rester lisible
+            let btnTextColor = (si === 0 || si === 1 || si === 5) ? '#fff' : '#000'; 
+
             html += `
                 <div style="background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;">
                     <div style="font-size:13px;color:#f9fafb;line-height:1.8;white-space:pre-wrap;">${txt}</div>
                     <button id="${btnId}" onclick="copyInstaText(${si},${ti})" 
-                        style="width:100%;padding:10px;border-radius:10px;border:none;background:${section.color};color:${(si === 3 || si === 0) ? '#fff' : '#000'};font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s;">
+                        style="width:100%;padding:10px;border-radius:10px;border:none;background:${section.color};color:${btnTextColor};font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s;">
                         📋 Copier ce texte
                     </button>
                 </div>`;
