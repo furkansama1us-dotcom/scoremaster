@@ -1708,11 +1708,60 @@ var response = await fetch(TARGET_URL, {
         var matchesHtml = '<div style="background:#2A2A2A; padding:10px; border-radius:8px; margin-bottom:10px; max-height:300px; overflow-y:auto;">';
         matchesHtml += `<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px; display:flex; justify-content:space-between;"><span>Matchs trouvés (${matches.length})</span><span style="color:var(--primary-yellow); cursor:pointer;" onclick="document.getElementById('api-matches-container').innerHTML=''">Fermer</span></div>`;
         
+        // Fonction pour obtenir le drapeau emoji selon le pays/ligue
+        function getLeagueFlag(m) {
+            var country = (m.tournament && m.tournament.category && m.tournament.category.name) ? m.tournament.category.name.toLowerCase() : '';
+            var tournament = (m.tournament && m.tournament.name) ? m.tournament.name.toLowerCase() : '';
+            var c = country + ' ' + tournament;
+            if (c.includes('england') || c.includes('premier league') || c.includes('championship') || c.includes('fa cup')) return '🏴';
+            if (c.includes('france') || c.includes('ligue 1') || c.includes('ligue 2') || c.includes('coupe de france')) return '🇫🇷';
+            if (c.includes('spain') || c.includes('espa') || c.includes('laliga') || c.includes('la liga') || c.includes('copa del rey')) return '🇪🇸';
+            if (c.includes('germany') || c.includes('deutschland') || c.includes('bundesliga') || c.includes('dfb')) return '🇩🇪';
+            if (c.includes('italy') || c.includes('italia') || c.includes('serie a') || c.includes('serie b') || c.includes('coppa italia')) return '🇮🇹';
+            if (c.includes('portugal') || c.includes('liga nos') || c.includes('primeira liga')) return '🇵🇹';
+            if (c.includes('netherlands') || c.includes('holland') || c.includes('eredivisie')) return '🇳🇱';
+            if (c.includes('belgium') || c.includes('belgique') || c.includes('jupiler') || c.includes('pro league')) return '🇧🇪';
+            if (c.includes('turkey') || c.includes('turquie') || c.includes('super lig')) return '🇹🇷';
+            if (c.includes('russia') || c.includes('russie') || c.includes('premier liga')) return '🇷🇺';
+            if (c.includes('argentina') || c.includes('argentine') || c.includes('liga profesional')) return '🇦🇷';
+            if (c.includes('brazil') || c.includes('brasil') || c.includes('brasileirao')) return '🇧🇷';
+            if (c.includes('usa') || c.includes('mls') || c.includes('united states')) return '🇺🇸';
+            if (c.includes('mexico') || c.includes('mexique') || c.includes('liga mx')) return '🇲🇽';
+            if (c.includes('colombia') || c.includes('liga betplay')) return '🇨🇴';
+            if (c.includes('chile') || c.includes('primera division chile')) return '🇨🇱';
+            if (c.includes('japan') || c.includes('j-league') || c.includes('j league') || c.includes('j1')) return '🇯🇵';
+            if (c.includes('south korea') || c.includes('k league')) return '🇰🇷';
+            if (c.includes('saudi') || c.includes('arabie') || c.includes('roshn')) return '🇸🇦';
+            if (c.includes('morocco') || c.includes('maroc') || c.includes('botola')) return '🇲🇦';
+            if (c.includes('egypt') || c.includes('égypte') || c.includes('egyptian premier')) return '🇪🇬';
+            if (c.includes('australia') || c.includes('a-league')) return '🇦🇺';
+            if (c.includes('scotland') || c.includes('scottish premiership')) return '🏴';
+            if (c.includes('champions league') || c.includes('europa league') || c.includes('conference league') || c.includes('uefa')) return '🇪🇺';
+            if (c.includes('world cup') || c.includes('coupe du monde')) return '🌍';
+            if (c.includes('greece') || c.includes('super league greece')) return '🇬🇷';
+            if (c.includes('poland') || c.includes('pologne') || c.includes('ekstraklasa')) return '🇵🇱';
+            if (c.includes('serbia') || c.includes('serbie')) return '🇷🇸';
+            if (c.includes('croatia') || c.includes('croatie') || c.includes('hnl')) return '🇭🇷';
+            if (c.includes('austria') || c.includes('autriche')) return '🇦🇹';
+            if (c.includes('switzerland') || c.includes('suisse')) return '🇨🇭';
+            if (c.includes('sweden') || c.includes('allsvenskan')) return '🇸🇪';
+            if (c.includes('norway') || c.includes('eliteserien')) return '🇳🇴';
+            if (c.includes('denmark') || c.includes('danemark')) return '🇩🇰';
+            if (c.includes('israel') || c.includes('israël')) return '🇮🇱';
+            if (c.includes('ukraine') || c.includes('ukrainian')) return '🇺🇦';
+            if (c.includes('hungary') || c.includes('hongrie')) return '🇭🇺';
+            if (c.includes('czech') || c.includes('tchèque')) return '🇨🇿';
+            if (c.includes('romania') || c.includes('roumanie')) return '🇷🇴';
+            if (c.includes('slovakia') || c.includes('slovaquie')) return '🇸🇰';
+            return '⚽';
+        }
+
         matches.forEach(function(m) {
             var home = m.homeTeam?.name || m.home_name || m.home || "Domicile";
             var away = m.awayTeam?.name || m.away_name || m.away || "Extérieur";
             var fullMatchName = `${home} - ${away}`;
             var btnId = 'mb-' + Math.random().toString(36).substr(2, 8);
+            var flag = getLeagueFlag(m);
 
             var timeStr = "18:00";
             if (m.startTimestamp) {
@@ -1724,11 +1773,10 @@ var response = await fetch(TARGET_URL, {
             <button type="button" id="${btnId}" onclick="addMatchFromAPI('${fullMatchName.replace(/'/g, "\\'")}', '${timeStr}', '')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer;">
                 <div style="font-size:13px; font-weight:600; display:flex; align-items:center; gap:5px;">
                     <span style="color:var(--primary-yellow); width:45px; flex-shrink:0;"><i class="fas fa-clock"></i> ${timeStr}</span>
-                    <span style="width:20px;height:20px;border-radius:4px;background:linear-gradient(135deg,#FFD700,#E6C200);display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;color:#000;flex-shrink:0;">${home.substr(0,2).toUpperCase()}</span>
-<span>${home}</span>
-<span style="color:var(--text-gray);">-</span>
-<span style="width:20px;height:20px;border-radius:4px;background:linear-gradient(135deg,#4A90D9,#2E6AAD);display:inline-flex;align-items:center;justify-content:center;font-size:8px;font-weight:900;color:#fff;flex-shrink:0;">${away.substr(0,2).toUpperCase()}</span>
-<span>${away}</span>
+                    <span style="font-size:16px; flex-shrink:0;">${flag}</span>
+                    <span>${home}</span>
+                    <span style="color:var(--text-gray);">-</span>
+                    <span>${away}</span>
                 </div>
             </button>`;
         });
