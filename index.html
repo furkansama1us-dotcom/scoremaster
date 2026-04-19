@@ -22,6 +22,36 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
     <style>
+/* Styles pour le Générateur d'Écussons */
+.ecussons-modal {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+    z-index: 10002; display: none; flex-direction: column;
+    animation: fadeIn 0.3s ease;
+}
+.ecussons-content {
+    flex: 1; overflow-y: auto; padding: 20px;
+}
+.team-crest-card {
+    background: #1a1a1a; border: 1px solid #333; border-radius: 16px;
+    padding: 20px; margin-bottom: 20px;
+}
+.team-name-title {
+    color: var(--primary-yellow); font-size: 18px; font-weight: 800;
+    margin-bottom: 15px; display: flex; align-items: center; gap: 10px;
+}
+.prompt-box {
+    background: #0d0d0d; border-radius: 10px; padding: 12px;
+    font-size: 12px; color: #ccc; font-family: monospace;
+    margin-bottom: 10px; border: 1px solid #222;
+    white-space: pre-wrap; word-break: break-all;
+}
+.copy-badge-btn {
+    width: 100%; padding: 10px; border-radius: 8px; border: none;
+    font-weight: 700; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; gap: 8px;
+    margin-bottom: 8px; transition: all 0.2s;
+}
+        
         .combined-card { display: flex; flex-direction: column; }
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
         
@@ -4648,6 +4678,64 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
         });
     }
 }
+    // --- GÉNÉRATEUR ÉCUSSONS FILTRÉ SUR LE COMBINÉ ---
+function openEcussonsTool(id) {
+    const c = allCombineds.find(x => x.id == id);
+    if (!c || !c.matches) return;
+
+    const container = document.getElementById('ecussons-list-container');
+    container.innerHTML = '';
+
+    // Extraction des noms d'équipes uniques du combiné
+    let teams = [];
+    c.matches.forEach(m => {
+        let parts = m.teams.split(' - ');
+        parts.forEach(t => { if(t.trim()) teams.push(t.trim()); });
+    });
+
+    teams.forEach((team, index) => {
+        const promptImg = `A luxurious 3D metallic chrome football crest of ${team}. The crest is placed on a dark carbon fiber texture background. Dramatic studio lighting with golden rim light. 8k resolution, photorealistic, highly detailed, octane render.`;
+        
+        const promptVid = `[0s – 3.5s] INTRODUCTION — L'écusson de ${team} apparaît au centre d'un stade plongé dans le noir. Des particules dorées flottent. La caméra fait un zoom avant lent et majestueux.\n\n[3.5s – 7s] DÉTAILS — Gros plan macro sur les textures métalliques et les reflets du logo. Des éclairs de lumière balaient la surface.\n\n[7s – 8s] CLÔTURE — Fondu vers le noir progressif.\n\nSTYLE : Cinématique luxe, 4K, Unreal Engine 5 render.`;
+
+        container.innerHTML += `
+            <div class="team-crest-card">
+                <div class="team-name-title">🛡️ ${team}</div>
+                
+                <div style="color:#888; font-size:11px; margin-bottom:5px; text-transform:uppercase; font-weight:700;">Prompt Image (Midjourney/Flux)</div>
+                <div class="prompt-box" id="p-img-${index}">${promptImg}</div>
+                <button class="copy-badge-btn" style="background:#333; color:#fff;" onclick="copyToClipboard('${promptImg}', this)">
+                    <i class="far fa-copy"></i> Copier Prompt Image
+                </button>
+
+                <div style="color:#888; font-size:11px; margin:15px 0 5px; text-transform:uppercase; font-weight:700;">Prompt Vidéo Kling AI (Storyboard)</div>
+                <div class="prompt-box" id="p-vid-${index}">${promptVid}</div>
+                <button class="copy-badge-btn" style="background:linear-gradient(135deg,#f97316,#ea580c); color:#fff;" onclick="copyToClipboard('${promptVid}', this)">
+                    <i class="fas fa-video"></i> Copier Prompt Vidéo
+                </button>
+            </div>
+        `;
+    });
+
+    document.getElementById('ecussons-tool').style.display = 'flex';
+}
+
+function closeEcussonsTool() {
+    document.getElementById('ecussons-tool').style.display = 'none';
+}
+
+// Fonction utilitaire de copie
+function copyToClipboard(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> Copié !';
+        btn.style.background = '#00C853';
+        setTimeout(() => {
+            btn.innerHTML = originalHtml;
+            btn.style.background = '';
+        }, 2000);
+    });
+}
 </script>
 
 <!-- =====================================================
@@ -4710,6 +4798,18 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
     <div style="border-top:1px solid rgba(255,255,255,0.04);padding:10px 20px;font-size:11px;color:#374151;text-align:center;flex-shrink:0;">
         @scoremaster.fr — Copiez et collez directement dans l'éditeur Instagram
     </div>
+</div>
+    <div id="ecussons-tool" class="ecussons-modal">
+    <div style="background:#0a0a0a; padding:50px 20px 14px; display:flex; align-items:center; gap:14px; border-bottom:1px solid #333;">
+        <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#f97316,#ea580c);display:flex;align-items:center;justify-content:center;font-size:18px;">🛡️</div>
+        <div>
+            <div style="font-size:17px;font-weight:900;color:#fff;">Générateur <span style="color:#f97316;">Écussons</span></div>
+            <div style="font-size:11px;color:#6b7280;">Prompts IA pour Kling AI / Midjourney</div>
+        </div>
+        <button onclick="closeEcussonsTool()" style="margin-left:auto;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:18px;cursor:pointer;">✕</button>
+    </div>
+    <div class="ecussons-content" id="ecussons-list-container">
+        </div>
 </div>
     
 <style>
