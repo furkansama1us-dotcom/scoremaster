@@ -1557,15 +1557,14 @@ function renderTelegramLaunchTexts() {
         activeCombined = window.allCombineds.find(c => c.status === 'en-cours');
     }
 
-    // --- EXTRACTION DES INFOS DE TOUS LES MATCHS ---
-    var matchInfo = "du jour";
+    // --- EXTRACTION ET FORMATAGE DES MATCHS ---
+    var matchInfo = "\n⚽ Match du jour"; // Fallback par défaut
     var earliestTime = "ce soir";
-    var matchDetailsList = "";
     
     if (activeCombined && activeCombined.matches && activeCombined.matches.length > 0) {
-        // On récupère tous les noms de matchs et on les lie avec " & "
-        var matchNames = activeCombined.matches.map(m => m.teams).filter(t => t);
-        matchInfo = matchNames.join(' & ');
+        // On crée la liste multi-ligne avec les ballons
+        var matchNamesArr = activeCombined.matches.map(m => m.teams).filter(t => t);
+        matchInfo = "\n" + matchNamesArr.map(name => `⚽ ${name}`).join('\n');
 
         // On cherche l'heure la plus tôt
         var times = activeCombined.matches.map(m => m.time).filter(t => t);
@@ -1573,60 +1572,57 @@ function renderTelegramLaunchTexts() {
             times.sort();
             earliestTime = times[0].replace(':', 'h');
         }
-        
-        // On crée une petite liste propre pour certains messages
-        matchDetailsList = activeCombined.matches.map(m => `📍 ${m.teams} (${m.time ? m.time.replace(':', 'h') : '?'})`).join('\n');
     }
 
     var signature = "\n\n🌐 Site Web : https://scoremaster.fr/\n➡️ Telegram : @ScoreMasterOfficiel";
 
-    // --- 20 MESSAGES ULTRA-DYNAMIQUES & VIRAUX ---
+    // --- 20 MESSAGES AVEC FORMATAGE DYNAMIQUE ---
     var messages = [
-        `🚨 LE COMBINÉ EST DISPONIBLE ! 🚀🔥\n\nLes affiches : ${matchInfo} ⚽️⚡️\nDébut des hostilités à ${earliestTime} ! ⏰💥\n\nC'est maintenant qu'il faut parier sur votre espace VIP+ Score Master ! 👑💎💰` + signature,
+        `🚨 LE COMBINÉ EST DISPONIBLE ! 🚀🔥\n\nLes affiches :${matchInfo}\n\nDébut des hostilités à ${earliestTime} ! ⏰💥\n\nC'est maintenant qu'il faut parier sur votre espace VIP+ Score Master ! 👑💎💰` + signature,
         
-        `Le verdict est tombé pour ${matchInfo} ! 🏛️🤖📈\n\nL'algorithme a validé le ticket. Tout est prêt dans l'espace membre. 🧬💎\n\nCoup d'envoi à ${earliestTime}. Ne ratez pas ça ! 🧨🔥🚀` + signature,
+        `Le verdict est tombé ! 🏛️🤖📈\n\nAu programme :${matchInfo}\n\nL'algorithme a validé le ticket. Tout est prêt dans l'espace membre. 🧬💎\nCoup d'envoi à ${earliestTime}. Ne ratez pas ça ! 🧨🔥🚀` + signature,
         
-        `ANALYSE TERMINÉE : ${matchInfo} ✅💎⚡️\n\nLe combiné VIP+ est en ligne ! On part sur une énorme confiance ce soir. 🔥💰📈\n\nRendez-vous sur le site pour valider avant ${earliestTime} ! ⏳🦅🚀` + signature,
+        `ANALYSE TERMINÉE ! ✅💎⚡️\n\nLes duels :${matchInfo}\n\nLe combiné VIP+ est en ligne ! On part sur une énorme confiance ce soir. 🔥💰📈\nRendez-vous sur le site pour valider avant ${earliestTime} ! ⏳🦅🚀` + signature,
         
-        `🔥 ALERTE VIP+ : LE TICKET EST PUBLIÉ ! 🧨💥\n\nMatchs au programme :\n${matchDetailsList}\n\nLes données sont claires, le score exact est verrouillé ! 🔒🤖💰` + signature,
+        `🔥 ALERTE VIP+ : LE TICKET EST PUBLIÉ ! 🧨💥\n\nLes matchs retenus :${matchInfo}\n\nLes données sont claires, le score exact est verrouillé ! 🔒🤖💰` + signature,
         
-        `Dernière ligne droite avant ${matchInfo} ! ⏳⚡️💎\n\nLe combiné est dispo ! Les cotes vont exploser, validez vite vos tickets sur l'espace VIP+. 📈🚀💰` + signature,
+        `Dernière ligne droite ! ⏳⚡️💎\n\nFocus sur :${matchInfo}\n\nLe combiné est dispo ! Les cotes vont exploser, validez vite vos tickets sur l'espace VIP+. 📈🚀💰` + signature,
         
-        `100% DATA. 0% HASARD. 🧬🤖🔥\n\nLe combiné monstrueux pour ${matchInfo} est en ligne ! 💎🚀\nOn se retrouve dans l'espace membre pour le braquage final. 🏦💰💥` + signature,
+        `100% DATA. 0% HASARD. 🧬🤖🔥\n\nLe combiné monstrueux est en ligne :${matchInfo}\n\nOn se retrouve dans l'espace membre pour le braquage final. 🏦💰💥` + signature,
         
-        `PRÊTS POUR LE CHOC ? ⚽️🥊🔥\n\n${matchInfo}\n\nNotre ticket spécial Score Master est officiellement publié ! 👑💎⚡️\nDébut des matchs à ${earliestTime} ! ⏰🚀` + signature,
+        `PRÊTS POUR LE CHOC ? ⚽️🥊🔥\n${matchInfo}\n\nNotre ticket spécial Score Master est officiellement publié ! 👑💎⚡️\nDébut des matchs à ${earliestTime} ! ⏰🚀` + signature,
         
-        `L'INFO EST TOMBÉE ! 🦅💎🔥\n\nLe combiné pour ${matchInfo} est validé et publié sur scoremaster.fr ! 🌐🚀\n\nPrenez votre ticket avant ${earliestTime} ! 🎟️💰💥` + signature,
+        `L'INFO EST TOMBÉE ! 🦅💎🔥\n\nLe combiné est validé pour :${matchInfo}\n\nPublié sur scoremaster.fr ! 🌐🚀 Prenez votre ticket avant ${earliestTime} ! 🎟️💰💥` + signature,
         
-        `LE COMBINÉ DU JOUR EST DISPONIBLE ! 🎟️🔥🤑\n\nFocus total sur : ${matchInfo} ⚽️🎯\nCoup d'envoi à ${earliestTime} ! ⏰⚡️\n\nRejoignez l'élite sur le VIP+. 👑💎🚀` + signature,
+        `LE COMBINÉ DU JOUR EST DISPONIBLE ! 🎟️🔥🤑\n\nAnalyse complète sur :${matchInfo}\n\nCoup d'envoi à ${earliestTime} ! ⏰⚡️ Rejoignez l'élite sur le VIP+. 👑💎🚀` + signature,
         
-        `🚨 NE MANQUEZ PAS LE TICKET DU SOIR ! 🧨💥📈\n\nAnalyse chirurgicale terminée pour ${matchInfo}. 🔬💎\nLe combiné est en ligne sur votre espace membre ! 🚀💰🔥` + signature,
+        `🚨 NE MANQUEZ PAS LE TICKET DU SOIR ! 🧨💥📈\n\nAnalyse chirurgicale terminée :${matchInfo}\n\nLe combiné est en ligne sur votre espace membre ! 🚀💰🔥` + signature,
         
-        `COTES ANALYSÉES. MATCHS VALIDÉS. ✅💎⚡️\n\nLe ticket pour ${matchInfo} est enfin disponible sur Score Master ! 👑🚀\n\nDécollage à ${earliestTime} ! 🛸💰💥` + signature,
+        `COTES ANALYSÉES. MATCHS VALIDÉS. ✅💎⚡️\n\nLe ticket est enfin disponible pour :${matchInfo}\n\nDécollage à ${earliestTime} sur Score Master ! 🛸💰💥` + signature,
         
-        `Le travail de l'ombre est terminé ! 💼🔬💎\n\nLe combiné pour ${matchInfo} est en ligne sur l'espace SM VIP+. 🔥🚀\nNe perdez pas de temps, début à ${earliestTime} ! ⏳💰` + signature,
+        `Le travail de l'ombre est terminé ! 💼🔬💎\n\nLe combiné est en ligne sur l'espace SM VIP+ :${matchInfo}\n\nNe perdez pas de temps, début à ${earliestTime} ! ⏳💰` + signature,
         
-        `LES EXPERTS ONT TRANCHÉ ! ⚔️💎🔥\n\nLe combiné de folie pour ${matchInfo} est publié dans l'Espace VIP+ ! 👑📈\n\nAccès direct via le lien ci-dessous. ⬇️🚀💰` + signature,
+        `LES EXPERTS ONT TRANCHÉ ! ⚔️💎🔥\n\nLe combiné de folie est publié !${matchInfo}\n\nAccès direct via le lien ci-dessous. ⬇️🚀💰` + signature,
         
-        `LA PÉPITE DU JOUR EST EN LIGNE ! 💎🎯🔥\n\nAnalyse spéciale data pour ${matchInfo}. 🔬🤖\nOn valide ça maintenant sur l'espace VIP+ ! 🚀💰✅` + signature,
+        `LA PÉPITE DU JOUR EST EN LIGNE ! 💎🎯🔥\n\nAnalyse spéciale data :${matchInfo}\n\nOn valide ça maintenant sur l'espace VIP+ ! 🚀💰✅` + signature,
         
-        `TIC-TAC... ${earliestTime} APPROCHE ! ⏳🧨⚡️\n\nLe ticket pour ${matchInfo} est déjà entre les mains des membres VIP+ ! 💎🎟️\n\nEt toi, tu attends quoi ? 🤨🚀💰` + signature,
+        `TIC-TAC... ${earliestTime} APPROCHE ! ⏳🧨⚡️\n\nLe ticket est prêt pour :${matchInfo}\n\nC'est déjà entre les mains des membres VIP+ ! 💎🎟️ Et toi ? 🤨🚀💰` + signature,
         
-        `VERDICT DE L'IA : DISPONIBLE ! 🤖💎📈\n\n${matchInfo} : Le combiné est prêt. 🔥🚀\nOn fonce sur le site pour voir le score exact verrouillé ! 🔒💰💥` + signature,
+        `VERDICT DE L'IA : DISPONIBLE ! 🤖💎📈\n\nLes affiches :${matchInfo}\n\nLe combiné est prêt. 🔥🚀 On fonce sur le site pour voir le score exact ! 🔒💰💥` + signature,
         
-        `GROSSE CONFIANCE SUR LE COMBINÉ DE CE SOIR ! 🔥💎🤑\n\nAffiches :\n${matchDetailsList}\n\nTout est sur le site. Soyez vifs ! ⚡️🚀👑` + signature,
+        `GROSSE CONFIANCE SUR LE COMBINÉ DE CE SOIR ! 🔥💎🤑\n\nAu programme :${matchInfo}\n\nTout est sur le site. Soyez vifs avant ${earliestTime} ! ⚡️🚀👑` + signature,
         
-        `L'ATTENTE EST TERMINÉE ! 🏁🔥🚀\n\nLe combiné lourd pour ${matchInfo} est publié ! 💎📈\nRendez-vous sur l'Espace VIP+ pour le verdict ! 🏛️💰✅` + signature,
+        `L'ATTENTE EST TERMINÉE ! 🏁🔥🚀\n\nLe combiné lourd est publié :${matchInfo}\n\nRendez-vous sur l'Espace VIP+ pour le verdict ! 🏛️💰✅` + signature,
         
-        `SCORE MASTER NE DORT JAMAIS ! 🤖⚡️👑\n\nAnalyse validée à 100% pour ${matchInfo}. 🔬💎\nLe ticket est disponible. C'est l'heure d'encaisser ! 💰🚀🔥` + signature,
+        `SCORE MASTER NE DORT JAMAIS ! 🤖⚡️👑\n\nAnalyse validée à 100% pour :${matchInfo}\n\nLe ticket est disponible. C'est l'heure d'encaisser ! 💰🚀🔥` + signature,
         
-        `DERNIER APPEL POUR LE TICKET DE ${earliestTime} ! 📢⏳⚡️\n\nL'affiche ${matchInfo} est dans notre viseur. 🎯💎\nLe combiné est sur le VIP+. Let's go ! 🚀💰💥` + signature
+        `DERNIER APPEL POUR LE TICKET DE ${earliestTime} ! 📢⏳⚡️\n\nLe combiné est en ligne :${matchInfo}\n\nL'analyse est sur le VIP+. Let's go ! 🚀💰💥` + signature
     ];
 
     var html = `
         <div style="background:rgba(14,165,233,0.1);border:1px solid rgba(14,165,233,0.3);border-radius:10px;padding:12px;color:#0ea5e9;font-size:12px;margin-bottom:20px;">
-            <i class="fas fa-bolt"></i> <strong>Mode Multi-Matchs Activé</strong><br>
-            Matchs détectés : <strong>${matchInfo}</strong>
+            <i class="fas fa-bolt"></i> <strong>Aperçu du format Telegram :</strong><br>
+            <div style="margin-top:5px; white-space:pre-wrap; font-family:monospace;">${matchInfo}</div>
         </div>`;
 
     messages.forEach((msg, i) => {
