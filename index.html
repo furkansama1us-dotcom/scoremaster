@@ -613,15 +613,16 @@
             return;
         }
 
-        // 1. Préparation de la liste des matchs
         let matchLines = "";
         if (c.matches && c.matches.length > 0) {
-            c.matches.forEach(m => { matchLines += `⚽️ ${m.teams}\n`; });
+            c.matches.forEach(m => { 
+                let emoji = getEmojiFromFlagHtml(m.league_flag);
+                matchLines += `${emoji} ${m.teams}\n`; 
+            });
         } else {
             matchLines = "⚽️ Matchs confidentiels\n";
         }
 
-        // 2. Calcul des heures
         let earliestTime = '23:59';
         if (c.matches && c.matches.length > 0) {
             c.matches.forEach(m => {
@@ -637,21 +638,18 @@
             deadlineStr = String(deadlineDateTime.getHours()).padStart(2, '0') + ':' + String(deadlineDateTime.getMinutes()).padStart(2, '0');
         }
 
-        // 3. Calcul du jour (aujourd'hui, demain, ou date précise)
         let today = new Date();
         let tomorrow = new Date(); tomorrow.setDate(today.getDate() + 1);
         let dayContext = "le " + new Date(c.date).toLocaleDateString('fr-FR');
         if (c.date === today.toISOString().split('T')[0]) dayContext = "aujourd'hui";
         else if (c.date === tomorrow.toISOString().split('T')[0]) dayContext = "demain";
 
-        // 4. Le fameux bloc d'infos précis (Équipes, Heure, Deadline)
         let infoBlock = 
 `🏆 *AU PROGRAMME :*
 ${matchLines}
 ⚠️ Début des matchs : ${dayContext} à *${earliestTime}*
 ⛔️ *FERMETURE STRICTE DES ACCÈS : ${deadlineStr}* ❗️`;
 
-        // 5. Modèles de relance dynamiques (AVEC infoBlock PARTOUT)
         const reminders = [
             `⏳ *L'heure approche !*\n\nPlus que quelques heures avant le coup d'envoi de notre combiné.\n\n${infoBlock}\n\nChez ScoreMaster tout est professionnel :\n- Analyses détaillées 📈\n- Suivi de la rencontre 📲\n- Gestion de bankroll 📊\n\n👉 Contact : @ScoreMasterOfficiel`,
             
@@ -661,7 +659,7 @@ ${matchLines}
             
             `⏰ *DERNIER APPEL !*\n\nLa validation approche à grands pas. Nos experts ont finalisé leur sélection :\n\n${infoBlock}\n\nRejoins la communauté et gère tes paris intelligemment 📊.\n\n👉 Pour nous rejoindre : @ScoreMasterOfficiel`
         ];
-        // Sélection aléatoire du message
+
         let telegramText = reminders[Math.floor(Math.random() * reminders.length)];
 
         if (confirm("Veux-tu envoyer un message de relance...")) {
@@ -2589,7 +2587,6 @@ async function autoFetchFinalScores(combined) {
             var ti = e.querySelector('.match-time-input').value.trim();
             var l = e.querySelector('.match-logo-input').value;
             
-            // ON RÉCUPÈRE LE DRAPEAU ICI
             var flagInput = e.querySelector('.match-flag-input');
             var f = flagInput ? flagInput.value : '';
             
@@ -2631,9 +2628,12 @@ async function autoFetchFinalScores(combined) {
         else if (date === tomorrow.toISOString().split('T')[0]) dayContext = "demain";
 
         let matchLines = "";
-        matches.forEach(m => { matchLines += `⚽️ ${m.teams}\n`; });
+        matches.forEach(m => { 
+            let emoji = getEmojiFromFlagHtml(m.league_flag);
+            matchLines += `${emoji} ${m.teams}\n`; 
+        });
 
-            const intros = [
+        const intros = [
             "Salut l’équipe ! 🔥 L'analyse est tombée. Le nouveau combiné est officiellement disponible dans votre espace VIP+.",
             "Nos experts ont validé les choix du jour. Le ticket est prêt avec une excellente fiabilité. Filez vite sur l'app !",
             "💎 LE TICKET SCORE EXACT D'AUJOURD'HUI EST EN LIGNE ! L'étude des probabilités est très favorable.",
@@ -2655,7 +2655,8 @@ async function autoFetchFinalScores(combined) {
             "Le combiné VIP+ est en ligne et il est magnifique.",
             "L'équipe de passionnés est prête ? Le nouveau ticket vient de tomber."
         ];
-            const outros = [
+        
+        const outros = [
             "C’est le moment parfait pour prendre de l’avance. Ne laissez pas passer cette belle opportunité ! 🙌⚡️",
             "Faites vite avant que les cotes ne chutent ! L'horloge tourne. ⏱️",
             "💣 COTES ÉTUDIÉES\n💯 FORTE CONFIANCE\nPrêt à faire partie de l'équipe ?",
@@ -2679,9 +2680,6 @@ async function autoFetchFinalScores(combined) {
         ];
         
         let telegramDraft =
-            `📝 *BROUILLON CANAL PUBLIC :*\n` +
-            `_(À copier/coller sur votre canal)_\n\n` +
-            `---\n\n` +
             `${intros[Math.floor(Math.random() * intros.length)]}\n\n` +
             `🏆 *AU PROGRAMME :*\n` +
             `${matchLines}\n` +
@@ -2694,13 +2692,31 @@ async function autoFetchFinalScores(combined) {
 
         sendAdminTelegram(telegramDraft);
 
-        // On nettoie l'éditeur après publication
         resetEditor();
-
         await chargerDonnees();
         switchAdminTab('dashboard');
         renderAdminHistory();
     }
+
+    function getEmojiFromFlagHtml(html) {
+    if (!html) return '⚽️';
+    let match = html.match(/flagcdn\.com\/20x15\/([a-z-]+)\.png/);
+    if (!match) return '⚽️';
+    let code = match[1];
+    const emojiMap = {
+        'gb-eng': '🏴󠁧󠁢󠁥󠁮󠁧󠁿', 'gb-sct': '🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'fr': '🇫🇷', 'es': '🇪🇸', 'de': '🇩🇪',
+        'it': '🇮🇹', 'pt': '🇵🇹', 'nl': '🇳🇱', 'be': '🇧🇪', 'tr': '🇹🇷',
+        'ru': '🇷🇺', 'ar': '🇦🇷', 'br': '🇧🇷', 'us': '🇺🇸', 'mx': '🇲🇽',
+        'co': '🇨🇴', 'cl': '🇨🇱', 'jp': '🇯🇵', 'kr': '🇰🇷', 'sa': '🇸🇦',
+        'ma': '🇲🇦', 'eg': '🇪🇬', 'au': '🇦🇺', 'eu': '🇪🇺', 'gr': '🇬🇷',
+        'pl': '🇵🇱', 'rs': '🇷🇸', 'hr': '🇭🇷', 'at': '🇦🇹', 'ch': '🇨🇭',
+        'se': '🇸🇪', 'no': '🇳🇴', 'dk': '🇩🇰', 'il': '🇮🇱', 'ua': '🇺🇦',
+        'hu': '🇭🇺', 'cz': '🇨🇿', 'ro': '🇷🇴', 'sk': '🇸🇰', 'ng': '🇳🇬',
+        'cn': '🇨🇳', 've': '🇻🇪', 'pe': '🇵🇪', 'ec': '🇪🇨', 'py': '🇵🇾',
+        'uy': '🇺🇾', 'bo': '🇧🇴'
+    };
+    return emojiMap[code] || '⚽️';
+}
     
     async function deleteSpecificCombined(id) {
         if(confirm("Es-tu sûr de vouloir supprimer ce combiné définitivement ?")) {
@@ -3101,19 +3117,16 @@ function sendTelegramWin(id) {
     var c = allCombineds.find(x => x.id == id);
     if (!c) { showToast("Combiné introuvable", true); return; }
 
-
-    // Formatage de la date du ticket
     const ticketDate = new Date(c.date).toLocaleDateString('fr-FR');
 
-    // Récupération des scores du combiné
     let matchLines = "";
     if (c.matches && c.matches.length > 0) {
         c.matches.forEach(m => { 
-            matchLines += `✅ *${m.teams}* | Score : ${m.score}\n`; 
+            let emoji = getEmojiFromFlagHtml(m.league_flag);
+            matchLines += `✅ ${emoji} *${m.teams}* | Score : ${m.score}\n`; 
         });
     }
 
-    // 20 Messages de victoire différents
     const winMessages = [
         `BOOM ! 💥 Encore un ticket validé ! Félicitations à tous ceux qui ont suivi le combiné du ${ticketDate}. L'algorithme a encore frappé fort ! 💸`,
         `✅ ENCAISSÉ ! Le travail paie toujours. On vient de plumer les bookmakers sur le ticket du ${ticketDate}. Qui est prêt pour le prochain ? 💰`,
@@ -3137,10 +3150,8 @@ function sendTelegramWin(id) {
         `🔥 BOUM BOUM BOUM ! Le réseau VIP+ a encore frappé. Le ticket score exact est validé. Quelle soirée !`
     ];
 
-    // Sélection aléatoire d'un message
     let randomWinMessage = winMessages[Math.floor(Math.random() * winMessages.length)];
 
-    // Assemblage du message final Telegram
     let telegramText = 
 `${randomWinMessage}
 
@@ -3148,12 +3159,12 @@ function sendTelegramWin(id) {
 ${matchLines}
 🚀 *Rejoignez l'élite sur l'application :* https://scoremaster.fr/`;
 
-   // Envoi via Supabase (Sécurisé)
     if (confirm("Envoyer le message de VICTOIRE sur Telegram pour ce combiné ?")) {
-            sendAdminTelegram(telegramText).then(() => {
-                showToast("Message de victoire envoyé sur Telegram ! 🍾");
-            });
-        }
+        sendAdminTelegram(telegramText).then(() => {
+            showToast("Message de victoire envoyé sur Telegram ! 🍾");
+        });
+    }
+}
     // ============================================================
 // GÉNÉRATION DU PROMPT IA PREMIUM (FORMAT 9:16 + LOGO SM)
 // ============================================================
