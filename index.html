@@ -1674,17 +1674,17 @@ async function fetchMatchesFromAPI() {
 
     try {
         const RAPIDAPI_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
-        const HOST = 'sofascore.p.rapidapi.com';
+const HOST = 'free-api-live-football-data.p.rapidapi.com';
 
-        const TARGET_URL = `https://${HOST}/matches/detail?matchId=8897222`;
+const TARGET_URL = `https://${HOST}/football-get-matches-by-date?date=${formattedDate}`;
 
-        var response = await fetch(TARGET_URL, {
-            method: 'GET',
-            headers: {
-                'x-rapidapi-host': HOST,
-                'x-rapidapi-key': RAPIDAPI_KEY
-            }
-        });
+var response = await fetch(TARGET_URL, {
+    method: 'GET',
+    headers: {
+        'x-rapidapi-host': HOST,
+        'x-rapidapi-key': RAPIDAPI_KEY
+    }
+});
 
         if (!response.ok) throw new Error("Erreur réseau ou Proxy");
 
@@ -1880,7 +1880,7 @@ async function fetchMatchesFromAPI() {
     // ============================================================
 // LIVE SCORES — RapidAPI Free Football + Notif Telegram
 // ============================================================
-const RAPIDAPI_KEY = 'f8209623408840be688b35e7bcf34edb';
+const RAPIDAPI_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
 
 let livePollingInterval = null;
 let liveFinalNotifSent  = false;
