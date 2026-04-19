@@ -3009,6 +3009,49 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
     }
 }
 }
+    function sendPromoPrompt(id) {
+    var c = allCombineds.find(x => x.id == id);
+    if (!c) { showToast("Combiné introuvable", true); return; }
+
+    let detailsMatchs = "";
+    let instaMatches = "";
+    let earliestTime = '23:59';
+
+    if (c.matches && c.matches.length > 0) {
+        c.matches.forEach((m, index) => {
+            detailsMatchs += `- Match ${index + 1}: ${m.teams} starting at ${m.time}.\n`;
+            instaMatches += `🏆 ${m.teams}\n`;
+            
+            let extracted = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
+            if (extracted && extracted[0] < earliestTime) earliestTime = extracted[0];
+        });
+    }
+
+    // Le Prompt pour l'image IA
+    let aiPrompt = `A high-end cinematic sports promotional poster, vertical 9:16 ratio. 
+
+Background: High-energy stadium atmosphere at dusk, volumetric floodlights rays, energetic orange and cyan color grade.
+
+Top Center: A massive 3D metallic chrome "SM" logo with a 3D golden crown. Below it, the text "COMBINÉ" in aggressive 3D white typography and "DISPONIBLE" in glowing 3D orange neon.
+
+Center: Two professional glass-morphism panels displaying:
+${detailsMatchs}
+
+Graphic Elements: Digital countdown timer aesthetic, floating sparks, high-quality lens flares, sleek motion lines.
+
+Style: Ultra-realistic, 8k, cinematic promotional art, --ar 9:16`;
+
+    // Le texte pour ta bio ou légende Insta
+    let instaText = `🔥 COMBINÉ SCORE EXACT DISPONIBLE !\n\n${instaMatches}⏰ Début du premier match à ${earliestTime}\n\nLien en bio pour accéder au VIP+ et valider tes gains ! 🚀💰\n@scoremaster.fr`;
+
+    let telegramText = `🎨 *PROMPT IA POSTER PROMO :*\n\`\`\`\n${aiPrompt}\n\`\`\`\n\n📝 *TEXTE INSTA / BIO :*\n\`\`\`\n${instaText}\n\`\`\``;
+
+    if (confirm("Générer et envoyer le prompt de PROMOTION sur Telegram ?")) {
+        sendAdminTelegram(telegramText).then(() => {
+            showToast("Prompt Promo envoyé ! 🚀");
+        });
+    }
+}
     
     // ============================================================
 // AFFICHAGE DE L'HISTORIQUE ADMIN (AVEC BOUTON VICTOIRE TELEGRAM)
@@ -3026,19 +3069,18 @@ function renderAdminHistory() {
     allCombineds.forEach(function(c) {
         let displayStatus = sl[c.status];
         
-        // Création de la liste des matchs (Équipes + Logos + Scores)
         let matchesDetailsHtml = '';
         if (c.matches && c.matches.length > 0) {
             matchesDetailsHtml = '<div style="margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px;">';
             c.matches.forEach(m => {
-                let logoImg = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<span style="margin-right:4px;">⚽</span>`);
+                // Correctif Drapreau vs Ballon
+                let logoImg = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : (m.league_flag ? `<span style="margin-right:6px; display:inline-flex; align-items:center; vertical-align:middle;">${m.league_flag}</span>` : `<span style="margin-right:4px;">⚽</span>`));
                 
                 let scoreDisplay = '';
                 if (c.status === 'termine' || c.status === 'perdu') {
                     let color = c.status === 'termine' ? 'var(--green)' : 'var(--text-white)';
                     scoreDisplay = `<span style="float:right; font-weight:bold; color:${color}">${m.score}</span>`;
                 }
-                
                 matchesDetailsHtml += `<div style="font-size: 12px; color: var(--text-light-gray); margin-bottom: 4px;">${logoImg} ${m.teams || 'Équipes'} ${scoreDisplay}</div>`;
             });
             matchesDetailsHtml += '</div>';
@@ -3061,29 +3103,29 @@ function renderAdminHistory() {
                     let matchTime = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
                     if (matchTime && matchTime[0] > latestTime) latestTime = matchTime[0];
                 });
-            } else if (c.time) {
-                let matchTime = c.time.match(/\d{2}:\d{2}/);
-                if(matchTime) latestTime = matchTime[0];
             }
             
             let finishTime = new Date(`${c.date}T${latestTime}:00`);
             finishTime = new Date(finishTime.getTime() + (2 * 60 * 60 * 1000));
 
             if (now >= finishTime) {
-                // À CONFIRMER
                 let btns = `<button onclick="openValidationScreen('${c.id}')" style="background:#FF9800; color:#000;"><i class="fas fa-check-double"></i> Valider</button><button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(255,61,61,0.15); color:var(--red); border:1px solid rgba(255,61,61,0.4);"><i class="fas fa-satellite-dish"></i> Score API</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
                 htmlPending += cardBaseHtml('<span style="color:#FF9800; font-weight:bold;">À vérifier ⚠️</span>', btns);
             } else {
-                // EN COURS
-                let btns = `<button onclick="sendTelegramReminder('${c.id}')" style="background:var(--primary-yellow); color:#000; font-weight:bold;"><i class="fas fa-bell"></i> Relancer</button><button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
+                // SECTION EN COURS : NOUVEAU BOUTON PROMO AJOUTÉ ICI
+                let btns = `
+                    <button onclick="sendPromoPrompt('${c.id}')" style="background:linear-gradient(135deg, #FF9800, #F57C00); color:#fff; font-weight:bold; padding:6px 10px;" title="Prompt Promo IA"><i class="fas fa-ad"></i> Promo</button>
+                    <button onclick="sendTelegramReminder('${c.id}')" style="background:var(--primary-yellow); color:#000; font-weight:bold; padding:6px 10px;"><i class="fas fa-bell"></i></button>
+                    <button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue); padding:6px 10px;"><i class="fas fa-edit"></i></button>
+                    <button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red); padding:6px 10px;"><i class="fas fa-trash"></i></button>`;
                 htmlActive += cardBaseHtml(displayStatus, btns);
             }
         } else {
-            // TERMINÉ (PUBLIC) - BOUTONS TELEGRAM & INSTA IA
             let btns = `
             <button onclick="sendTelegramWin('${c.id}')" style="background:var(--green); color:#000; font-weight:bold; padding:6px 10px;" title="Envoyer sur Telegram"><i class="fab fa-telegram-plane"></i> Gagné</button>
             <button onclick="sendInstaPrompt('${c.id}')" style="background:linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color:#fff; font-weight:bold; padding:6px 10px;" title="Prompt Insta IA"><i class="fab fa-instagram"></i> IA</button>
-            <button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue); padding:6px 10px;" title="Éditer"><i class="fas fa-edit"></i></button><button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(255,61,61,0.15); color:var(--red); border:1px solid rgba(255,61,61,0.4); padding:6px 10px;" title="Score API"><i class="fas fa-satellite-dish"></i></button>
+            <button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue); padding:6px 10px;" title="Éditer"><i class="fas fa-edit"></i></button>
+            <button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(255,61,61,0.15); color:var(--red); border:1px solid rgba(255,61,61,0.4); padding:6px 10px;" title="Score API"><i class="fas fa-satellite-dish"></i></button>
             <button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red); padding:6px 10px;" title="Supprimer"><i class="fas fa-trash"></i></button>`;
             htmlPast += cardBaseHtml(displayStatus, btns);
         }
@@ -3214,6 +3256,49 @@ ${aiPrompt}
     }
 }
     }
+    function sendPromoPrompt(id) {
+    var c = allCombineds.find(x => x.id == id);
+    if (!c) { showToast("Combiné introuvable", true); return; }
+
+    let detailsMatchs = "";
+    let instaMatches = "";
+    let earliestTime = '23:59';
+
+    if (c.matches && c.matches.length > 0) {
+        c.matches.forEach((m, index) => {
+            detailsMatchs += `- Match ${index + 1}: ${m.teams} starting at ${m.time}.\n`;
+            instaMatches += `🏆 ${m.teams}\n`;
+            
+            let extracted = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
+            if (extracted && extracted[0] < earliestTime) earliestTime = extracted[0];
+        });
+    }
+
+    // Le Prompt pour l'image IA
+    let aiPrompt = `A high-end cinematic sports promotional poster, vertical 9:16 ratio. 
+
+Background: High-energy stadium atmosphere at dusk, volumetric floodlights rays, energetic orange and cyan color grade.
+
+Top Center: A massive 3D metallic chrome "SM" logo with a 3D golden crown. Below it, the text "COMBINÉ" in aggressive 3D white typography and "DISPONIBLE" in glowing 3D orange neon.
+
+Center: Two professional glass-morphism panels displaying:
+${detailsMatchs}
+
+Graphic Elements: Digital countdown timer aesthetic, floating sparks, high-quality lens flares, sleek motion lines.
+
+Style: Ultra-realistic, 8k, cinematic promotional art, --ar 9:16`;
+
+    // Le texte pour ta bio ou légende Insta
+    let instaText = `🔥 COMBINÉ SCORE EXACT DISPONIBLE !\n\n${instaMatches}⏰ Début du premier match à ${earliestTime}\n\nLien en bio pour accéder au VIP+ et valider tes gains ! 🚀💰\n@scoremaster.fr`;
+
+    let telegramText = `🎨 *PROMPT IA POSTER PROMO :*\n\`\`\`\n${aiPrompt}\n\`\`\`\n\n📝 *TEXTE INSTA / BIO :*\n\`\`\`\n${instaText}\n\`\`\``;
+
+    if (confirm("Générer et envoyer le prompt de PROMOTION sur Telegram ?")) {
+        sendAdminTelegram(telegramText).then(() => {
+            showToast("Prompt Promo envoyé ! 🚀");
+        });
+    }
+}
 
     function buildCC(c, sc, sl, pw, isHome) {
         var mH = '';
