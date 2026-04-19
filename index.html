@@ -1377,6 +1377,16 @@ async function fetchApiScore(id, dateRaw) {
                     Génère automatiquement un prompt IA pour l'affiche du combiné en cours.
                 </div>
             </div>
+        <!-- BOUTON 3 : GÉNÉRATEUR ÉCUSSON BRODÉ -->
+            <div class="admin-card" style="padding:15px; border-left:4px solid #a855f7; margin-bottom:10px; cursor:pointer; transition:all 0.2s;" onclick="openEcussonGenerator()" onmouseover="this.style.background='var(--bg-input)'" onmouseout="this.style.background='var(--bg-card)'">
+                <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff; display:flex; justify-content:space-between; align-items:center;">
+                    <span><i class="fas fa-shield-alt" style="color:#a855f7; margin-right:5px;"></i> Générateur Écusson Brodé</span>
+                    <i class="fas fa-chevron-right" style="color:var(--text-gray); font-size:12px;"></i>
+                </div>
+                <div style="font-size:12px; color:var(--text-gray);">
+                    Génère un prompt écusson brodé premium pour chaque équipe du combiné.
+                </div>
+            </div>
         </div>
     </div>
 </div> <!-- FIN DU PANEL ADMIN -->
@@ -3827,7 +3837,126 @@ let quickEditCombinedId = null;
         overlay.classList.remove('visible');
         setTimeout(() => overlay.style.display = 'none', 300);
     }
+    function openEcussonGenerator() {
+    var overlay = document.getElementById('ecusson-gen-overlay');
+    overlay.style.display = 'flex';
+    setTimeout(() => overlay.classList.add('visible'), 10);
+    renderEcussonContent();
+}
 
+function closeEcusson() {
+    var overlay = document.getElementById('ecusson-gen-overlay');
+    overlay.classList.remove('visible');
+    setTimeout(() => overlay.style.display = 'none', 300);
+}
+
+function renderEcussonContent() {
+    var container = document.getElementById('ecusson-main-content');
+
+    // Récupérer le combiné en cours
+    var activeCombined = null;
+    if (window.allCombineds && window.allCombineds.length > 0) {
+        activeCombined = window.allCombineds.find(c => c.status === 'en-cours');
+    }
+
+    if (!activeCombined || !activeCombined.matches || activeCombined.matches.length === 0) {
+        container.innerHTML = `
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:40px 20px;flex:1;">
+                <div style="width:80px;height:80px;border-radius:20px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);display:flex;align-items:center;justify-content:center;font-size:36px;">⏳</div>
+                <div style="font-size:18px;font-weight:700;color:#fff;">Pas de combiné en cours</div>
+                <div style="font-size:13px;color:#6b7280;max-width:320px;line-height:1.6;">Publiez un combiné depuis l'onglet <strong style="color:#a855f7;">Vue</strong> pour générer les écussons.</div>
+            </div>`;
+        return;
+    }
+
+    // Extraire toutes les équipes
+    var allTeams = [];
+    activeCombined.matches.forEach(function(m) {
+        if (m.teams) {
+            var parts = m.teams.split(/\s*[-vs]+\s*/i);
+            parts.forEach(function(t) { if(t.trim()) allTeams.push(t.trim()); });
+        }
+    });
+
+    // Dédupliquer
+    allTeams = [...new Set(allTeams)];
+
+    // Générer les prompts pour chaque équipe
+    var ecussons = allTeams.map(function(team) {
+        return {
+            team: team,
+            prompt: generateEcussonPrompt(team),
+            copied: false
+        };
+    });
+
+    // Stocker globalement
+    window._ecussons = ecussons;
+
+    // Render
+    var html = `
+        <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#c084fc;display:flex;align-items:center;gap:8px;">
+            <i class="fas fa-circle" style="font-size:8px;animation:pulse 2s infinite;"></i>
+            ${allTeams.length} équipe(s) détectée(s) — Un prompt par équipe
+        </div>
+        <div style="font-size:11px;color:#6b7280;line-height:1.6;padding:4px 2px;">
+            📋 Copiez chaque prompt, puis collez-le dans <strong style="color:#fff;">ChatGPT / Midjourney / DALL·E 3</strong> avec le logo de l'équipe en pièce jointe.
+        </div>`;
+
+    ecussons.forEach(function(e, i) {
+        var flag = detectFlag(e.team + ' ' + e.team);
+        html += `
+        <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(168,85,247,0.2);border-radius:16px;overflow:hidden;">
+            <!-- Card header -->
+            <div style="padding:14px 16px;border-bottom:1px solid rgba(168,85,247,0.15);display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#a855f7,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;">🛡️</div>
+                    <div>
+                        <div style="font-size:14px;font-weight:800;color:#fff;">${flag} ${e.team}</div>
+                        <div style="font-size:11px;color:#6b7280;">Prompt écusson brodé premium</div>
+                    </div>
+                </div>
+                <button id="btn-copy-ecusson-${i}" onclick="copyEcusson(${i})" style="padding:8px 14px;border-radius:10px;border:1px solid rgba(168,85,247,0.5);color:#c084fc;background:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;">📋 Copier</button>
+            </div>
+            <!-- Prompt preview -->
+            <div style="padding:14px 16px;">
+                <div style="background:rgba(0,0,0,0.4);border:1px solid rgba(168,85,247,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:160px;overflow-y:auto;white-space:pre-wrap;">${e.prompt}</div>
+            </div>
+            <!-- Instruction -->
+            <div style="padding:0 16px 14px;">
+                <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.15);border-radius:8px;padding:10px 12px;font-size:11px;color:#9ca3af;line-height:1.5;">
+                    <strong style="color:#c084fc;">💡 Mode d'emploi :</strong> Copiez ce prompt → ouvrez ChatGPT ou DALL·E 3 → joignez le logo officiel de <strong style="color:#fff;">${e.team}</strong> → collez le prompt → générez.
+                </div>
+            </div>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+}
+
+function generateEcussonPrompt(teamName) {
+    return `Create a photorealistic [3:4] aspect ratio image using the uploaded logo of ${teamName} as the exact source identity. Preserve the logo's original shape, proportions, symbol geometry, layout and color structure precisely, with no redesign, distortion or reinterpretation. Transform the uploaded logo into a high-end embroidered emblem with realistic, dense stitching and premium embroidery detail. The emblem should be the central focus, placed on a premium, textured fabric surface that complements ${teamName}'s official colors. Use a dynamic close-up perspective with subtle depth of field, where the foreground embroidery is sharply in focus and the fabric softly blurs into the background. Apply natural, soft lighting that casts gentle shadows to emphasize stitch depth, thread texture and fabric weave. The final image should feel luxurious, tactile, modern and suitable for a premium brand or sports identity presentation. No text overlays, no watermarks, no additional typography. The logo must remain instantly recognizable as the official ${teamName} logo. --ar 3:4 --style raw --v 6`;
+}
+
+function copyEcusson(i) {
+    var e = window._ecussons[i];
+    if (!e) return;
+    pgCopyText(e.prompt, function() {
+        var btn = document.getElementById('btn-copy-ecusson-' + i);
+        if (btn) {
+            btn.textContent = '✅ Copié !';
+            btn.style.background = 'rgba(34,197,94,0.2)';
+            btn.style.borderColor = '#22c55e';
+            btn.style.color = '#4ade80';
+            setTimeout(function() {
+                btn.textContent = '📋 Copier';
+                btn.style.background = 'none';
+                btn.style.borderColor = 'rgba(168,85,247,0.5)';
+                btn.style.color = '#c084fc';
+            }, 2000);
+        }
+    });
+}
     function renderPGContent(activeCombined) {
     var container = document.getElementById('pg-main-content');
 
@@ -4357,8 +4486,31 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
     </div>
 </div>
 
+    <!-- =====================================================
+     OVERLAY : GÉNÉRATEUR ÉCUSSON BRODÉ
+     ===================================================== -->
+<div id="ecusson-gen-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;flex-direction:column;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(8px);">
+    <!-- Header -->
+    <div style="border-bottom:1px solid rgba(168,85,247,0.3);background:#0a0a0a;padding:50px 20px 14px;display:flex;align-items:center;gap:14px;flex-shrink:0;">
+        <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#a855f7,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 18px rgba(168,85,247,0.35);">🛡️</div>
+        <div>
+            <div style="font-size:17px;font-weight:900;letter-spacing:-0.5px;color:#fff;">Score<span style="color:#a855f7;">Master</span></div>
+            <div style="font-size:11px;color:#6b7280;">Générateur d'Écusson Brodé Premium</div>
+        </div>
+        <button onclick="closeEcusson()" style="margin-left:auto;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <!-- Main content -->
+    <div id="ecusson-main-content" style="flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:16px;gap:12px;"></div>
+    <!-- Footer -->
+    <div style="border-top:1px solid rgba(255,255,255,0.04);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#374151;flex-shrink:0;">
+        <span>@scoremaster.fr — Écusson Brodé v1.0</span>
+        <span>Optimisé pour ChatGPT · Midjourney · DALL·E 3</span>
+    </div>
+</div>
+    
 <style>
 #prompt-gen-overlay.visible { opacity: 1 !important; }
+#ecusson-gen-overlay.visible { opacity: 1 !important; }
 </style>
 
 </body>
