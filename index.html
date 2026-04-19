@@ -3799,7 +3799,7 @@ function sendPromoNotification() {
     var overlay = document.getElementById('promo-telegram-overlay');
     if(overlay) {
         overlay.style.display = 'flex';
-        // On lance la création des 20 textes une fois la fenêtre ouverte
+        setTimeout(() => overlay.classList.add('visible'), 10);
         renderPromoTelegramContent(); 
     }
 }
@@ -3807,7 +3807,8 @@ function sendPromoNotification() {
 function closePromoTelegram() {
     var overlay = document.getElementById('promo-telegram-overlay');
     if(overlay) {
-        overlay.style.display = 'none';
+        overlay.classList.remove('visible');
+        setTimeout(() => overlay.style.display = 'none', 300);
     }
 }
    // ============================================================
@@ -5120,8 +5121,7 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
         @scoremaster.fr — Copiez et collez directement dans l'éditeur Instagram
     </div>
 </div>
-    <div id="promo-telegram-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000000; z-index:9999; flex-direction:column; overflow:hidden;">
-    
+    <div id="promo-telegram-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;flex-direction:column;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(8px);">
     <div style="border-bottom:1px solid rgba(14,165,233,0.3); background:#0a0a0a; padding:50px 20px 14px; display:flex; align-items:center; gap:14px; flex-shrink:0;">
         <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#0ea5e9,#2563eb);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 18px rgba(14,165,233,0.35);">✈️</div>
         <div>
@@ -5130,15 +5130,14 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
         </div>
         <button onclick="closePromoTelegram()" style="margin-left:auto;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
-
-    <div id="promo-telegram-content" style="flex:1; overflow-y:auto; padding:20px; padding-bottom:100px;">
-        </div>
+    <div id="promo-telegram-content" style="flex:1; overflow-y:auto; padding:20px; padding-bottom:100px;"></div>
 </div>
     
 <style>
 #prompt-gen-overlay.visible { opacity: 1 !important; }
 #ecusson-gen-overlay.visible { opacity: 1 !important; }
 #insta-texts-overlay.visible { opacity: 1 !important; }
+#promo-telegram-overlay.visible { opacity: 1 !important; }
 </style>
 
 </body>
