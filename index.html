@@ -1660,7 +1660,6 @@ async function fetchMatchesFromAPI() {
     var dateVal = document.getElementById('admin-date').value;
     if (!dateVal) { showToast("Choisis une date d'abord", true); return; }
 
-    // 1. Formatage de la date (JJ/MM/AAAA -> AAAA-MM-JJ)
     var formattedDate = dateVal;
     if (dateVal.includes('/')) {
         var parts = dateVal.split('/');
@@ -1671,31 +1670,32 @@ async function fetchMatchesFromAPI() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche...';
 
     try {
-        const RAPIDAPI_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
-const HOST = 'sportapi7.p.rapidapi.com';
+        // ON A CHANGÉ LE NOM ICI POUR ÉVITER LE CONFLIT (SPORT_API_KEY)
+        const SPORT_API_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
+        const HOST = 'sportapi7.p.rapidapi.com';
 
-const TARGET_URL = `https://${HOST}/api/v1/sport/football/scheduled-events/${formattedDate}`;
+        const TARGET_URL = `https://${HOST}/api/v1/sport/football/scheduled-events/${formattedDate}`;
 
-var response = await fetch(TARGET_URL, {
-    method: 'GET',
-    headers: {
-        'x-rapidapi-host': HOST,
-        'x-rapidapi-key': RAPIDAPI_KEY
-    }
-});
+        var response = await fetch(TARGET_URL, {
+            method: 'GET',
+            headers: {
+                'x-rapidapi-host': HOST,
+                'x-rapidapi-key': SPORT_API_KEY
+            }
+        });
 
-        if (!response.ok) throw new Error("Erreur réseau ou Proxy");
+        if (!response.ok) throw new Error("Erreur réseau");
 
         var data = await response.json();
         var matches = (data.events || []).filter(function(m) {
-    if (!m.startTimestamp) return true;
-    var d = new Date(m.startTimestamp * 1000);
-    var hours = d.getHours();
-    var minutes = d.getMinutes();
-    return hours > 18 || (hours === 18 && minutes === 0);
-}).sort(function(a, b) {
-    return (a.startTimestamp || 0) - (b.startTimestamp || 0);
-});
+            if (!m.startTimestamp) return true;
+            var d = new Date(m.startTimestamp * 1000);
+            var hours = d.getHours();
+            var minutes = d.getMinutes();
+            return hours > 18 || (hours === 18 && minutes === 0);
+        }).sort(function(a, b) {
+            return (a.startTimestamp || 0) - (b.startTimestamp || 0);
+        });
 
         if (matches.length === 0) {
             showToast("Aucun match trouvé pour le " + formattedDate, true);
@@ -1705,7 +1705,6 @@ var response = await fetch(TARGET_URL, {
 
         var matchesHtml = '<div style="background:#2A2A2A; padding:10px; border-radius:8px; margin-bottom:10px; max-height:300px; overflow-y:auto;">';
         matchesHtml += `<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px; display:flex; justify-content:space-between;"><span>Matchs trouvés (${matches.length})</span><span style="color:var(--primary-yellow); cursor:pointer;" onclick="document.getElementById('api-matches-container').innerHTML=''">Fermer</span></div>`;
-        
         // Fonction pour obtenir le drapeau emoji selon le pays/ligue
         function getLeagueFlag(m) {
             var country = (m.tournament && m.tournament.category && m.tournament.category.name) ? m.tournament.category.name.toLowerCase() : '';
@@ -1772,7 +1771,6 @@ var response = await fetch(TARGET_URL, {
             var fullMatchName = `${home} - ${away}`;
             var btnId = 'mb-' + Math.random().toString(36).substr(2, 8);
             
-            // On génère le drapeau et on le sécurise pour l'envoyer au bouton
             var flag = getLeagueFlag(m);
             var safeFlag = encodeURIComponent(flag);
 
@@ -1800,7 +1798,7 @@ var response = await fetch(TARGET_URL, {
 
     } catch (error) {
         console.error("Erreur API:", error);
-        showToast("Impossible d'accéder à l'API (Blocage CORS ou réseau)", true);
+        showToast("Erreur de connexion à l'API", true);
     }
     btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs';
 }
