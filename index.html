@@ -636,7 +636,7 @@ function renderInstaReelsTexts() {
 
     var matchInfo = "du jour";
     var earliestTime = "ce soir";
-    var hashtagsDynamic = "#ScoreMaster #Pronostic #ParisSportifs #Football #PronoFoot";
+    var teamHashtags = [];
     
     if (activeCombined && activeCombined.matches && activeCombined.matches.length > 0) {
         var matchNamesArr = activeCombined.matches.map(m => m.teams).filter(t => t);
@@ -648,23 +648,37 @@ function renderInstaReelsTexts() {
             earliestTime = times[0].replace(':', 'h');
         }
 
-        // Création des hashtags dynamiques basés sur les noms d'équipes (suppression des espaces)
-        let teamHashtags = [];
+        // Récupération des noms d'équipes pour en faire des hashtags
         activeCombined.matches.forEach(m => {
             if(m.teams) {
                 let parts = m.teams.split(/\s+-\s+|\s+vs\.?\s+/i);
                 parts.forEach(t => {
                     if(t.trim()) {
-                        teamHashtags.push("#" + t.trim().replace(/\s+/g, ''));
+                        // On supprime les espaces et caractères spéciaux pour faire un hashtag propre
+                        let cleanTag = t.trim().replace(/[^a-zA-Z0-9\u00C0-\u017F]/g, '');
+                        if (cleanTag) teamHashtags.push("#" + cleanTag);
                     }
                 });
             }
         });
-        if (teamHashtags.length > 0) {
-            hashtagsDynamic = teamHashtags.join(' ') + " #ScoreMaster #PronosticSportif #ParisSportifs #PronoFoot #VIP";
+    }
+
+    // --- LOGIQUE INTELLIGENTE : EXACTEMENT 5 HASHTAGS VIRAUX ---
+    let finalHashtags = [];
+    
+    // 1. On prend max 2 noms d'équipes pour cibler la hype du match
+    if (teamHashtags.length > 0) finalHashtags.push(teamHashtags[0]);
+    if (teamHashtags.length > 1) finalHashtags.push(teamHashtags[1]);
+    
+    // 2. On complète avec les hashtags les plus puissants de la niche jusqu'à atteindre 5
+    let viralTags = ["#ParisSportifs", "#Pronostic", "#Football", "#PronoFoot", "#ScoreMaster"];
+    for (let tag of viralTags) {
+        if (finalHashtags.length < 5 && !finalHashtags.includes(tag)) {
+            finalHashtags.push(tag);
         }
     }
 
+    var hashtagsDynamic = finalHashtags.join(' ');
     var baseHashtags = "\n\n" + hashtagsDynamic;
 
     var messages = [
@@ -691,8 +705,8 @@ function renderInstaReelsTexts() {
 
     var html = `
         <div style="background:rgba(225,48,108,0.1);border:1px solid rgba(225,48,108,0.3);border-radius:10px;padding:12px;color:#f472b6;font-size:12px;margin-bottom:20px;">
-            <i class="fas fa-hashtag"></i> Hashtags générés automatiquement : <br>
-            <strong style="color:#fff;">${hashtagsDynamic}</strong>
+            <i class="fas fa-hashtag"></i> 5 Hashtags viraux optimisés pour l'algorithme : <br>
+            <strong style="color:#fff; font-size:14px; display:inline-block; margin-top:6px;">${hashtagsDynamic}</strong>
         </div>`;
 
     messages.forEach((msg, i) => {
