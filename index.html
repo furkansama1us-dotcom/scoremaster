@@ -4810,14 +4810,15 @@ function closeInstaTexts() {
 
 function renderInstaTexts() {
     var container = document.getElementById('insta-texts-content');
+    if (!container) return;
 
     var activeCombined = null;
     if (window.allCombineds && window.allCombineds.length > 0) {
         activeCombined = window.allCombineds.find(c => c.status === 'en-cours');
     }
 
-    var earliestTime = '21h00';
-    var teamsString = 'L\'affiche du jour';
+    var earliestTime = 'ce soir';
+    var teamsString = "l'affiche du jour";
     var teamA = 'Équipe A', teamB = 'Équipe B';
 
     if (activeCombined && activeCombined.matches && activeCombined.matches.length > 0) {
@@ -4826,9 +4827,8 @@ function renderInstaTexts() {
             var extracted = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
             if (extracted && extracted[0] < earliest) earliest = extracted[0];
         });
-        earliestTime = earliest.replace(':', 'h');
+        if (earliest !== '23:59') earliestTime = earliest.replace(':', 'h');
 
-        // Récupérer les noms pour les sondages
         let firstMatch = activeCombined.matches[0];
         if (firstMatch && firstMatch.teams) {
             teamsString = firstMatch.teams;
@@ -4841,25 +4841,47 @@ function renderInstaTexts() {
     }
 
     var texts = [
-        { label: '📊 Story 1 — Interaction & Algorithme (À mettre avec un Sondage/Curseur)', color: '#8b5cf6', items: [
+        // --- NOUVELLE RUBRIQUE : 20 MESSAGES PRÉSENTATION COMBINÉ ---
+        { label: '📢 Lancement Combiné (20 Accroches VIP+)', color: '#ec4899', items: [
+            `Le combiné est DISPO sur votre espace SM VIP+ 👑\nC'est maintenant qu'il faut parier ! 👇\n👉 Lien en bio`,
+            `L'algorithme a parlé 🤖\nLe ticket parfait est en ligne dans votre espace Score Master.\n👉 Go valider ça !`,
+            `Cotes analysées. Matchs validés ✅\nLe combiné de ce soir vous attend sur le VIP+ ⚡️`,
+            `🚨 ALERTE PUBLICATION !\nLe combiné exclusif est dispo. Validez-le avant que les cotes ne chutent 📉\n👉 Lien en bio`,
+            `On ne parie pas au hasard 🧬\nLe nouveau ticket VIP+ est disponible. À vous de jouer 💸`,
+            `Le travail est fait 💼\nLe combiné est en ligne sur l'espace SM VIP+. Ne perdez pas de temps !`,
+            `Les experts ont tranché ⚔️\nLe combiné du jour est publié dans l'Espace VIP+.\n👉 Accès en bio`,
+            `Nouveau combiné dispo ! 🔥\nConnectez-vous à votre espace VIP+ et encaissez avec nous ce soir.`,
+            `Le verdict est tombé 🏛️\nLe ticket combiné est prêt sur votre espace membre SM VIP+.`,
+            `C'est l'heure ⏳\nLe combiné SM VIP+ est officiel et publié. Ne laissez pas passer l'occasion !`,
+            `L'analyse parfaite existe 🎯\nElle est dispo dès maintenant sur votre espace VIP+.\n👉 Cliquez sur le lien en bio.`,
+            `Ticket du soir : PUBLIÉ ✅\nFoncez sur l'espace SM VIP+ avant le coup d'envoi à ${earliestTime} !`,
+            `Pas d'émotion, que des stats 📊\nLe combiné validé par l'IA est sur l'espace membre.`,
+            `Le choc ${teamsString} est dans notre combiné VIP+ 🔥\nDisponible tout de suite sur votre espace !`,
+            `Faites partie de l'élite 👑\nLe ticket Score Master est en ligne. C'est maintenant ou jamais !`,
+            `L'attente est terminée !\nLe combiné exclusif est en ligne sur votre Espace VIP+ 🚀\n👉 Lien en bio`,
+            `Sécurisez vos gains dès maintenant 💸\nLe combiné du jour vient de tomber sur le VIP+.`,
+            `Ne pariez pas à l'aveugle 👀\nLe ticket algorithmique est sur le VIP+. C'est l'heure.\n👉 Go bio`,
+            `La frappe du jour est armée ⚡️\nLe combiné vous attend sagement sur l'espace membre SM.`,
+            `Fin des analyses 🏁\nLe ticket final est publié. Rendez-vous sur l'Espace VIP+ pour valider !`
+        ]},
+
+        // --- ANCIENNES RUBRIQUES CONSERVÉES ---
+        { label: '📊 Story Interaction (Sondages / Questions)', color: '#8b5cf6', items: [
             `Qui prend les 3 points ce soir ? 👇\n[Mettre un sticker Sondage : ${teamA} ou ${teamB}]\n\nNotre algorithme a déjà rendu son verdict 🤫`,
             `Un pronostic pour ce choc ? ✍️\n[Mettre un sticker Boîte à questions]\n\nNous, on a déjà validé le score exact 🎯`,
             `Tu vois combien de buts dans ce match ? ⚽️\n[Mettre un curseur à glisser]\n\nL'analyse est bouclée. C'est du lourd ce soir 💸`
         ]},
-        { label: '⚡ Story 2 — Hype & Clash (Parfait sur l\'animation vidéo)', color: '#f97316', items: [
+        { label: '⚡ Story Hype & Clash', color: '#f97316', items: [
             `Le choc de la soirée ⚡️\n\nL'analyse est terminée. Le score exact est verrouillé dans le VIP+ 🤫\n\n👉 Lien en bio`,
-            `Ce soir la terre tremble 🌍\nMais notre algorithme reste de glace 🥶\n\nScore exact publié 🔒`,
-            `Une affiche de rêve. Une analyse de maître 💎\n\nLe combiné est prêt.\n📲 Accède au VIP+ via le lien en bio`
+            `Ce soir la terre tremble 🌍\nMais notre algorithme reste de glace 🥶\n\nScore exact publié 🔒`
         ]},
-        { label: '👑 Story 3 — Autorité & Confiance (Flex)', color: '#22c55e', items: [
+        { label: '👑 Story Autorité & Confiance', color: '#22c55e', items: [
             `Pas de hasard. Que des mathématiques et de l'analyse 🧬\n\nLe ticket du soir est une vraie pépite 💎\n👉 Lien en bio`,
-            `Pendant qu'ils parient au hasard, on investit intelligemment 🧠\n\nScore exact validé par nos experts 🦅\nRejoins l'élite ⬇️`,
-            `100% Data. 0% Émotion.\n\nLe verdict de ce soir est tombé. 🏛️\nTicket VIP+ disponible.`
+            `Pendant qu'ils parient au hasard, on investit intelligemment 🧠\n\nScore exact validé par nos experts 🦅\nRejoins l'élite ⬇️`
         ]},
-        { label: '⏳ Story 4 — FOMO & Urgence', color: '#ef4444', items: [
+        { label: '⏳ Story FOMO & Urgence', color: '#ef4444', items: [
             `⏳ Plus que quelques heures avant le coup d'envoi (${earliestTime}).\n\nLes VIP+ ont déjà le ticket en main 🎟️\nEt toi ? 👇`,
-            `🚨 Fermeture des accès imminente !\n\nTu vas encore rater ça ?\n👉 Rejoins le VIP+ avant le début du match`,
-            `Les cotes risquent de chuter. L'info est déjà dans l'espace membre 👑\n\nDernier appel avant le match ⏳`
+            `🚨 Fermeture des accès imminente !\n\nTu vas encore rater ça ?\n👉 Rejoins le VIP+ avant le début du match`
         ]}
     ];
 
@@ -4870,9 +4892,10 @@ function renderInstaTexts() {
             <i class="fas fa-circle" style="font-size:8px;animation:pulse 2s infinite;"></i>
             ${activeCombined ? 'Combiné EN COURS détecté — textes ultra-optimisés' : 'Aucun combiné — textes génériques'}
         </div>
-        <div style="font-size:11px;color:#6b7280;line-height:1.6;padding:2px;">
-            📱 <strong style="color:#fff;">Astuce de Pro :</strong> Ne cachez pas l'animation ! Placez le texte en haut ou en bas de l'écran, et utilisez les stickers natifs Instagram (Sondages, Curseurs) pour booster la viralité.
-        </div>`;
+        <div style="font-size:11px;color:#6b7280;line-height:1.6;padding:2px; margin-bottom: 12px;">
+            📱 <strong style="color:#fff;">Astuce :</strong> Copiez une des 20 accroches de présentation pour accompagner la publication de votre ticket sur le Feed ou en Story !
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">`;
 
     texts.forEach(function(section, si) {
         html += `
@@ -4889,7 +4912,7 @@ function renderInstaTexts() {
                 <div style="background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;">
                     <div style="font-size:13px;color:#f9fafb;line-height:1.8;white-space:pre-wrap;">${txt}</div>
                     <button id="${btnId}" onclick="copyInstaText(${si},${ti})" 
-                        style="width:100%;padding:10px;border-radius:10px;border:none;background:${section.color};color:${si === 3 ? '#fff' : '#000'};font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s;">
+                        style="width:100%;padding:10px;border-radius:10px;border:none;background:${section.color};color:${(si === 3 || si === 0) ? '#fff' : '#000'};font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s;">
                         📋 Copier ce texte
                     </button>
                 </div>`;
@@ -4898,6 +4921,7 @@ function renderInstaTexts() {
         html += `</div></div>`;
     });
 
+    html += `</div>`;
     container.innerHTML = html;
 }
 function copyInstaText(si, ti) {
