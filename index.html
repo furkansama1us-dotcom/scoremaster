@@ -752,6 +752,51 @@ async function fetchApiScore(id, dateRaw) {
         showToast("Erreur lors de la récupération.", true);
     }
 }
+    function openEcussonsFromEditor() {
+    const inputs = document.querySelectorAll('.match-teams-input');
+    let teams = [];
+    
+    inputs.forEach(input => {
+        if (input.value.trim()) {
+            let parts = input.value.split(' - ');
+            parts.forEach(t => { if(t.trim()) teams.push(t.trim()); });
+        }
+    });
+
+    if (teams.length === 0) {
+        showToast("Ajoute d'abord des matchs pour générer les écussons", true);
+        return;
+    }
+
+    const container = document.getElementById('ecussons-list-container');
+    container.innerHTML = '';
+
+    teams.forEach((team, index) => {
+        const promptImg = `A luxurious 3D metallic chrome football crest of ${team}. Dark carbon background, cinematic lighting, 8k, octane render.`;
+        const promptVid = `[0s – 3.5s] INTRODUCTION — L'écusson de ${team} apparaît au centre d'un stade plongé dans le noir. Des particules dorées flottent.\n[3.5s – 7s] DÉTAILS — Gros plan macro sur les reflets du logo.\n[7s – 8s] CLÔTURE — Fondu vers le noir.`;
+
+        container.innerHTML += `
+            <div class="team-crest-card">
+                <div class="team-name-title">🛡️ ${team}</div>
+                <div class="prompt-box">${promptImg}</div>
+                <button class="copy-badge-btn" style="background:#333; color:#fff; margin-bottom:8px;" onclick="copyToClipboard('${promptImg.replace(/'/g, "\\'")}', this)">Copier Image</button>
+                <div class="prompt-box">${promptVid}</div>
+                <button class="copy-badge-btn" style="background:linear-gradient(135deg,#f97316,#ea580c); color:#fff;" onclick="copyToClipboard('${promptVid.replace(/'/g, "\\'")}', this)">Copier Vidéo (Kling)</button>
+            </div>`;
+    });
+
+    document.getElementById('ecussons-tool').style.display = 'flex';
+}
+
+function closeEcussonsTool() { document.getElementById('ecussons-tool').style.display = 'none'; }
+
+function copyToClipboard(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+        const old = btn.innerHTML;
+        btn.innerHTML = '✓ Copié !';
+        setTimeout(() => { btn.innerHTML = old; }, 2000);
+    });
+}
 </script>
 
 <!-- SPLASH -->
@@ -1293,10 +1338,16 @@ async function fetchApiScore(id, dateRaw) {
 
         <div class="admin-section">
             <div class="admin-section-title"><i class="fas fa-futbol"></i> Matchs du combiné</div>
-            <button id="btn-fetch-api" onclick="fetchMatchesFromAPI()" style="width:100%; padding:12px; background:rgba(74, 144, 217, 0.15); color:var(--blue); border:1px solid rgba(74, 144, 217, 0.3); border-radius:10px; cursor:pointer; margin-bottom:15px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
-                <i class="fas fa-plug"></i> Charger les matchs du jour (API)
-            </button>
-            <div id="api-matches-container"></div>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+    <button id="btn-fetch-api" onclick="fetchMatchesFromAPI()" style="flex: 2; padding:12px; background:rgba(74, 144, 217, 0.15); color:var(--blue); border:1px solid rgba(74, 144, 217, 0.3); border-radius:10px; cursor:pointer; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <i class="fas fa-plug"></i> Charger API
+    </button>
+    
+    <button onclick="openEcussonsFromEditor()" style="flex: 1; padding:12px; background:linear-gradient(135deg, #f97316, #ea580c); color:#fff; border:none; border-radius:10px; cursor:pointer; font-weight:700; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <i class="fas fa-shield-alt"></i> Écussons
+    </button>
+</div>
+<div id="api-matches-container"></div>
             <div id="admin-matches"></div>
             <button class="admin-add-match-btn" onclick="addMatchEntry()"><i class="fas fa-plus"></i> Ajouter un match manuellement</button>
         </div>
