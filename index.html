@@ -3231,17 +3231,20 @@ ${aiPrompt}
         matchesToDisplay.forEach(function (m) {
             var mStatus = m.match_status || (sc === 'en-cours' ? 'en-cours' : sc);
             
-            // Sécurité : l'accueil a des étoiles, le VIP a le vrai score mais flouté
             var displayScore = isHomeObscured ? '*** - ***' : m.score;
             var displayOdds = isHomeObscured ? '**.**' : m.odds.toFixed(2);
-            
             var blurClass = (isHomeObscured || isVipObscured) ? 'blurred-value' : '';
-            var logoDisplay = flagImg(m.logo);
+            
+            // 👇 1. AJOUTE CETTE LIGNE ICI pour récupérer le drapeau
+            var flagImg = getLeagueFlag(m);
+            
+            // (Tu peux garder logoDisplay si tu en as besoin ailleurs, sinon tu peux l'enlever)
+            var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<span style="margin-right:4px;">⚽</span>`);
             
             let cleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : "--:--";
             let finalTimeDisplay = smartPrefix + (cleanTime ? cleanTime[0] : "");
-            let flagImg = getLeagueFlag(m);
 
+            // 👇 2. La variable ${flagImg} fonctionnera maintenant sans crasher le code
             mH += `<div class="match-row">
                     <div class="match-row-top" style="display:flex; justify-content:space-between; align-items:center;">
                         <div class="match-type" style="white-space:nowrap;">
@@ -3251,7 +3254,7 @@ ${aiPrompt}
                         <div class="match-odds ${blurClass}" style="transition: filter 0.5s ease;">${displayOdds}</div>
                     </div>
                     <div class="match-row-bottom">
-                        <div class="match-teams" style="color:#fff;">${logoDisplay} ${m.teams || 'Équipes'}</div>
+                        <div class="match-teams" style="color:#fff;">${flagImg} ${m.teams || 'Équipes'}</div>
                         <div class="match-time" style="color:var(--text-gray);">${finalTimeDisplay}</div>
                     </div>
                    </div>`;
