@@ -3876,12 +3876,12 @@ function renderEcussonContent() {
             <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:40px 20px;flex:1;">
                 <div style="width:80px;height:80px;border-radius:20px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);display:flex;align-items:center;justify-content:center;font-size:36px;">⏳</div>
                 <div style="font-size:18px;font-weight:700;color:#fff;">Pas de combiné en cours</div>
-                <div style="font-size:13px;color:#6b7280;max-width:320px;line-height:1.6;">Publiez un combiné depuis l'onglet <strong style="color:#a855f7;">Vue</strong> pour voir l'aperçu et générer les écussons.</div>
+                <div style="font-size:13px;color:#6b7280;max-width:320px;line-height:1.6;">Publiez un combiné depuis l'onglet <strong style="color:#a855f7;">Vue</strong> pour générer les écussons.</div>
             </div>`;
         return;
     }
 
-    // --- ÉTAPE A : CRÉATION DE L'APERÇU DU COMBINÉ ---
+    // --- ÉTAPE A : APERÇU DU COMBINÉ EN HAUT ---
     let previewMatchesHtml = '';
     activeCombined.matches.forEach(m => {
         let logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : (m.league_flag ? `<span style="margin-right:6px; display:inline-flex; align-items:center; vertical-align:middle;">${m.league_flag}</span>` : `<span style="margin-right:4px;">⚽</span>`));
@@ -3907,7 +3907,7 @@ function renderEcussonContent() {
     });
 
     let previewHtml = `
-    <div style="background:#1E1E2E; border-radius:16px; overflow:hidden; border:1px solid #2A2A3A; margin-bottom: 20px; flex-shrink: 0;">
+    <div style="background:#1E1E2E; border-radius:16px; overflow:hidden; border:1px solid #2A2A3A; margin-bottom: 24px; flex-shrink: 0;">
         <div style="padding:14px 16px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #2A2A3A;">
             <div style="display:flex; align-items:center; gap:8px;">
                 <span style="background:var(--blue); color:#fff; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; text-transform:uppercase;">En cours</span>
@@ -3920,49 +3920,43 @@ function renderEcussonContent() {
         </div>
     </div>`;
 
-    // --- ÉTAPE B : GÉNÉRATION DES PROMPTS (PAR MATCH ET NON PAR ÉQUIPE) ---
-    var matchPrompts = activeCombined.matches.map(function(m) {
-        let teamA = "Équipe A", teamB = "Équipe B";
+    // --- ÉTAPE B : ANCIENS PROMPTS (1 PAR ÉQUIPE) ---
+    var allTeams = [];
+    activeCombined.matches.forEach(function(m) {
         if (m.teams) {
-            let parts = m.teams.split(/\s*[-vs]+\s*/i);
-            if (parts.length >= 2) {
-                teamA = parts[0].trim();
-                teamB = parts[1].trim();
-            } else {
-                teamA = m.teams.trim(); // Fallback de sécurité
-            }
+            // Séparation propre pour éviter de couper "Sporting" au niveau du 'S'
+            var parts = m.teams.split(/\s+-\s+|\s+vs\.?\s+/i);
+            parts.forEach(function(t) { if(t.trim()) allTeams.push(t.trim()); });
         }
-        return {
-            matchLabel: `${teamA} vs ${teamB}`,
-            prompt: generateMatchEcussonPrompt(teamA, teamB)
-        };
     });
 
-    // Stockage global pour pouvoir copier facilement
-    window._matchEcussons = matchPrompts;
+    // Dédupliquer
+    allTeams = [...new Set(allTeams)];
 
-    // --- ÉTAPE C : CONSTRUCTION DU RESTE DE L'INTERFACE ---
-    var html = previewHtml + `
-        <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#c084fc;display:flex;align-items:center;gap:8px; margin-bottom: 12px; flex-shrink:0;">
-            <i class="fas fa-bolt" style="font-size:12px;animation:pulse 2s infinite;"></i>
-            ${matchPrompts.length} match(s) détecté(s) — Un prompt d'affiche généré par duel
-        </div>
-        <div style="font-size:11px;color:#6b7280;line-height:1.6;padding:4px 2px; margin-bottom: 12px; flex-shrink:0;">
-            📋 Copiez le prompt de votre choix et collez-le sur <strong style="color:#fff;">Midjourney / DALL·E 3</strong>.
+    var ecussons = allTeams.map(function(team) {
+        return { team: team, prompt: generateEcussonPrompt(team), copied: false };
+    });
+    window._ecussons = ecussons; // Stockage global original
+
+    var htmlIndividuel = `
+        <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#c084fc;display:flex;align-items:center;gap:8px; margin-bottom:12px;">
+            <i class="fas fa-circle" style="font-size:8px;animation:pulse 2s infinite;"></i>
+            ${allTeams.length} équipe(s) détectée(s) — Prompts individuels
         </div>`;
 
-    matchPrompts.forEach(function(e, i) {
-        html += `
-        <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(168,85,247,0.2);border-radius:16px;overflow:hidden; margin-bottom: 12px; flex-shrink:0;">
+    ecussons.forEach(function(e, i) {
+        var flag = detectFlag(e.team + ' ' + e.team);
+        htmlIndividuel += `
+        <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(168,85,247,0.2);border-radius:16px;overflow:hidden; margin-bottom:12px;">
             <div style="padding:14px 16px;border-bottom:1px solid rgba(168,85,247,0.15);display:flex;align-items:center;justify-content:space-between;">
                 <div style="display:flex;align-items:center;gap:10px;">
-                    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#a855f7,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;">🔥</div>
+                    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#a855f7,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;">🛡️</div>
                     <div>
-                        <div style="font-size:14px;font-weight:800;color:#fff;">${e.matchLabel}</div>
-                        <div style="font-size:11px;color:#6b7280;">Prompt "Clash Affiche 9:16"</div>
+                        <div style="font-size:14px;font-weight:800;color:#fff;">${flag} ${e.team}</div>
+                        <div style="font-size:11px;color:#6b7280;">Prompt écusson seul</div>
                     </div>
                 </div>
-                <button id="btn-copy-match-ecusson-${i}" onclick="copyMatchEcusson(${i})" style="padding:8px 14px;border-radius:10px;border:1px solid rgba(168,85,247,0.5);color:#c084fc;background:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap; transition: all 0.2s;">📋 Copier</button>
+                <button id="btn-copy-ecusson-${i}" onclick="copyEcusson(${i})" style="padding:8px 14px;border-radius:10px;border:1px solid rgba(168,85,247,0.5);color:#c084fc;background:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap; transition:all 0.2s;">📋 Copier</button>
             </div>
             <div style="padding:14px 16px;">
                 <div style="background:rgba(0,0,0,0.4);border:1px solid rgba(168,85,247,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:160px;overflow-y:auto;white-space:pre-wrap;">${e.prompt}</div>
@@ -3970,31 +3964,66 @@ function renderEcussonContent() {
         </div>`;
     });
 
-    container.innerHTML = html;
+    // --- ÉTAPE C : NOUVEAUX PROMPTS DE MATCHS (CLASH / DUEL) ---
+    var matchPrompts = activeCombined.matches.map(function(m) {
+        let teamA = "Équipe A", teamB = "Équipe B";
+        if (m.teams) {
+            let parts = m.teams.split(/\s+-\s+|\s+vs\.?\s+/i);
+            if (parts.length >= 2) {
+                teamA = parts[0].trim();
+                teamB = parts[1].trim();
+            } else {
+                teamA = m.teams.trim();
+            }
+        }
+        return {
+            matchLabel: `${teamA} vs ${teamB}`,
+            prompt: generateMatchEcussonPrompt(teamA, teamB)
+        };
+    });
+    window._matchEcussons = matchPrompts; // Stockage global pour les matchs
+
+    var htmlMatch = `
+        <div style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#fb923c;display:flex;align-items:center;gap:8px; margin-top:24px; margin-bottom:12px;">
+            <i class="fas fa-bolt" style="font-size:12px;animation:pulse 2s infinite;"></i>
+            ${matchPrompts.length} duel(s) détecté(s) — Prompts Affiche Clash
+        </div>`;
+
+    matchPrompts.forEach(function(e, i) {
+        htmlMatch += `
+        <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(249,115,22,0.2);border-radius:16px;overflow:hidden; margin-bottom:12px;">
+            <div style="padding:14px 16px;border-bottom:1px solid rgba(249,115,22,0.15);display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#f97316,#ea580c);display:flex;align-items:center;justify-content:center;font-size:18px;">🔥</div>
+                    <div>
+                        <div style="font-size:14px;font-weight:800;color:#fff;">${e.matchLabel}</div>
+                        <div style="font-size:11px;color:#9ca3af;">Prompt Clash 9:16</div>
+                    </div>
+                </div>
+                <button id="btn-copy-match-ecusson-${i}" onclick="copyMatchEcusson(${i})" style="padding:8px 14px;border-radius:10px;border:1px solid rgba(249,115,22,0.5);color:#fb923c;background:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap; transition:all 0.2s;">📋 Copier</button>
+            </div>
+            <div style="padding:14px 16px;">
+                <div style="background:rgba(0,0,0,0.4);border:1px solid rgba(249,115,22,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:160px;overflow-y:auto;white-space:pre-wrap;">${e.prompt}</div>
+            </div>
+        </div>`;
+    });
+
+    // --- RENDU FINAL ---
+    container.innerHTML = previewHtml + htmlIndividuel + htmlMatch;
 }
 
-// ============================================================
-// 2. NOUVEAU TEMPLATE DU PROMPT DYNAMIQUE
-// ============================================================
-function generateMatchEcussonPrompt(teamA, teamB) {
-    return `ENGLISH PROMPT: A high-impact, photorealistic [9:16] cinematic composition. The image is split by a sharp dynamic diagonal line.
-Top-Left Half: The ${teamA} logo as a premium dense embroidered emblem on its primary club colors athletic mesh.
-Bottom-Right Half: The ${teamB} logo as a premium dense embroidered emblem on its primary club colors textured fabric.
-Dynamic Effects: At the diagonal intersection, add a subtle shimmering light energy effect or a sharp contrast of shadows. Use dramatic chiaroscuro lighting with intense highlights on the thread edges to create a 3D metallic glint. Add floating micro-dust particles and subtle bokeh lens flares in the air to add depth and atmosphere.
-Branding Element: At the bottom center of the image, integrate the "Score Master" logo — a sleek metallic silver "SM" monogram with a luxurious gold crown on top. Render it with a subtle glassmorphism or holographic shimmer effect, slightly elevated above the fabric background with a soft drop shadow. The logo should feel like a premium watermark, elegant and not overpowering.
-Technical: Ultra-close-up, extreme detail on stitching, shallow depth of field. The mood is aggressive, luxurious, and high-energy. No additional text, no watermarks. --ar 9:16 --style raw --v 6`;
+// -------------------------------------------------------------
+// ANCIENNES FONCTIONS (CONSERVÉES POUR UN PROMPT PAR ÉQUIPE)
+// -------------------------------------------------------------
+function generateEcussonPrompt(teamName) {
+    return `Create a photorealistic [16:9] aspect ratio image using the uploaded logo of ${teamName} as the exact source identity. Preserve the logo's original shape, proportions, symbol geometry, layout and color structure precisely, with no redesign, distortion or reinterpretation. Transform the uploaded logo into a high-end embroidered emblem with realistic, dense stitching and premium embroidery detail. The emblem should be the central focus, placed on a premium, textured fabric surface that complements ${teamName}'s official colors. Use a dynamic close-up perspective with subtle depth of field, where the foreground embroidery is sharply in focus and the fabric softly blurs into the background. Apply natural, soft lighting that casts gentle shadows to emphasize stitch depth, thread texture and fabric weave. The final image should feel luxurious, tactile, modern and suitable for a premium brand or sports identity presentation. No text overlays, no watermarks, no additional typography. The logo must remain instantly recognizable as the official ${teamName} logo. --ar 3:4 --style raw --v 6`;
 }
 
-// ============================================================
-// 3. FONCTION DE COPIE (ADAPTÉE POUR LES MATCHS)
-// ============================================================
-function copyMatchEcusson(i) {
-    var e = window._matchEcussons[i];
+function copyEcusson(i) {
+    var e = window._ecussons[i];
     if (!e) return;
-    
-    // Utilise ta fonction pgCopyText existante
     pgCopyText(e.prompt, function() {
-        var btn = document.getElementById('btn-copy-match-ecusson-' + i);
+        var btn = document.getElementById('btn-copy-ecusson-' + i);
         if (btn) {
             btn.textContent = '✅ Copié !';
             btn.style.background = 'rgba(34,197,94,0.2)';
@@ -4005,6 +4034,38 @@ function copyMatchEcusson(i) {
                 btn.style.background = 'none';
                 btn.style.borderColor = 'rgba(168,85,247,0.5)';
                 btn.style.color = '#c084fc';
+            }, 2000);
+        }
+    });
+}
+
+// -------------------------------------------------------------
+// NOUVELLES FONCTIONS (POUR LE PROMPT CLASH / DUEL)
+// -------------------------------------------------------------
+function generateMatchEcussonPrompt(teamA, teamB) {
+    return `ENGLISH PROMPT: A high-impact, photorealistic [9:16] cinematic composition. The image is split by a sharp dynamic diagonal line.
+Top-Left Half: The ${teamA} logo as a premium dense embroidered emblem on its primary club colors athletic mesh.
+Bottom-Right Half: The ${teamB} logo as a premium dense embroidered emblem on its primary club colors textured fabric.
+Dynamic Effects: At the diagonal intersection, add a subtle shimmering light energy effect or a sharp contrast of shadows. Use dramatic chiaroscuro lighting with intense highlights on the thread edges to create a 3D metallic glint. Add floating micro-dust particles and subtle bokeh lens flares in the air to add depth and atmosphere.
+Branding Element: At the bottom center of the image, integrate the "Score Master" logo — a sleek metallic silver "SM" monogram with a luxurious gold crown on top. Render it with a subtle glassmorphism or holographic shimmer effect, slightly elevated above the fabric background with a soft drop shadow. The logo should feel like a premium watermark, elegant and not overpowering.
+Technical: Ultra-close-up, extreme detail on stitching, shallow depth of field. The mood is aggressive, luxurious, and high-energy. No additional text, no watermarks. --ar 9:16 --style raw --v 6`;
+}
+
+function copyMatchEcusson(i) {
+    var e = window._matchEcussons[i];
+    if (!e) return;
+    pgCopyText(e.prompt, function() {
+        var btn = document.getElementById('btn-copy-match-ecusson-' + i);
+        if (btn) {
+            btn.textContent = '✅ Copié !';
+            btn.style.background = 'rgba(34,197,94,0.2)';
+            btn.style.borderColor = '#22c55e';
+            btn.style.color = '#4ade80';
+            setTimeout(function() {
+                btn.textContent = '📋 Copier';
+                btn.style.background = 'none';
+                btn.style.borderColor = 'rgba(249,115,22,0.5)';
+                btn.style.color = '#fb923c';
             }, 2000);
         }
     });
