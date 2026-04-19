@@ -4073,171 +4073,199 @@ function closeEcusson() {
 }
 
 // ============================================================
-// 1. FONCTION PRINCIPALE DU GÉNÉRATEUR D'ÉCUSSONS (AVEC LES 3 STYLES VIDÉO)
+// 1. GÉNÉRATEUR D'ÉCUSSONS, DUELS ET BANNIÈRE FEED INSTA
 // ============================================================
 function renderEcussonContent() {
     var container = document.getElementById('ecusson-main-content');
+    if (!container) return;
 
-    // Récupérer le combiné en cours
-    var activeCombined = null;
-    if (window.allCombineds && window.allCombineds.length > 0) {
-        activeCombined = window.allCombineds.find(c => c.status === 'en-cours');
-    }
+    try {
+        // Récupérer le combiné en cours
+        var activeCombined = null;
+        if (window.allCombineds && window.allCombineds.length > 0) {
+            activeCombined = window.allCombineds.find(c => c.status === 'en-cours');
+        }
 
-    if (!activeCombined || !activeCombined.matches || activeCombined.matches.length === 0) {
-        container.innerHTML = `
-            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:40px 20px;flex:1;">
-                <div style="width:80px;height:80px;border-radius:20px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;">⏳</div>
-                <div style="font-size:18px;font-weight:700;color:#fff;flex-shrink:0;">Pas de combiné en cours</div>
-                <div style="font-size:13px;color:#6b7280;max-width:320px;line-height:1.6;flex-shrink:0;">Publiez un combiné depuis l'onglet <strong style="color:#a855f7;">Vue</strong> pour générer les écussons.</div>
+        if (!activeCombined || !activeCombined.matches || activeCombined.matches.length === 0) {
+            container.innerHTML = `
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:40px 20px;flex:1;">
+                    <div style="width:80px;height:80px;border-radius:20px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;">⏳</div>
+                    <div style="font-size:18px;font-weight:700;color:#fff;flex-shrink:0;">Pas de combiné en cours</div>
+                    <div style="font-size:13px;color:#6b7280;max-width:320px;line-height:1.6;flex-shrink:0;">Publiez un combiné depuis l'onglet <strong style="color:#a855f7;">Vue</strong> pour générer les écussons.</div>
+                </div>`;
+            return;
+        }
+
+        // --- ÉTAPE A : PRÉPARATION DES DONNÉES ---
+        let previewMatchesHtml = '';
+        var allTeams = [];
+        var combinedTeamNames = []; // Pour la bannière de feed
+
+        activeCombined.matches.forEach(m => {
+            let displayTeams = m.teams || "Équipes";
+            combinedTeamNames.push(displayTeams);
+
+            if (m.teams) {
+                var parts = m.teams.split(/\s+-\s+|\s+vs\.?\s+/i);
+                parts.forEach(function(t) { if(t.trim()) allTeams.push(t.trim()); });
+            }
+
+            let logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : (m.league_flag ? `<span style="margin-right:6px; display:inline-flex; align-items:center; vertical-align:middle;">${m.league_flag}</span>` : `<span style="margin-right:4px;">⚽</span>`));
+            let displayTime = m.time || "--:--";
+            let displayScore = m.score || "-";
+            let displayOdds = m.odds ? m.odds.toFixed(2) : "0.00";
+
+            previewMatchesHtml += `
+            <div style="padding:14px 0; border-bottom:1px solid #2A2A3A;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                    <div style="display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:#fff;">
+                        <i class="fas fa-futbol" style="color:var(--blue); font-size:14px;"></i> Score exact
+                        <span class="blurred-value" style="color:var(--green); font-weight:700; margin-left:6px;">${displayScore}</span>
+                    </div>
+                    <div class="blurred-value" style="background:#2A2A3A; padding:4px 12px; border-radius:6px; font-size:14px; font-weight:700; color:#fff;">${displayOdds}</div>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:space-between;">
+                    <div style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-light-gray); min-width:0; flex:1;">
+                        ${logoDisplay}
+                        <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${displayTeams}</span>
+                    </div>
+                    <div style="font-size:11px; color:var(--text-gray); flex-shrink:0; margin-left:10px;">${displayTime}</div>
+                </div>
             </div>`;
-        return;
+        });
+
+        let previewHtml = `
+        <div style="background:#1E1E2E; border-radius:16px; overflow:hidden; border:1px solid #2A2A3A; margin-bottom: 24px; flex-shrink: 0;">
+            <div style="padding:14px 16px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #2A2A3A;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="background:var(--blue); color:#fff; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; text-transform:uppercase;">En cours</span>
+                    <span style="font-size:15px; font-weight:700; color:#fff;">Aperçu du Combiné</span>
+                </div>
+                <i class="fas fa-eye" style="color:var(--text-gray); font-size:16px;"></i>
+            </div>
+            <div style="padding:0 16px;">${previewMatchesHtml}</div>
+        </div>`;
+
+        // --- ÉTAPE B : PROMPTS INDIVIDUELS ---
+        allTeams = [...new Set(allTeams)];
+        const styleHeader = "Detailed stylized digital illustration drawing with bold dark outlines, high-contrast ink wash and textured watercolor coloring, comic book art style.";
+        const brandingSubtil = 'Include a hidden luxury "Score Master" emblem in gold: a golden crown positioned directly above the letters "SM", integrated into the scene.';
+
+        window._ecussons = allTeams.map(function(team) {
+            return { 
+                team: team, 
+                prompt: `ENGLISH PROMPT: ${styleHeader} Close-up portrait of a powerful ${team} football emblem rendered as a premium traditional shield. Intricate metallic inking, bold dark contours, high-contrast textured watercolor coloring. ${brandingSubtil} Dramatic chiaroscuro lighting, floating micro-dust particles. Highly professional illustration. No text overlays. --ar 1:1 --style raw --v 6`
+            };
+        });
+
+        var htmlIndividuel = `
+            <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#c084fc;display:flex;align-items:center;gap:8px; margin-bottom:12px; flex-shrink:0;">
+                <i class="fas fa-paint-brush" style="font-size:12px;animation:pulse 2s infinite;"></i>
+                ${allTeams.length} équipe(s) — Prompts Écussons Illustratifs
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;">`;
+
+        window._ecussons.forEach((e, i) => {
+            var flag = (typeof detectFlag === 'function') ? detectFlag(e.team) : '🛡️';
+            htmlIndividuel += `
+            <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(168,85,247,0.2);border-radius:16px;overflow:hidden; flex-shrink:0;">
+                <div style="padding:14px 16px;border-bottom:1px solid rgba(168,85,247,0.15);display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                    <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
+                        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#a855f7,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;color:#fff;">${flag}</div>
+                        <div style="min-width:0;flex:1;"><div style="font-size:14px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.team}</div></div>
+                    </div>
+                    <button id="btn-copy-ecusson-${i}" onclick="copyEcusson(${i})" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(168,85,247,0.5);color:#c084fc;background:none;font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0;white-space:nowrap;transition:all 0.2s;">📋 Copier</button>
+                </div>
+                <div style="padding:14px 16px;"><div style="background:rgba(0,0,0,0.4);border:1px solid rgba(168,85,247,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">${e.prompt}</div></div>
+            </div>`;
+        });
+        htmlIndividuel += `</div>`;
+
+        // --- ÉTAPE C : PROMPTS DE DUELS ---
+        window._matchEcussons = activeCombined.matches.map(function(m) {
+            let teamA = "Équipe A", teamB = "Équipe B";
+            if (m.teams) {
+                let parts = m.teams.split(/\s+-\s+|\s+vs\.?\s+/i);
+                if (parts.length >= 2) { teamA = parts[0].trim(); teamB = parts[1].trim(); }
+            }
+            return {
+                matchLabel: `${teamA} vs ${teamB}`,
+                prompt: `ENGLISH PROMPT: ${styleHeader} A high-impact cinematic illustrative clash. A sharp dynamic diagonal split composition. Left Half: The ${teamA} logo as an inked embroidered shield on dark mesh. Right Half: The ${teamB} logo as an inked embroidered shield on textured fabric. ${brandingSubtil} Intense highlights, dynamic inked dust particles. Aggressive and energetic mood. No text overlays. --ar 1:1 --style raw --v 6`
+            };
+        });
+
+        var htmlMatch = `
+            <div style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#fb923c;display:flex;align-items:center;gap:8px; margin-top:24px; margin-bottom:12px; flex-shrink:0;">
+                <i class="fas fa-bolt" style="font-size:12px;animation:pulse 2s infinite;"></i>
+                ${activeCombined.matches.length} duel(s) — Prompts Clash Illustratifs
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;">`;
+
+        window._matchEcussons.forEach((e, i) => {
+            htmlMatch += `
+            <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(249,115,22,0.2);border-radius:16px;overflow:hidden; flex-shrink:0;">
+                <div style="padding:14px 16px;border-bottom:1px solid rgba(249,115,22,0.15);display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                    <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
+                        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#f97316,#ea580c);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;color:#fff;">🔥</div>
+                        <div style="min-width:0;flex:1;"><div style="font-size:14px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.matchLabel}</div></div>
+                    </div>
+                    <button id="btn-copy-match-ecusson-${i}" onclick="copyMatchEcusson(${i})" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(249,115,22,0.5);color:#fb923c;background:none;font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0;white-space:nowrap;transition:all 0.2s;">📋 Copier</button>
+                </div>
+                <div style="padding:14px 16px;"><div style="background:rgba(0,0,0,0.4);border:1px solid rgba(249,115,22,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">${e.prompt}</div></div>
+            </div>`;
+        });
+        htmlMatch += `</div>`;
+
+        // --- ÉTAPE D : GÉNÉRATEUR DE BANNIÈRE FEED INSTAGRAM ---
+        const match_list_str = combinedTeamNames.join(' and '); 
+        window._instaFeedPrompt = `ENGLISH PROMPT: ${styleHeader} A powerful cinematic composition summarizing a sports combined masterclass. A stylized master analyst figure with dark curly hair overlooks multiple floating holographic screens showing dynamic illustrative sports clashes. The match names specifically visible on screens include ${match_list_str}. Intense golden and blue lighting, dramatic contrasts. Highly professional and victorious vibe. Prominently displayed luxury "SM" monogram topped with a golden crown emblem. Highly detailed, intricate outlines. No generic text. --ar 1:1 --style raw --v 6`;
+
+        var htmlFeedBanner = `
+            <div style="background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#22d3ee;display:flex;align-items:center;gap:8px; margin-top:24px; margin-bottom:12px; flex-shrink:0;">
+                <i class="fas fa-camera-retro" style="font-size:12px;animation:pulse 2s infinite;"></i>
+                Bannière Feed Instagram — Cover du Combiné
+            </div>
+            <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(6,182,212,0.2);border-radius:16px;overflow:hidden; flex-shrink:0;">
+                <div style="padding:14px 16px;border-bottom:1px solid rgba(6,182,212,0.15);display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                    <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
+                        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#06b6d4,#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;color:#fff;"><i class="fas fa-th-large"></i></div>
+                        <div style="min-width:0;flex:1;"><div style="font-size:14px;font-weight:800;color:#fff;">Prompt Cover 1:1 du Combiné</div><div style="font-size:11px;color:#9ca3af;">Synthèse des ${activeCombined.matches.length} duels en style dessin</div></div>
+                    </div>
+                    <button id="btn-copy-insta-feed" onclick="copyInstaFeedPrompt()" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(6,182,212,0.5);color:#22d3ee;background:none;font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0;white-space:nowrap;transition:all 0.2s;">📋 Copier</button>
+                </div>
+                <div style="padding:14px 16px;"><div style="background:rgba(0,0,0,0.4);border:1px solid rgba(6,182,212,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">${window._instaFeedPrompt}</div></div>
+            </div>`;
+
+        // --- RENDU FINAL ---
+        container.innerHTML = previewHtml + htmlIndividuel + htmlMatch + htmlFeedBanner;
+
+    } catch(e) {
+        // S'il y a la moindre erreur d'exécution, on l'affiche en rouge au lieu de laisser un écran noir !
+        container.innerHTML = `<div style="color:#ef4444; padding:20px; background:rgba(239,68,68,0.1); border-radius:10px; border:1px solid rgba(239,68,68,0.3);"><strong>Erreur Javascript détectée:</strong><br><br>${e.message}</div>`;
+        console.error(e);
     }
+}
 
-    // --- ÉTAPE A : PRÉPARATION DES DONNÉES ---
-    let previewMatchesHtml = '';
-    var allTeams = [];
-    var combinedTeamNames = []; // Pour la bannière de feed
-
-    activeCombined.matches.forEach(m => {
-        let displayTeams = m.teams || "Équipes";
-        combinedTeamNames.push(displayTeams);
-
-        // Analyse pour prompts individuels et clashs
-        if (m.teams) {
-            var parts = m.teams.split(/\s+-\s+|\s+vs\.?\s+/i);
-            parts.forEach(function(t) { if(t.trim()) allTeams.push(t.trim()); });
+// ============================================================
+// 2. NOUVELLE FONCTION POUR COPIER LA BANNIÈRE FEED
+// ============================================================
+function copyInstaFeedPrompt() {
+    if (!window._instaFeedPrompt) return;
+    pgCopyText(window._instaFeedPrompt, function() {
+        var btn = document.getElementById('btn-copy-insta-feed');
+        if (btn) {
+            btn.textContent = '✅ Copié !';
+            btn.style.background = 'rgba(34,197,94,0.2)';
+            btn.style.borderColor = '#22c55e';
+            btn.style.color = '#4ade80';
+            setTimeout(function() {
+                btn.textContent = '📋 Copier';
+                btn.style.background = 'none';
+                btn.style.borderColor = 'rgba(6,182,212,0.5)';
+                btn.style.color = '#22d3ee';
+            }, 2000);
         }
-
-        // --- APERÇU ---
-        let logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : (m.league_flag ? `<span style="margin-right:6px; display:inline-flex; align-items:center; vertical-align:middle;">${m.league_flag}</span>` : `<span style="margin-right:4px;">⚽</span>`));
-        let displayTime = m.time || "--:--";
-        previewMatchesHtml += `
-        <div style="padding:14px 0; border-bottom:1px solid #2A2A3A;">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
-                <div style="display:flex; align-items:center; gap:6px; font-size:13px; font-weight:600; color:#fff;">
-                    <i class="fas fa-futbol" style="color:var(--blue); font-size:14px;"></i> Score exact
-                    <span class="blurred-value" style="color:var(--green); font-weight:700; margin-left:6px;">${m.score}</span>
-                </div>
-                <div class="blurred-value" style="background:#2A2A3A; padding:4px 12px; border-radius:6px; font-size:14px; font-weight:700; color:#fff;">${(m.odds || 0).toFixed(2)}</div>
-            </div>
-            <div style="display:flex; align-items:center; justify-content:space-between;">
-                <div style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-light-gray); min-width:0; flex:1;">
-                    ${logoDisplay}
-                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m.teams}</span>
-                </div>
-                <div style="font-size:11px; color:var(--text-gray); flex-shrink:0; margin-left:10px;">${displayTime}</div>
-            </div>
-        </div>`;
     });
-
-    let previewHtml = `
-    <div style="background:#1E1E2E; border-radius:16px; overflow:hidden; border:1px solid #2A2A3A; margin-bottom: 24px; flex-shrink: 0;">
-        <div style="padding:14px 16px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #2A2A3A;">
-            <div style="display:flex; align-items:center; gap:8px;">
-                <span style="background:var(--blue); color:#fff; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:700; text-transform:uppercase;">En cours</span>
-                <span style="font-size:15px; font-weight:700; color:#fff;">Aperçu du Combiné</span>
-            </div>
-            <i class="fas fa-eye" style="color:var(--text-gray); font-size:16px;"></i>
-        </div>
-        <div style="padding:0 16px;">${previewMatchesHtml}</div>
-    </div>`;
-
-    // --- ÉTAPE B : PROMPTS INDIVIDUELS (STYLE ILLUSTRATION) ---
-    allTeams = [...new Set(allTeams)];
-    // Définition du style commun (illustratif comme demandé)
-    const styleHeader = " Detailed stylized digital illustration drawing with bold dark outlines, high-contrast ink wash and textured watercolor coloring, comic book art style.";
-    
-    // Branding subtil : "SM" + couronne cachés
-    const brandingSubtil = 'Include a hidden luxury "Score Master" emblem in gold: a golden crown positioned directly above the letters "SM", integrated into the scene (e.g., as a pattern on fabric, a wall etching, or a logo on a device).';
-
-    window._ecussons = allTeams.map(function(team) {
-        return { 
-            team: team, 
-            prompt: `${styleHeader} Close-up portrait of a powerful ${team} football emblem rendered as a premium traditional shield. Intricate metallic inking, bold dark contours, high-contrast textured watercolor coloring. ${brandingSubtil} Dramatic chiaroscuro lighting, floating micro-dust particles. Highly professional illustration. No text overlays. --ar 1:1 --style raw --v 6`
-        };
-    });
-
-    var htmlIndividuel = `
-        <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#c084fc;display:flex;align-items:center;gap:8px; margin-bottom:12px; flex-shrink:0;">
-            <i class="fas fa-paint-brush" style="font-size:12px;animation:pulse 2s infinite;"></i>
-            ${allTeams.length} équipe(s) — Prompts Écussons Illustratifs
-        </div>
-        <div style="display:flex;flex-direction:column;gap:12px;">`;
-
-    window._ecussons.forEach((e, i) => {
-        var flag = detectFlag(e.team);
-        htmlIndividuel += `
-        <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(168,85,247,0.2);border-radius:16px;overflow:hidden; flex-shrink:0;">
-            <div style="padding:14px 16px;border-bottom:1px solid rgba(168,85,247,0.15);display:flex;align-items:center;justify-content:space-between;gap:8px;">
-                <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
-                    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#a855f7,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;color:#fff;">🛡️</div>
-                    <div style="min-width:0;flex:1;"><div style="font-size:14px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${flag} ${e.team}</div></div>
-                </div>
-                <button id="btn-copy-ecusson-${i}" onclick="copyEcusson(${i})" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(168,85,247,0.5);color:#c084fc;background:none;font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0;white-space:nowrap;transition:all 0.2s;">📋 Copier</button>
-            </div>
-            <div style="padding:14px 16px;"><div style="background:rgba(0,0,0,0.4);border:1px solid rgba(168,85,247,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">${e.prompt}</div></div>
-        </div>`;
-    });
-    htmlIndividuel += `</div>`;
-
-    // --- ÉTAPE C : PROMPTS DE DUELS (STYLE ILLUSTRATION) ---
-    window._matchEcussons = activeCombined.matches.map(function(m) {
-        let teamA = "Équipe A", teamB = "Équipe B";
-        if (m.teams) {
-            let parts = m.teams.split(/\s+-\s+|\s+vs\.?\s+/i);
-            if (parts.length >= 2) { teamA = parts[0].trim(); teamB = parts[1].trim(); }
-        }
-        return {
-            matchLabel: `${teamA} vs ${teamB}`,
-            prompt: `${styleHeader} A high-impact cinematic illustrative clash. A sharp dynamic diagonal split composition. Left Half: The ${teamA} logo as an inked embroidered shield on dark mesh. Right Half: The ${teamB} logo as an inked embroidered shield on textured fabric. ${brandingSubtil} Intense highlights, dynamic inked dust particles. Agreesive and energetic mood. No text overlays. --ar 1:1 --style raw --v 6`
-        };
-    });
-
-    var htmlMatch = `
-        <div style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#fb923c;display:flex;align-items:center;gap:8px; margin-top:24px; margin-bottom:12px; flex-shrink:0;">
-            <i class="fas fa-bolt" style="font-size:12px;animation:pulse 2s infinite;"></i>
-            ${activeCombined.matches.length} duel(s) — Prompts Clash Illustratifs
-        </div>
-        <div style="display:flex;flex-direction:column;gap:12px;">`;
-
-    window._matchEcussons.forEach((e, i) => {
-        htmlMatch += `
-        <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(249,115,22,0.2);border-radius:16px;overflow:hidden; flex-shrink:0;">
-            <div style="padding:14px 16px;border-bottom:1px solid rgba(249,115,22,0.15);display:flex;align-items:center;justify-content:space-between;gap:8px;">
-                <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
-                    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#f97316,#ea580c);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;color:#fff;">🔥</div>
-                    <div style="min-width:0;flex:1;"><div style="font-size:14px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.matchLabel}</div></div>
-                </div>
-                <button id="btn-copy-match-ecusson-${i}" onclick="copyMatchEcusson(${i})" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(249,115,22,0.5);color:#fb923c;background:none;font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0;white-space:nowrap;transition:all 0.2s;">📋 Copier</button>
-            </div>
-            <div style="padding:14px 16px;"><div style="background:rgba(0,0,0,0.4);border:1px solid rgba(249,115,22,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">${e.prompt}</div></div>
-        </div>`;
-    });
-    htmlMatch += `</div>`;
-
-    // --- ÉTAPE D : GÉNÉRATEUR DE BANNIÈRE FEED INSTAGRAM (NOUVEAU) ---
-    const match_list_str = combinedTeamNames.join(', '); // Synthèse des duels pour l'IA
-    window._instaFeedPrompt = `${styleHeader} A powerful cinematic composition summarizing a sports combined masterclass. A stylized master analyst figure with dark curly hair overlooks multiple floating holographic screens showing dynamic illustrative sports clashes. The match names specifically visible on screens include ${match_list_str}. Intense golden and blue lighting, dramatic contrasts. Highly professional and victorious vibe. Prominently displayed luxury "SM" monogram topped with a golden crown emblem. Highly detailed, intricate outlines. No generic text. --ar 1:1 --style raw --v 6`;
-
-    var htmlFeedBanner = `
-        <div style="background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#22d3ee;display:flex;align-items:center;gap:8px; margin-top:24px; margin-bottom:12px; flex-shrink:0;">
-            <i class="fas fa-camera-retro" style="font-size:12px;animation:pulse 2s infinite;"></i>
-            Bannière Feed Instagram — Cover du Combiné
-        </div>
-        <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(6,182,212,0.2);border-radius:16px;overflow:hidden; flex-shrink:0;">
-            <div style="padding:14px 16px;border-bottom:1px solid rgba(6,182,212,0.15);display:flex;align-items:center;justify-content:space-between;gap:8px;">
-                <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
-                    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#06b6d4,#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;color:#fff;"><i class="fas fa-th-large"></i></div>
-                    <div style="min-width:0;flex:1;"><div style="font-size:14px;font-weight:800;color:#fff;">Prompt Cover 1:1 du Combiné</div><div style="font-size:11px;color:#9ca3af;">Synthèse des ${activeCombined.matches.length} duels en style dessin</div></div>
-                </div>
-                <button id="btn-copy-insta-feed" onclick="copyInstaFeedPrompt()" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(6,182,212,0.5);color:#22d3ee;background:none;font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0;white-space:nowrap;transition:all 0.2s;">📋 Copier</button>
-            </div>
-            <div style="padding:14px 16px;"><div style="background:rgba(0,0,0,0.4);border:1px solid rgba(6,182,212,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">${window._instaFeedPrompt}</div></div>
-        </div>`;
-
-    // --- RENDU FINAL ---
-    container.innerHTML = previewHtml + htmlIndividuel + htmlMatch + htmlVideo;
 }
 
 // -------------------------------------------------------------
