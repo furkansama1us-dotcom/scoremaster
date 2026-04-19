@@ -1683,8 +1683,8 @@ async function fetchMatchesFromAPI() {
 
         var data = await response.json();
 
-        // Cette API renvoie souvent ses données dans 'data.data'
-        var matches = data.data || [];
+        // 1. La nouvelle API range les matchs dans "events"
+        var matches = data.events || [];
 
         if (matches.length === 0) {
             showToast("Aucun match trouvé pour cette date", true);
@@ -1696,11 +1696,17 @@ async function fetchMatchesFromAPI() {
         matchesHtml += `<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px; display:flex; justify-content:space-between;"><span>Matchs trouvés (${matches.length})</span><span style="color:var(--primary-yellow); cursor:pointer;" onclick="document.getElementById('api-matches-container').innerHTML=''">Fermer</span></div>`;
         
         matches.forEach(function(m) {
-            // On adapte le nom des propriétés selon la nouvelle API
-            var home = m.home_team || "Domicile";
-            var away = m.away_team || "Extérieur";
+            // 2. Les nouveaux tiroirs pour les noms des équipes
+            var home = (m.homeTeam && m.homeTeam.name) ? m.homeTeam.name : "Domicile";
+            var away = (m.awayTeam && m.awayTeam.name) ? m.awayTeam.name : "Extérieur";
             var fullMatchName = `${home} - ${away}`;
-            var timeStr = m.start_date ? new Date(m.start_date).toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'}) : "18:00";
+            
+            // 3. Le nouveau format d'heure (startTimestamp est en secondes, on le convertit en millisecondes pour JS)
+            var timeStr = "18:00";
+            if (m.startTimestamp) {
+                var dateObj = new Date(m.startTimestamp * 1000);
+                timeStr = dateObj.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'});
+            }
 
             matchesHtml += `
             <button type="button" onclick="addMatchFromAPI('${fullMatchName.replace(/'/g, "\\'")}', '${timeStr}', '')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer;">
