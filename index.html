@@ -3966,49 +3966,68 @@ let quickEditCombinedId = null;
     function pgUpdateTime(i, val) { if(window._pgMatches) window._pgMatches[i].time = val; }
 
     function pgGenerate() {
-        var matches = window._pgMatches || [];
-        var output = window._pgOutput;
-        var detailsMatchs = '';
-        var instaMatches = '';
-        var earliestTime = '23:59';
+    var matches = window._pgMatches || [];
+    var output = window._pgOutput;
+    var detailsMatchs = '';
+    var instaMatches = '';
+    var earliestTime = '23:59';
 
-        matches.forEach(function(m) {
-            var tf = m.time ? m.time.replace(':', 'H') : '21H00';
-            var tfInsta = tf.replace('H', 'h');
-            detailsMatchs += '• ' + m.teams + ' (' + tf + ')\n';
-            instaMatches  += '⚽ ' + m.teams + ' — ' + tfInsta + '\n';
-            var extracted = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
-            if (extracted && extracted[0] < earliestTime) earliestTime = extracted[0];
-        });
+    matches.forEach(function(m) {
+        var tf = m.time ? m.time.replace(':', 'H') : '21H00';
+        var tfInsta = tf.replace('H', 'h');
+        
+        // Détection du drapeau selon les équipes
+        var flag = detectFlag(m.teams);
+        var flagStr = flag ? flag + ' ' : '';
+        
+        detailsMatchs += '• ' + flagStr + m.teams + ' (' + tf + ')\n';
+        instaMatches  += '⚽ ' + flagStr + m.teams + ' — ' + tfInsta + '\n';
+        var extracted = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
+        if (extracted && extracted[0] < earliestTime) earliestTime = extracted[0];
+    });
 
-        var earliestFormatted = earliestTime.replace(':', 'h');
+    var earliestFormatted = earliestTime.replace(':', 'h');
 
-        output.prompt =
-'Affiche promotionnelle sportive premium ultra réaliste.\n\n' +
-'TEXTE PRINCIPAL (OBLIGATOIRE ET EXACT) :\n' +
-'- "COMBINÉ" (énorme texte 3D blanc chromé brillant, style métallique)\n' +
-'- "DISPONIBLE" (juste en dessous, néon orange lumineux)\n\n' +
+    output.prompt =
+'Affiche promotionnelle sportive premium ultra réaliste, format vertical 9:16.\n\n' +
+
+'LOGO SCOREMASTER (élément central en haut) :\n' +
+'- Fond noir (#000000 pur)\n' +
+'- Couronne royale dorée (or brillant #FFD700) au-dessus du logo, avec 5 pointes et des boules dorées aux extrémités\n' +
+'- Sous la couronne : lettres "SM" en blanc pur, style bouclier/blason avec pointe vers le bas\n' +
+'- Le "S" : forme carrée arrondie avec une diagonale noire qui le traverse de haut-gauche à bas-droite\n' +
+'- Le "M" : forme en V inversé comme un bouclier pointu, avec deux traits en V à l\'intérieur\n' +
+'- Les deux lettres sont fusionnées dans un seul bouclier blanc avec pointe en bas\n' +
+'- Le tout fait environ 1/5 de la hauteur de l\'image, centré en haut\n\n' +
+
+'TEXTE PRINCIPAL :\n' +
+'- "COMBINÉ" : énorme texte 3D chromé argenté brillant, style métallique avec reflets\n' +
+'- "DISPONIBLE" : juste en dessous, néon orange lumineux (#f97316) avec lueur\n\n' +
+
 'ARRIÈRE-PLAN :\n' +
-'- Stade de football de nuit\n' +
-'- Projecteurs puissants avec lumière volumétrique\n' +
-'- Foule floue en arrière-plan\n' +
-'- Ambiance cinématographique orange et bleu\n' +
-'- Particules lumineuses et étincelles dynamiques\n\n' +
-'ZONE CENTRALE :\n' +
-'- Panneaux en verre translucide futuriste\n' +
-'- Afficher clairement les matchs suivants :\n' +
-detailsMatchs.trim() + '\n\n' +
-'STYLE VISUEL :\n' +
-'- Ultra réaliste\n- Qualité Unreal Engine 5\n- Design graphique professionnel\n- Typographie parfaite et lisible\n- Composition centrée et équilibrée\n\n' +
+'- Stade de football de nuit vu du bas (angle dramatique)\n' +
+'- Projecteurs puissants avec lumière volumétrique bleue et orange\n' +
+'- Foule immense et floue en arrière-plan\n' +
+'- Étincelles et particules lumineuses orange\n' +
+'- Ambiance cinématographique type Unreal Engine 5\n\n' +
+
+'ZONE CENTRALE — PANNEAUX EN VERRE :\n' +
+'- Deux cadres en verre translucide futuriste avec bordures cyan lumineuses\n' +
+'- Afficher exactement ces matchs, un par panneau :\n' +
+detailsMatchs.trim() + '\n' +
+'- Chaque match sur UNE SEULE LIGNE avec l\'horaire entre parenthèses\n\n' +
+
 'ZONE BASSE :\n' +
-'- Icône Instagram dégradé violet/orange\n' +
-'- Texte exact : "@scoremaster.fr" en blanc\n\n' +
-'FORMAT OBLIGATOIRE POUR CHAQUE MATCH :\n• Nom équipe vs Nom équipe (HHHMM)\n\n' +
-'CONTRAINTES STRICTES :\n- Une seule heure par match\n- Ne jamais répéter ou dupliquer l\'horaire\n- Ne pas afficher l\'heure sur une ligne séparée\n- Chaque match doit être sur UNE seule ligne\n- Aucun mot anglais visible sur l\'image\n- Toutes les inscriptions sont en français\n\n' +
-'RÈGLE STRICTE :\n- Afficher UNE SEULE FOIS l\'heure par match\n- Ne jamais dupliquer les horaires\n- Format obligatoire : Nom équipe vs Nom équipe (HHHMM)\n\n' +
+'- Logo Instagram officiel (dégradé violet/rose/orange) suivi de "@scoremaster.fr" en blanc gras\n\n' +
+
+'RÈGLES STRICTES :\n' +
+'- Zéro mot anglais visible sur l\'image\n' +
+'- Toutes les inscriptions en français\n' +
+'- Une seule heure par match, jamais dupliquée\n' +
+'- Format : Équipe A vs Équipe B (HHHMM)\n\n' +
 '--ar 9:16 --style raw --v 6';
 
-        output.insta =
+    output.insta =
 '🔥 COMBINÉ DISPONIBLE CE SOIR !\n' +
 '━━━━━━━━━━━━━━━━━━━━\n\n' +
 instaMatches + '\n' +
@@ -4017,17 +4036,59 @@ instaMatches + '\n' +
 '👉 Lien en bio pour rejoindre le VIP+ et valider tes gains ! 💰🚀\n\n' +
 '📲 @scoremaster.fr';
 
-        output.telegram =
+    output.telegram =
 '🎨 *PROMPT IA — POSTER PROMO :*\n' +
 '```\n' + output.prompt + '\n```\n\n' +
 '📝 *TEXTE INSTAGRAM / BIO :*\n' +
 '```\n' + output.insta + '\n```';
 
-        document.getElementById('pg-empty-state').style.display = 'none';
-        var ra = document.getElementById('pg-result-area');
-        ra.style.display = 'flex';
-        pgSwitchTab('prompt');
-    }
+    document.getElementById('pg-empty-state').style.display = 'none';
+    var ra = document.getElementById('pg-result-area');
+    ra.style.display = 'flex';
+    pgSwitchTab('prompt');
+}
+
+function detectFlag(teams) {
+    if (!teams) return '';
+    var t = teams.toLowerCase();
+    // Italie
+    if (t.includes('napoli') || t.includes('lazio') || t.includes('milan') || t.includes('juventus') || t.includes('inter') || t.includes('roma') || t.includes('fiorentina') || t.includes('atalanta')) return '🇮🇹';
+    // France
+    if (t.includes('paris') || t.includes('psg') || t.includes('marseille') || t.includes('lyon') || t.includes('monaco') || t.includes('lens') || t.includes('lille') || t.includes('rennes') || t.includes('nice') || t.includes('nantes')) return '🇫🇷';
+    // Espagne
+    if (t.includes('real madrid') || t.includes('barcelona') || t.includes('atletico') || t.includes('sevilla') || t.includes('valencia') || t.includes('bilbao') || t.includes('betis') || t.includes('villarreal')) return '🇪🇸';
+    // Angleterre
+    if (t.includes('manchester') || t.includes('arsenal') || t.includes('chelsea') || t.includes('liverpool') || t.includes('tottenham') || t.includes('newcastle') || t.includes('west ham') || t.includes('aston villa')) return '🏴󠁧󠁢󠁥󠁮󠁧󠁿';
+    // Allemagne
+    if (t.includes('bayern') || t.includes('dortmund') || t.includes('leverkusen') || t.includes('frankfurt') || t.includes('leipzig') || t.includes('gladbach') || t.includes('wolfsburg')) return '🇩🇪';
+    // Portugal
+    if (t.includes('benfica') || t.includes('porto') || t.includes('sporting') || t.includes('braga')) return '🇵🇹';
+    // Pays-Bas
+    if (t.includes('ajax') || t.includes('psv') || t.includes('feyenoord')) return '🇳🇱';
+    // Belgique
+    if (t.includes('anderlecht') || t.includes('club brugge') || t.includes('gent')) return '🇧🇪';
+    // Turquie
+    if (t.includes('galatasaray') || t.includes('fenerbahce') || t.includes('besiktas') || t.includes('trabzon')) return '🇹🇷';
+    // République Tchèque
+    if (t.includes('sparta praha') || t.includes('slavia') || t.includes('jablonec') || t.includes('plzen')) return '🇨🇿';
+    // Grèce
+    if (t.includes('olympiakos') || t.includes('panathinaikos') || t.includes('paok') || t.includes('aek')) return '🇬🇷';
+    // Ecosse
+    if (t.includes('celtic') || t.includes('rangers')) return '🏴󠁧󠁢󠁳󠁣󠁴󠁿';
+    // Autriche
+    if (t.includes('salzburg') || t.includes('rapid wien') || t.includes('austria wien')) return '🇦🇹';
+    // Russie
+    if (t.includes('spartak') || t.includes('cska') || t.includes('zenit') || t.includes('lokomotiv')) return '🇷🇺';
+    // Brésil
+    if (t.includes('flamengo') || t.includes('palmeiras') || t.includes('santos') || t.includes('corinthians') || t.includes('sao paulo')) return '🇧🇷';
+    // Argentine
+    if (t.includes('boca') || t.includes('river plate') || t.includes('racing') || t.includes('independiente')) return '🇦🇷';
+    // Maroc
+    if (t.includes('wydad') || t.includes('raja') || t.includes('fus')) return '🇲🇦';
+    // Champions League / Europa
+    if (t.includes('champions') || t.includes('europa')) return '🏆';
+    return '';
+}
 
     function pgSwitchTab(tab) {
         window._pgActiveTab = tab;
@@ -4204,7 +4265,7 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
      ===================================================== -->
 <div id="prompt-gen-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;flex-direction:column;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(8px);">
     <!-- Header -->
-    <div style="border-bottom:1px solid rgba(249,115,22,0.3);background:rgba(0,0,0,0.5);padding:14px 20px;display:flex;align-items:center;gap:14px;flex-shrink:0;">
+    <div style="border-bottom:1px solid rgba(249,115,22,0.3);background:#0a0a0a;padding:50px 20px 14px;display:flex;align-items:center;gap:14px;flex-shrink:0;">
         <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#f97316,#fbbf24);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 18px rgba(249,115,22,0.35);">⚽</div>
         <div>
             <div style="font-size:17px;font-weight:900;letter-spacing:-0.5px;color:#fff;">Score<span style="color:#fb923c;">Master</span></div>
