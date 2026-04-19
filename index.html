@@ -1705,8 +1705,8 @@ var response = await fetch(TARGET_URL, {
 var away = m.awayTeam?.name || m.away_name || m.away || "Extérieur";
             var homeId = m.homeTeam ? m.homeTeam.id : null;
 var awayId = m.awayTeam ? m.awayTeam.id : null;
-var homeLogo = homeId ? `https://sportapi7.p.rapidapi.com/api/v1/team/${homeId}/image` : '';
-var awayLogo = awayId ? `https://sportapi7.p.rapidapi.com/api/v1/team/${awayId}/image` : '';
+var homeLogo = `https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/${homeId}.png&w=40&h=40&scale=crop&cquality=40`;
+var awayLogo = `https://a.espncdn.com/combiner/i?img=/i/teamlogos/soccer/500/${awayId}.png&w=40&h=40&scale=crop&cquality=40`;
             var fullMatchName = `${home} - ${away}`;
             
             var timeStr = "18:00";
