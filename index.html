@@ -1657,7 +1657,7 @@ async function fetchApiScore(id, dateRaw) {
     }
 
     // ============================================================
-// CHARGEMENT VIA LA BONNE API (Format "events" / "homeTeam")
+// CHARGEMENT VIA L'API SOFASCORE (La plus fiable)
 // ============================================================
 async function fetchMatchesFromAPI() {
     var dateVal = document.getElementById('admin-date').value;
@@ -1667,25 +1667,24 @@ async function fetchMatchesFromAPI() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche...';
 
     try {
-        const NEW_RAPIDAPI_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
-        
-        // ⬇️ REMPLACE PAR LE HOST DE TON API (ex: 'football-api24.p.rapidapi.com')
-        const NEW_HOST = 'METTRE_LE_HOST_ICI'; 
-        
-        // ⬇️ REMPLACE PAR L'URL DE TON API (n'oublie pas de laisser ${dateVal} à la fin pour la date)
-        const API_URL = `METTRE_L_URL_ICI_AVEC_LA_DATE=${dateVal}`;
+        const RAPIDAPI_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
+        // Le Host SofaScore tiré de ta capture
+        const HOST = 'sofascore.p.rapidapi.com';
+
+        // L'URL exacte avec les bons paramètres de recherche
+        const API_URL = `https://${HOST}/matches/v2/list-by-date?date=${dateVal}&sport=football`;
 
         var response = await fetch(API_URL, {
             method: 'GET',
             headers: {
-                'x-rapidapi-host': NEW_HOST,
-                'x-rapidapi-key': NEW_RAPIDAPI_KEY
+                'x-rapidapi-host': HOST,
+                'x-rapidapi-key': RAPIDAPI_KEY
             }
         });
 
         var data = await response.json();
 
-        // On utilise la structure exacte de ton message ("events")
+        // L'API SofaScore range bien les matchs dans "events"
         var matches = data.events || [];
 
         if (matches.length === 0) {
@@ -1698,12 +1697,12 @@ async function fetchMatchesFromAPI() {
         matchesHtml += `<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px; display:flex; justify-content:space-between;"><span>Matchs trouvés (${matches.length})</span><span style="color:var(--primary-yellow); cursor:pointer;" onclick="document.getElementById('api-matches-container').innerHTML=''">Fermer</span></div>`;
         
         matches.forEach(function(m) {
-            // Lecture des noms selon ton JSON ("homeTeam.name")
+            // Lecture des noms selon la structure SofaScore ("homeTeam.name")
             var home = (m.homeTeam && m.homeTeam.name) ? m.homeTeam.name : "Domicile";
             var away = (m.awayTeam && m.awayTeam.name) ? m.awayTeam.name : "Extérieur";
             var fullMatchName = `${home} - ${away}`;
             
-            // Formatage de l'heure UNIX ("startTimestamp")
+            // Formatage de l'heure UNIX ("startTimestamp" en secondes)
             var timeStr = "18:00";
             if (m.startTimestamp) {
                 var dateObj = new Date(m.startTimestamp * 1000);
@@ -1724,7 +1723,7 @@ async function fetchMatchesFromAPI() {
         showToast('Matchs chargés avec succès !');
 
     } catch (error) {
-        console.error("Erreur API:", error);
+        console.error("Erreur API SofaScore:", error);
         showToast('Erreur de connexion à l\'API', true);
     }
     btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs';
