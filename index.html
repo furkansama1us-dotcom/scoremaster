@@ -3024,31 +3024,68 @@ function sendPromoPrompt(id) {
     let earliestTime = '23:59';
 
     if (c.matches && c.matches.length > 0) {
-        c.matches.forEach((m, index) => {
-            // ASTUCE IA : On remplace le "à" par un tiret et "21:00" par "21H00" 
-            // pour éviter que l'IA n'écrive des "0" ou se trompe de langue.
+        c.matches.forEach((m) => {
             let timeFormatted = m.time ? m.time.replace(':', 'H') : "21H00";
-            
-            detailsMatchs += `"${m.teams} - ${timeFormatted}", `;
+
+            detailsMatchs += `${m.teams} - ${timeFormatted} | `;
             instaMatches += `🏆 ${m.teams}\n`;
-            
+
             let extracted = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
             if (extracted && extracted[0] < earliestTime) earliestTime = extracted[0];
         });
     }
 
-    // PROMPT BÉTON ARMÉ CONTRE L'ANGLAIS
-    let aiPrompt = `A premium cinematic sports betting promotional poster. 
-Main Title: A massive glowing 3D text reading exactly "COMBINE" in bold white chrome, and below it the text exactly "DISPONIBLE" in vibrant glowing orange neon. 
-Background: An epic football stadium at night, blurred crowd out of focus, dramatic volumetric floodlights shining down, orange and cyan cinematic color grading, floating golden sparks. 
-Center Area: Sleek translucent glass panels displaying exactly this text: ${detailsMatchs}
-Bottom Area: The official Instagram purple-orange gradient logo icon placed directly next to the exact text "@scoremaster.fr" in a clean white font. 
-Style: Ultra-realistic, Unreal Engine 5 render, highly detailed, commercial sports graphic design, flawless typography, strictly no english words, --ar 9:16 --style raw --v 6.0`;
+    // PROMPT ULTRA OPTIMISÉ
+    let aiPrompt = `
+Affiche promotionnelle sportive premium ultra réaliste.
 
-    // Le texte pour ta bio ou légende Insta
-    let instaText = `🔥 COMBINÉ SCORE EXACT DISPONIBLE !\n\n${instaMatches}⏰ Début du premier match à ${earliestTime}\n\nLien en bio pour accéder au VIP+ et valider tes gains ! 🚀💰\n@scoremaster.fr`;
+TEXTE PRINCIPAL (OBLIGATOIRE ET EXACT) :
+- "COMBINÉ" (énorme texte 3D blanc chromé brillant, style métallique)
+- "DISPONIBLE" (juste en dessous, néon orange lumineux)
 
-    let telegramText = `🎨 *PROMPT IA POSTER PROMO :*\n\`\`\`\n${aiPrompt}\n\`\`\`\n\n📝 *TEXTE INSTA / BIO :*\n\`\`\`\n${instaText}\n\`\`\``;
+ARRIÈRE-PLAN :
+- Stade de football de nuit
+- Projecteurs puissants avec lumière volumétrique
+- Foule floue en arrière-plan
+- Ambiance cinématographique orange et bleu
+- Particules lumineuses et étincelles dynamiques
+
+ZONE CENTRALE :
+- Panneaux en verre translucide futuriste
+- Afficher clairement les matchs suivants :
+${detailsMatchs}
+
+STYLE VISUEL :
+- Ultra réaliste
+- Qualité Unreal Engine 5
+- Design graphique professionnel
+- Typographie parfaite et lisible
+- Composition centrée et équilibrée
+
+ZONE BASSE :
+- Icône Instagram dégradé violet/orange
+- Texte exact : "@scoremaster.fr" en blanc
+
+CONTRAINTES STRICTES :
+- Texte uniquement en français
+- Aucun mot en anglais
+- Pas d’erreur de typographie
+- Respect exact des mots affichés
+
+--ar 9:16 --style raw --v 6
+`;
+
+    // TEXTE INSTAGRAM OPTIMISÉ
+    let instaText = `🔥 COMBINÉ SCORE EXACT DISPONIBLE !
+
+${instaMatches}⏰ Début du premier match à ${earliestTime}
+
+💸 Accède au VIP+ via le lien en bio
+📈 Ne rate pas cette opportunité !
+
+@scoremaster.fr`;
+
+    let telegramText = `🎨 *PROMPT IA POSTER PROMO :*\n\`\`\`\n${aiPrompt}\n\`\`\`\n\n📝 *TEXTE INSTAGRAM :*\n\`\`\`\n${instaText}\n\`\`\``;
 
     if (confirm("Générer et envoyer le prompt de PROMOTION sur Telegram ?")) {
         sendAdminTelegram(telegramText).then(() => {
@@ -3269,37 +3306,72 @@ ${aiPrompt}
     let earliestTime = '23:59';
 
     if (c.matches && c.matches.length > 0) {
-        c.matches.forEach((m, index) => {
-            detailsMatchs += `- Match ${index + 1}: ${m.teams} starting at ${m.time}.\n`;
+        c.matches.forEach((m) => {
+            let timeFormatted = m.time ? m.time.replace(':', 'H') : "21H00";
+
+            detailsMatchs += `${m.teams} - ${timeFormatted} | `;
             instaMatches += `🏆 ${m.teams}\n`;
-            
+
             let extracted = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
             if (extracted && extracted[0] < earliestTime) earliestTime = extracted[0];
         });
     }
 
-    // Le Prompt pour l'image IA
-    let aiPrompt = `A high-end cinematic sports promotional poster, vertical 9:16 ratio. 
+    // PROMPT ULTRA OPTIMISÉ
+    let aiPrompt = `
+Affiche promotionnelle sportive premium ultra réaliste.
 
-Background: High-energy stadium atmosphere at dusk, volumetric floodlights rays, energetic orange and cyan color grade.
+TEXTE PRINCIPAL (OBLIGATOIRE ET EXACT) :
+- "COMBINÉ" (énorme texte 3D blanc chromé brillant, style métallique)
+- "DISPONIBLE" (juste en dessous, néon orange lumineux)
 
-Top Center: A massive 3D metallic chrome "SM" logo with a 3D golden crown. Below it, the text "COMBINÉ" in aggressive 3D white typography and "DISPONIBLE" in glowing 3D orange neon.
+ARRIÈRE-PLAN :
+- Stade de football de nuit
+- Projecteurs puissants avec lumière volumétrique
+- Foule floue en arrière-plan
+- Ambiance cinématographique orange et bleu
+- Particules lumineuses et étincelles dynamiques
 
-Center: Two professional glass-morphism panels displaying:
+ZONE CENTRALE :
+- Panneaux en verre translucide futuriste
+- Afficher clairement les matchs suivants :
 ${detailsMatchs}
 
-Graphic Elements: Digital countdown timer aesthetic, floating sparks, high-quality lens flares, sleek motion lines.
+STYLE VISUEL :
+- Ultra réaliste
+- Qualité Unreal Engine 5
+- Design graphique professionnel
+- Typographie parfaite et lisible
+- Composition centrée et équilibrée
 
-Style: Ultra-realistic, 8k, cinematic promotional art, --ar 9:16`;
+ZONE BASSE :
+- Icône Instagram dégradé violet/orange
+- Texte exact : "@scoremaster.fr" en blanc
 
-    // Le texte pour ta bio ou légende Insta
-    let instaText = `🔥 COMBINÉ SCORE EXACT DISPONIBLE !\n\n${instaMatches}⏰ Début du premier match à ${earliestTime}\n\nLien en bio pour accéder au VIP+ et valider tes gains ! 🚀💰\n@scoremaster.fr`;
+CONTRAINTES STRICTES :
+- Texte uniquement en français
+- Aucun mot en anglais
+- Pas d’erreur de typographie
+- Respect exact des mots affichés
 
-    let telegramText = `🎨 *PROMPT IA POSTER PROMO :*\n\`\`\`\n${aiPrompt}\n\`\`\`\n\n📝 *TEXTE INSTA / BIO :*\n\`\`\`\n${instaText}\n\`\`\``;
+--ar 9:16 --style raw --v 6
+`;
+
+    // TEXTE INSTAGRAM OPTIMISÉ
+    let instaText = `🔥 COMBINÉ SCORE EXACT DISPONIBLE !
+
+${instaMatches}⏰ Début du premier match à ${earliestTime}
+
+💸 Accède au VIP+ via le lien en bio
+📈 Ne rate pas cette opportunité !
+
+@scoremaster.fr`;
+
+    let telegramText = `🎨 *PROMPT IA POSTER PROMO :*\n\`\`\`\n${aiPrompt}\n\`\`\`\n\n📝 *TEXTE INSTAGRAM :*\n\`\`\`\n${instaText}\n\`\`\``;
 
     if (confirm("Générer et envoyer le prompt de PROMOTION sur Telegram ?")) {
         sendAdminTelegram(telegramText).then(() => {
-            showToast("Prompt Promo envoyé ! 🚀");
+            showToast("Prompt Promo optimisé envoyé ! 🚀");
         });
     }
 }
