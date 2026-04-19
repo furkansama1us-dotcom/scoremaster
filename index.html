@@ -3027,7 +3027,7 @@ function sendPromoPrompt(id) {
         c.matches.forEach((m) => {
             let timeFormatted = m.time ? m.time.replace(':', 'H') : "21H00";
 
-            detailsMatchs += `${m.teams} - ${timeFormatted} | `;
+            detailsMatchs += `Match : ${m.teams} (${timeFormatted}) | `;
             instaMatches += `🏆 ${m.teams}\n`;
 
             let extracted = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
@@ -3066,11 +3066,19 @@ ZONE BASSE :
 - Icône Instagram dégradé violet/orange
 - Texte exact : "@scoremaster.fr" en blanc
 
+FORMAT OBLIGATOIRE POUR CHAQUE MATCH :
+• Nom équipe vs Nom équipe (HHHMM)
+
 CONTRAINTES STRICTES :
-- Texte uniquement en français
-- Aucun mot en anglais
-- Pas d’erreur de typographie
-- Respect exact des mots affichés
+- Une seule heure par match
+- Ne jamais répéter ou dupliquer l’horaire
+- Ne pas afficher l’heure sur une ligne séparée
+- Chaque match doit être sur UNE seule ligne
+
+RÈGLE STRICTE :
+- Afficher UNE SEULE FOIS l’heure par match
+- Ne jamais dupliquer les horaires
+- Format obligatoire : Nom équipe vs Nom équipe (HHHMM)
 
 --ar 9:16 --style raw --v 6
 `;
@@ -3309,7 +3317,7 @@ ${aiPrompt}
         c.matches.forEach((m) => {
             let timeFormatted = m.time ? m.time.replace(':', 'H') : "21H00";
 
-            detailsMatchs += `${m.teams} - ${timeFormatted} | `;
+            detailsMatchs += `Match : ${m.teams} (${timeFormatted}) | `;
             instaMatches += `🏆 ${m.teams}\n`;
 
             let extracted = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
