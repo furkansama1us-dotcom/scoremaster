@@ -1657,21 +1657,32 @@ async function fetchApiScore(id, dateRaw) {
     }
 
     // ============================================================
-// CHARGEMENT VIA L'API SOFASCORE (La plus fiable)
+// CHARGEMENT VIA L'API SOFASCORE (Avec format de date corrigé)
 // ============================================================
 async function fetchMatchesFromAPI() {
     var dateVal = document.getElementById('admin-date').value;
     if (!dateVal) { showToast("Choisis une date d'abord", true); return; }
+
+    // --- CONVERTISSEUR DE DATE (JJ/MM/AAAA -> AAAA-MM-JJ) ---
+    var formattedDate = dateVal;
+    if (dateVal.includes('/')) {
+        var parts = dateVal.split('/');
+        if (parts.length === 3) {
+            // parts[0] = Jour, parts[1] = Mois, parts[2] = Année
+            formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+        }
+    }
+    // --------------------------------------------------------
 
     var btn = document.getElementById('btn-fetch-api');
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche...';
 
     try {
         const RAPIDAPI_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
-        // Le Host SofaScore tiré de ta capture
         const HOST = 'sofascore.p.rapidapi.com';
 
-        const API_URL = `https://${HOST}/matches/v2/list-by-date?date=${dateVal}&sport=football`;
+        // On utilise la date formatée (formattedDate) pour l'API
+        const API_URL = `https://${HOST}/matches/v2/list-by-date?date=${formattedDate}&sport=football`;
 
         var response = await fetch(API_URL, {
             method: 'GET',
@@ -1683,7 +1694,6 @@ async function fetchMatchesFromAPI() {
 
         var data = await response.json();
 
-        // L'API SofaScore range bien les matchs dans "events"
         var matches = data.events || [];
 
         if (matches.length === 0) {
@@ -1696,12 +1706,10 @@ async function fetchMatchesFromAPI() {
         matchesHtml += `<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px; display:flex; justify-content:space-between;"><span>Matchs trouvés (${matches.length})</span><span style="color:var(--primary-yellow); cursor:pointer;" onclick="document.getElementById('api-matches-container').innerHTML=''">Fermer</span></div>`;
         
         matches.forEach(function(m) {
-            // Lecture des noms selon la structure SofaScore ("homeTeam.name")
             var home = (m.homeTeam && m.homeTeam.name) ? m.homeTeam.name : "Domicile";
             var away = (m.awayTeam && m.awayTeam.name) ? m.awayTeam.name : "Extérieur";
             var fullMatchName = `${home} - ${away}`;
             
-            // Formatage de l'heure UNIX ("startTimestamp" en secondes)
             var timeStr = "18:00";
             if (m.startTimestamp) {
                 var dateObj = new Date(m.startTimestamp * 1000);
