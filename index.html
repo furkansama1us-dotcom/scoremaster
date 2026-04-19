@@ -616,7 +616,7 @@
         // 1. Préparation de la liste des matchs
         let matchLines = "";
         if (c.matches && c.matches.length > 0) {
-            c.matches.forEach(m => { matchLines += `⚽️ ${m.teams}\n`; });
+            c.matches.forEach(m => { var fl = (m.logo && m.logo.length <= 4) ? m.logo + ' ' : '⚽️ '; matchLines += fl + m.teams + '\n'; });
         } else {
             matchLines = "⚽️ Matchs confidentiels\n";
         }
@@ -2117,7 +2117,7 @@ async function fetchAndRenderLiveScores(matches) {
         const homeLogoUrl = await fetchTeamLogo(homeTeamStr);
         const awayLogoUrl = await fetchTeamLogo(awayTeamStr);
 
-        const defaultShield = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:50%;border:1px solid var(--border-color);"><i class="fas fa-shield-alt" style="font-size:18px;color:var(--text-gray);"></i></div>`;
+        const defaultShield = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-size:28px;">⚽</div>`;
         const homeLogoTag = homeLogoUrl ? `<img src="${homeLogoUrl}" style="width:40px; height:40px; object-fit:contain; margin-bottom:8px;" crossorigin="anonymous">` : defaultShield;
         const awayLogoTag = awayLogoUrl ? `<img src="${awayLogoUrl}" style="width:40px; height:40px; object-fit:contain; margin-bottom:8px;" crossorigin="anonymous">` : defaultShield;
 
@@ -2211,7 +2211,7 @@ async function autoFetchFinalScores(combined) {
         const homeLogoUrl = await fetchTeamLogo(homeTeamStr);
         const awayLogoUrl = await fetchTeamLogo(awayTeamStr);
 
-        const defaultShield = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:50%;border:1px solid var(--border-color);"><i class="fas fa-shield-alt" style="font-size:18px;color:var(--text-gray);"></i></div>`;
+        const defaultShield = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;font-size:28px;">⚽</div>`;
         const homeLogoTag = homeLogoUrl ? `<img src="${homeLogoUrl}" style="width:40px; height:40px; object-fit:contain; margin-bottom:8px;" crossorigin="anonymous">` : defaultShield;
         const awayLogoTag = awayLogoUrl ? `<img src="${awayLogoUrl}" style="width:40px; height:40px; object-fit:contain; margin-bottom:8px;" crossorigin="anonymous">` : defaultShield;
 
@@ -2311,7 +2311,7 @@ async function autoFetchFinalScores(combined) {
 
         if(c.matches && c.matches.length > 0) {
             c.matches.forEach((m, index) => {
-                let logoDisplay = m.logo ? `<img src="${m.logo}" style="width:18px;height:18px;object-fit:contain;margin-right:8px;vertical-align:middle;">` : `<i class="fas fa-shield-alt" style="margin-right:8px;"></i>`;
+                let logoDisplay = (m.logo && m.logo.length > 4) ? `<img src="${m.logo}" style="width:18px;height:18px;object-fit:contain;margin-right:8px;vertical-align:middle;">` : `<span style="margin-right:6px;font-size:15px;">${m.logo || "⚽"}</span>`;
                 let currentOdds = m.odds ? m.odds.toFixed(2) : '0.00';
                 
                 // J'ajoute le champ "Cote finale" et un événement "oninput" pour recalculer le total
@@ -2612,7 +2612,7 @@ async function autoFetchFinalScores(combined) {
         else if (date === tomorrow.toISOString().split('T')[0]) dayContext = "demain";
 
         let matchLines = "";
-        matches.forEach(m => { matchLines += `⚽️ ${m.teams}\n`; });
+        matches.forEach(m => { var fl = (m.logo && m.logo.length <= 4) ? m.logo + ' ' : '⚽️ '; matchLines += fl + m.teams + '\n'; });
 
             const intros = [
             "Salut l’équipe ! 🔥 L'analyse est tombée. Le nouveau combiné est officiellement disponible dans votre espace VIP+.",
@@ -2764,7 +2764,7 @@ function renderHistory() {
                 var mStatus = m.match_status || (sc === 'en-cours' ? 'en-cours' : sc);
                 var scoreColor = mStatus === 'termine' ? 'var(--green)' : (mStatus === 'perdu' ? 'var(--red)' : 'var(--text-white)');
                 
-                var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:12px;height:12px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<i class="fas fa-shield-alt" style="font-size:10px; margin-right:6px; color:var(--text-gray);"></i>`;
+                var logoDisplay = (m.logo && m.logo.length > 4) ? `<img src="${m.logo}" style="width:12px;height:12px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<span style="margin-right:4px;font-size:14px;">${m.logo || "⚽"}</span>`;
                 
                 matchesHtml += `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; align-items:center;">
                     <span style="color:var(--text-light-gray);">${logoDisplay}${m.teams || 'Équipes'}</span>
@@ -2812,7 +2812,7 @@ function renderAdminHistory() {
         if (c.matches && c.matches.length > 0) {
             matchesDetailsHtml = '<div style="margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px;">';
             c.matches.forEach(m => {
-                let logoImg = m.logo ? `<img src="${m.logo}" style="width:14px; height:14px; object-fit:contain; border-radius:2px; margin-right:6px; vertical-align:middle;" crossorigin="anonymous">` : `<i class="fas fa-shield-alt" style="font-size:10px; margin-right:6px; color:var(--text-gray);"></i>`;
+                let logoImg = (m.logo && m.logo.length > 4) ? `<img src="${m.logo}" style="width:14px; height:14px; object-fit:contain; border-radius:2px; margin-right:6px; vertical-align:middle;" crossorigin="anonymous">` : `<span style="margin-right:4px;font-size:14px;">${m.logo || "⚽"}</span>`;
                 
                 let scoreDisplay = '';
                 if (c.status === 'termine' || c.status === 'perdu') {
@@ -3012,7 +3012,7 @@ function renderAdminHistory() {
         if (c.matches && c.matches.length > 0) {
             matchesDetailsHtml = '<div style="margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px;">';
             c.matches.forEach(m => {
-                let logoImg = m.logo ? `<img src="${m.logo}" style="width:14px; height:14px; object-fit:contain; border-radius:2px; margin-right:6px; vertical-align:middle;" crossorigin="anonymous">` : `<i class="fas fa-shield-alt" style="font-size:10px; margin-right:6px; color:var(--text-gray);"></i>`;
+                let logoImg = (m.logo && m.logo.length > 4) ? `<img src="${m.logo}" style="width:14px; height:14px; object-fit:contain; border-radius:2px; margin-right:6px; vertical-align:middle;" crossorigin="anonymous">` : `<span style="margin-right:4px;font-size:14px;">${m.logo || "⚽"}</span>`;
                 
                 let scoreDisplay = '';
                 if (c.status === 'termine' || c.status === 'perdu') {
@@ -3221,7 +3221,7 @@ ${aiPrompt}
             var displayOdds = isHomeObscured ? '**.**' : m.odds.toFixed(2);
             
             var blurClass = (isHomeObscured || isVipObscured) ? 'blurred-value' : '';
-            var logoDisplay = m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;" crossorigin="anonymous">` : `<i class="fas fa-shield-alt"></i> `;
+            var logoDisplay = (m.logo && m.logo.length > 4) ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;" crossorigin="anonymous">` : `<span style="margin-right:4px;font-size:14px;">${m.logo || "⚽"}</span>`;
             
             let cleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : "--:--";
             let finalTimeDisplay = smartPrefix + (cleanTime ? cleanTime[0] : "");
@@ -3484,7 +3484,7 @@ let quickEditCombinedId = null;
 
         if(c.matches && c.matches.length > 0) {
             c.matches.forEach((m, index) => {
-                let logoDisplay = m.logo ? `<img src="${m.logo}" style="width:18px;height:18px;object-fit:contain;margin-right:8px;vertical-align:middle;" crossorigin="anonymous">` : `<i class="fas fa-shield-alt" style="margin-right:8px;"></i>`;
+                let logoDisplay = (m.logo && m.logo.length > 4) ? `<img src="${m.logo}" style="width:18px;height:18px;object-fit:contain;margin-right:8px;vertical-align:middle;" crossorigin="anonymous">` : `<span style="margin-right:6px;font-size:15px;">${m.logo || "⚽"}</span>`;
                 let currentOdds = m.odds ? m.odds.toFixed(2) : '0.00';
                 
                 let matchHtml = `
