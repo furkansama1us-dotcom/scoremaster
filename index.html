@@ -1773,7 +1773,10 @@ var response = await fetch(TARGET_URL, {
             var away = m.awayTeam?.name || m.away_name || m.away || "Extérieur";
             var fullMatchName = `${home} - ${away}`;
             var btnId = 'mb-' + Math.random().toString(36).substr(2, 8);
+            
+            // On génère le drapeau et on le sécurise pour l'envoyer au bouton
             var flag = getLeagueFlag(m);
+            var safeFlag = encodeURIComponent(flag);
 
             var timeStr = "18:00";
             if (m.startTimestamp) {
@@ -1782,7 +1785,7 @@ var response = await fetch(TARGET_URL, {
             }
 
             matchesHtml += `
-            <button type="button" id="${btnId}" onclick="addMatchFromAPI('${fullMatchName.replace(/'/g, "\\'")}', '${timeStr}', '')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer;">
+            <button type="button" id="${btnId}" onclick="addMatchFromAPI('${fullMatchName.replace(/'/g, "\\'")}', '${timeStr}', '', '${safeFlag}')" style="display:flex; flex-direction:column; width:100%; text-align:left; background:var(--bg-input); border:1px solid var(--border-color); padding:10px; border-radius:8px; margin-bottom:8px; color:#fff; cursor:pointer;">
                 <div style="font-size:13px; font-weight:600; display:flex; align-items:center; gap:5px;">
                     <span style="color:var(--primary-yellow); width:45px; flex-shrink:0;"><i class="fas fa-clock"></i> ${timeStr}</span>
                     <span style="flex-shrink:0; display:inline-flex; align-items:center;">${flag}</span>
@@ -1803,10 +1806,11 @@ var response = await fetch(TARGET_URL, {
     }
     btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs';
 }
-    function addMatchFromAPI(teams, time, logo) {
+    function addMatchFromAPI(teams, time, logo, encodedFlag = '') {
         let onlyTime = time.match(/\d{2}:\d{2}/);
         let cleanTime = onlyTime ? onlyTime[0] : time;
-        addMatchEntry({ teams: teams, score: '2 - 1', odds: '7.00', time: cleanTime, logo: logo });
+        let decodedFlag = encodedFlag ? decodeURIComponent(encodedFlag) : '';
+        addMatchEntry({ teams: teams, score: '2 - 1', odds: '7.00', time: cleanTime, logo: logo, league_flag: decodedFlag });
         showToast('Match ajouté !');
     }
 
@@ -2509,12 +2513,15 @@ async function autoFetchFinalScores(combined) {
         var e = document.createElement('div');
         e.className = 'match-entry';
         
-        // Formulaire allégé : on a retiré le select du statut individuel
+        var flagVal = (data && data.league_flag) ? data.league_flag : '';
+        var logoVal = (data && data.logo) ? data.logo : '';
+
         e.innerHTML = '<div class="match-entry-header">' + 
             '<span class="match-entry-number"><i class="fas fa-futbol"></i> Match ' + matchEntryCount + '</span>' +
             '<button type="button" class="match-entry-remove" onclick="removeMatchEntry(this)"><i class="fas fa-trash"></i></button>' +
             '</div>'
-            + '<input type="hidden" class="match-logo-input" value="' + (data && data.logo ? data.logo : '') + '">'
+            + '<input type="hidden" class="match-logo-input" value="' + logoVal.replace(/"/g, '&quot;') + '">'
+            + '<input type="hidden" class="match-flag-input" value="' + flagVal.replace(/"/g, '&quot;') + '">'
             + '<div class="admin-field"><div class="admin-label"><i class="fas fa-users"></i> Équipes</div><input type="text" class="admin-input match-teams-input" placeholder="Équipe A - Équipe B" value="' + (data ? data.teams : '') + '" oninput="calculateGains()"></div>'
             + '<div class="admin-row"><div class="admin-field"><div class="admin-label"><i class="fas fa-bullseye"></i> Score exact</div><input type="text" class="admin-input match-score-input" placeholder="2 - 1" value="' + (data ? data.score : '') + '" oninput="calculateGains()"></div>'
             + '<div class="admin-field"><div class="admin-label"><i class="fas fa-chart-line"></i> Cote</div><input type="text" inputmode="decimal" class="admin-input match-odds-input" placeholder="7.00" value="' + (data ? data.odds : '') + '" oninput="calculateGains()"></div></div>'
@@ -2564,7 +2571,7 @@ async function autoFetchFinalScores(combined) {
     async function publishCombined() {
         var entries = document.querySelectorAll('.match-entry');
         var date = document.getElementById('admin-date').value;
-        var status = document.getElementById('admin-status').value; // C'est le champ caché 'en-cours'
+        var status = document.getElementById('admin-status').value;
         var miseVal = document.getElementById('admin-mise').value.replace(',', '.');
         var mise = parseFloat(miseVal) || 0;
 
@@ -2582,15 +2589,16 @@ async function autoFetchFinalScores(combined) {
             var ti = e.querySelector('.match-time-input').value.trim();
             var l = e.querySelector('.match-logo-input').value;
             
-            // CORRECTIF : On ne cherche plus le menu déroulant, on force "en-cours" !
+            // ON RÉCUPÈRE LE DRAPEAU ICI
+            var flagInput = e.querySelector('.match-flag-input');
+            var f = flagInput ? flagInput.value : '';
+            
             var mStatus = 'en-cours';
             
             if (!t || !s || o <= 0) valid = false;
 
-            matches.push({ teams: t, score: s, odds: o, time: ti, logo: l, match_status: mStatus });
-
-            // Puisqu'on ne fait que créer, on masque toujours le score et la cote pour le public au départ
-            publicMatches.push({ teams: t, time: ti, score: '?-?', odds: 0, logo: l, match_status: mStatus });
+            matches.push({ teams: t, score: s, odds: o, time: ti, logo: l, league_flag: f, match_status: mStatus });
+            publicMatches.push({ teams: t, time: ti, score: '?-?', odds: 0, logo: l, league_flag: f, match_status: mStatus });
 
             var extracted = ti.match(/\d{2}:\d{2}/);
             if (extracted && extracted[0] < earliestTime) earliestTime = extracted[0];
@@ -2601,7 +2609,6 @@ async function autoFetchFinalScores(combined) {
         var tot = 1; matches.forEach(function (m) { tot *= m.odds; });
         var gains = mise * tot;
 
-        // === CRÉATION DU NOUVEAU COMBINÉ EN BASE DE DONNÉES ===
         var pubRes = await supabaseClient.from('combineds_public').insert([{ date: date, time: earliestTime, status: status, nombre_matchs: matches.length, matches: publicMatches }]).select().single();
         if (pubRes.error) { showToast('Erreur Création', true); return; }
         
@@ -3221,46 +3228,44 @@ ${aiPrompt}
         else if (combinDate.toDateString() === tomorrow.toDateString()) smartPrefix = "Dem. ";
         else smartPrefix = fmtD(c.date) + " ";
 
-        // Détection du lieu d'affichage
         var isHomeObscured = (isHome && sc === 'en-cours');
         var isVipObscured = (!isHome && sc === 'en-cours');
 
         matchesToDisplay.forEach(function (m) {
             var mStatus = m.match_status || (sc === 'en-cours' ? 'en-cours' : sc);
-            
-            // Sécurité : l'accueil a des étoiles, le VIP a le vrai score mais flouté
             var displayScore = isHomeObscured ? '*** - ***' : m.score;
             var displayOdds = isHomeObscured ? '**.**' : m.odds.toFixed(2);
             
             var blurClass = (isHomeObscured || isVipObscured) ? 'blurred-value' : '';
             var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : `<span style="margin-right:4px;">⚽</span>`);
             
+            // AFFICHAGE DU DRAPEAU ICI
+            var flagDisplay = m.league_flag ? `<span style="margin-right:6px; display:inline-flex; align-items:center; vertical-align:middle;">${m.league_flag}</span>` : '';
+            
             let cleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : "--:--";
             let finalTimeDisplay = smartPrefix + (cleanTime ? cleanTime[0] : "");
 
             mH += `<div class="match-row">
-                <div class="match-row-top" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div class="match-type" style="white-space:nowrap;">
-                        <i class="fas fa-futbol" style="color: #fff; margin-right: 6px; font-size: 14px;"></i> 
-                        Score exact <span class="${blurClass}" style="margin-left:5px; font-weight:700; color:var(--green); transition: filter 0.5s ease;">${displayScore}</span>
+                    <div class="match-row-top" style="display:flex; justify-content:space-between; align-items:center;">
+                        <div class="match-type" style="white-space:nowrap;">
+                            <i class="fas fa-futbol" style="color: #fff; margin-right: 6px; font-size: 14px;"></i> 
+                            Score exact <span class="${blurClass}" style="margin-left:5px; font-weight:700; color:var(--green); transition: filter 0.5s ease;">${displayScore}</span>
+                        </div>
+                        <div class="match-odds ${blurClass}" style="transition: filter 0.5s ease;">${displayOdds}</div>
                     </div>
-                    <div class="match-odds ${blurClass}" style="transition: filter 0.5s ease;">${displayOdds}</div>
-                </div>
-                
-                <div class="match-row-bottom" style="display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%;">
-                    <div class="match-teams" style="color:#fff; flex:1; min-width:0; display:flex; align-items:center; gap:6px;">
-                        ${logoDisplay} 
-                        <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; width:100%;">${m.teams || 'Équipes'}</span>
+                    <div class="match-row-bottom" style="display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%;">
+                        <div class="match-teams" style="color:#fff; flex:1; min-width:0; display:flex; align-items:center; gap:6px;">
+                            ${logoDisplay}
+                            ${flagDisplay}
+                            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; width:100%;">${m.teams || 'Équipes'}</span>
+                        </div>
+                        <div class="match-time" style="color:var(--text-gray); flex-shrink:0; white-space:nowrap;">${finalTimeDisplay}</div>
                     </div>
-                    <div class="match-time" style="color:var(--text-gray); flex-shrink:0; white-space:nowrap;">${finalTimeDisplay}</div>
-                </div>
-               </div>`;
+                   </div>`;
         });
         
         var pc = sc === 'perdu' ? 'background:linear-gradient(90deg,var(--red),#990000);' : sc === 'termine' ? 'background:linear-gradient(90deg,var(--green),#00E676);' : 'background:linear-gradient(90deg,var(--green),var(--blue));';
-        
         var blurClass = (isHomeObscured || isVipObscured) ? 'blurred-value' : '';
-        
         var displayGains = isHomeObscured ? '***,** €' : fmtC(c.gains || 0);
         var displayMise = isHomeObscured ? '***,** €' : fmtC(c.mise || 0);
         var displayTotalOdds = isHomeObscured ? '***.**' : (c.total_odds || 0).toFixed(2);
@@ -3282,7 +3287,6 @@ ${aiPrompt}
         var ctaBtn = (isHome && !isLocked && sc === 'en-cours') ? `<a href="${TELEGRAM_LINK}" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>` : '';
         if (isHome && isLocked && sc === 'en-cours') ctaBtn = `<button class="combined-cta-btn" style="background: var(--bg-input); color: var(--text-gray); cursor: not-allowed;"><i class="fas fa-lock"></i> Trop tard, match commencé !</button>`;
 
-        // LE BOUTON DE RÉVÉLATION VIP
         var vipRevealBtn = isVipObscured ? `<button id="reveal-btn-${c.id}" onclick="unblurVipCard('combined-card-vip-${c.id}', 'reveal-btn-${c.id}')" class="combined-cta-btn" style="background:linear-gradient(135deg, #FFD700, #E6C200); color:#000; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);"><i class="fas fa-eye" style="margin-right:6px;"></i> Cliquer ici pour déflouter les scores</button>` : '';
 
         return `
