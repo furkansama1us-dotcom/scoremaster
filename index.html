@@ -3862,6 +3862,9 @@ function closeEcusson() {
     setTimeout(() => overlay.style.display = 'none', 300);
 }
 
+// ============================================================
+// 1. FONCTION PRINCIPALE DU GÉNÉRATEUR D'ÉCUSSONS (AVEC LES 3 STYLES VIDÉO)
+// ============================================================
 function renderEcussonContent() {
     var container = document.getElementById('ecusson-main-content');
 
@@ -3881,7 +3884,7 @@ function renderEcussonContent() {
         return;
     }
 
-    // --- ÉTAPE A : APERÇU DU COMBINÉ EN HAUT ---
+    // --- ÉTAPE A : APERÇU DU COMBINÉ ---
     let previewMatchesHtml = '';
     activeCombined.matches.forEach(m => {
         let logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : (m.league_flag ? `<span style="margin-right:6px; display:inline-flex; align-items:center; vertical-align:middle;">${m.league_flag}</span>` : `<span style="margin-right:4px;">⚽</span>`));
@@ -3920,29 +3923,36 @@ function renderEcussonContent() {
         </div>
     </div>`;
 
-    // --- ÉTAPE B : ANCIENS PROMPTS (1 PAR ÉQUIPE) ---
+    // --- PRÉPARATION DES DONNÉES (ÉQUIPES ET MATCHS) ---
     var allTeams = [];
+    var matchDuels = [];
+    
     activeCombined.matches.forEach(function(m) {
+        let teamA = "Équipe A", teamB = "Équipe B";
         if (m.teams) {
             var parts = m.teams.split(/\s+-\s+|\s+vs\.?\s+/i);
-            parts.forEach(function(t) { if(t.trim()) allTeams.push(t.trim()); });
+            if (parts.length >= 2) {
+                teamA = parts[0].trim();
+                teamB = parts[1].trim();
+                allTeams.push(teamA, teamB);
+            } else {
+                teamA = m.teams.trim();
+                allTeams.push(teamA);
+            }
         }
+        matchDuels.push({ label: `${teamA} vs ${teamB}`, teamA: teamA, teamB: teamB });
     });
-
     allTeams = [...new Set(allTeams)];
 
-    var ecussons = allTeams.map(function(team) {
-        return { team: team, prompt: generateEcussonPrompt(team), copied: false };
-    });
-    window._ecussons = ecussons; 
-
+    // --- ÉTAPE B : PROMPTS INDIVIDUELS ---
+    window._ecussons = allTeams.map(t => ({ team: t, prompt: generateEcussonPrompt(t) })); 
     var htmlIndividuel = `
         <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#c084fc;display:flex;align-items:center;gap:8px; margin-bottom:12px; flex-shrink:0;">
             <i class="fas fa-circle" style="font-size:8px;animation:pulse 2s infinite;"></i>
-            ${allTeams.length} équipe(s) détectée(s) — Prompts individuels
+            ${allTeams.length} équipe(s) — Prompts individuels
         </div>`;
 
-    ecussons.forEach(function(e, i) {
+    window._ecussons.forEach((e, i) => {
         var flag = detectFlag(e.team + ' ' + e.team);
         htmlIndividuel += `
         <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(168,85,247,0.2);border-radius:16px;overflow:hidden; margin-bottom:12px; flex-shrink:0;">
@@ -3951,43 +3961,26 @@ function renderEcussonContent() {
                     <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#a855f7,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🛡️</div>
                     <div style="min-width:0;flex:1;">
                         <div style="font-size:14px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${flag} ${e.team}</div>
-                        <div style="font-size:11px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Prompt écusson seul</div>
                     </div>
                 </div>
-                <button id="btn-copy-ecusson-${i}" onclick="copyEcusson(${i})" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(168,85,247,0.5);color:#c084fc;background:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;flex-shrink:0;white-space:nowrap;transition:all 0.2s;">📋 Copier</button>
+                <button id="btn-copy-ecusson-${i}" onclick="copyEcusson(${i})" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(168,85,247,0.5);color:#c084fc;background:none;font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0;white-space:nowrap;transition:all 0.2s;">📋 Copier</button>
             </div>
-            <div style="padding:14px 16px;">
-                <div style="background:rgba(0,0,0,0.4);border:1px solid rgba(168,85,247,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:160px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">${e.prompt}</div>
-            </div>
+            <div style="padding:14px 16px;"><div style="background:rgba(0,0,0,0.4);border:1px solid rgba(168,85,247,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">${e.prompt}</div></div>
         </div>`;
     });
 
-    // --- ÉTAPE C : NOUVEAUX PROMPTS DE MATCHS (CLASH / DUEL) ---
-    var matchPrompts = activeCombined.matches.map(function(m) {
-        let teamA = "Équipe A", teamB = "Équipe B";
-        if (m.teams) {
-            let parts = m.teams.split(/\s+-\s+|\s+vs\.?\s+/i);
-            if (parts.length >= 2) {
-                teamA = parts[0].trim();
-                teamB = parts[1].trim();
-            } else {
-                teamA = m.teams.trim();
-            }
-        }
-        return {
-            matchLabel: `${teamA} vs ${teamB}`,
-            prompt: generateMatchEcussonPrompt(teamA, teamB)
-        };
-    });
-    window._matchEcussons = matchPrompts;
+    // --- ÉTAPE C : PROMPTS CLASH (IMAGES) ---
+    window._matchEcussons = matchDuels.map(m => ({
+        matchLabel: m.label, prompt: generateMatchEcussonPrompt(m.teamA, m.teamB)
+    }));
 
     var htmlMatch = `
         <div style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#fb923c;display:flex;align-items:center;gap:8px; margin-top:24px; margin-bottom:12px; flex-shrink:0;">
             <i class="fas fa-bolt" style="font-size:12px;animation:pulse 2s infinite;"></i>
-            ${matchPrompts.length} duel(s) détecté(s) — Prompts Affiche Clash
+            ${matchDuels.length} duel(s) — Prompts Affiche Clash (Image)
         </div>`;
 
-    matchPrompts.forEach(function(e, i) {
+    window._matchEcussons.forEach((e, i) => {
         htmlMatch += `
         <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(249,115,22,0.2);border-radius:16px;overflow:hidden; margin-bottom:12px; flex-shrink:0;">
             <div style="padding:14px 16px;border-bottom:1px solid rgba(249,115,22,0.15);display:flex;align-items:center;justify-content:space-between;gap:8px;">
@@ -3995,45 +3988,156 @@ function renderEcussonContent() {
                     <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#f97316,#ea580c);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🔥</div>
                     <div style="min-width:0;flex:1;">
                         <div style="font-size:14px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.matchLabel}</div>
-                        <div style="font-size:11px;color:#9ca3af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Prompt Clash 9:16</div>
                     </div>
                 </div>
-                <button id="btn-copy-match-ecusson-${i}" onclick="copyMatchEcusson(${i})" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(249,115,22,0.5);color:#fb923c;background:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;flex-shrink:0;white-space:nowrap;transition:all 0.2s;">📋 Copier</button>
+                <button id="btn-copy-match-ecusson-${i}" onclick="copyMatchEcusson(${i})" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(249,115,22,0.5);color:#fb923c;background:none;font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0;white-space:nowrap;transition:all 0.2s;">📋 Copier</button>
             </div>
-            <div style="padding:14px 16px;">
-                <div style="background:rgba(0,0,0,0.4);border:1px solid rgba(249,115,22,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:160px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">${e.prompt}</div>
+            <div style="padding:14px 16px;"><div style="background:rgba(0,0,0,0.4);border:1px solid rgba(249,115,22,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:120px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">${e.prompt}</div></div>
+        </div>`;
+    });
+
+    // --- ÉTAPE D : PROMPTS ANIMATION VIDÉO (AVEC CHOIX DE MOOD) ---
+    window._videoEcussons = matchDuels.map(m => ({
+        matchLabel: m.label, 
+        prompts: {
+            light: generateVideoPromptLight(m.teamA, m.teamB),
+            tension: generateVideoPromptTension(m.teamA, m.teamB),
+            focus: generateVideoPromptFocus(m.teamA, m.teamB)
+        }
+    }));
+
+    var htmlVideo = `
+        <div style="background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#22d3ee;display:flex;align-items:center;gap:8px; margin-top:24px; margin-bottom:12px; flex-shrink:0;">
+            <i class="fas fa-video" style="font-size:12px;animation:pulse 2s infinite;"></i>
+            ${matchDuels.length} duel(s) — Prompts Animation Vidéo (Luma/Runway/Kling)
+        </div>
+        <div style="font-size:11px;color:#6b7280;line-height:1.6;padding:0 2px 12px;flex-shrink:0;">
+            🎬 Importez l'image du Clash final dans l'IA Vidéo, puis choisissez et collez votre style d'animation :
+        </div>`;
+
+    window._videoEcussons.forEach((e, i) => {
+        htmlVideo += `
+        <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(6,182,212,0.2);border-radius:16px;overflow:hidden; margin-bottom:12px; flex-shrink:0;">
+            <div style="padding:14px 16px;border-bottom:1px solid rgba(6,182,212,0.15);display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
+                    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#06b6d4,#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;color:#fff;"><i class="fas fa-film"></i></div>
+                    <div style="min-width:0;flex:1;">
+                        <div style="font-size:14px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.matchLabel}</div>
+                        <div style="font-size:11px;color:#9ca3af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Choisissez votre style d'animation</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="padding:14px 16px; display:flex; flex-direction:column; gap:8px;">
+                
+                <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px 12px; border-radius:10px; border:1px solid rgba(6,182,212,0.15);">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="font-size:16px;">✨</div>
+                        <div>
+                            <div style="font-size:12px; color:#e5e7eb; font-weight:700;">Lumière & Poussière</div>
+                            <div style="font-size:10px; color:#9ca3af;">Premium, fluide et brillant</div>
+                        </div>
+                    </div>
+                    <button id="btn-copy-video-light-${i}" onclick="copyVideoEcusson(${i}, 'light')" style="padding:6px 12px;border-radius:8px;border:1px solid rgba(6,182,212,0.5);color:#22d3ee;background:none;font-size:11px;font-weight:800;cursor:pointer;flex-shrink:0;transition:all 0.2s;">📋 Copier</button>
+                </div>
+
+                <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px 12px; border-radius:10px; border:1px solid rgba(6,182,212,0.15);">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="font-size:16px;">⚡</div>
+                        <div>
+                            <div style="font-size:12px; color:#e5e7eb; font-weight:700;">Tension & Orage</div>
+                            <div style="font-size:10px; color:#9ca3af;">Éclairage vacillant, fumée (Agressif)</div>
+                        </div>
+                    </div>
+                    <button id="btn-copy-video-tension-${i}" onclick="copyVideoEcusson(${i}, 'tension')" style="padding:6px 12px;border-radius:8px;border:1px solid rgba(6,182,212,0.5);color:#22d3ee;background:none;font-size:11px;font-weight:800;cursor:pointer;flex-shrink:0;transition:all 0.2s;">📋 Copier</button>
+                </div>
+
+                <div style="display:flex; align-items:center; justify-content:space-between; background:rgba(0,0,0,0.4); padding:10px 12px; border-radius:10px; border:1px solid rgba(6,182,212,0.15);">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="font-size:16px;">🎥</div>
+                        <div>
+                            <div style="font-size:12px; color:#e5e7eb; font-weight:700;">Focus & Profondeur</div>
+                            <div style="font-size:10px; color:#9ca3af;">Jeu de flou, lent et immersif</div>
+                        </div>
+                    </div>
+                    <button id="btn-copy-video-focus-${i}" onclick="copyVideoEcusson(${i}, 'focus')" style="padding:6px 12px;border-radius:8px;border:1px solid rgba(6,182,212,0.5);color:#22d3ee;background:none;font-size:11px;font-weight:800;cursor:pointer;flex-shrink:0;transition:all 0.2s;">📋 Copier</button>
+                </div>
+
             </div>
         </div>`;
     });
 
     // --- RENDU FINAL ---
-    container.innerHTML = previewHtml + htmlIndividuel + htmlMatch;
+    container.innerHTML = previewHtml + htmlIndividuel + htmlMatch + htmlVideo;
 }
 
 // -------------------------------------------------------------
-// ANCIENNES FONCTIONS (CONSERVÉES POUR UN PROMPT PAR ÉQUIPE)
+// FONCTIONS DE GÉNÉRATION DES PROMPTS
 // -------------------------------------------------------------
 function generateEcussonPrompt(teamName) {
     return `Create a photorealistic [16:9] aspect ratio image using the uploaded logo of ${teamName} as the exact source identity. Preserve the logo's original shape, proportions, symbol geometry, layout and color structure precisely, with no redesign, distortion or reinterpretation. Transform the uploaded logo into a high-end embroidered emblem with realistic, dense stitching and premium embroidery detail. The emblem should be the central focus, placed on a premium, textured fabric surface that complements ${teamName}'s official colors. Use a dynamic close-up perspective with subtle depth of field, where the foreground embroidery is sharply in focus and the fabric softly blurs into the background. Apply natural, soft lighting that casts gentle shadows to emphasize stitch depth, thread texture and fabric weave. The final image should feel luxurious, tactile, modern and suitable for a premium brand or sports identity presentation. No text overlays, no watermarks, no additional typography. The logo must remain instantly recognizable as the official ${teamName} logo. --ar 3:4 --style raw --v 6`;
 }
 
+function generateMatchEcussonPrompt(teamA, teamB) {
+    return `ENGLISH PROMPT: A high-impact, photorealistic [9:16] cinematic composition. The image is split by a sharp dynamic diagonal line.
+Top-Left Half: The ${teamA} logo as a premium dense embroidered emblem on its primary club colors athletic mesh.
+Bottom-Right Half: The ${teamB} logo as a premium dense embroidered emblem on its primary club colors textured fabric.
+Dynamic Effects: At the diagonal intersection, add a subtle shimmering light energy effect or a sharp contrast of shadows. Use dramatic chiaroscuro lighting with intense highlights on the thread edges to create a 3D metallic glint. Add floating micro-dust particles and subtle bokeh lens flares in the air to add depth and atmosphere.
+Branding Element: At the bottom center of the image, integrate the "Score Master" logo — a sleek metallic silver "SM" monogram with a luxurious gold crown on top. Render it with a subtle glassmorphism or holographic shimmer effect, slightly elevated above the fabric background with a soft drop shadow. The logo should feel like a premium watermark, elegant and not overpowering.
+Technical: Ultra-close-up, extreme detail on stitching, shallow depth of field. The mood is aggressive, luxurious, and high-energy. No additional text, no watermarks. --ar 9:16 --style raw --v 6`;
+}
+
+// Les 3 variantes de prompts vidéo
+function generateVideoPromptLight(teamA, teamB) {
+    return `ENGLISH PROMPT: Subtle cinematic camera pan over the embroidered ${teamA} and ${teamB} logos. A sweeping light ray passes over the 3D metallic threads, creating a realistic shimmering glint. Floating micro-dust particles swirl gently in the shallow depth of field. The diagonal clash line subtly pulses with energy. High-end, photorealistic macro video, smooth slow-motion.`;
+}
+
+function generateVideoPromptTension(teamA, teamB) {
+    return `ENGLISH PROMPT: Dynamic macro dolly-in shot of the embroidered ${teamA} and ${teamB} logos. Subtle electric energy crackles along the diagonal split line. The chiaroscuro lighting flickers slightly, creating a dramatic, high-tension atmosphere. Subtle smoke drifts in the background over the textured fabric. 8k, photorealistic.`;
+}
+
+function generateVideoPromptFocus(teamA, teamB) {
+    return `ENGLISH PROMPT: Cinematic rack focus shifting from the top-left ${teamA} logo to the bottom-right ${teamB} logo. The fabric texture subtly undulates like a flag in a very gentle breeze. Soft bokeh lens flares morph in the background. Ultra-realistic macro photography motion.`;
+}
+
+// -------------------------------------------------------------
+// FONCTIONS DE COPIE (AVEC FEEDBACK VISUEL)
+// -------------------------------------------------------------
+function handleCopyFeedback(btnId, defaultColor, defaultBorder) {
+    var btn = document.getElementById(btnId);
+    if (btn) {
+        btn.textContent = '✅ Copié !';
+        btn.style.background = 'rgba(34,197,94,0.2)';
+        btn.style.borderColor = '#22c55e';
+        btn.style.color = '#4ade80';
+        setTimeout(function() {
+            btn.textContent = '📋 Copier';
+            btn.style.background = 'none';
+            btn.style.borderColor = defaultBorder;
+            btn.style.color = defaultColor;
+        }, 2000);
+    }
+}
+
 function copyEcusson(i) {
-    var e = window._ecussons[i];
-    if (!e) return;
-    pgCopyText(e.prompt, function() {
-        var btn = document.getElementById('btn-copy-ecusson-' + i);
-        if (btn) {
-            btn.textContent = '✅ Copié !';
-            btn.style.background = 'rgba(34,197,94,0.2)';
-            btn.style.borderColor = '#22c55e';
-            btn.style.color = '#4ade80';
-            setTimeout(function() {
-                btn.textContent = '📋 Copier';
-                btn.style.background = 'none';
-                btn.style.borderColor = 'rgba(168,85,247,0.5)';
-                btn.style.color = '#c084fc';
-            }, 2000);
-        }
+    if (!window._ecussons[i]) return;
+    pgCopyText(window._ecussons[i].prompt, function() {
+        handleCopyFeedback('btn-copy-ecusson-' + i, '#c084fc', 'rgba(168,85,247,0.5)');
+    });
+}
+
+function copyMatchEcusson(i) {
+    if (!window._matchEcussons[i]) return;
+    pgCopyText(window._matchEcussons[i].prompt, function() {
+        handleCopyFeedback('btn-copy-match-ecusson-' + i, '#fb923c', 'rgba(249,115,22,0.5)');
+    });
+}
+
+function copyVideoEcusson(i, type) {
+    // type peut être 'light', 'tension' ou 'focus'
+    if (!window._videoEcussons[i] || !window._videoEcussons[i].prompts[type]) return;
+    pgCopyText(window._videoEcussons[i].prompts[type], function() {
+        handleCopyFeedback('btn-copy-video-' + type + '-' + i, '#22d3ee', 'rgba(6,182,212,0.5)');
     });
 }
 
