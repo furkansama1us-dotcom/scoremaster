@@ -3874,9 +3874,9 @@ function renderEcussonContent() {
     if (!activeCombined || !activeCombined.matches || activeCombined.matches.length === 0) {
         container.innerHTML = `
             <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:40px 20px;flex:1;">
-                <div style="width:80px;height:80px;border-radius:20px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);display:flex;align-items:center;justify-content:center;font-size:36px;">⏳</div>
-                <div style="font-size:18px;font-weight:700;color:#fff;">Pas de combiné en cours</div>
-                <div style="font-size:13px;color:#6b7280;max-width:320px;line-height:1.6;">Publiez un combiné depuis l'onglet <strong style="color:#a855f7;">Vue</strong> pour générer les écussons.</div>
+                <div style="width:80px;height:80px;border-radius:20px;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;">⏳</div>
+                <div style="font-size:18px;font-weight:700;color:#fff;flex-shrink:0;">Pas de combiné en cours</div>
+                <div style="font-size:13px;color:#6b7280;max-width:320px;line-height:1.6;flex-shrink:0;">Publiez un combiné depuis l'onglet <strong style="color:#a855f7;">Vue</strong> pour générer les écussons.</div>
             </div>`;
         return;
     }
@@ -3897,11 +3897,11 @@ function renderEcussonContent() {
                 <div class="blurred-value" style="background:#2A2A3A; padding:4px 12px; border-radius:6px; font-size:14px; font-weight:700; color:#fff;">${(m.odds || 0).toFixed(2)}</div>
             </div>
             <div style="display:flex; align-items:center; justify-content:space-between;">
-                <div style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-light-gray);">
+                <div style="display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-light-gray); min-width:0; flex:1;">
                     ${logoDisplay}
-                    <span>${m.teams}</span>
+                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${m.teams}</span>
                 </div>
-                <div style="font-size:11px; color:var(--text-gray);">${displayTime}</div>
+                <div style="font-size:11px; color:var(--text-gray); flex-shrink:0; margin-left:10px;">${displayTime}</div>
             </div>
         </div>`;
     });
@@ -3937,7 +3937,7 @@ function renderEcussonContent() {
     window._ecussons = ecussons; 
 
     var htmlIndividuel = `
-        <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#c084fc;display:flex;align-items:center;gap:8px; margin-bottom:12px;">
+        <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#c084fc;display:flex;align-items:center;gap:8px; margin-bottom:12px; flex-shrink:0;">
             <i class="fas fa-circle" style="font-size:8px;animation:pulse 2s infinite;"></i>
             ${allTeams.length} équipe(s) détectée(s) — Prompts individuels
         </div>`;
@@ -3945,19 +3945,19 @@ function renderEcussonContent() {
     ecussons.forEach(function(e, i) {
         var flag = detectFlag(e.team + ' ' + e.team);
         htmlIndividuel += `
-        <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(168,85,247,0.2);border-radius:16px;overflow:hidden; margin-bottom:12px;">
-            <div style="padding:14px 16px;border-bottom:1px solid rgba(168,85,247,0.15);display:flex;align-items:center;justify-content:space-between;">
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#a855f7,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;">🛡️</div>
-                    <div>
-                        <div style="font-size:14px;font-weight:800;color:#fff;">${flag} ${e.team}</div>
-                        <div style="font-size:11px;color:#6b7280;">Prompt écusson seul</div>
+        <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(168,85,247,0.2);border-radius:16px;overflow:hidden; margin-bottom:12px; flex-shrink:0;">
+            <div style="padding:14px 16px;border-bottom:1px solid rgba(168,85,247,0.15);display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
+                    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#a855f7,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🛡️</div>
+                    <div style="min-width:0;flex:1;">
+                        <div style="font-size:14px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${flag} ${e.team}</div>
+                        <div style="font-size:11px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Prompt écusson seul</div>
                     </div>
                 </div>
-                <button id="btn-copy-ecusson-${i}" onclick="copyEcusson(${i})" style="padding:8px 14px;border-radius:10px;border:1px solid rgba(168,85,247,0.5);color:#c084fc;background:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap; transition:all 0.2s;">📋 Copier</button>
+                <button id="btn-copy-ecusson-${i}" onclick="copyEcusson(${i})" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(168,85,247,0.5);color:#c084fc;background:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;flex-shrink:0;white-space:nowrap;transition:all 0.2s;">📋 Copier</button>
             </div>
             <div style="padding:14px 16px;">
-                <div style="background:rgba(0,0,0,0.4);border:1px solid rgba(168,85,247,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:160px;overflow-y:auto;white-space:pre-wrap;">${e.prompt}</div>
+                <div style="background:rgba(0,0,0,0.4);border:1px solid rgba(168,85,247,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:160px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">${e.prompt}</div>
             </div>
         </div>`;
     });
@@ -3982,30 +3982,33 @@ function renderEcussonContent() {
     window._matchEcussons = matchPrompts;
 
     var htmlMatch = `
-        <div style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#fb923c;display:flex;align-items:center;gap:8px; margin-top:24px; margin-bottom:12px;">
+        <div style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#fb923c;display:flex;align-items:center;gap:8px; margin-top:24px; margin-bottom:12px; flex-shrink:0;">
             <i class="fas fa-bolt" style="font-size:12px;animation:pulse 2s infinite;"></i>
             ${matchPrompts.length} duel(s) détecté(s) — Prompts Affiche Clash
         </div>`;
 
     matchPrompts.forEach(function(e, i) {
         htmlMatch += `
-        <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(249,115,22,0.2);border-radius:16px;overflow:hidden; margin-bottom:12px;">
-            <div style="padding:14px 16px;border-bottom:1px solid rgba(249,115,22,0.15);display:flex;align-items:center;justify-content:space-between;">
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#f97316,#ea580c);display:flex;align-items:center;justify-content:center;font-size:18px;">🔥</div>
-                    <div>
-                        <div style="font-size:14px;font-weight:800;color:#fff;">${e.matchLabel}</div>
-                        <div style="font-size:11px;color:#9ca3af;">Prompt Clash 9:16</div>
+        <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(249,115,22,0.2);border-radius:16px;overflow:hidden; margin-bottom:12px; flex-shrink:0;">
+            <div style="padding:14px 16px;border-bottom:1px solid rgba(249,115,22,0.15);display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
+                    <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#f97316,#ea580c);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🔥</div>
+                    <div style="min-width:0;flex:1;">
+                        <div style="font-size:14px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${e.matchLabel}</div>
+                        <div style="font-size:11px;color:#9ca3af;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Prompt Clash 9:16</div>
                     </div>
                 </div>
-                <button id="btn-copy-match-ecusson-${i}" onclick="copyMatchEcusson(${i})" style="padding:8px 14px;border-radius:10px;border:1px solid rgba(249,115,22,0.5);color:#fb923c;background:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap; transition:all 0.2s;">📋 Copier</button>
+                <button id="btn-copy-match-ecusson-${i}" onclick="copyMatchEcusson(${i})" style="padding:8px 12px;border-radius:10px;border:1px solid rgba(249,115,22,0.5);color:#fb923c;background:none;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;flex-shrink:0;white-space:nowrap;transition:all 0.2s;">📋 Copier</button>
             </div>
             <div style="padding:14px 16px;">
-                <div style="background:rgba(0,0,0,0.4);border:1px solid rgba(249,115,22,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:160px;overflow-y:auto;white-space:pre-wrap;">${e.prompt}</div>
+                <div style="background:rgba(0,0,0,0.4);border:1px solid rgba(249,115,22,0.15);border-radius:10px;padding:12px;font-size:11px;color:#e5e7eb;font-family:'Courier New',monospace;line-height:1.7;max-height:160px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;">${e.prompt}</div>
             </div>
         </div>`;
     });
 
+    // --- RENDU FINAL ---
+    container.innerHTML = previewHtml + htmlIndividuel + htmlMatch;
+}
     // --- RENDU FINAL ---
     container.innerHTML = previewHtml + htmlIndividuel + htmlMatch;
 }
