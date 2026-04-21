@@ -1952,29 +1952,45 @@ async function fetchMatchesFromAPI() {
     var dateVal = document.getElementById('admin-date').value;
     if (!dateVal) { showToast("Choisis une date d'abord", true); return; }
 
-    // 1. Formatage de la date (JJ/MM/AAAA -> AAAA-MM-JJ)
     var formattedDate = dateVal;
     if (dateVal.includes('/')) {
         var parts = dateVal.split('/');
         if (parts.length === 3) formattedDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
     }
 
+    // ==========================================
+    // CORRECTIF : CONTOURNER LE BUG J-1 DE L'API
+    // ==========================================
+    var dateParts = formattedDate.split('-');
+    // On calcule la date en forçant la base 10 (pour éviter les bugs avec les "0")
+    var queryDateObj = new Date(parseInt(dateParts[0], 10), parseInt(dateParts[1], 10) - 1, parseInt(dateParts[2], 10));
+    
+    // On ajoute +1 jour à la requête
+    queryDateObj.setDate(queryDateObj.getDate() + 1); 
+    
+    var qYear = queryDateObj.getFullYear();
+    var qMonth = String(queryDateObj.getMonth() + 1).padStart(2, '0');
+    var qDay = String(queryDateObj.getDate()).padStart(2, '0');
+    var queryDate = `${qYear}-${qMonth}-${qDay}`;
+    // ==========================================
+
     var btn = document.getElementById('btn-fetch-api');
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche...';
 
     try {
-        const RAPIDAPI_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
-const HOST = 'sportapi7.p.rapidapi.com';
+        const SPORT_API_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
+        const HOST = 'sportapi7.p.rapidapi.com';
 
-const TARGET_URL = `https://${HOST}/api/v1/sport/football/scheduled-events/${formattedDate}`;
+        // ⚠️ On envoie "queryDate" (J+1) au serveur au lieu de la date du calendrier !
+        const TARGET_URL = `https://${HOST}/api/v1/sport/football/scheduled-events/${queryDate}`;
 
-var response = await fetch(TARGET_URL, {
-    method: 'GET',
-    headers: {
-        'x-rapidapi-host': HOST,
-        'x-rapidapi-key': RAPIDAPI_KEY
-    }
-});
+        var response = await fetch(TARGET_URL, {
+            method: 'GET',
+            headers: {
+                'x-rapidapi-host': HOST,
+                'x-rapidapi-key': SPORT_API_KEY
+            }
+        });
 
         if (!response.ok) throw new Error("Erreur réseau ou Proxy");
 
