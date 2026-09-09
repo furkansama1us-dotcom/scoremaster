@@ -2526,7 +2526,7 @@ async function fetchMatchesFromAPI() {
             window.currentAISuggestions = picked.map(function (m) {
                 var seed = seededScore(m.homeTeam.name + m.awayTeam.name + dateStr);
                 var score = pickAIScoreLine(seed);
-                var odds = (6 + seed * 13).toFixed(2); // cote fictive plausible pour un score exact
+                var odds = (Math.round((6 + seed * 13) * 4) / 4).toFixed(2); // cote fictive arrondie au quart le plus proche (15.00, 17.75, 18.00...)
                 var confidence = 90 + Math.floor(seededScore(m.id + '#conf') * 10); // 90-99%, cosmétique uniquement
                 var timestamp = m.utcDate ? new Date(m.utcDate).getTime() : 0;
                 var timeStr = m.utcDate ? new Date(m.utcDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '--:--';
