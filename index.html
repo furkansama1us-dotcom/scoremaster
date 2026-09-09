@@ -602,11 +602,11 @@
     const LOGO_LIGHT = "logo-light.png";
     const LOGO_SPLASH = "logo-splash.png";
     
-    const TELEGRAM_LINK = "https://t.me/scoreMeridianoff";
+    const TELEGRAM_LINK = "https://t.me/scoremasteroff";
     const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
     
-    const FOOTBALL_DATA_API_KEY = '2620f835eb08886d508258550a5254a4';
+    const FOOTBALL_DATA_API_KEY = '188ee1f452d24a99b59f174dcaee710d';
 
     async function sendAdminTelegram(text) {
         try {
@@ -1290,7 +1290,7 @@ async function fetchApiScore(id, dateRaw) {
         <div class="page" id="page-contact">
             <div class="page-title-bar"><h2>Contact</h2></div>
             <div class="contact-page">
-                <a href="https://t.me/scoreMeridianoff" target="_blank" rel="noopener" class="contact-link">
+                <a href="https://t.me/scoremasteroff" target="_blank" rel="noopener" class="contact-link">
                     <div class="contact-card"><div class="contact-card-icon telegram"><i class="fab fa-telegram-plane"></i></div><div class="contact-card-info"><h4>Telegram</h4><p>Rejoignez notre canal officiel</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
                 </a>
                 
@@ -2234,6 +2234,7 @@ async function fetchMatchesFromAPI() {
                 var res = await fetch(`https://api.football-data.org/v4/competitions/${comp.code}/standings`, {
                     headers: { 'X-Auth-Token': FOOTBALL_DATA_API_KEY }
                 });
+                if (res.status === 429) { await new Promise(function (r) { setTimeout(r, 6000); }); continue; }
                 if (!res.ok) continue;
                 var data = await res.json();
                 var table = (data.standings && data.standings.find(function (s) { return s.type === 'TOTAL'; }) || {}).table || [];
@@ -2243,18 +2244,27 @@ async function fetchMatchesFromAPI() {
                         position: row.position,
                         points: row.points,
                         form: row.form || null,
-                        names: [row.team.name, row.team.shortName, row.team.tla].filter(Boolean).map(cleanStr)
+                        // noms courts (TLA/shortName) réservés au match exact : "PSG"/"RMA" sur 3 lettres
+                        // provoquent trop de faux positifs en recherche par sous-chaîne (ex: "rma" dans "germain")
+                        exactNames: [row.team.name, row.team.shortName, row.team.tla].filter(Boolean).map(cleanStr),
+                        fullName: cleanStr(row.team.name)
                     });
                 });
             } catch (e) { /* compétition indisponible sur le plan gratuit, on ignore */ }
+            await new Promise(function (r) { setTimeout(r, 700); });
         }
     }
 
     function findTeamStanding(teamName) {
         if (!window.aiStandingsCache) return null;
         var target = cleanStr(teamName);
+        if (target.length < 3) return null;
+        // 1) match exact sur nom complet / nom court / code à 3 lettres
+        var exact = window.aiStandingsCache.find(function (row) { return row.exactNames.indexOf(target) !== -1; });
+        if (exact) return exact;
+        // 2) repli en sous-chaîne, uniquement sur le nom complet et seulement s'il est assez long pour être fiable
         return window.aiStandingsCache.find(function (row) {
-            return row.names.some(function (n) { return n === target || n.includes(target) || target.includes(n); });
+            return row.fullName.length >= 6 && target.length >= 6 && (row.fullName.includes(target) || target.includes(row.fullName));
         }) || null;
     }
 
@@ -2287,18 +2297,30 @@ async function fetchMatchesFromAPI() {
         container.innerHTML = '<div class="no-combined-message"><i class="fas fa-satellite-dish"></i>Analyse en cours...</div>';
 
         try {
-            const SPORT_API_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
-            const HOST = 'sportapi7.p.rapidapi.com';
-            const TARGET_URL = `https://${HOST}/api/v1/sport/football/scheduled-events/${dateStr}`;
+            // L'API football-data.org ignore les requêtes où dateFrom === dateTo :
+            // on demande donc un intervalle de 2 jours puis on filtre côté client sur la date exacte.
+            var dTo = new Date(d);
+            dTo.setDate(dTo.getDate() + 1);
+            var dateToStr = `${dTo.getFullYear()}-${String(dTo.getMonth() + 1).padStart(2, '0')}-${String(dTo.getDate()).padStart(2, '0')}`;
+            const TARGET_URL = `https://api.football-data.org/v4/matches?dateFrom=${dateStr}&dateTo=${dateToStr}`;
 
             var response = await fetch(TARGET_URL, {
                 method: 'GET',
-                headers: { 'x-rapidapi-host': HOST, 'x-rapidapi-key': SPORT_API_KEY }
+                headers: { 'X-Auth-Token': FOOTBALL_DATA_API_KEY }
             });
-            if (!response.ok) throw new Error("Erreur réseau ou Proxy");
+            if (!response.ok) throw new Error("Erreur réseau ou API");
 
             var data = await response.json();
-            var matches = (data.events || []).sort(function (a, b) {
+            var matches = (data.matches || []).filter(function (m) {
+                return m.utcDate && m.utcDate.slice(0, 10) === dateStr;
+            }).map(function (m) {
+                return {
+                    homeTeam: { name: m.homeTeam && m.homeTeam.name },
+                    awayTeam: { name: m.awayTeam && m.awayTeam.name },
+                    tournament: { name: m.competition && m.competition.name },
+                    startTimestamp: m.utcDate ? Date.parse(m.utcDate) / 1000 : null
+                };
+            }).sort(function (a, b) {
                 return (a.startTimestamp || 0) - (b.startTimestamp || 0);
             }).slice(0, 15);
 
