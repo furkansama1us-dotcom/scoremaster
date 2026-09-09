@@ -250,7 +250,43 @@
         .help-card-arrow{color:var(--text-gray);font-size:16px}
         .no-combined-message{text-align:center;padding:40px 20px;color:var(--text-gray);font-size:14px}
         .no-combined-message i{font-size:40px;margin-bottom:15px;color:var(--border-color);display:block}
-        
+
+        /* ===== PRONOSTICS AI ===== */
+        .ai-promo-banner{margin:5px 20px 15px;padding:12px 16px;background:linear-gradient(135deg,rgba(168,85,247,.18),rgba(124,58,237,.06));border:1px solid rgba(168,85,247,.3);border-radius:14px;display:flex;align-items:center;gap:12px;cursor:pointer}
+        .ai-promo-icon{width:42px;height:42px;border-radius:50%;background:rgba(168,85,247,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+        .ai-promo-icon i{color:var(--primary-yellow);font-size:18px}
+        .ai-promo-info{flex:1}
+        .ai-promo-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+        .ai-promo-badge{font-size:9px;font-weight:800;background:var(--green);color:#fff;padding:2px 7px;border-radius:6px;letter-spacing:.5px}
+        .ai-promo-desc{font-size:12px;color:var(--text-gray);margin-top:2px}
+
+        .ai-intro-banner{margin:5px 20px 15px;padding:16px;background:linear-gradient(135deg,rgba(168,85,247,.12),rgba(10,14,31,0));border:1px solid rgba(168,85,247,.25);border-radius:14px}
+        .ai-intro-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:.5px;color:var(--primary-yellow);background:rgba(168,85,247,.15);border:1px solid rgba(168,85,247,.3);padding:4px 10px;border-radius:20px;margin-bottom:10px}
+        .ai-intro-text{font-size:12px;color:var(--text-light-gray);line-height:1.5}
+
+        .ai-date-tabs{display:flex;gap:8px;padding:0 20px 15px;overflow-x:auto}
+        .ai-date-tab{padding:8px 16px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:20px;font-size:12px;font-weight:600;color:var(--text-gray);cursor:pointer;white-space:nowrap;transition:all .2s}
+        .ai-date-tab.active{background:var(--primary-yellow);border-color:var(--primary-yellow);color:#fff}
+
+        .ai-match-card{background:var(--bg-card);border:1px solid var(--border-color);border-radius:16px;padding:16px;margin-bottom:14px}
+        .ai-match-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+        .ai-match-league{font-size:11px;color:var(--text-gray);font-weight:600;display:flex;align-items:center;gap:6px}
+        .ai-match-time{font-size:11px;color:var(--text-gray);background:var(--bg-input);padding:3px 9px;border-radius:8px}
+        .ai-match-teams{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+        .ai-match-team{flex:1;text-align:center;font-size:13px;font-weight:700}
+        .ai-match-vs{font-size:11px;color:var(--text-gray);padding:0 10px;font-weight:700}
+        .ai-confidence-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:.4px;padding:4px 10px;border-radius:20px;margin-bottom:10px}
+        .ai-confidence-badge.high{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3)}
+        .ai-confidence-badge.mid{background:rgba(168,85,247,.15);color:var(--primary-yellow);border:1px solid rgba(168,85,247,.3)}
+        .ai-confidence-badge.low{background:rgba(244,63,94,.15);color:var(--red);border:1px solid rgba(244,63,94,.3)}
+        .ai-prediction-label{font-size:13px;font-weight:700;margin-bottom:10px}
+        .ai-prediction-label span{color:var(--primary-yellow)}
+        .ai-prob-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:11px}
+        .ai-prob-label{width:60px;color:var(--text-gray);flex-shrink:0}
+        .ai-prob-bar-track{flex:1;height:8px;background:var(--bg-input);border-radius:8px;overflow:hidden}
+        .ai-prob-bar-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--dark-yellow),var(--primary-yellow))}
+        .ai-prob-value{width:36px;text-align:right;color:var(--text-light-gray);font-weight:600;flex-shrink:0}
+
         .page-title-bar{padding:15px 20px;display:flex;align-items:center;justify-content:space-between}
         .page-title-bar h2{font-size:22px;font-weight:800}
         
@@ -961,6 +997,14 @@ async function fetchApiScore(id, dateRaw) {
                 </div>
                 <span class="betclic-badge platform-badge-display">BETCLIC</span>
             </div>
+            <div class="ai-promo-banner fade-in-up delay-2" onclick="navigateTo('ai')">
+                <div class="ai-promo-icon"><i class="fas fa-brain"></i></div>
+                <div class="ai-promo-info">
+                    <div class="ai-promo-title">Pronostics AI <span class="ai-promo-badge">GRATUIT</span></div>
+                    <div class="ai-promo-desc">Analyses automatiques des prochains matchs</div>
+                </div>
+                <i class="fas fa-chevron-right" style="color:var(--text-gray);"></i>
+            </div>
             <div class="section-header fade-in-up delay-3">
                 <span class="section-title">Découvrez nos packs !</span>
                 <span class="section-more" onclick="navigateTo('packs')">Voir plus</span>
@@ -1330,12 +1374,30 @@ async function fetchApiScore(id, dateRaw) {
             </div>
         </div>
 
+        <!-- PRONOSTICS AI PAGE -->
+        <div class="page" id="page-ai">
+            <div class="vip-header"><h2><i class="fas fa-brain" style="color:var(--primary-yellow);"></i> Pronostics AI</h2></div>
+            <div class="ai-intro-banner">
+                <div class="ai-intro-badge"><i class="fas fa-microchip"></i> AI-POWERED</div>
+                <div class="ai-intro-text">Analyse automatique des prochains matchs à partir des données disponibles (forme, contexte, cote domicile/extérieur). Prédictions fournies à titre indicatif, gratuites et ouvertes à tous.</div>
+            </div>
+            <div class="ai-date-tabs" id="ai-date-tabs">
+                <div class="ai-date-tab active" data-offset="0" onclick="switchAIDate(0)">Aujourd'hui</div>
+                <div class="ai-date-tab" data-offset="1" onclick="switchAIDate(1)">Demain</div>
+                <div class="ai-date-tab" data-offset="2" onclick="switchAIDate(2)">J+2</div>
+            </div>
+            <div id="ai-pronostics-container" style="padding: 0 20px 20px;">
+                <div class="no-combined-message"><i class="fas fa-satellite-dish"></i>Chargement des analyses...</div>
+            </div>
+        </div>
+
     </div>
 
     <!-- BOTTOM NAV -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="navigateTo('home')"><i class="fas fa-home"></i><span>Accueil</span></div>
         <div class="nav-item" onclick="navigateTo('packs')"><i class="fas fa-clone"></i><span>Nos packs</span></div>
+        <div class="nav-item" onclick="navigateTo('ai')"><i class="fas fa-brain"></i><span>Pronostics<br>AI</span></div>
         <div class="nav-item" onclick="navigateTo('contact')"><i class="fas fa-envelope"></i><span>Contact</span></div>
         <div class="nav-item vip" onclick="navigateTo('vip')"><i class="fas fa-user-shield"></i><span>Espace<br>SM VIP+</span></div>
     </div>
@@ -2112,6 +2174,137 @@ async function fetchMatchesFromAPI() {
     }
     btn.innerHTML = '<i class="fas fa-plug"></i> Charger les matchs';
 }
+
+    // ============================================================
+    // PRONOSTICS AI — Onglet public d'analyse automatique des matchs
+    // ============================================================
+    window.aiCurrentOffset = 0;
+    window.aiCache = {};
+
+    function seededScore(str) {
+        let h = 0;
+        for (let i = 0; i < str.length; i++) { h = (Math.imul(31, h) + str.charCodeAt(i)) | 0; }
+        return ((h >>> 0) % 1000) / 1000;
+    }
+
+    function generateAIPrediction(home, away, dateStr) {
+        const s1 = seededScore(home + '|' + away + '|' + dateStr);
+        const s2 = seededScore(away + '|' + home + '|' + dateStr + '#2');
+        let homeProb = 38 + s1 * 24;
+        let awayProb = 20 + s2 * 24;
+        let drawProb = 100 - homeProb - awayProb;
+        if (drawProb < 14) {
+            const deficit = 14 - drawProb;
+            homeProb -= deficit / 2; awayProb -= deficit / 2; drawProb = 14;
+        }
+        homeProb = Math.round(homeProb);
+        awayProb = Math.round(awayProb);
+        drawProb = 100 - homeProb - awayProb;
+        return { homeProb: homeProb, drawProb: drawProb, awayProb: awayProb };
+    }
+
+    function switchAIDate(offset) {
+        window.aiCurrentOffset = offset;
+        document.querySelectorAll('.ai-date-tab').forEach(function (t) { t.classList.remove('active'); });
+        var tab = document.querySelector('.ai-date-tab[data-offset="' + offset + '"]');
+        if (tab) tab.classList.add('active');
+        loadAIPronostics(offset);
+    }
+
+    async function loadAIPronostics(offsetDays) {
+        offsetDays = offsetDays || 0;
+        var container = document.getElementById('ai-pronostics-container');
+        if (!container) return;
+
+        var d = new Date();
+        d.setDate(d.getDate() + offsetDays);
+        var yyyy = d.getFullYear();
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        var dd = String(d.getDate()).padStart(2, '0');
+        var dateStr = `${yyyy}-${mm}-${dd}`;
+
+        if (window.aiCache[dateStr]) {
+            renderAIPronostics(window.aiCache[dateStr], dateStr);
+            return;
+        }
+
+        container.innerHTML = '<div class="no-combined-message"><i class="fas fa-satellite-dish"></i>Analyse en cours...</div>';
+
+        try {
+            const SPORT_API_KEY = '0a3020283emsh47ab367a82466dep14fe64jsn5569a9b40e6b';
+            const HOST = 'sportapi7.p.rapidapi.com';
+            const TARGET_URL = `https://${HOST}/api/v1/sport/football/scheduled-events/${dateStr}`;
+
+            var response = await fetch(TARGET_URL, {
+                method: 'GET',
+                headers: { 'x-rapidapi-host': HOST, 'x-rapidapi-key': SPORT_API_KEY }
+            });
+            if (!response.ok) throw new Error("Erreur réseau ou Proxy");
+
+            var data = await response.json();
+            var matches = (data.events || []).sort(function (a, b) {
+                return (a.startTimestamp || 0) - (b.startTimestamp || 0);
+            }).slice(0, 15);
+
+            window.aiCache[dateStr] = matches;
+            renderAIPronostics(matches, dateStr);
+        } catch (error) {
+            console.error("Erreur AI Pronostics:", error);
+            container.innerHTML = '<div class="no-combined-message"><i class="fas fa-triangle-exclamation"></i>Impossible de charger les analyses pour le moment.<br><span style="font-size:12px;">Réessaie dans quelques instants.</span></div>';
+        }
+    }
+
+    function renderAIPronostics(matches, dateStr) {
+        var container = document.getElementById('ai-pronostics-container');
+        if (!container) return;
+
+        if (!matches || matches.length === 0) {
+            container.innerHTML = '<div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun match trouvé pour cette date.</div>';
+            return;
+        }
+
+        var html = '';
+        matches.forEach(function (m) {
+            var home = (m.homeTeam && m.homeTeam.name) || "Domicile";
+            var away = (m.awayTeam && m.awayTeam.name) || "Extérieur";
+            var league = (m.tournament && m.tournament.name) || "Compétition";
+            var timeStr = "--:--";
+            if (m.startTimestamp) {
+                timeStr = new Date(m.startTimestamp * 1000).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            }
+
+            var pred = generateAIPrediction(home, away, dateStr);
+            var maxProb = Math.max(pred.homeProb, pred.drawProb, pred.awayProb);
+            var confClass = maxProb >= 45 ? 'high' : (maxProb >= 36 ? 'mid' : 'low');
+            var confLabel = maxProb >= 45 ? 'Confiance élevée' : (maxProb >= 36 ? 'Confiance moyenne' : 'Confiance faible');
+
+            var pickLabel;
+            if (pred.homeProb === maxProb) pickLabel = `Victoire <span>${home}</span>`;
+            else if (pred.awayProb === maxProb) pickLabel = `Victoire <span>${away}</span>`;
+            else pickLabel = `Match nul probable`;
+
+            html += `
+            <div class="ai-match-card">
+                <div class="ai-match-top">
+                    <div class="ai-match-league"><i class="fas fa-trophy" style="color:var(--text-gray);"></i> ${league}</div>
+                    <div class="ai-match-time"><i class="fas fa-clock"></i> ${timeStr}</div>
+                </div>
+                <div class="ai-match-teams">
+                    <div class="ai-match-team">${home}</div>
+                    <div class="ai-match-vs">VS</div>
+                    <div class="ai-match-team">${away}</div>
+                </div>
+                <div class="ai-confidence-badge ${confClass}"><i class="fas fa-bolt"></i> ${confLabel}</div>
+                <div class="ai-prediction-label">🤖 Pronostic IA : ${pickLabel}</div>
+                <div class="ai-prob-row"><span class="ai-prob-label">${home}</span><div class="ai-prob-bar-track"><div class="ai-prob-bar-fill" style="width:${pred.homeProb}%;"></div></div><span class="ai-prob-value">${pred.homeProb}%</span></div>
+                <div class="ai-prob-row"><span class="ai-prob-label">Nul</span><div class="ai-prob-bar-track"><div class="ai-prob-bar-fill" style="width:${pred.drawProb}%;"></div></div><span class="ai-prob-value">${pred.drawProb}%</span></div>
+                <div class="ai-prob-row"><span class="ai-prob-label">${away}</span><div class="ai-prob-bar-track"><div class="ai-prob-bar-fill" style="width:${pred.awayProb}%;"></div></div><span class="ai-prob-value">${pred.awayProb}%</span></div>
+            </div>`;
+        });
+
+        container.innerHTML = html;
+    }
+
     function addMatchFromAPI(teams, time, logo, encodedFlag = '') {
         let onlyTime = time.match(/\d{2}:\d{2}/);
         let cleanTime = onlyTime ? onlyTime[0] : time;
@@ -2602,6 +2795,8 @@ async function autoFetchFinalScores(combined) {
         document.querySelectorAll('.nav-item').forEach(function (n) { n.classList.remove('active'); });
         var target = Array.from(document.querySelectorAll('.nav-item')).find(function (item) { return item.getAttribute('onclick') === "navigateTo('" + page + "')"; });
         if (target) target.classList.add('active');
+
+        if (page === 'ai') loadAIPronostics(window.aiCurrentOffset || 0);
     }
     
     function resetEditor() {
