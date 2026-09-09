@@ -1797,6 +1797,15 @@ async function fetchApiScore(id, dateRaw) {
         <i class="fas fa-times" onclick="closeCart()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
         <h3 style="font-size:18px;font-weight:800;margin-bottom:16px;color:#fff;font-family:'Montserrat',sans-serif;"><i class="fas fa-shopping-cart" style="color:var(--primary-yellow);"></i> Mon panier</h3>
         <div id="cart-items-container"></div>
+
+        <div id="cart-promo-container" style="margin-top:8px;">
+            <div style="display:flex; gap:8px;">
+                <input type="text" id="cart-promo-input" class="admin-input" placeholder="Code promo (ex: MERCI-8X92K1)" style="flex:1;background:var(--bg-input); border:1px solid var(--border-color); color:#fff; padding:10px; border-radius:10px; font-size:13px;">
+                <button onclick="applyPromoCode()" style="padding:0 16px;background:rgba(168,85,247,.15); color:var(--primary-yellow); border:1px solid rgba(168,85,247,.3); border-radius:10px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;">Appliquer</button>
+            </div>
+            <div id="cart-promo-status" style="font-size:11px; margin-top:6px;"></div>
+        </div>
+
         <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-top:1px solid var(--border-color);margin-top:8px;margin-bottom:16px;">
             <span style="font-size:14px;color:var(--text-gray);font-weight:600;">Total</span>
             <span style="font-size:20px;font-weight:800;color:var(--primary-yellow);" id="cart-total">0€</span>
@@ -2717,6 +2726,17 @@ async function fetchMatchesFromAPI() {
         renderCartItems();
     }
 
+    window.cartDiscount = null; // { code, orderId } une fois un code promo validé
+
+    function getCartRawTotal() {
+        return window.cartItems.reduce(function (s, it) { return s + it.price; }, 0);
+    }
+
+    function getCartFinalTotal() {
+        var raw = getCartRawTotal();
+        return window.cartDiscount ? raw * 0.8 : raw;
+    }
+
     function renderCartItems() {
         var container = document.getElementById('cart-items-container');
         var totalEl = document.getElementById('cart-total');
@@ -2728,10 +2748,8 @@ async function fetchMatchesFromAPI() {
             return;
         }
 
-        var total = 0;
         var html = '';
         window.cartItems.forEach(function (item, i) {
-            total += item.price;
             html += `
             <div class="cart-item-row">
                 <div class="cart-item-info">
@@ -2742,10 +2760,55 @@ async function fetchMatchesFromAPI() {
             </div>`;
         });
         container.innerHTML = html;
-        totalEl.textContent = fmtC(total);
+
+        var rawTotal = getCartRawTotal();
+        if (window.cartDiscount) {
+            totalEl.innerHTML = `<span style="text-decoration:line-through; color:var(--text-gray); font-size:14px; margin-right:8px;">${fmtC(rawTotal)}</span>${fmtC(getCartFinalTotal())}`;
+        } else {
+            totalEl.textContent = fmtC(rawTotal);
+        }
+    }
+
+    async function applyPromoCode() {
+        var input = document.getElementById('cart-promo-input');
+        var statusEl = document.getElementById('cart-promo-status');
+        var code = input ? input.value.trim().toUpperCase() : '';
+        if (!code) { showToast('Entre un code promo.', true); return; }
+        if (!window.currentAuthUser) return;
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('orders')
+                .select('id, discount_code_used')
+                .eq('user_id', window.currentAuthUser.id)
+                .eq('discount_code', code)
+                .maybeSingle();
+            if (error) throw error;
+
+            if (!data) {
+                statusEl.innerHTML = '<span style="color:var(--red);"><i class="fas fa-times-circle"></i> Code invalide.</span>';
+                return;
+            }
+            if (data.discount_code_used) {
+                statusEl.innerHTML = '<span style="color:var(--red);"><i class="fas fa-times-circle"></i> Ce code a déjà été utilisé.</span>';
+                return;
+            }
+
+            window.cartDiscount = { code: code, orderId: data.id };
+            statusEl.innerHTML = '<span style="color:var(--green);"><i class="fas fa-check-circle"></i> -20% appliqué !</span>';
+            renderCartItems();
+        } catch (error) {
+            console.error('Erreur code promo:', error);
+            statusEl.innerHTML = '<span style="color:var(--red);">Erreur lors de la vérification du code.</span>';
+        }
     }
 
     function openCart() {
+        window.cartDiscount = null;
+        var promoInput = document.getElementById('cart-promo-input');
+        var promoStatus = document.getElementById('cart-promo-status');
+        if (promoInput) promoInput.value = '';
+        if (promoStatus) promoStatus.innerHTML = '';
         renderCartItems();
         var popup = document.getElementById('cart-popup');
         popup.style.display = 'flex';
@@ -2773,7 +2836,9 @@ async function fetchMatchesFromAPI() {
         var customerPhone = phoneInput ? phoneInput.value.trim() : '';
         if (!customerPhone) { showToast('Ton numéro WhatsApp est obligatoire.', true); return; }
 
-        var total = window.cartItems.reduce(function (s, it) { return s + it.price; }, 0);
+        var rawTotal = getCartRawTotal();
+        var appliedDiscount = window.cartDiscount; // capturé avant tout reset
+        var total = getCartFinalTotal();
         var reference = generateOrderCode('SM');
         var discountCode = generateOrderCode('MERCI');
         var itemsSnapshot = window.cartItems.slice();
@@ -2789,6 +2854,10 @@ async function fetchMatchesFromAPI() {
                 customer_phone: customerPhone
             }]);
             if (error) throw error;
+
+            if (appliedDiscount) {
+                await supabaseClient.from('orders').update({ discount_code_used: true }).eq('id', appliedDiscount.orderId);
+            }
         } catch (error) {
             console.error('Erreur validation panier:', error);
             var detail = (error && (error.message || error.details)) ? (' (' + (error.message || error.details) + ')') : '';
@@ -2799,9 +2868,11 @@ async function fetchMatchesFromAPI() {
         var username = (window.currentUserProfile && window.currentUserProfile.pseudo) || 'Utilisateur';
         var email = (window.currentUserProfile && window.currentUserProfile.email) || '—';
         var itemsList = itemsSnapshot.map(function (it) { return '• ' + it.name + ' (' + fmtC(it.price) + ')'; }).join('\n');
+        var discountLine = appliedDiscount ? `\n🎁 Code promo appliqué : ${appliedDiscount.code} (-20%, total avant réduction : ${fmtC(rawTotal)})` : '';
 
-        var telegramMsg = `🛒 NOUVEAU PANIER VALIDÉ\n\nRéférence : ${reference}\n\nArticles :\n${itemsList}\n\nTotal : ${fmtC(total)}\n\n👤 Client : ${username}\n📧 Email : ${email}\n📱 WhatsApp : ${customerPhone}\n🆔 ID compte : ${window.currentAuthUser.id}\n\n🎁 Code réduction généré pour son prochain achat : ${discountCode}\n\n➡️ Valide cette commande depuis le Panel Admin > Commandes pour générer le code de déblocage.`;
+        var telegramMsg = `🛒 NOUVEAU PANIER VALIDÉ\n\nRéférence : ${reference}\n\nArticles :\n${itemsList}\n\nTotal : ${fmtC(total)}${discountLine}\n\n👤 Client : ${username}\n📧 Email : ${email}\n📱 WhatsApp : ${customerPhone}\n🆔 ID compte : ${window.currentAuthUser.id}\n\n🎁 Code réduction généré pour son prochain achat : ${discountCode}\n\n➡️ Valide cette commande depuis le Panel Admin > Commandes pour générer le code de déblocage.`;
         sendAdminTelegram(telegramMsg);
+        window.cartDiscount = null;
 
         window.lastValidatedOrder = { reference: reference, discountCode: discountCode, itemsList: itemsList, total: total };
 
@@ -3134,7 +3205,7 @@ async function fetchMatchesFromAPI() {
 
         if (state && stillBeforeKickoff) {
             container.innerHTML = `
-            <button onclick="openUnlockedComboPage()" class="cart-fab-inline-btn" style="width:100%;padding:14px;background:linear-gradient(135deg, var(--primary-yellow), var(--dark-yellow));color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+            <button onclick="openUnlockedComboPage()" class="cart-fab-inline-btn" style="width:100%;padding:14px;background:linear-gradient(135deg, #FFD700, #E6B800);color:#1a1200;border:none;border-radius:12px;font-size:14px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 15px rgba(255,215,0,.3);">
                 <i class="fas fa-unlock"></i> Voir le combiné débloqué
             </button>`;
 

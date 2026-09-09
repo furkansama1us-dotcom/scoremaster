@@ -62,3 +62,17 @@ create policy "Admins can delete orders"
 
 alter table public.combineds_vip
   add column if not exists detected_scores jsonb;
+
+-- ============================================================
+-- Application réelle du code de réduction -20% au panier
+-- ============================================================
+
+alter table public.orders
+  add column if not exists discount_code_used boolean not null default false;
+
+-- Permet à l'utilisateur de marquer SON PROPRE code promo comme utilisé
+-- une fois appliqué à une nouvelle commande (empêche la réutilisation)
+drop policy if exists "Users can update their own orders" on public.orders;
+create policy "Users can update their own orders"
+  on public.orders for update
+  using (auth.uid() = user_id);
