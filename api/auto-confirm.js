@@ -1,11 +1,16 @@
-// Vérification et confirmation automatique des combinés "en-cours", côté serveur.
+// Détection automatique des scores réels pour les combinés "en-cours", côté serveur.
 // Appelé périodiquement par une tâche cron externe (ex: crontab sur le VPS) via
 // GET /api/auto-confirm?secret=... — ne dépend d'aucun navigateur/admin connecté.
 //
+// IMPORTANT : cet endpoint NE PUBLIE JAMAIS rien tout seul. Il détecte quand un
+// match est réellement FINISHED côté API, enregistre le score réel dans
+// `detected_scores` (pré-remplissage) et notifie l'admin par Telegram. La décision
+// finale (GAGNÉ / PERDU / scores affichés publiquement) reste 100% manuelle, via
+// le bouton "Appliquer les nouveaux scores et publier" dans le Panel Admin.
+//
 // Utilise la clé service_role Supabase (accès complet, bypass RLS) : elle ne doit
 // JAMAIS être exposée côté client ni committée dans le code — elle est lue
-// uniquement depuis les variables d'environnement Vercel (voir README ci-dessous
-// pour les noms exacts à configurer : Project Settings > Environment Variables).
+// uniquement depuis les variables d'environnement Vercel.
 
 const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -52,7 +57,7 @@ module.exports = async function handler(req, res) {
         return res.status(401).json({ error: 'Secret invalide' });
     }
 
-    const summary = { checked: 0, confirmed: [], errors: [] };
+    const summary = { checked: 0, newlyDetected: [], errors: [] };
 
     try {
         const pendingPublic = await sbFetch(`combineds_public?status=eq.en-cours&select=*`);
@@ -63,6 +68,7 @@ module.exports = async function handler(req, res) {
                 const vipRows = await sbFetch(`combineds_vip?id=eq.${pub.id}&select=*`);
                 const vip = vipRows[0];
                 if (!vip || !vip.matches || !vip.matches.length || !pub.date) continue;
+                if (vip.detected_scores) continue; // déjà détecté et notifié précédemment, on ne renotifie pas
 
                 const dTo = new Date(pub.date); dTo.setDate(dTo.getDate() + 1);
                 const dateToStr = `${dTo.getFullYear()}-${String(dTo.getMonth() + 1).padStart(2, '0')}-${String(dTo.getDate()).padStart(2, '0')}`;
@@ -86,38 +92,21 @@ module.exports = async function handler(req, res) {
                     }
                 });
 
-                if (!allFinished) continue;
+                if (!allFinished) continue; // pas encore tous terminés, on retentera au prochain passage
 
-                let allCorrect = true;
-                const updatedMatches = vip.matches.map(function (m, idx) {
-                    const real = realScores[idx];
-                    const won = real.replace(/\s/g, '') === (m.score || '').replace(/\s/g, '');
-                    if (!won) allCorrect = false;
-                    return Object.assign({}, m, { score: real });
-                });
-                const finalStatus = allCorrect ? 'termine' : 'perdu';
-                updatedMatches.forEach(function (m) { m.match_status = finalStatus; });
-
-                const publicMatches = updatedMatches.map(function (m) {
-                    return { teams: m.teams, time: m.time, score: m.score, odds: m.odds, logo: m.logo, league_flag: m.league_flag, match_status: finalStatus };
-                });
-
-                await sbFetch(`combineds_public?id=eq.${pub.id}`, {
-                    method: 'PATCH',
-                    body: JSON.stringify({ status: finalStatus, matches: publicMatches })
-                });
+                // On enregistre uniquement les scores détectés (pré-remplissage) — aucun changement de statut ni publication.
                 await sbFetch(`combineds_vip?id=eq.${pub.id}`, {
                     method: 'PATCH',
-                    body: JSON.stringify({ matches: updatedMatches })
+                    body: JSON.stringify({ detected_scores: realScores })
                 });
 
-                const recap = updatedMatches.map(function (m) { return `${m.teams} : ${m.score}`; }).join('\n');
+                const recap = vip.matches.map(function (m, idx) { return `${m.teams} : prédit ${m.score} → réel ${realScores[idx]}`; }).join('\n');
                 await sbFetch('telegram_queue', {
                     method: 'POST',
-                    body: JSON.stringify([{ message: `AUTO-CONFIRMATION (cron)\n\nCombine du ${pub.date} confirme automatiquement : ${finalStatus === 'termine' ? 'GAGNE' : 'PERDU'}\n\n${recap}` }])
+                    body: JSON.stringify([{ message: `🔎 SCORES DÉTECTÉS — Combiné du ${pub.date} prêt à valider\n\n${recap}\n\nVa dans Panel Admin > À Confirmer pour vérifier et publier.` }])
                 });
 
-                summary.confirmed.push({ id: pub.id, date: pub.date, status: finalStatus });
+                summary.newlyDetected.push({ id: pub.id, date: pub.date, scores: realScores });
             } catch (innerErr) {
                 summary.errors.push({ id: pub.id, error: String(innerErr) });
             }

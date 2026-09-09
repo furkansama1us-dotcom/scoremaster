@@ -53,3 +53,12 @@ drop policy if exists "Admins can delete orders" on public.orders;
 create policy "Admins can delete orders"
   on public.orders for delete
   using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));
+
+-- ============================================================
+-- Détection automatique des scores réels (sans publication auto)
+-- Le cron ne fait plus que détecter + pré-remplir ; c'est toujours
+-- l'admin qui valide manuellement via "Appliquer et publier".
+-- ============================================================
+
+alter table public.combineds_vip
+  add column if not exists detected_scores jsonb;

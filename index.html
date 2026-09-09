@@ -1474,9 +1474,9 @@ async function fetchApiScore(id, dateRaw) {
             
             <div class="admin-section-title" style="color:var(--text-white); display:flex; justify-content:space-between; align-items:center;">
                 <span><i class="fas fa-exclamation-triangle" style="color:#FF9800;"></i> À Confirmer (Matchs Terminés)</span>
-                <button onclick="autoConfirmFinishedCombineds()" style="background:rgba(168,85,247,.15); color:var(--primary-yellow); border:1px solid rgba(168,85,247,.3); border-radius:8px; padding:5px 10px; font-size:11px; font-weight:700; cursor:pointer;"><i class="fas fa-rotate"></i> Vérifier maintenant</button>
+                <button onclick="autoConfirmFinishedCombineds()" style="background:rgba(168,85,247,.15); color:var(--primary-yellow); border:1px solid rgba(168,85,247,.3); border-radius:8px; padding:5px 10px; font-size:11px; font-weight:700; cursor:pointer;"><i class="fas fa-rotate"></i> Actualiser</button>
             </div>
-            <div style="font-size:11px; color:var(--text-gray); margin-bottom:8px;">Les combinés sont vérifiés automatiquement toutes les 5 min tant que l'app admin reste ouverte quelque part (toi ou un autre appareil connecté en admin).</div>
+            <div style="font-size:11px; color:var(--text-gray); margin-bottom:8px;">Les scores réels sont détectés automatiquement en arrière-plan (toutes les 30 min via le cron VPS) et pré-remplis ici dès qu'ils sont dispos. Rien n'est publié tout seul : tu vérifies puis cliques "Appliquer et publier".</div>
             <div id="admin-history-pending" style="max-height: 200px; overflow-y: auto; background: rgba(255, 152, 0, 0.05); border-radius: 12px; padding: 10px; border: 1px dashed rgba(255, 152, 0, 0.5); margin-bottom:20px;"></div>
 
             <div class="admin-section-title" style="color:var(--text-white);"><i class="fas fa-history" style="color:var(--green);"></i> Déjà Terminés (Public)</div>
@@ -3195,9 +3195,11 @@ async function fetchMatchesFromAPI() {
         renderUnlockState();
 
         if (window.isAdmin) {
+            // Rafraîchit juste les données pour afficher les scores détectés par le cron serveur
+            // (aucune écriture/publication automatique ici, tout reste manuel côté admin).
             autoConfirmFinishedCombineds();
             if (window.autoConfirmInterval) clearInterval(window.autoConfirmInterval);
-            window.autoConfirmInterval = setInterval(autoConfirmFinishedCombineds, 5 * 60 * 1000); // toutes les 5 min tant que le panel/l'app admin reste ouvert
+            window.autoConfirmInterval = setInterval(autoConfirmFinishedCombineds, 5 * 60 * 1000);
         }
     }
 
@@ -3664,27 +3666,34 @@ async function autoFetchFinalScores(combined) {
             c.matches.forEach((m, index) => {
                 let logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:18px;height:18px;object-fit:contain;margin-right:8px;vertical-align:middle;">` : (m.league_flag ? `<span style="margin-right:6px; display:inline-flex; align-items:center; vertical-align:middle;">${m.league_flag}</span>` : `<span style="margin-right:6px;">⚽</span>`));
                 let currentOdds = m.odds ? m.odds.toFixed(2) : '0.00';
-                
+
+                let detected = c.detected_scores && c.detected_scores[index];
+                let scoreValue = detected || m.score;
+                let detectionHint = detected
+                    ? `<div style="font-size:11px; color:var(--green); margin-top:6px;"><i class="fas fa-check-circle"></i> Score réel détecté automatiquement (prédiction : ${m.score})</div>`
+                    : `<div style="font-size:11px; color:var(--text-gray); margin-top:6px;"><i class="fas fa-hourglass-half"></i> Pas encore détecté — vérifie/saisis le score toi-même si besoin</div>`;
+
                 // J'ajoute le champ "Cote finale" et un événement "oninput" pour recalculer le total
                 let matchHtml = `
-                <div class="admin-card" style="padding:15px; border-left:4px solid var(--blue); margin-bottom:10px;">
+                <div class="admin-card" style="padding:15px; border-left:4px solid ${detected ? 'var(--green)' : 'var(--blue)'}; margin-bottom:10px;">
                     <div style="font-size:12px; color:var(--text-gray); margin-bottom:8px;">Match ${index + 1} • Prévu à ${m.time || '--:--'}</div>
                     <div style="font-weight:bold; font-size:15px; margin-bottom:15px; display:flex; align-items:center;">
                         ${logoDisplay} ${m.teams}
                     </div>
-                    
+
                     <div style="display:flex; gap:10px;">
                         <div class="admin-field" style="margin-bottom:0; flex:1;">
                             <div class="admin-label">Score final :</div>
-                            <input type="text" class="admin-input validation-score-input" data-index="${index}" value="${m.score}" style="font-size:16px; font-weight:bold; text-align:center; letter-spacing:2px;">
+                            <input type="text" class="admin-input validation-score-input" data-index="${index}" value="${scoreValue}" style="font-size:16px; font-weight:bold; text-align:center; letter-spacing:2px;">
                         </div>
                         <div class="admin-field" style="margin-bottom:0; flex:1;">
                             <div class="admin-label">Cote finale :</div>
                             <input type="text" inputmode="decimal" class="admin-input validation-odds-input" data-index="${index}" value="${currentOdds}" style="font-size:16px; font-weight:bold; text-align:center; color:var(--primary-yellow);" oninput="recalculateValidationOdds()">
                         </div>
                     </div>
+                    ${detectionHint}
                 </div>`;
-                
+
                 container.innerHTML += matchHtml;
             });
         }
@@ -4503,7 +4512,10 @@ function renderAdminHistory() {
 
             if (now >= finishTime) {
                 let btns = `<button onclick="openValidationScreen('${c.id}')" style="background:#FF9800; color:#000;"><i class="fas fa-check-double"></i> Valider</button><button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(244,63,94,0.15); color:var(--red); border:1px solid rgba(244,63,94,0.4);"><i class="fas fa-satellite-dish"></i> Score API</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(244,63,94,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
-                htmlPending += cardBaseHtml('<span style="color:#FF9800; font-weight:bold;">À vérifier ⚠️</span>', btns);
+                let detectionBadge = c.detected_scores
+                    ? '<span style="color:var(--green); font-weight:bold;">À vérifier ⚠️ <i class="fas fa-check-circle" title="Scores réels détectés"></i> Scores prêts</span>'
+                    : '<span style="color:#FF9800; font-weight:bold;">À vérifier ⚠️</span>';
+                htmlPending += cardBaseHtml(detectionBadge, btns);
             } else {
                 // SECTION EN COURS : NOUVEAU BOUTON PROMO AJOUTÉ ICI
                 let btns = `
@@ -4534,80 +4546,15 @@ function renderAdminHistory() {
 // "en-cours" sont bien FINISHED (pas juste "+2h passées"), récupère les
 // vrais scores et publie automatiquement GAGNÉ/PERDU sans manip manuelle.
 // ============================================================
-function matchTeamsToFixture(teamsStr, fixtures) {
-    var parts = (teamsStr || '').split(' - ');
-    var homeSearch = cleanStr(parts[0] || '');
-    var awaySearch = cleanStr(parts[1] || '');
-    return fixtures.find(function (f) {
-        var fH = cleanStr(f.homeTeam.name);
-        var fA = cleanStr(f.awayTeam.name);
-        var homeMatch = fH.includes(homeSearch) || homeSearch.includes(fH);
-        var awayMatch = fA.includes(awaySearch) || awaySearch.includes(fA);
-        return homeMatch && awayMatch;
-    });
-}
-
+// La détection des scores réels se fait désormais uniquement côté serveur
+// (api/auto-confirm.js, via le cron VPS) et n'écrit QUE `detected_scores` —
+// jamais le statut GAGNÉ/PERDU ni les scores publics. Cette fonction se
+// contente de rafraîchir les données admin pour afficher les scores détectés
+// dès qu'ils arrivent ; c'est toujours l'admin qui valide manuellement via
+// "Appliquer les nouveaux scores et publier".
+// ============================================================
 async function autoConfirmFinishedCombineds() {
     if (!window.isAdmin) return;
-    var toCheck = (allCombineds || []).filter(function (c) { return c.status === 'en-cours'; });
-    if (!toCheck.length) return;
-
-    for (var i = 0; i < toCheck.length; i++) {
-        var c = toCheck[i];
-        if (!c.matches || !c.matches.length || !c.date) continue;
-
-        try {
-            var dTo = new Date(c.date); dTo.setDate(dTo.getDate() + 1);
-            var dateToStr = `${dTo.getFullYear()}-${String(dTo.getMonth() + 1).padStart(2, '0')}-${String(dTo.getDate()).padStart(2, '0')}`;
-            var res = await fetch(`/api/football?type=matches&dateFrom=${c.date}&dateTo=${dateToStr}`);
-            if (!res.ok) continue;
-            var data = await res.json();
-            var fixtures = (data.matches || []).filter(function (m) { return m.utcDate && m.utcDate.slice(0, 10) === c.date; });
-
-            var realScores = [];
-            var allFinished = true;
-            c.matches.forEach(function (m) {
-                var fixture = matchTeamsToFixture(m.teams, fixtures);
-                if (fixture && fixture.status === 'FINISHED' && fixture.score && fixture.score.fullTime && fixture.score.fullTime.home !== null) {
-                    realScores.push(`${fixture.score.fullTime.home}-${fixture.score.fullTime.away}`);
-                } else {
-                    allFinished = false;
-                    realScores.push(null);
-                }
-            });
-
-            if (!allFinished) continue; // pas tous terminés, on retentera plus tard
-
-            var allCorrect = true;
-            var updatedMatches = c.matches.map(function (m, idx) {
-                var real = realScores[idx];
-                var won = real.replace(/\s/g, '') === (m.score || '').replace(/\s/g, '');
-                if (!won) allCorrect = false;
-                var copy = Object.assign({}, m);
-                copy.score = real;
-                return copy;
-            });
-            var finalStatus = allCorrect ? 'termine' : 'perdu';
-            updatedMatches.forEach(function (m) { m.match_status = finalStatus; });
-
-            var publicMatches = updatedMatches.map(function (m) {
-                return { teams: m.teams, time: m.time, score: m.score, odds: m.odds, logo: m.logo, league_flag: m.league_flag, match_status: finalStatus };
-            });
-
-            var updatePub = await supabaseClient.from('combineds_public').update({ status: finalStatus, matches: publicMatches }).eq('id', c.id);
-            if (updatePub.error) throw updatePub.error;
-            var updateVip = await supabaseClient.from('combineds_vip').update({ matches: updatedMatches }).eq('id', c.id);
-            if (updateVip.error) throw updateVip.error;
-
-            var recap = updatedMatches.map(function (m) { return `${m.teams} : ${m.score}`; }).join('\n');
-            sendAdminTelegram(`🤖 AUTO-CONFIRMATION\n\nCombiné du ${fmtD(c.date)} confirmé automatiquement : ${finalStatus === 'termine' ? 'GAGNÉ ✅' : 'PERDU ❌'}\n\n${recap}`);
-
-            showToast(`Combiné du ${fmtD(c.date)} confirmé automatiquement (${finalStatus === 'termine' ? 'Gagné' : 'Perdu'}) !`);
-        } catch (error) {
-            console.error('Erreur auto-confirmation combiné', c.id, error);
-        }
-    }
-
     await chargerDonnees();
     renderAdminHistory();
 }
