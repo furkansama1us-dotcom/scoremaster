@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -6,17 +6,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <title>Score Master</title>
+    <title>Score Meridian</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Score Master">
+    <meta name="apple-mobile-web-app-title" content="Score Meridian">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#0D0D0D">
+    <meta name="theme-color" content="#0A0E1F">
     
     <link rel="apple-touch-icon" href="logo-dark.png">
     <link rel="icon" type="image/png" href="logo-dark.png">
     
-    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiU2NvcmUgTWFzdGVyIiwic2hvcnRfbmFtZSI6IlNjb3JlIE1hc3RlciIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMEQwRDBEIiwidGhlbWVfY29sb3IiOiIjMEQwRDBEIiwib3JpZW50YXRpb24iOiJwb3J0cmFpdCIsImljb25zIjpbeyJzcmMiOiJsb2dvLWRhcmsucG5nIiwic2l6ZXMiOiIxOTJ4MTkyIDUxMng1MTIiLCJ0eXBlIjoiaW1hZ2UvcG5nIiwicHVycG9zZSI6ImFueSBtYXNrYWJsZSJ9XX0=">
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiU2NvcmUgTWVyaWRpYW4iLCJzaG9ydF9uYW1lIjoiU2NvcmUgTWVyaWRpYW4iLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBBMEUxRiIsInRoZW1lX2NvbG9yIjoiIzBBMEUxRiIsIm9yaWVudGF0aW9uIjoicG9ydHJhaXQiLCJpY29ucyI6W3sic3JjIjoibG9nby1kYXJrLnBuZyIsInNpemVzIjoiMTkyeDE5MiA1MTJ4NTEyIiwidHlwZSI6ImltYWdlL3BuZyIsInB1cnBvc2UiOiJhbnkgbWFza2FibGUifV19">
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -25,7 +25,7 @@
         .combined-card { display: flex; flex-direction: column; }
         *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
         
-        :root{--primary-yellow:#FFD700;--dark-yellow:#E6C200;--bg-dark:#0D0D0D;--bg-card:#1A1A1A;--bg-input:#2A2A2A;--text-white:#FFFFFF;--text-gray:#8A8A8A;--text-light-gray:#B0B0B0;--green:#00C853;--red:#FF3D3D;--blue:#4A90D9;--border-color:#333333;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+        :root{--primary-yellow:#A855F7;--dark-yellow:#7C3AED;--bg-dark:#0A0E1F;--bg-card:#131B33;--bg-input:#1C2541;--text-white:#FFFFFF;--text-gray:#8A93A8;--text-light-gray:#B4BCD0;--green:#22C55E;--red:#F43F5E;--blue:#3B82F6;--border-color:#232C47;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
         
         html, body {
             height: 100%; width: 100%; overflow: hidden; position: fixed; top: 0; left: 0; background: #000; font-family: 'Inter', 'Montserrat', sans-serif; color: var(--text-white);
@@ -48,17 +48,17 @@
         
         .bottom-nav { 
             width: 100%; height: calc(65px + env(safe-area-inset-bottom, 0px)); 
-            background: #111; border-top: 1px solid var(--border-color); display: flex; align-items: flex-start; justify-content: space-between; 
+            background: #0F1424; border-top: 1px solid var(--border-color); display: flex; align-items: flex-start; justify-content: space-between; 
             padding-top: 8px; padding-bottom: env(safe-area-inset-bottom, 0px); flex-shrink: 0; z-index: 9999; 
         }
         .nav-item {
             display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; padding: 6px 0; border-radius: 12px; transition: all .3s; flex: 1; touch-action: manipulation; -webkit-tap-highlight-color: transparent;
         }
         
-        #splash-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;display:flex;align-items:center;justify-content:center;z-index:10000;transition:opacity .6s,visibility .6s}
+        #splash-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:var(--bg-dark);display:flex;align-items:center;justify-content:center;z-index:10000;transition:opacity .6s,visibility .6s}
         #splash-screen.hidden{opacity:0;visibility:hidden}
         .splash-content{text-align:center;animation:splashFadeIn 1s ease-out}
-        .splash-logo-img{width:180px;height:auto;max-height:350px;object-fit:contain;filter:drop-shadow(0 0 40px rgba(255,215,0,.15));border-radius:30px;}
+        .splash-logo-img{width:180px;height:auto;max-height:350px;object-fit:contain;filter:drop-shadow(0 0 40px rgba(168,85,247,.15));border-radius:30px;}
         .splash-loader{margin-top:40px;display:flex;gap:8px;justify-content:center}
         .splash-loader span{width:8px;height:8px;background:var(--primary-yellow);border-radius:50%;animation:loaderBounce 1.4s ease infinite}
         .splash-loader span:nth-child(2){animation-delay:.2s}
@@ -69,14 +69,14 @@
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
         @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
         @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-        @keyframes glowPass{0%,100%{box-shadow: 0 0 5px rgba(0,200,83,0.3);} 50%{box-shadow: 0 0 15px rgba(0,200,83,0.7);}}
+        @keyframes glowPass{0%,100%{box-shadow: 0 0 5px rgba(34,197,94,0.3);} 50%{box-shadow: 0 0 15px rgba(34,197,94,0.7);}}
 
         .fade-in-up{animation:fadeInUp .5s ease forwards}
         .delay-1{animation-delay:.1s;opacity:0}.delay-2{animation-delay:.2s;opacity:0}.delay-3{animation-delay:.3s;opacity:0}.delay-4{animation-delay:.4s;opacity:0}.delay-5{animation-delay:.5s;opacity:0}
         
         #login-screen {
             position:fixed; top:0; left:0; width:100%; height:100%;
-            background:#000000;
+            background:var(--bg-dark);
             z-index:9000; display:none; flex-direction:column; transition:opacity .4s;
         }
         #login-screen.active { display:flex; }
@@ -85,12 +85,12 @@
         .hex-grid-login svg { width: 100%; height: 100%; }
 
         .login-header { flex:0 0 auto; padding-top:calc(30px + var(--safe-top)); padding-bottom:20px; text-align:center; position:relative; z-index:1; }
-        .login-logo-img { width:110px; height:auto; object-fit:contain; filter:drop-shadow(0 0 25px rgba(255,215,0,0.25)); border-radius:24px; }
+        .login-logo-img { width:110px; height:auto; object-fit:contain; filter:drop-shadow(0 0 25px rgba(168,85,247,0.25)); border-radius:24px; }
         
         .login-form-container {
             flex:1; width: 100%;
-            background: #111111; border-top: 1px solid rgba(255, 215, 0, 0.2); border-radius: 30px 30px 0 0;
-            padding: 35px 25px; padding-bottom: calc(30px + var(--safe-bottom)); box-shadow: 0 -10px 40px rgba(255, 215, 0, 0.05); position: relative; z-index: 2; overflow: hidden;
+            background: #0F1424; border-top: 1px solid rgba(168,85,247, 0.2); border-radius: 30px 30px 0 0;
+            padding: 35px 25px; padding-bottom: calc(30px + var(--safe-bottom)); box-shadow: 0 -10px 40px rgba(168,85,247, 0.05); position: relative; z-index: 2; overflow: hidden;
         }
         
         .pattern-bg-form { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.04; pointer-events: none; z-index: 0; }
@@ -101,14 +101,14 @@
         .login-input {
             width:100%; padding:16px 16px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; color: var(--text-white); font-size: 15px; font-family: 'Inter', sans-serif; margin-bottom: 20px; outline: none; transition: border-color 0.3s; position: relative; z-index: 1;
         }
-        .login-input:focus { border-color: var(--primary-yellow); background: rgba(255, 215, 0, 0.05); }
+        .login-input:focus { border-color: var(--primary-yellow); background: rgba(168,85,247, 0.05); }
         .login-input::placeholder { color: #666666; }
         
         #togglePassword { color: #888888 !important; }
         #togglePassword:hover { color: var(--primary-yellow) !important; }
 
         .login-btn {
-            width:100%; padding:16px; background:var(--primary-yellow); color:#000; border:none; border-radius:12px; font-size:16px; font-weight:800; font-family:'Montserrat',sans-serif; cursor:pointer; margin-top:10px; transition:all .3s; box-shadow: 0 4px 15px rgba(255,215,0,0.25); position: relative; z-index: 1;
+            width:100%; padding:16px; background:var(--primary-yellow); color:#000; border:none; border-radius:12px; font-size:16px; font-weight:800; font-family:'Montserrat',sans-serif; cursor:pointer; margin-top:10px; transition:all .3s; box-shadow: 0 4px 15px rgba(168,85,247,0.25); position: relative; z-index: 1;
         }
         .login-btn:active { transform:scale(.98); background:var(--dark-yellow); }
         
@@ -140,22 +140,22 @@
         .nav-item.vip.active i{color:var(--red)}
         .nav-item.vip.active span{color:var(--red)}
         
-        .logo-avatar{border-radius:50%;overflow:hidden;border:2px solid var(--primary-yellow);display:flex;align-items:center;justify-content:center;background:#1A1A1A;flex-shrink:0}
+        .logo-avatar{border-radius:50%;overflow:hidden;border:2px solid var(--primary-yellow);display:flex;align-items:center;justify-content:center;background:#131B33;flex-shrink:0}
         .logo-avatar img{width:100%;height:100%;object-fit:cover}
         .logo-avatar.small{width:44px;height:44px}
         .logo-avatar.medium{width:60px;height:60px}
         .logo-pack-icon{width:55px;height:55px;border-radius:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;}
         .logo-pack-icon img{width:100%;height:100%;object-fit:cover}
         .logo-pack-icon.yellow{background:linear-gradient(135deg,var(--primary-yellow),var(--dark-yellow))}
-        .logo-pack-icon.red{background:linear-gradient(135deg,#FF3D3D,#CC0000)}
-        .logo-pack-icon.green{background:linear-gradient(135deg,#00C853,#009624)}
-        .logo-pack-icon.blue{background:linear-gradient(135deg,#4A90D9,#2E6AAD)}
+        .logo-pack-icon.red{background:linear-gradient(135deg,#F43F5E,#BE123C)}
+        .logo-pack-icon.green{background:linear-gradient(135deg,#22C55E,#16A34A)}
+        .logo-pack-icon.blue{background:linear-gradient(135deg,#3B82F6,#2563EB)}
         .logo-pack-detail{width:60px;height:60px;border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;padding:10px}
         .logo-pack-detail img{width:100%;height:100%;object-fit:contain}
         .logo-pack-detail.yellow{background:linear-gradient(135deg,var(--primary-yellow),var(--dark-yellow))}
-        .logo-pack-detail.red{background:linear-gradient(135deg,#FF3D3D,#CC0000)}
-        .logo-pack-detail.green{background:linear-gradient(135deg,#00C853,#009624)}
-        .logo-pack-detail.blue{background:linear-gradient(135deg,#4A90D9,#2E6AAD)}
+        .logo-pack-detail.red{background:linear-gradient(135deg,#F43F5E,#BE123C)}
+        .logo-pack-detail.green{background:linear-gradient(135deg,#22C55E,#16A34A)}
+        .logo-pack-detail.blue{background:linear-gradient(135deg,#3B82F6,#2563EB)}
         
         .home-header{padding:15px 20px;display:flex;align-items:center;justify-content:space-between}
         .home-user{display:flex;align-items:center;gap:12px}
@@ -172,7 +172,7 @@
         .api-banner .api-title{font-size:12px;font-weight:600;color:var(--text-white);display:flex;align-items:center;gap:6px}
         .api-banner .api-title .live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
         .api-banner .api-desc{font-size:10px;color:var(--text-gray);margin-top:2px}
-        .betclic-badge{font-weight:800;font-size:11px;text-transform:uppercase;color:var(--red);background:rgba(255,61,61,.15);padding:5px 10px;border-radius:6px;letter-spacing:.5px; transition: all 0.3s;}
+        .betclic-badge{font-weight:800;font-size:11px;text-transform:uppercase;color:var(--red);background:rgba(244,63,94,.15);padding:5px 10px;border-radius:6px;letter-spacing:.5px; transition: all 0.3s;}
         
         .section-header{display:flex;justify-content:space-between;align-items:center;padding:0 20px;margin-bottom:15px}
         .section-title{font-size:17px;font-weight:700}
@@ -182,7 +182,7 @@
         .pack-card:active{transform:scale(.98);border-color:var(--primary-yellow)}
         .pack-card-info{flex:1}
         .pack-card-name{font-size:15px;font-weight:700;margin-bottom:4px}
-        .pack-card-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--green);background:rgba(0,200,83,.1);padding:3px 8px;border-radius:6px;margin-bottom:6px}
+        .pack-card-tag{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--green);background:rgba(34,197,94,.1);padding:3px 8px;border-radius:6px;margin-bottom:6px}
         .pack-card-tag i{font-size:8px}
         .pack-card-btn{display:inline-block;padding:6px 16px;border-radius:8px;font-size:12px;font-weight:700}
         .pack-card .heart-icon{color:var(--text-gray);font-size:18px;cursor:pointer}
@@ -195,8 +195,8 @@
         .combined-status{display:flex;align-items:center;gap:8px}
         .status-badge{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;text-transform:uppercase}
         .status-badge.en-cours { background-color: var(--blue); color: var(--text-white); }
-        .status-badge.termine{background:rgba(0,200,83,.15);color:var(--green)}
-        .status-badge.perdu{background:rgba(255,61,61,.15);color:var(--red)}
+        .status-badge.termine{background:rgba(34,197,94,.15);color:var(--green)}
+        .status-badge.perdu{background:rgba(244,63,94,.15);color:var(--red)}
         .combined-label{font-size:15px;font-weight:700}
         .combined-count{display:flex;align-items:center;gap:4px;background:#2A2A3A;padding:4px 10px;border-radius:12px;font-size:12px;color:var(--text-light-gray)}
         .combined-count i{font-size:14px;color:var(--blue)}
@@ -284,7 +284,7 @@
         .contact-card-icon.telegram i{color:#0088cc;font-size:22px}
         .contact-card-icon.instagram{background:rgba(225,48,108,.15)}
         .contact-card-icon.instagram i{color:#E1306C;font-size:22px}
-        .contact-card-icon.email{background:rgba(255,215,0,.15)}
+        .contact-card-icon.email{background:rgba(168,85,247,.15)}
         .contact-card-icon.email i{color:var(--primary-yellow);font-size:22px}
         .contact-card-icon.twitter{background:rgba(29,161,242,.15)}
         .contact-card-icon.twitter i{color:#1DA1F2;font-size:22px}
@@ -341,7 +341,7 @@
         .match-entry-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
         .match-entry-number{font-size:13px;font-weight:700;color:var(--primary-yellow);display:flex;align-items:center;gap:6px}
         .match-entry-number i{font-size:14px}
-        .match-entry-remove{width:28px;height:28px;background:rgba(255,61,61,.15);border:none;border-radius:8px;color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
+        .match-entry-remove{width:28px;height:28px;background:rgba(244,63,94,.15);border:none;border-radius:8px;color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
         .admin-add-match-btn{width:100%;padding:12px;background:transparent;border:2px dashed var(--border-color);border-radius:12px;color:var(--text-gray);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px}
         .admin-summary{background:linear-gradient(135deg,#1E1E2E,#252540);border-radius:16px;padding:18px;border:1px solid #2A2A3A}
         .admin-summary-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #2A2A3A}
@@ -351,7 +351,7 @@
         .admin-summary-value.gains{color:var(--green);font-size:20px}
         .admin-submit-btn{width:100%;padding:16px;background:var(--primary-yellow);color:#000;border:none;border-radius:14px;font-size:16px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;margin-top:10px;margin-bottom:15px;display:flex;align-items:center;justify-content:center;gap:8px}
         .admin-submit-btn:active{transform:scale(.98);background:var(--dark-yellow)}
-        .admin-delete-btn{width:100%;padding:14px;background:rgba(255,61,61,.1);color:var(--red);border:1px solid rgba(255,61,61,.3);border-radius:14px;font-size:14px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:calc(40px + var(--safe-bottom));display:flex;align-items:center;justify-content:center;gap:8px}
+        .admin-delete-btn{width:100%;padding:14px;background:rgba(244,63,94,.1);color:var(--red);border:1px solid rgba(244,63,94,.3);border-radius:14px;font-size:14px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:calc(40px + var(--safe-bottom));display:flex;align-items:center;justify-content:center;gap:8px}
         .admin-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
         .admin-stat-card{background:var(--bg-card);border-radius:14px;padding:16px;text-align:center;border:1px solid var(--border-color)}
         .admin-stat-card i{font-size:24px;margin-bottom:8px}
@@ -362,9 +362,9 @@
         .admin-stat-card.blue i{color:var(--blue)}
         .admin-stat-card.red i{color:var(--red)}
         
-        .toast{position:fixed;top:-150px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:700;z-index:99999;transition:top .4s;display:flex;align-items:center;gap:8px;box-shadow:0 10px 30px rgba(0,200,83,.3);max-width:calc(100% - 40px)}
+        .toast{position:fixed;top:-150px;left:50%;transform:translateX(-50%);background:var(--green);color:#000;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:700;z-index:99999;transition:top .4s;display:flex;align-items:center;gap:8px;box-shadow:0 10px 30px rgba(34,197,94,.3);max-width:calc(100% - 40px)}
         .toast.show{top:calc(20px + var(--safe-top))}
-        .toast.error{background:var(--red);color:#fff;box-shadow:0 10px 30px rgba(255,61,61,.3)}
+        .toast.error{background:var(--red);color:#fff;box-shadow:0 10px 30px rgba(244,63,94,.3)}
         .toast i{font-size:18px}
         ::-webkit-scrollbar{width:0}
         
@@ -379,22 +379,22 @@
         }
         
         .history-card { background:var(--bg-card); border:1px solid var(--border-color); border-radius:16px; padding:16px; margin-bottom:14px; display:flex; flex-direction:column; align-items:stretch; transition: all 0.3s; }
-        .history-card.termine { border-color: rgba(0, 200, 83, 0.4); background: linear-gradient(145deg, rgba(0,200,83,0.08) 0%, var(--bg-card) 100%); }
-        .history-card.perdu { border-color: rgba(255, 61, 61, 0.3); background: linear-gradient(145deg, rgba(255,61,61,0.05) 0%, var(--bg-card) 100%); }
+        .history-card.termine { border-color: rgba(34,197,94, 0.4); background: linear-gradient(145deg, rgba(34,197,94,0.08) 0%, var(--bg-card) 100%); }
+        .history-card.perdu { border-color: rgba(244,63,94, 0.3); background: linear-gradient(145deg, rgba(244,63,94,0.05) 0%, var(--bg-card) 100%); }
         .history-card .date { font-size:12px; color:var(--text-gray); margin-bottom:4px; font-weight:500; }
         .history-card .status { font-weight:800; font-size:15px; text-transform:uppercase; letter-spacing:0.5px;}
         .history-card .status.termine { color:var(--green); }
         .history-card .status.perdu { color:var(--red); }
-        .admin-history-item { background:#2A2A2A; padding:12px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; }
+        .admin-history-item { background:#1C2541; padding:12px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; }
         .admin-history-item span { font-size:13px; color:#fff; }
         .admin-history-item button { background:var(--primary-yellow); color:#000; border:none; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer; }
         
         .admin-tabs { display: flex; gap: 10px; padding: 0 20px; margin-bottom: 20px; }
         .admin-tab-btn { flex: 1; padding: 12px; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-gray); border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .admin-tab-btn.active { background: rgba(255, 215, 0, 0.15); border-color: var(--primary-yellow); color: var(--primary-yellow); }
+        .admin-tab-btn.active { background: rgba(168,85,247, 0.15); border-color: var(--primary-yellow); color: var(--primary-yellow); }
         .admin-tab-content { display: none; animation: fadeInUp 0.4s ease; }
         .admin-tab-content.active { display: block; }
-        .btn-create-new { width: 100%; padding: 14px; margin-top: 10px; background: rgba(0, 200, 83, 0.15); border: 1px dashed var(--green); color: var(--green); border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px; transition: all 0.2s;}
+        .btn-create-new { width: 100%; padding: 14px; margin-top: 10px; background: rgba(34,197,94, 0.15); border: 1px dashed var(--green); color: var(--green); border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 14px; transition: all 0.2s;}
         .btn-create-new:active { transform: scale(0.98); }
 
         .pack-animated { animation: fadeInUp 0.6s ease forwards; opacity: 0; }
@@ -403,8 +403,8 @@
         .urgency-inner { padding: 12px 16px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 700; color: #fff; animation: urgencySlide 20s linear infinite; }
         @keyframes urgencySlide { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-3px); } }
 
-        .pack-popular { border-color: rgba(255, 215, 0, 0.4) !important; background: linear-gradient(145deg, rgba(255, 215, 0, 0.08) 0%, var(--bg-card) 100%) !important; position: relative; overflow: visible; }
-        .popular-ribbon { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #FFD700, #E6C200); color: #000; padding: 6px 20px; border-radius: 20px; font-size: 11px; font-weight: 900; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); white-space: nowrap; z-index: 10; }
+        .pack-popular { border-color: rgba(168,85,247, 0.4) !important; background: linear-gradient(145deg, rgba(168,85,247, 0.08) 0%, var(--bg-card) 100%) !important; position: relative; overflow: visible; }
+        .popular-ribbon { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #A855F7, #7C3AED); color: #000; padding: 6px 20px; border-radius: 20px; font-size: 11px; font-weight: 900; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; box-shadow: 0 4px 15px rgba(168,85,247, 0.4); white-space: nowrap; z-index: 10; }
         .pack-subscribers { font-size: 11px; color: var(--text-gray); margin-top: 2px; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
         .pack-subscribers i { font-size: 10px; color: var(--green); }
 
@@ -417,10 +417,10 @@
         .spots-fill { height: 100%; border-radius: 3px; transition: width 1s ease; animation: spotsPulse 2s ease infinite; }
         @keyframes spotsPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 
-        .guarantee-badge { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: rgba(0, 200, 83, 0.05); border: 1px solid rgba(0, 200, 83, 0.2); border-radius: 10px; margin-bottom: 14px; font-size: 12px; color: var(--green); font-weight: 600; }
+        .guarantee-badge { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: rgba(34,197,94, 0.05); border: 1px solid rgba(34,197,94, 0.2); border-radius: 10px; margin-bottom: 14px; font-size: 12px; color: var(--green); font-weight: 600; }
         .guarantee-badge i { font-size: 16px; }
 
-        .economy-badge { display: inline-block; background: rgba(0, 200, 83, 0.15); color: var(--green); font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 6px; margin-left: 4px; }
+        .economy-badge { display: inline-block; background: rgba(34,197,94, 0.15); color: var(--green); font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 6px; margin-left: 4px; }
 
         .pack-btn-pulse { animation: btnPulse 2s ease infinite; position: relative; overflow: hidden; }
         .pack-btn-pulse::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.15) 50%, transparent 70%); animation: btnShine 3s ease infinite; }
@@ -430,8 +430,8 @@
         .payment-methods { display: flex; align-items: center; justify-content: space-between; padding: 10px 0 0; margin-top: 10px; border-top: 1px solid var(--border-color); }
         .payment-icons { display: flex; gap: 10px; font-size: 20px; color: var(--text-gray); }
 
-        .testimonial-inline { background: var(--bg-input); border-radius: 10px; padding: 14px; margin-bottom: 14px; border: 1px solid var(--border-color); border-left: 3px solid #FFD700; }
-        .testimonial-inline .testimonial-stars { color: #FFD700; font-size: 14px; margin-bottom: 6px; }
+        .testimonial-inline { background: var(--bg-input); border-radius: 10px; padding: 14px; margin-bottom: 14px; border: 1px solid var(--border-color); border-left: 3px solid #A855F7; }
+        .testimonial-inline .testimonial-stars { color: #A855F7; font-size: 14px; margin-bottom: 6px; }
         .testimonial-inline p { font-size: 13px; color: var(--text-light-gray); font-style: italic; line-height: 1.5; margin-bottom: 6px; }
         .testimonial-inline .testimonial-author { font-size: 11px; color: var(--text-gray); }
 
@@ -445,7 +445,7 @@
         .testimonials-scroll { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
         .testimonials-scroll::-webkit-scrollbar { display: none; }
         .testimonial-card { min-width: 280px; max-width: 300px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; padding: 18px; scroll-snap-align: start; flex-shrink: 0; }
-        .testimonial-card .testimonial-stars { color: #FFD700; font-size: 14px; margin-bottom: 10px; }
+        .testimonial-card .testimonial-stars { color: #A855F7; font-size: 14px; margin-bottom: 10px; }
         .testimonial-card .testimonial-text { font-size: 13px; color: var(--text-light-gray); line-height: 1.5; font-style: italic; margin-bottom: 14px; }
         .testimonial-footer { display: flex; align-items: center; gap: 10px; }
         .testimonial-avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 14px; flex-shrink: 0; }
@@ -460,37 +460,37 @@
         .faq-answer { max-height: 0; overflow: hidden; padding: 0 16px; font-size: 13px; color: var(--text-gray); line-height: 1.6; transition: all 0.4s ease; }
         .faq-item.open .faq-answer { max-height: 200px; padding: 0 16px 16px; }
 
-        .final-cta { background: linear-gradient(145deg, #1E1E2E, #252540); border: 1px solid rgba(255, 215, 0, 0.2); border-radius: 20px; padding: 30px 24px; text-align: center; position: relative; overflow: hidden; }
-        .final-cta-glow { position: absolute; top: -50px; left: 50%; transform: translateX(-50%); width: 200px; height: 200px; background: radial-gradient(circle, rgba(255, 215, 0, 0.15) 0%, transparent 70%); pointer-events: none; }
-        .final-cta-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #FFD700, #E6C200); color: #000; border: none; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 25px rgba(255, 215, 0, 0.3); transition: all 0.3s; position: relative; overflow: hidden; }
+        .final-cta { background: linear-gradient(145deg, #1E1E2E, #252540); border: 1px solid rgba(168,85,247, 0.2); border-radius: 20px; padding: 30px 24px; text-align: center; position: relative; overflow: hidden; }
+        .final-cta-glow { position: absolute; top: -50px; left: 50%; transform: translateX(-50%); width: 200px; height: 200px; background: radial-gradient(circle, rgba(168,85,247, 0.15) 0%, transparent 70%); pointer-events: none; }
+        .final-cta-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #A855F7, #7C3AED); color: #000; border: none; border-radius: 14px; font-size: 15px; font-weight: 800; cursor: pointer; font-family: 'Montserrat', sans-serif; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 25px rgba(168,85,247, 0.3); transition: all 0.3s; position: relative; overflow: hidden; }
         .final-cta-btn:active { transform: scale(0.98); }
         .final-cta-btn::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%); animation: btnShine 3s ease infinite; }
 
         .contact-pref-container { display: flex; gap: 10px; margin-bottom: 12px; }
         .contact-pref-label { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; color: var(--text-gray); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
         .contact-pref-label input[type="radio"] { display: none; }
-        .contact-pref-label.selected { background: rgba(255, 215, 0, 0.1); border-color: var(--primary-yellow); color: var(--primary-yellow); }
+        .contact-pref-label.selected { background: rgba(168,85,247, 0.1); border-color: var(--primary-yellow); color: var(--primary-yellow); }
         .contact-pref-label i { font-size: 16px; }
 
-        .match-entry.status-termine { border-color: rgba(0, 200, 83, 0.5); background: linear-gradient(145deg, rgba(0,200,83,0.05) 0%, var(--bg-card) 100%); }
-        .match-entry.status-perdu { border-color: rgba(255, 61, 61, 0.5); background: linear-gradient(145deg, rgba(255,61,61,0.05) 0%, var(--bg-card) 100%); }
+        .match-entry.status-termine { border-color: rgba(34,197,94, 0.5); background: linear-gradient(145deg, rgba(34,197,94,0.05) 0%, var(--bg-card) 100%); }
+        .match-entry.status-perdu { border-color: rgba(244,63,94, 0.5); background: linear-gradient(145deg, rgba(244,63,94,0.05) 0%, var(--bg-card) 100%); }
         .match-status-badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 8px; font-weight: 800; text-transform: uppercase; }
-        .match-status-badge.termine { background: rgba(0,200,83,0.15); color: var(--green); }
-        .match-status-badge.perdu { background: rgba(255,61,61,0.15); color: var(--red); }
+        .match-status-badge.termine { background: rgba(34,197,94,0.15); color: var(--green); }
+        .match-status-badge.perdu { background: rgba(244,63,94,0.15); color: var(--red); }
         .match-status-badge.en-cours { display: none; }
 
         .match-filter-bar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
         .match-filter-btn { flex: 1; min-width: 0; padding: 8px 6px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-gray); font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; font-family: 'Inter', sans-serif; white-space: nowrap; }
         .match-filter-btn i { font-size: 11px; }
         .match-filter-btn .filter-count { min-width: 18px; height: 18px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; padding: 0 5px; }
-        .match-filter-btn.f-active-all { border-color: var(--primary-yellow); color: var(--primary-yellow); background: rgba(255,215,0,0.1); }
-        .match-filter-btn.f-active-all .filter-count { background: rgba(255,215,0,0.25); color: var(--primary-yellow); }
+        .match-filter-btn.f-active-all { border-color: var(--primary-yellow); color: var(--primary-yellow); background: rgba(168,85,247,0.1); }
+        .match-filter-btn.f-active-all .filter-count { background: rgba(168,85,247,0.25); color: var(--primary-yellow); }
         .match-filter-btn.f-active-en-cours { border-color: var(--blue); color: var(--blue); background: rgba(74,144,217,0.1); }
         .match-filter-btn.f-active-en-cours .filter-count { background: rgba(74,144,217,0.25); color: var(--blue); }
-        .match-filter-btn.f-active-termine { border-color: var(--green); color: var(--green); background: rgba(0,200,83,0.1); }
-        .match-filter-btn.f-active-termine .filter-count { background: rgba(0,200,83,0.25); color: var(--green); }
-        .match-filter-btn.f-active-perdu { border-color: var(--red); color: var(--red); background: rgba(255,61,61,0.1); }
-        .match-filter-btn.f-active-perdu .filter-count { background: rgba(255,61,61,0.25); color: var(--red); }
+        .match-filter-btn.f-active-termine { border-color: var(--green); color: var(--green); background: rgba(34,197,94,0.1); }
+        .match-filter-btn.f-active-termine .filter-count { background: rgba(34,197,94,0.25); color: var(--green); }
+        .match-filter-btn.f-active-perdu { border-color: var(--red); color: var(--red); background: rgba(244,63,94,0.1); }
+        .match-filter-btn.f-active-perdu .filter-count { background: rgba(244,63,94,0.25); color: var(--red); }
         .match-entry.hidden-by-filter { display: none !important; }
         #no-filter-result { display: none; text-align: center; padding: 20px; color: var(--text-gray); font-size: 13px; background: var(--bg-input); border-radius: 12px; margin-bottom: 12px; border: 1px dashed var(--border-color); }
         #no-filter-result i { display: block; font-size: 24px; margin-bottom: 8px; }
@@ -566,7 +566,7 @@
     const LOGO_LIGHT = "logo-light.png";
     const LOGO_SPLASH = "logo-splash.png";
     
-    const TELEGRAM_LINK = "https://t.me/scoremasteroff";
+    const TELEGRAM_LINK = "https://t.me/scoreMeridianoff";
     const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
     
@@ -671,7 +671,7 @@ function renderInstaReelsTexts() {
     if (teamHashtags.length > 1) finalHashtags.push(teamHashtags[1]);
     
     // 2. On complète avec les hashtags les plus puissants de la niche jusqu'à atteindre 5
-    let viralTags = ["#ParisSportifs", "#Pronostic", "#Football", "#PronoFoot", "#ScoreMaster"];
+    let viralTags = ["#ParisSportifs", "#Pronostic", "#Football", "#PronoFoot", "#scoreMeridian"];
     for (let tag of viralTags) {
         if (finalHashtags.length < 5 && !finalHashtags.includes(tag)) {
             finalHashtags.push(tag);
@@ -690,7 +690,7 @@ function renderInstaReelsTexts() {
         
         `📊 100% DATA. 0% ÉMOTION. 📊\n\nL'analyse parfaite pour ${matchInfo} vient de tomber. On ne devine pas, on calcule. 🧠💎\n\nLe combiné du jour est en ligne.\n👉 Accès direct dans la bio.\n` + baseHashtags,
         
-        `⚔️ LE DUEL AU SOMMET ⚔️\n\nQui va s'imposer sur ${matchInfo} ? L'algorithme Score Master a déjà la réponse. 🤖🏆\n\nTicket sécurisé dispo sur l'espace membre.\n👉 Lien en bio pour rejoindre le club.\n` + baseHashtags,
+        `⚔️ LE DUEL AU SOMMET ⚔️\n\nQui va s'imposer sur ${matchInfo} ? L'algorithme Score Meridian a déjà la réponse. 🤖🏆\n\nTicket sécurisé dispo sur l'espace membre.\n👉 Lien en bio pour rejoindre le club.\n` + baseHashtags,
         
         `⏳ PLUS QUE QUELQUES HEURES ! ⏳\n\nCoup d'envoi à ${earliestTime} pour ${matchInfo}. Les cotes risquent de bouger vite ! 📉\n\nSécurise ton combiné maintenant sur l'espace VIP+. 👑\n👉 Lien en bio.\n` + baseHashtags,
         
@@ -700,7 +700,7 @@ function renderInstaReelsTexts() {
         
         `👀 CE SOIR, ON FAIT LA DIFFÉRENCE 👀\n\nPendant que les autres doutent sur ${matchInfo}, nous avons verrouillé la meilleure value. 📈⚡️\n\nLe combiné est officiel.\n👉 Go dans la bio pour valider ton ticket.\n` + baseHashtags,
         
-        `🦅 SCORE MASTER NE DORT JAMAIS 🦅\n\nNouveau combiné validé : ${matchInfo}.\nDébut à ${earliestTime}. C'est une affiche à ne surtout pas manquer. ⚽️💎\n\n👉 Accède à l'Espace VIP+ en bio.\n` + baseHashtags
+        `🦅 Score Meridian NE DORT JAMAIS 🦅\n\nNouveau combiné validé : ${matchInfo}.\nDébut à ${earliestTime}. C'est une affiche à ne surtout pas manquer. ⚽️💎\n\n👉 Accède à l'Espace VIP+ en bio.\n` + baseHashtags
     ];
 
     var html = `
@@ -783,7 +783,7 @@ ${matchLines}
 
         // 5. Modèles de relance dynamiques (AVEC infoBlock PARTOUT)
         const reminders = [
-            `⏳ *L'heure approche !*\n\nPlus que quelques heures avant le coup d'envoi de notre combiné.\n\n${infoBlock}\n\nChez ScoreMaster tout est professionnel :\n- Analyses détaillées 📈\n- Suivi de la rencontre 📲\n- Gestion de bankroll 📊\n\n👉 Contact : @ScoreMasterOfficiel`,
+            `⏳ *L'heure approche !*\n\nPlus que quelques heures avant le coup d'envoi de notre combiné.\n\n${infoBlock}\n\nChez scoreMeridian tout est professionnel :\n- Analyses détaillées 📈\n- Suivi de la rencontre 📲\n- Gestion de bankroll 📊\n\n👉 Contact : @ScoreMasterOfficiel`,
             
             `🚨 *DERNIÈRE MINUTE !*\n\nLe combiné du jour est toujours disponible, l'analyse est très prometteuse ! ⏱\n\n${infoBlock}\n\nNe manquez pas la session de ce soir ⚽️\n\n👉 Contact : @ScoreMasterOfficiel`,
             
@@ -857,7 +857,7 @@ async function fetchApiScore(id, dateRaw) {
 <!-- SPLASH -->
 <div id="splash-screen">
     <div class="splash-content">
-        <img id="img-splash" alt="ScoreMaster" class="splash-logo-img">
+        <img id="img-splash" alt="scoreMeridian" class="splash-logo-img">
         <div class="splash-loader"><span></span><span></span><span></span></div>
     </div>
 </div>
@@ -868,23 +868,23 @@ async function fetchApiScore(id, dateRaw) {
         <svg viewBox="0 0 800 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
             <defs>
                 <pattern id="hex-login" x="0" y="0" width="60" height="104" patternUnits="userSpaceOnUse">
-                    <polygon points="30,2 58,17 58,47 30,62 2,47 2,17" fill="none" stroke="#FFD700" stroke-width="1"/>
-                    <polygon points="30,54 58,69 58,99 30,114 2,99 2,69" fill="none" stroke="#FFD700" stroke-width="1"/>
-                    <polygon points="60,28 88,43 88,73 60,88 32,73 32,43" fill="none" stroke="#FFD700" stroke-width="1"/>
+                    <polygon points="30,2 58,17 58,47 30,62 2,47 2,17" fill="none" stroke="#A855F7" stroke-width="1"/>
+                    <polygon points="30,54 58,69 58,99 30,114 2,99 2,69" fill="none" stroke="#A855F7" stroke-width="1"/>
+                    <polygon points="60,28 88,43 88,73 60,88 32,73 32,43" fill="none" stroke="#A855F7" stroke-width="1"/>
                 </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#hex-login)"/>
         </svg>
     </div>
     <div class="login-header">
-        <img id="img-login" alt="ScoreMaster" class="login-logo-img">
+        <img id="img-login" alt="scoreMeridian" class="login-logo-img">
     </div>
     <div class="login-form-container">
         <div class="pattern-bg-form">
             <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
                 <defs>
                     <pattern id="diamonds" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
-                        <path d="M20,0 L40,20 L20,40 L0,20 Z" fill="none" stroke="#FFD700" stroke-width="0.5"/>
+                        <path d="M20,0 L40,20 L20,40 L0,20 Z" fill="none" stroke="#A855F7" stroke-width="0.5"/>
                     </pattern>
                 </defs>
                 <rect width="100%" height="100%" fill="url(#diamonds)"/>
@@ -989,8 +989,8 @@ async function fetchApiScore(id, dateRaw) {
 <div id="live-scores-section" style="display:none; margin: 0 20px 20px;">
     <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
         <h3 style="font-size:17px; font-weight:700; margin:0;">⚽ Scores en Direct</h3>
-        <span id="live-badge" style="display:flex; align-items:center; gap:5px; background:rgba(255,61,61,0.15); border:1px solid rgba(255,61,61,0.3); padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; color:#FF3D3D;">
-            <span style="width:6px;height:6px;background:#FF3D3D;border-radius:50%;animation:pulse 1s infinite;display:inline-block;"></span> LIVE
+        <span id="live-badge" style="display:flex; align-items:center; gap:5px; background:rgba(244,63,94,0.15); border:1px solid rgba(244,63,94,0.3); padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; color:#F43F5E;">
+            <span style="width:6px;height:6px;background:#F43F5E;border-radius:50%;animation:pulse 1s infinite;display:inline-block;"></span> LIVE
         </span>
     </div>
     <div id="live-scores-container" style="background:#1E1E2E; border-radius:16px; overflow:hidden; border:1px solid #2A2A3A; padding:4px 0;">
@@ -1036,7 +1036,7 @@ async function fetchApiScore(id, dateRaw) {
                 <div class="urgency-inner">
                     <i class="fas fa-fire"></i>
                     <span>🔥 OFFRE LIMITÉE — Expire dans </span>
-                    <span id="countdown-timer" style="font-weight:900; color:#FFD700; margin-left:4px;">23:59:59</span>
+                    <span id="countdown-timer" style="font-weight:900; color:#A855F7; margin-left:4px;">23:59:59</span>
                 </div>
             </div>
             <div class="packs-page-list">
@@ -1091,7 +1091,7 @@ async function fetchApiScore(id, dateRaw) {
                         <div style="flex:1;">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
                                 <div>
-                                    <div class="pack-detail-name" style="color:#FFD700;">SM VIP+ (à vie) <i class="fas fa-crown" style="color:#FFD700; font-size:14px;"></i></div>
+                                    <div class="pack-detail-name" style="color:#A855F7;">SM VIP+ (à vie) <i class="fas fa-crown" style="color:#A855F7; font-size:14px;"></i></div>
                                     <div class="pack-subscribers"><i class="fas fa-users"></i> 1,247 membres VIP+</div>
                                 </div>
                                 <div class="pack-info-btn" onclick="showPackInfo('vip')"><i class="fas fa-info" style="color:var(--text-gray); font-size:14px;"></i></div>
@@ -1106,7 +1106,7 @@ async function fetchApiScore(id, dateRaw) {
                         <div class="pack-feature"><i class="fas fa-check"></i> Espace membre VIP+</div>
                         <div class="pack-feature"><i class="fas fa-check"></i> Canal Telegram VIP</div>
                         <div class="pack-feature"><i class="fas fa-check"></i> Priorité support</div>
-                        <div class="pack-feature" style="background:rgba(255,215,0,0.15); color:#FFD700; font-weight:700;"><i class="fas fa-star" style="color:#FFD700;"></i> Accès fondateurs</div>
+                        <div class="pack-feature" style="background:rgba(168,85,247,0.15); color:#A855F7; font-weight:700;"><i class="fas fa-star" style="color:#A855F7;"></i> Accès fondateurs</div>
                     </div>
                     <div class="spots-container">
                         <div class="spots-header">
@@ -1120,18 +1120,18 @@ async function fetchApiScore(id, dateRaw) {
                         <p>"J'ai récupéré ma mise x47 dès la première semaine. Le VIP+ est incroyable !"</p>
                         <span class="testimonial-author">— Kévin M. <span style="color:var(--green);">✓ Achat vérifié</span></span>
                     </div>
-                    <div class="guarantee-badge" style="border-color:rgba(255,215,0,0.3); background:rgba(255,215,0,0.05);">
-                        <i class="fas fa-shield-alt" style="color:#FFD700;"></i>
-                        <span style="color:#FFD700;">Garantie satisfait ou remboursé 7 jours</span>
+                    <div class="guarantee-badge" style="border-color:rgba(168,85,247,0.3); background:rgba(168,85,247,0.05);">
+                        <i class="fas fa-shield-alt" style="color:#A855F7;"></i>
+                        <span style="color:#A855F7;">Garantie satisfait ou remboursé 7 jours</span>
                     </div>
                     <div class="pack-detail-bottom">
                         <div class="pack-price-container">
                             <span class="price-old">179,99€</span>
-                            <span class="price-new" style="color:#FFD700;">99,99€</span>
+                            <span class="price-new" style="color:#A855F7;">99,99€</span>
                             <span class="price-label">unique • à vie</span>
-                            <div class="economy-badge" style="background:rgba(255,215,0,0.15); color:#FFD700;">-44% 🔥</div>
+                            <div class="economy-badge" style="background:rgba(168,85,247,0.15); color:#A855F7;">-44% 🔥</div>
                         </div>
-                        <button class="pack-subscribe-btn pack-btn-pulse" style="background:linear-gradient(135deg, #FFD700, #E6C200);color:#000; font-size:15px; padding:12px 28px;" onclick="openCheckout('vip', 99.99)"><i class="fas fa-crown" style="margin-right:6px;"></i> Rejoindre le VIP+</button>
+                        <button class="pack-subscribe-btn pack-btn-pulse" style="background:linear-gradient(135deg, #A855F7, #7C3AED);color:#000; font-size:15px; padding:12px 28px;" onclick="openCheckout('vip', 99.99)"><i class="fas fa-crown" style="margin-right:6px;"></i> Rejoindre le VIP+</button>
                     </div>
                     <div class="payment-methods">
                         <span style="font-size:11px; color:var(--text-gray);">Paiement sécurisé 🔒</span>
@@ -1165,7 +1165,7 @@ async function fetchApiScore(id, dateRaw) {
                             <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:#FF9800;"></i> Plus que <strong id="spots-3">12</strong> places à ce prix !</span>
                             <span class="spots-percent">76% vendus</span>
                         </div>
-                        <div class="spots-bar"><div class="spots-fill" style="width:76%; background:linear-gradient(90deg, var(--blue), #2E6AAD);"></div></div>
+                        <div class="spots-bar"><div class="spots-fill" style="width:76%; background:linear-gradient(90deg, var(--blue), #2563EB);"></div></div>
                     </div>
                     <div class="guarantee-badge"><i class="fas fa-shield-alt"></i><span>Satisfait ou remboursé sous 48h</span></div>
                     <div class="pack-detail-bottom">
@@ -1190,14 +1190,14 @@ async function fetchApiScore(id, dateRaw) {
                     <div class="comp-row comp-header">
                         <div class="comp-cell">Fonctionnalité</div>
                         <div class="comp-cell" style="color:var(--green);">Journalier</div>
-                        <div class="comp-cell" style="color:#FFD700;">VIP+ ★</div>
+                        <div class="comp-cell" style="color:#A855F7;">VIP+ ★</div>
                         <div class="comp-cell" style="color:var(--blue);">Hebdo</div>
                     </div>
-                    <div class="comp-row"><div class="comp-cell">Scores exacts</div><div class="comp-cell">1/jour</div><div class="comp-cell" style="color:#FFD700; font-weight:700;">Illimité</div><div class="comp-cell">5/sem.</div></div>
+                    <div class="comp-row"><div class="comp-cell">Scores exacts</div><div class="comp-cell">1/jour</div><div class="comp-cell" style="color:#A855F7; font-weight:700;">Illimité</div><div class="comp-cell">5/sem.</div></div>
                     <div class="comp-row"><div class="comp-cell">Canal Telegram</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-check" style="color:var(--green);"></i></div><div class="comp-cell"><i class="fas fa-check" style="color:var(--green);"></i></div></div>
                     <div class="comp-row"><div class="comp-cell">Support prioritaire</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-check" style="color:var(--green);"></i></div><div class="comp-cell"><i class="fas fa-check" style="color:var(--green);"></i></div></div>
-                    <div class="comp-row"><div class="comp-cell">Durée</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell" style="color:#FFD700; font-weight:700;">À VIE</div><div class="comp-cell">7 jours</div></div>
-                    <div class="comp-row"><div class="comp-cell">Accès fondateurs</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-crown" style="color:#FFD700;"></i></div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div></div>
+                    <div class="comp-row"><div class="comp-cell">Durée</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell" style="color:#A855F7; font-weight:700;">À VIE</div><div class="comp-cell">7 jours</div></div>
+                    <div class="comp-row"><div class="comp-cell">Accès fondateurs</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-crown" style="color:#A855F7;"></i></div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div></div>
                 </div>
             </div>
 
@@ -1233,7 +1233,7 @@ async function fetchApiScore(id, dateRaw) {
             <div style="padding: 0 20px; margin-bottom:30px;">
                 <div class="final-cta">
                     <div class="final-cta-glow"></div>
-                    <i class="fas fa-crown" style="font-size:30px; color:#FFD700; margin-bottom:12px;"></i>
+                    <i class="fas fa-crown" style="font-size:30px; color:#A855F7; margin-bottom:12px;"></i>
                     <h3 style="font-size:18px; font-weight:800; margin-bottom:8px;">Prêt à passer au niveau supérieur ?</h3>
                     <p style="font-size:13px; color:var(--text-gray); margin-bottom:18px;">Rejoignez notre communauté de passionnés et optimisez vos analyses</p>
                     <button class="final-cta-btn" onclick="openCheckout('vip', 99.99)"><i class="fas fa-crown"></i> Devenir VIP+ maintenant — 99,99€</button>
@@ -1246,16 +1246,16 @@ async function fetchApiScore(id, dateRaw) {
         <div class="page" id="page-contact">
             <div class="page-title-bar"><h2>Contact</h2></div>
             <div class="contact-page">
-                <a href="https://t.me/scoremasteroff" target="_blank" rel="noopener" class="contact-link">
+                <a href="https://t.me/scoreMeridianoff" target="_blank" rel="noopener" class="contact-link">
                     <div class="contact-card"><div class="contact-card-icon telegram"><i class="fab fa-telegram-plane"></i></div><div class="contact-card-info"><h4>Telegram</h4><p>Rejoignez notre canal officiel</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
                 </a>
                 
-                <a href="https://instagram.com/scoremaster.fr/" target="_blank" rel="noopener" class="contact-link">
-                    <div class="contact-card"><div class="contact-card-icon instagram"><i class="fab fa-instagram"></i></div><div class="contact-card-info"><h4>Instagram</h4><p>@scoremaster.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
+                <a href="https://instagram.com/scoremeridian.fr/" target="_blank" rel="noopener" class="contact-link">
+                    <div class="contact-card"><div class="contact-card-icon instagram"><i class="fab fa-instagram"></i></div><div class="contact-card-info"><h4>Instagram</h4><p>@scoremeridian.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
                 </a>
                 
-                <a href="mailto:contact.scoremaster@gmail.com?subject=Demande%20d'information%20depuis%20l'application" class="contact-link">
-                    <div class="contact-card"><div class="contact-card-icon email"><i class="fas fa-envelope"></i></div><div class="contact-card-info"><h4>Email</h4><p>contact.scoremaster@gmail.com</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
+                <a href="mailto:scores.meridian@gmx.fr?subject=Demande%20d'information%20depuis%20l'application" class="contact-link">
+                    <div class="contact-card"><div class="contact-card-icon email"><i class="fas fa-envelope"></i></div><div class="contact-card-info"><h4>Email</h4><p>scores.meridian@gmx.fr</p></div><i class="fas fa-chevron-right contact-card-arrow"></i></div>
                 </a>
                 
                 <div style="margin-top: 15px; margin-bottom: 30px; background: var(--bg-card); padding: 20px; border-radius: 16px; border: 1px solid var(--border-color);">
@@ -1439,10 +1439,10 @@ async function fetchApiScore(id, dateRaw) {
             </div>
 
             <div style="display:flex; gap:10px; margin-top:25px; margin-bottom: 20px;">
-                <button onclick="submitValidation('termine')" style="flex:1; padding:16px 10px; background:linear-gradient(135deg, var(--green), #009624); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer; box-shadow: 0 4px 15px rgba(0,200,83,0.3);">
+                <button onclick="submitValidation('termine')" style="flex:1; padding:16px 10px; background:linear-gradient(135deg, var(--green), #16A34A); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer; box-shadow: 0 4px 15px rgba(34,197,94,0.3);">
                     <i class="fas fa-check-circle" style="margin-right:5px; font-size:16px;"></i> GAGNÉ
                 </button>
-                <button onclick="submitValidation('perdu')" style="flex:1; padding:16px 10px; background:linear-gradient(135deg, var(--red), #B71C1C); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer; box-shadow: 0 4px 15px rgba(255,61,61,0.3);">
+                <button onclick="submitValidation('perdu')" style="flex:1; padding:16px 10px; background:linear-gradient(135deg, var(--red), #B71C1C); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer; box-shadow: 0 4px 15px rgba(244,63,94,0.3);">
                     <i class="fas fa-times-circle" style="margin-right:5px; font-size:16px;"></i> PERDU
                 </button>
             </div>
@@ -1489,7 +1489,7 @@ async function fetchApiScore(id, dateRaw) {
             <!-- BOUTON 1 : PROMO WEB APP -->
             <div class="admin-card" style="padding:15px; border-left:4px solid var(--primary-yellow); margin-bottom:10px; cursor:pointer; transition:all 0.2s;" onclick="sendPromoNotification()" onmouseover="this.style.background='var(--bg-input)'" onmouseout="this.style.background='var(--bg-card)'">
                 <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff; display:flex; justify-content:space-between; align-items:center;">
-                    <span><i class="fas fa-globe" style="color:var(--primary-yellow); margin-right:5px;"></i> Promo Web App (scoremaster.fr)</span>
+                    <span><i class="fas fa-globe" style="color:var(--primary-yellow); margin-right:5px;"></i> Promo Web App (scoreMeridian.fr)</span>
                     <i class="fas fa-chevron-right" style="color:var(--text-gray); font-size:12px;"></i>
                 </div>
                 <div style="font-size:12px; color:var(--text-gray);">
@@ -1629,7 +1629,7 @@ async function fetchApiScore(id, dateRaw) {
 <!-- POPUP SUCCESS -->
 <div id="success-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
     <div style="background:var(--bg-card);padding:40px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);">
-        <div style="width:80px;height:80px;background:rgba(0, 200, 83, 0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px auto;"><i class="fas fa-check" style="font-size:40px;color:var(--green);"></i></div>
+        <div style="width:80px;height:80px;background:rgba(34,197,94, 0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px auto;"><i class="fas fa-check" style="font-size:40px;color:var(--green);"></i></div>
         <h3 style="font-size:22px;font-weight:800;margin-bottom:12px;color:#fff;font-family:'Montserrat',sans-serif;">Demande envoyée !</h3>
         <p style="font-size:14px;color:var(--text-gray);margin-bottom:30px;line-height:1.6;font-family:'Inter',sans-serif;">Votre demande a bien été enregistrée. Restez attentif, notre équipe va vous recontacter d'ici quelques minutes.</p>
         <button onclick="closeSuccessPopup()" style="width:100%;padding:14px;background:var(--bg-input);color:#fff;border:1px solid var(--border-color);border-radius:12px;font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;">Fermer</button>
@@ -1662,7 +1662,7 @@ async function fetchApiScore(id, dateRaw) {
     var activeMatchFilter = 'all';
 
     function loadState() {
-        var s = localStorage.getItem('scoreMasterData');
+        var s = localStorage.getItem('scoreMeridianData');
         if (s) { 
             var d = JSON.parse(s); 
             appStats = d.stats || { total: 0, wins: 0, losses: 0, pending: 0 }; 
@@ -1713,11 +1713,11 @@ function renderTelegramLaunchTexts() {
         }
     }
 
-    var signature = "\n\n🌐 Site Web : https://scoremaster.fr/\n➡️ Telegram : @ScoreMasterOfficiel";
+    var signature = "\n\n🌐 Site Web : https://scoreMeridian.fr/\n➡️ Telegram : @ScoreMasterOfficiel";
 
     // --- 20 MESSAGES AVEC FORMATAGE DYNAMIQUE ---
     var messages = [
-        `🚨 LE COMBINÉ EST DISPONIBLE ! 🚀🔥\n\nLes affiches :${matchInfo}\n\nDébut des hostilités à ${earliestTime} ! ⏰💥\n\nC'est maintenant qu'il faut parier sur votre espace VIP+ Score Master ! 👑💎💰` + signature,
+        `🚨 LE COMBINÉ EST DISPONIBLE ! 🚀🔥\n\nLes affiches :${matchInfo}\n\nDébut des hostilités à ${earliestTime} ! ⏰💥\n\nC'est maintenant qu'il faut parier sur votre espace VIP+ Score Meridian ! 👑💎💰` + signature,
         
         `Le verdict est tombé ! 🏛️🤖📈\n\nAu programme :${matchInfo}\n\nL'algorithme a validé le ticket. Tout est prêt dans l'espace membre. 🧬💎\nCoup d'envoi à ${earliestTime}. Ne ratez pas ça ! 🧨🔥🚀` + signature,
         
@@ -1729,15 +1729,15 @@ function renderTelegramLaunchTexts() {
         
         `100% DATA. 0% HASARD. 🧬🤖🔥\n\nLe combiné monstrueux est en ligne :${matchInfo}\n\nOn se retrouve dans l'espace membre pour le braquage final. 🏦💰💥` + signature,
         
-        `PRÊTS POUR LE CHOC ? ⚽️🥊🔥\n${matchInfo}\n\nNotre ticket spécial Score Master est officiellement publié ! 👑💎⚡️\nDébut des matchs à ${earliestTime} ! ⏰🚀` + signature,
+        `PRÊTS POUR LE CHOC ? ⚽️🥊🔥\n${matchInfo}\n\nNotre ticket spécial Score Meridian est officiellement publié ! 👑💎⚡️\nDébut des matchs à ${earliestTime} ! ⏰🚀` + signature,
         
-        `L'INFO EST TOMBÉE ! 🦅💎🔥\n\nLe combiné est validé pour :${matchInfo}\n\nPublié sur scoremaster.fr ! 🌐🚀 Prenez votre ticket avant ${earliestTime} ! 🎟️💰💥` + signature,
+        `L'INFO EST TOMBÉE ! 🦅💎🔥\n\nLe combiné est validé pour :${matchInfo}\n\nPublié sur scoreMeridian.fr ! 🌐🚀 Prenez votre ticket avant ${earliestTime} ! 🎟️💰💥` + signature,
         
         `LE COMBINÉ DU JOUR EST DISPONIBLE ! 🎟️🔥🤑\n\nAnalyse complète sur :${matchInfo}\n\nCoup d'envoi à ${earliestTime} ! ⏰⚡️ Rejoignez l'élite sur le VIP+. 👑💎🚀` + signature,
         
         `🚨 NE MANQUEZ PAS LE TICKET DU SOIR ! 🧨💥📈\n\nAnalyse chirurgicale terminée :${matchInfo}\n\nLe combiné est en ligne sur votre espace membre ! 🚀💰🔥` + signature,
         
-        `COTES ANALYSÉES. MATCHS VALIDÉS. ✅💎⚡️\n\nLe ticket est enfin disponible pour :${matchInfo}\n\nDécollage à ${earliestTime} sur Score Master ! 🛸💰💥` + signature,
+        `COTES ANALYSÉES. MATCHS VALIDÉS. ✅💎⚡️\n\nLe ticket est enfin disponible pour :${matchInfo}\n\nDécollage à ${earliestTime} sur Score Meridian ! 🛸💰💥` + signature,
         
         `Le travail de l'ombre est terminé ! 💼🔬💎\n\nLe combiné est en ligne sur l'espace SM VIP+ :${matchInfo}\n\nNe perdez pas de temps, début à ${earliestTime} ! ⏳💰` + signature,
         
@@ -1753,7 +1753,7 @@ function renderTelegramLaunchTexts() {
         
         `L'ATTENTE EST TERMINÉE ! 🏁🔥🚀\n\nLe combiné lourd est publié :${matchInfo}\n\nRendez-vous sur l'Espace VIP+ pour le verdict ! 🏛️💰✅` + signature,
         
-        `SCORE MASTER NE DORT JAMAIS ! 🤖⚡️👑\n\nAnalyse validée à 100% pour :${matchInfo}\n\nLe ticket est disponible. C'est l'heure d'encaisser ! 💰🚀🔥` + signature,
+        `Score Meridian NE DORT JAMAIS ! 🤖⚡️👑\n\nAnalyse validée à 100% pour :${matchInfo}\n\nLe ticket est disponible. C'est l'heure d'encaisser ! 💰🚀🔥` + signature,
         
         `DERNIER APPEL POUR LE TICKET DE ${earliestTime} ! 📢⏳⚡️\n\nLe combiné est en ligne :${matchInfo}\n\nL'analyse est sur le VIP+. Let's go ! 🚀💰💥` + signature
     ];
@@ -1791,7 +1791,7 @@ function copyRawText(btn, i) {
 }
     
     function saveState() { 
-        localStorage.setItem('scoreMasterData', JSON.stringify({ stats: appStats, platform: userPlatform })); 
+        localStorage.setItem('scoreMeridianData', JSON.stringify({ stats: appStats, platform: userPlatform })); 
     }
 
     function openProfileModal() {
@@ -1804,10 +1804,10 @@ function copyRawText(btn, i) {
         var memberSince = p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
         document.getElementById('profile-member-since').textContent = memberSince;
         var roleMap = {
-            'admin':    { label: '👑 Admin',      bg: 'rgba(255,215,0,0.2)',  color: '#FFD700' },
-            'vip':      { label: '🔥 VIP+',        bg: 'rgba(255,61,61,0.2)',  color: '#FF3D3D' },
-            'membre':   { label: '💙 Membre',      bg: 'rgba(74,144,217,0.2)', color: '#4A90D9' },
-            'visiteur': { label: '👁 Visiteur',    bg: 'rgba(138,138,138,0.2)', color: '#8A8A8A' },
+            'admin':    { label: '👑 Admin',      bg: 'rgba(168,85,247,0.2)',  color: '#A855F7' },
+            'vip':      { label: '🔥 VIP+',        bg: 'rgba(244,63,94,0.2)',  color: '#F43F5E' },
+            'membre':   { label: '💙 Membre',      bg: 'rgba(74,144,217,0.2)', color: '#3B82F6' },
+            'visiteur': { label: '👁 Visiteur',    bg: 'rgba(138,138,138,0.2)', color: '#8A93A8' },
         };
         var role = p.role || 'visiteur';
         var roleInfo = roleMap[role] || roleMap['visiteur'];
@@ -1902,7 +1902,7 @@ function copyRawText(btn, i) {
             el.textContent = userPlatform;
             if(userPlatform === 'WINAMAX') { el.style.color = '#fff'; el.style.background = 'rgba(255, 0, 0, 0.5)'; }
             else if(userPlatform === 'UNIBET') { el.style.color = '#00e676'; el.style.background = 'rgba(0, 230, 118, 0.15)'; }
-            else { el.style.color = 'var(--red)'; el.style.background = 'rgba(255,61,61,.15)'; }
+            else { el.style.color = 'var(--red)'; el.style.background = 'rgba(244,63,94,.15)'; }
         });
     }
 
@@ -1913,12 +1913,12 @@ function copyRawText(btn, i) {
         var icon = document.getElementById('info-popup-icon');
         var extra = document.getElementById('info-popup-extra');
         if (packType === 'journalier') {
-            icon.innerHTML = '<i class="fas fa-calendar-check"></i>'; icon.style.background = 'rgba(0, 200, 83, 0.15)'; icon.style.color = 'var(--green)';
+            icon.innerHTML = '<i class="fas fa-calendar-check"></i>'; icon.style.background = 'rgba(34,197,94, 0.15)'; icon.style.color = 'var(--green)';
             title.textContent = 'SM Score Exact Journalier';
             desc.textContent = 'Notre algorithme et nos experts analysent quotidiennement des dizaines de paramètres pour dénicher LE match le plus fiable de la journée.';
             extra.innerHTML = '<ul style="text-align:left; padding-left:20px; color:var(--text-light-gray);"><li style="margin-bottom:8px">Cotes moyennes : <span style="color:var(--green)">12.00 à 50.00</span></li><li style="margin-bottom:8px">Publié chaque jour avant 12h</li><li>Parfait pour faire monter sa bankroll</li></ul>';
         } else if (packType === 'vip') {
-            icon.innerHTML = '<i class="fas fa-crown"></i>'; icon.style.background = 'rgba(255, 61, 61, 0.15)'; icon.style.color = 'var(--red)';
+            icon.innerHTML = '<i class="fas fa-crown"></i>'; icon.style.background = 'rgba(244,63,94, 0.15)'; icon.style.color = 'var(--red)';
             title.textContent = 'SM VIP+ (à vie)';
             desc.textContent = "Le Saint Graal du parieur. Rejoignez l'élite et accédez à l'intégralité de nos services pour toujours, sans aucun abonnement caché.";
             extra.innerHTML = '<ul style="text-align:left; padding-left:20px; color:var(--text-light-gray);"><li style="margin-bottom:8px">Accès direct aux <span style="color:var(--red)">fondateurs</span></li><li style="margin-bottom:8px">Canal Telegram Secret inclus</li><li>Une seule transaction, à vie</li></ul>';
@@ -2011,7 +2011,7 @@ async function fetchMatchesFromAPI() {
             return;
         }
 
-        var matchesHtml = '<div style="background:#2A2A2A; padding:10px; border-radius:8px; margin-bottom:10px; max-height:300px; overflow-y:auto;">';
+        var matchesHtml = '<div style="background:#1C2541; padding:10px; border-radius:8px; margin-bottom:10px; max-height:300px; overflow-y:auto;">';
         matchesHtml += `<div style="font-size:12px; color:var(--text-gray); margin-bottom:8px; display:flex; justify-content:space-between;"><span>Matchs trouvés (${matches.length})</span><span style="color:var(--primary-yellow); cursor:pointer;" onclick="document.getElementById('api-matches-container').innerHTML=''">Fermer</span></div>`;
         
         // Fonction pour obtenir le drapeau emoji selon le pays/ligue
@@ -2361,10 +2361,10 @@ async function startLiveScores() {
     // On force le badge en mode LIVE
     const badge = document.getElementById('live-badge');
     if (badge) {
-        badge.style.background = 'rgba(255,61,61,0.15)';
-        badge.style.borderColor = 'rgba(255,61,61,0.3)';
-        badge.style.color = '#FF3D3D';
-        badge.innerHTML = '<span style="width:6px;height:6px;background:#FF3D3D;border-radius:50%;animation:pulse 1s infinite;display:inline-block;margin-right:5px;"></span> LIVE';
+        badge.style.background = 'rgba(244,63,94,0.15)';
+        badge.style.borderColor = 'rgba(244,63,94,0.3)';
+        badge.style.color = '#F43F5E';
+        badge.innerHTML = '<span style="width:6px;height:6px;background:#F43F5E;border-radius:50%;animation:pulse 1s infinite;display:inline-block;margin-right:5px;"></span> LIVE';
     }
 
     await fetchAndRenderLiveScores(matches);
@@ -2457,8 +2457,8 @@ async function fetchAndRenderLiveScores(matches) {
             } else if (isFinished) {
                 statusLabel = 'Terminé ✅'; statusColor = 'var(--green)';
             } else {
-                statusLabel = `<span style="display:inline-block;width:6px;height:6px;background:#00C853;border-radius:50%;margin-right:4px;animation:pulse 1s infinite;"></span> En direct`;
-                statusColor = '#00C853';
+                statusLabel = `<span style="display:inline-block;width:6px;height:6px;background:#22C55E;border-radius:50%;margin-right:4px;animation:pulse 1s infinite;"></span> En direct`;
+                statusColor = '#22C55E';
             }
         } else {
             const matchCleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
@@ -2574,8 +2574,8 @@ async function autoFetchFinalScores(combined) {
 
     const badge = document.getElementById('live-badge');
     if (badge) {
-        badge.style.background = 'rgba(0,200,83,0.15)';
-        badge.style.borderColor = 'rgba(0,200,83,0.3)';
+        badge.style.background = 'rgba(34,197,94,0.15)';
+        badge.style.borderColor = 'rgba(34,197,94,0.3)';
         badge.style.color = 'var(--green)';
         badge.innerHTML = 'TERMINÉ ✅';
     }
@@ -2965,7 +2965,7 @@ async function autoFetchFinalScores(combined) {
             "C’est le moment parfait pour prendre de l’avance. Ne laissez pas passer cette belle opportunité ! 🙌⚡️",
             "Faites vite avant que les cotes ne chutent ! L'horloge tourne. ⏱️",
             "💣 COTES ÉTUDIÉES\n💯 FORTE CONFIANCE\nPrêt à faire partie de l'équipe ?",
-            "Chez ScoreMaster tout est professionnel :\n- Analyses poussées 📈\n- Scores en 5 minutes 📲\n- Suivi de bankroll 📊",
+            "Chez scoreMeridian tout est professionnel :\n- Analyses poussées 📈\n- Scores en 5 minutes 📲\n- Suivi de bankroll 📊",
             "⚠️ Rejoins la communauté et optimise tes paris avec nos analyses.",
             "Un grand merci à vous les VIP, vous êtes géniaux. Pour les autres, rejoignez l'aventure ! 🚀",
             "SI TOI AUSSI TU VEUX OPTIMISER TES PARIS, ENVOIE MOI UN MESSAGE MAINTENANT !",
@@ -2995,7 +2995,7 @@ async function autoFetchFinalScores(combined) {
             `⛔️ *FERMETURE STRICTE DES ACCÈS :* *${deadlineStr}* ❗️\n\n` +
             `${outros[Math.floor(Math.random() * outros.length)]}\n\n` +
             `📱 *Nous rejoindre / Nous contacter :*\n` +
-            `🌐 Site Web : https://scoremaster.fr/\n` +
+            `🌐 Site Web : https://scoreMeridian.fr/\n` +
             `➡️ Telegram : @ScoreMasterOfficiel`;
 
         sendAdminTelegram(telegramDraft);
@@ -3177,11 +3177,11 @@ function renderAdminHistory() {
 
             if (now >= finishTime) {
                 // À CONFIRMER
-                let btns = `<button onclick="openValidationScreen('${c.id}')" style="background:#FF9800; color:#000;"><i class="fas fa-check-double"></i> Valider</button><button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(255,61,61,0.15); color:var(--red); border:1px solid rgba(255,61,61,0.4);"><i class="fas fa-satellite-dish"></i> Score API</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
+                let btns = `<button onclick="openValidationScreen('${c.id}')" style="background:#FF9800; color:#000;"><i class="fas fa-check-double"></i> Valider</button><button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(244,63,94,0.15); color:var(--red); border:1px solid rgba(244,63,94,0.4);"><i class="fas fa-satellite-dish"></i> Score API</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(244,63,94,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
                 htmlPending += cardBaseHtml('<span style="color:#FF9800; font-weight:bold;">À vérifier ⚠️</span>', btns);
             } else {
                 // EN COURS
-                let btns = `<button onclick="sendTelegramReminder('${c.id}')" style="background:var(--primary-yellow); color:#000; font-weight:bold;"><i class="fas fa-bell"></i> Relancer</button><button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
+                let btns = `<button onclick="sendTelegramReminder('${c.id}')" style="background:var(--primary-yellow); color:#000; font-weight:bold;"><i class="fas fa-bell"></i> Relancer</button><button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(244,63,94,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
                 htmlActive += cardBaseHtml(displayStatus, btns);
             }
         } else {
@@ -3189,8 +3189,8 @@ function renderAdminHistory() {
             let btns = `
             <button onclick="sendTelegramWin('${c.id}')" style="background:var(--green); color:#000; font-weight:bold; padding:6px 10px;" title="Envoyer sur Telegram"><i class="fab fa-telegram-plane"></i> Gagné</button>
             <button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue); padding:6px 10px;" title="Éditer"><i class="fas fa-edit"></i></button>
-            <button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(255,61,61,0.15); color:var(--red); border:1px solid rgba(255,61,61,0.4); padding:6px 10px;" title="Score API"><i class="fas fa-satellite-dish"></i></button>
-            <button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red); padding:6px 10px;" title="Supprimer"><i class="fas fa-trash"></i></button>`;
+            <button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(244,63,94,0.15); color:var(--red); border:1px solid rgba(244,63,94,0.4); padding:6px 10px;" title="Score API"><i class="fas fa-satellite-dish"></i></button>
+            <button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(244,63,94,0.2); color:var(--red); padding:6px 10px;" title="Supprimer"><i class="fas fa-trash"></i></button>`;
             htmlPast += cardBaseHtml(displayStatus, btns);
         }
     });
@@ -3225,8 +3225,8 @@ function sendTelegramWin(id) {
         `🎯 BINGO ! Précision chirurgicale sur les scores exacts ! Bravo aux VIP+ qui voient leur bankroll grimper ce soir ! 🍾`,
         `Et ça fait un de plus ! Le ticket du ${ticketDate} est validé. On continue cette belle série.`,
         `🔥 ON FIRE ! La régularité est au rendez-vous. Le combiné score exact est validé avec succès. 📈`,
-        `Une soirée parfaite pour les membres ScoreMaster. Les analyses étaient ultra précises !`,
-        `🍾 CHAMPAGNE ! Un nouveau ticket VIP+ validé. C'est ça la force de l'expertise ScoreMaster. Foncez voir l'historique sur l'appli !`,
+        `Une soirée parfaite pour les membres scoreMeridian. Les analyses étaient ultra précises !`,
+        `🍾 CHAMPAGNE ! Un nouveau ticket VIP+ validé. C'est ça la force de l'expertise scoreMeridian. Foncez voir l'historique sur l'appli !`,
         `👑 Le ticket du ${ticketDate} est vert. Très belle réussite sur ces scores. On ne s'arrête plus !`,
         `Félicitations à toute l'équipe pour cette superbe validation !`,
         `✅ ENCORE UN VERDICT PARFAIT ! L'analyse a payé. Préparez-vous pour le prochain !`,
@@ -3250,7 +3250,7 @@ function sendTelegramWin(id) {
 
 📋 *Détails du ticket :*
 ${matchLines}
-🚀 *Rejoignez l'élite sur l'application :* https://scoremaster.fr/`;
+🚀 *Rejoignez l'élite sur l'application :* https://scoreMeridian.fr/`;
 
     // Envoi via Supabase (Sécurisé)
     if (confirm("Envoyer le message de VICTOIRE sur Telegram pour ce combiné ?")) {
@@ -3301,7 +3301,7 @@ ${detailsMatchs}
 
 Graphic Elements: Two floating rectangular frames with glowing cyan neon borders. Professional Champions League broadcast style.
 
-Bottom branding: The official 3D Instagram camera logo icon placed directly next to the handle "@scoremaster.fr", both clearly visible in a modern glowing style.
+Bottom branding: The official 3D Instagram camera logo icon placed directly next to the handle "@scoremeridian.fr", both clearly visible in a modern glowing style.
 
 Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold and silver color palette, --ar 9:16`;
 
@@ -3370,7 +3370,7 @@ STYLE VISUEL :
 
 ZONE BASSE :
 - Icône Instagram dégradé violet/orange
-- Texte exact : "@scoremaster.fr" en blanc
+- Texte exact : "@scoremeridian.fr" en blanc
 
 FORMAT OBLIGATOIRE POUR CHAQUE MATCH :
 • Nom équipe vs Nom équipe (HHHMM)
@@ -3397,7 +3397,7 @@ ${instaMatches}⏰ Début du premier match à ${earliestTime}
 💸 Accède au VIP+ via le lien en bio
 📈 Ne rate pas cette opportunité !
 
-@scoremaster.fr`;
+@scoremeridian.fr`;
 
     let telegramText = `🎨 *PROMPT IA POSTER PROMO :*\n\`\`\`\n${aiPrompt}\n\`\`\`\n\n📝 *TEXTE INSTAGRAM :*\n\`\`\`\n${instaText}\n\`\`\``;
 
@@ -3464,7 +3464,7 @@ function renderAdminHistory() {
             finishTime = new Date(finishTime.getTime() + (2 * 60 * 60 * 1000));
 
             if (now >= finishTime) {
-                let btns = `<button onclick="openValidationScreen('${c.id}')" style="background:#FF9800; color:#000;"><i class="fas fa-check-double"></i> Valider</button><button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(255,61,61,0.15); color:var(--red); border:1px solid rgba(255,61,61,0.4);"><i class="fas fa-satellite-dish"></i> Score API</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
+                let btns = `<button onclick="openValidationScreen('${c.id}')" style="background:#FF9800; color:#000;"><i class="fas fa-check-double"></i> Valider</button><button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(244,63,94,0.15); color:var(--red); border:1px solid rgba(244,63,94,0.4);"><i class="fas fa-satellite-dish"></i> Score API</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(244,63,94,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
                 htmlPending += cardBaseHtml('<span style="color:#FF9800; font-weight:bold;">À vérifier ⚠️</span>', btns);
             } else {
                 // SECTION EN COURS : NOUVEAU BOUTON PROMO AJOUTÉ ICI
@@ -3472,7 +3472,7 @@ function renderAdminHistory() {
                     <button onclick="sendPromoPrompt('${c.id}')" style="background:linear-gradient(135deg, #FF9800, #F57C00); color:#fff; font-weight:bold; padding:6px 10px;" title="Prompt Promo IA"><i class="fas fa-ad"></i> Promo</button>
                     <button onclick="sendTelegramReminder('${c.id}')" style="background:var(--primary-yellow); color:#000; font-weight:bold; padding:6px 10px;"><i class="fas fa-bell"></i></button>
                     <button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue); padding:6px 10px;"><i class="fas fa-edit"></i></button>
-                    <button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red); padding:6px 10px;"><i class="fas fa-trash"></i></button>`;
+                    <button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(244,63,94,0.2); color:var(--red); padding:6px 10px;"><i class="fas fa-trash"></i></button>`;
                 htmlActive += cardBaseHtml(displayStatus, btns);
             }
         } else {
@@ -3480,8 +3480,8 @@ function renderAdminHistory() {
             <button onclick="sendTelegramWin('${c.id}')" style="background:var(--green); color:#000; font-weight:bold; padding:6px 10px;" title="Envoyer sur Telegram"><i class="fab fa-telegram-plane"></i> Gagné</button>
             <button onclick="sendInstaPrompt('${c.id}')" style="background:linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color:#fff; font-weight:bold; padding:6px 10px;" title="Prompt Insta IA"><i class="fab fa-instagram"></i> IA</button>
             <button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue); padding:6px 10px;" title="Éditer"><i class="fas fa-edit"></i></button>
-            <button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(255,61,61,0.15); color:var(--red); border:1px solid rgba(255,61,61,0.4); padding:6px 10px;" title="Score API"><i class="fas fa-satellite-dish"></i></button>
-            <button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(255,61,61,0.2); color:var(--red); padding:6px 10px;" title="Supprimer"><i class="fas fa-trash"></i></button>`;
+            <button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(244,63,94,0.15); color:var(--red); border:1px solid rgba(244,63,94,0.4); padding:6px 10px;" title="Score API"><i class="fas fa-satellite-dish"></i></button>
+            <button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(244,63,94,0.2); color:var(--red); padding:6px 10px;" title="Supprimer"><i class="fas fa-trash"></i></button>`;
             htmlPast += cardBaseHtml(displayStatus, btns);
         }
     });
@@ -3517,8 +3517,8 @@ function sendTelegramWin(id) {
         `🎯 BINGO ! Précision chirurgicale sur les scores exacts ! Bravo aux VIP+ qui s'en mettent plein les poches ce soir ! 🍾`,
         `🤑 Et ça fait un de plus ! Le ticket du ${ticketDate} passe crème. On continue la série de victoires. Ne restez pas sur la touche !`,
         `🔥 ON FIRE ! Vous avez douté ? Regardez les résultats ! Le combiné score exact est validé avec succès. 📈`,
-        `💰 C'EST DEDANS ! Une soirée parfaite pour les membres ScoreMaster. Les scores étaient donnés !`,
-        `🍾 CHAMPAGNE ! Un nouveau ticket VIP+ validé. C'est ça l'expertise ScoreMaster. Foncez voir l'historique sur l'appli !`,
+        `💰 C'EST DEDANS ! Une soirée parfaite pour les membres scoreMeridian. Les scores étaient donnés !`,
+        `🍾 CHAMPAGNE ! Un nouveau ticket VIP+ validé. C'est ça l'expertise scoreMeridian. Foncez voir l'historique sur l'appli !`,
         `👑 LES ROIS DU PRONO ! Le ticket du ${ticketDate} est vert. 100% de réussite sur ces scores. On ne s'arrête plus !`,
         `💸 BRAQUAGE RÉUSSI ! Les bookmakers pleurent. Félicitations à toute l'équipe pour ce ticket validé !`,
         `✅ ENCORE UN VERDICT PARFAIT ! L'analyse a payé. C'était du gâteau. Préparez-vous pour le prochain !`,
@@ -3543,7 +3543,7 @@ function sendTelegramWin(id) {
 
 📋 *Détails du ticket :*
 ${matchLines}
-🚀 *Rejoignez l'élite sur l'application :* https://scoremaster.fr/`;
+🚀 *Rejoignez l'élite sur l'application :* https://scoreMeridian.fr/`;
 
    // Envoi via Supabase (Sécurisé)
     if (confirm("Envoyer le message de VICTOIRE sur Telegram pour ce combiné ?")) {
@@ -3592,7 +3592,7 @@ ${detailsMatchs}
 
 Graphic Elements: Two floating rectangular frames with glowing cyan neon borders. Professional Champions League broadcast style.
 
-Bottom branding: The Instagram handle "@scoremaster.fr" clearly visible in a modern glowing font.
+Bottom branding: The Instagram handle "@scoremeridian.fr" clearly visible in a modern glowing font.
 
 Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold and silver color palette, --ar 9:16`;
 
@@ -3660,7 +3660,7 @@ STYLE VISUEL :
 
 ZONE BASSE :
 - Icône Instagram dégradé violet/orange
-- Texte exact : "@scoremaster.fr" en blanc
+- Texte exact : "@scoremeridian.fr" en blanc
 
 CONTRAINTES STRICTES :
 - Texte uniquement en français
@@ -3679,7 +3679,7 @@ ${instaMatches}⏰ Début du premier match à ${earliestTime}
 💸 Accède au VIP+ via le lien en bio
 📈 Ne rate pas cette opportunité !
 
-@scoremaster.fr`;
+@scoremeridian.fr`;
 
     let telegramText = `🎨 *PROMPT IA POSTER PROMO :*\n\`\`\`\n${aiPrompt}\n\`\`\`\n\n📝 *TEXTE INSTAGRAM :*\n\`\`\`\n${instaText}\n\`\`\``;
 
@@ -3751,18 +3751,18 @@ ${instaMatches}⏰ Début du premier match à ${earliestTime}
             const lockoutDateTime = new Date(matchDateTime.getTime() - 15 * 60000);
             if (new Date() >= lockoutDateTime) {
                 isLocked = true;
-                timeMessage = `<div style="color: var(--red); font-size: 13px; font-weight: 800; margin: 12px 16px; text-align: center; background: rgba(255,61,61,0.1); padding: 10px; border-radius: 8px;"><i class="fas fa-lock"></i> Les paris sont fermés (Match imminent)</div>`;
+                timeMessage = `<div style="color: var(--red); font-size: 13px; font-weight: 800; margin: 12px 16px; text-align: center; background: rgba(244,63,94,0.1); padding: 10px; border-radius: 8px;"><i class="fas fa-lock"></i> Les paris sont fermés (Match imminent)</div>`;
             } else {
                 const hrs = String(lockoutDateTime.getHours()).padStart(2, '0');
                 const mins = String(lockoutDateTime.getMinutes()).padStart(2, '0');
-                timeMessage = `<div style="color: #fff; font-size: 13px; font-weight: 800; margin: 12px 16px; text-align: center; background: linear-gradient(90deg, #00C853, #009624); padding: 10px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,200,83,0.3); animation: glowPass 2s infinite;"><i class="fas fa-stopwatch"></i> Disponible jusqu'à ${hrs}:${mins}</div>`;
+                timeMessage = `<div style="color: #fff; font-size: 13px; font-weight: 800; margin: 12px 16px; text-align: center; background: linear-gradient(90deg, #22C55E, #16A34A); padding: 10px; border-radius: 8px; box-shadow: 0 4px 10px rgba(34,197,94,0.3); animation: glowPass 2s infinite;"><i class="fas fa-stopwatch"></i> Disponible jusqu'à ${hrs}:${mins}</div>`;
             }
         }
         
         var ctaBtn = (isHome && !isLocked && sc === 'en-cours') ? `<a href="${TELEGRAM_LINK}" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>` : '';
         if (isHome && isLocked && sc === 'en-cours') ctaBtn = `<button class="combined-cta-btn" style="background: var(--bg-input); color: var(--text-gray); cursor: not-allowed;"><i class="fas fa-lock"></i> Trop tard, match commencé !</button>`;
 
-        var vipRevealBtn = isVipObscured ? `<button id="reveal-btn-${c.id}" onclick="unblurVipCard('combined-card-vip-${c.id}', 'reveal-btn-${c.id}')" class="combined-cta-btn" style="background:linear-gradient(135deg, #FFD700, #E6C200); color:#000; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);"><i class="fas fa-eye" style="margin-right:6px;"></i> Cliquer ici pour déflouter les scores</button>` : '';
+        var vipRevealBtn = isVipObscured ? `<button id="reveal-btn-${c.id}" onclick="unblurVipCard('combined-card-vip-${c.id}', 'reveal-btn-${c.id}')" class="combined-cta-btn" style="background:linear-gradient(135deg, #A855F7, #7C3AED); color:#000; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(168,85,247, 0.3);"><i class="fas fa-eye" style="margin-right:6px;"></i> Cliquer ici pour déflouter les scores</button>` : '';
 
         return `
         <div class="combined-card" id="combined-card-${isHome ? 'home' : 'vip'}-${c.id}" style="width:100%;">
@@ -3893,7 +3893,7 @@ ${instaMatches}⏰ Début du premier match à ${earliestTime}
 
     function openCheckout(packType, price) {
         var packNames = { 'journalier': 'SM Score Exact Journalier', 'vip': 'SM VIP+ (à vie)', 'hebdo': 'SM Combiné Hebdo' };
-        document.getElementById('subscribe-pack-title').textContent = 'Souscrire au ' + (packNames[packType] || 'Pack ScoreMaster');
+        document.getElementById('subscribe-pack-title').textContent = 'Souscrire au ' + (packNames[packType] || 'Pack scoreMeridian');
         document.getElementById('subscribe-pack-type').value = packType;
         document.getElementById('sub-contact-info').value = '';
         document.getElementById('sub-message').value = '';
@@ -4415,7 +4415,7 @@ function renderEcussonContent() {
         // --- PROMPTS CLASH (BRODERIE) ---
         window._matchEcussons = matchDuels.map(m => ({
             matchLabel: m.label, 
-            prompt: `ENGLISH PROMPT: A high-impact, photorealistic [9:16] cinematic composition. The image is split by a sharp dynamic diagonal line. Top-Left Half: The ${m.teamA} logo as a premium dense embroidered emblem on its primary club colors athletic mesh. Bottom-Right Half: The ${m.teamB} logo as a premium dense embroidered emblem on its primary club colors textured fabric. Dynamic Effects: At the diagonal intersection, add a subtle shimmering light energy effect. Use dramatic chiaroscuro lighting. Branding Element: At the bottom center, integrate the "Score Master" logo — a sleek metallic silver "SM" monogram with a luxurious gold crown on top. Technical: Ultra-close-up, extreme detail on stitching, shallow depth of field. No additional text. --ar 9:16 --style raw --v 6`
+            prompt: `ENGLISH PROMPT: A high-impact, photorealistic [9:16] cinematic composition. The image is split by a sharp dynamic diagonal line. Top-Left Half: The ${m.teamA} logo as a premium dense embroidered emblem on its primary club colors athletic mesh. Bottom-Right Half: The ${m.teamB} logo as a premium dense embroidered emblem on its primary club colors textured fabric. Dynamic Effects: At the diagonal intersection, add a subtle shimmering light energy effect. Use dramatic chiaroscuro lighting. Branding Element: At the bottom center, integrate the "Score Meridian" logo — a sleek metallic silver "SM" monogram with a luxurious gold crown on top. Technical: Ultra-close-up, extreme detail on stitching, shallow depth of field. No additional text. --ar 9:16 --style raw --v 6`
         }));
 
         var htmlMatch = `<div style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#fb923c;display:flex;align-items:center;gap:8px; margin-top:24px; margin-bottom:12px; flex-shrink:0;"><i class="fas fa-bolt" style="font-size:12px;animation:pulse 2s infinite;"></i>${matchDuels.length} duel(s) — Prompts Affiche Clash (Image)</div>`;
@@ -4510,7 +4510,7 @@ function generateMatchEcussonPrompt(teamA, teamB) {
 Top-Left Half: The ${teamA} logo as a premium dense embroidered emblem on its primary club colors athletic mesh.
 Bottom-Right Half: The ${teamB} logo as a premium dense embroidered emblem on its primary club colors textured fabric.
 Dynamic Effects: At the diagonal intersection, add a subtle shimmering light energy effect or a sharp contrast of shadows. Use dramatic chiaroscuro lighting with intense highlights on the thread edges to create a 3D metallic glint. Add floating micro-dust particles and subtle bokeh lens flares in the air to add depth and atmosphere.
-Branding Element: At the bottom center of the image, integrate the "Score Master" logo — a sleek metallic silver "SM" monogram with a luxurious gold crown on top. Render it with a subtle glassmorphism or holographic shimmer effect, slightly elevated above the fabric background with a soft drop shadow. The logo should feel like a premium watermark, elegant and not overpowering.
+Branding Element: At the bottom center of the image, integrate the "Score Meridian" logo — a sleek metallic silver "SM" monogram with a luxurious gold crown on top. Render it with a subtle glassmorphism or holographic shimmer effect, slightly elevated above the fabric background with a soft drop shadow. The logo should feel like a premium watermark, elegant and not overpowering.
 Technical: Ultra-close-up, extreme detail on stitching, shallow depth of field. The mood is aggressive, luxurious, and high-energy. No additional text, no watermarks. --ar 9:16 --style raw --v 6`;
 }
 
@@ -4587,7 +4587,7 @@ function generateMatchEcussonPrompt(teamA, teamB) {
 Top-Left Half: The ${teamA} logo as a premium dense embroidered emblem on its primary club colors athletic mesh.
 Bottom-Right Half: The ${teamB} logo as a premium dense embroidered emblem on its primary club colors textured fabric.
 Dynamic Effects: At the diagonal intersection, add a subtle shimmering light energy effect or a sharp contrast of shadows. Use dramatic chiaroscuro lighting with intense highlights on the thread edges to create a 3D metallic glint. Add floating micro-dust particles and subtle bokeh lens flares in the air to add depth and atmosphere.
-Branding Element: At the bottom center of the image, integrate the "Score Master" logo — a sleek metallic silver "SM" monogram with a luxurious gold crown on top. Render it with a subtle glassmorphism or holographic shimmer effect, slightly elevated above the fabric background with a soft drop shadow. The logo should feel like a premium watermark, elegant and not overpowering.
+Branding Element: At the bottom center of the image, integrate the "Score Meridian" logo — a sleek metallic silver "SM" monogram with a luxurious gold crown on top. Render it with a subtle glassmorphism or holographic shimmer effect, slightly elevated above the fabric background with a soft drop shadow. The logo should feel like a premium watermark, elegant and not overpowering.
 Technical: Ultra-close-up, extreme detail on stitching, shallow depth of field. The mood is aggressive, luxurious, and high-energy. No additional text, no watermarks. --ar 9:16 --style raw --v 6`;
 }
 
@@ -4650,7 +4650,7 @@ function copyMatchEcusson(i) {
     container.innerHTML = `
     <div style="display:flex;flex-direction:column;width:100%;height:100%;overflow-y:auto;">
 
-        <div style="background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#4ade80;display:flex;align-items:center;gap:8px;margin:16px 16px 0;">
+        <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#4ade80;display:flex;align-items:center;gap:8px;margin:16px 16px 0;">
             <i class="fas fa-circle" style="font-size:8px;animation:pulse 2s infinite;"></i>
             Combiné EN COURS détecté — ${(window._pgMatches||[]).length} match(s) importé(s)
         </div>
@@ -4699,7 +4699,7 @@ function copyMatchEcusson(i) {
         <div style="display:flex;gap:20px;flex:1;overflow:hidden;">
             <!-- Sidebar -->
             <div style="width:340px;flex-shrink:0;border-right:1px solid rgba(255,255,255,0.08);padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:16px;">
-                <div style="background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#4ade80;display:flex;align-items:center;gap:8px;">
+                <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:10px;padding:10px 14px;font-size:12px;color:#4ade80;display:flex;align-items:center;gap:8px;">
                     <i class="fas fa-circle" style="font-size:8px;animation:pulse 2s infinite;"></i>
                     Combiné EN COURS détecté — ${(window._pgMatches||[]).length} match(s) importé(s)
                 </div>
@@ -4800,7 +4800,7 @@ detailsMatchs.trim() + '\n' +
 'Font: bold, modern sans-serif, white uppercase, sharp and readable.\n\n' +
 
 'BOTTOM BRANDING:\n' +
-'Instagram gradient camera logo + "@scoremaster.fr" in bold white text, centered.\n\n' +
+'Instagram gradient camera logo + "@scoremeridian.fr" in bold white text, centered.\n\n' +
 
 'CRITICAL RULES:\n' +
 '- NO scores, NO results, NO numbers except match times\n' +
@@ -4817,7 +4817,7 @@ instaMatches + '\n' +
 '⏰ Début du premier match à ' + earliestFormatted + '\n\n' +
 '━━━━━━━━━━━━━━━━━━━━\n' +
 '👉 Lien en bio pour rejoindre le VIP+ et valider tes gains ! 💰🚀\n\n' +
-'📲 @scoremaster.fr';
+'📲 @scoremeridian.fr';
 
     output.telegram =
 '🎨 *PROMPT IA — POSTER PROMO :*\n' +
@@ -5130,7 +5130,7 @@ function renderInstaTexts() {
         // --- RUBRIQUE 1 : 20 MESSAGES PRÉSENTATION COMBINÉ (INSTA) ---
         { label: '📢 Lancement Combiné (Accroches Insta VIP+)', color: '#ec4899', items: [
             `Le combiné est DISPO sur votre espace SM VIP+ 👑\nC'est maintenant qu'il faut parier ! 👇\n👉 Lien en bio`,
-            `L'algorithme a parlé 🤖\nLe ticket parfait est en ligne dans votre espace Score Master.\n👉 Go valider ça !`,
+            `L'algorithme a parlé 🤖\nLe ticket parfait est en ligne dans votre espace Score Meridian.\n👉 Go valider ça !`,
             `Cotes analysées. Matchs validés ✅\nLe combiné de ce soir vous attend sur le VIP+ ⚡️`,
             `🚨 ALERTE PUBLICATION !\nLe combiné exclusif est dispo. Validez-le avant que les cotes ne chutent 📉\n👉 Lien en bio`,
             `On ne parie pas au hasard 🧬\nLe nouveau ticket VIP+ est disponible. À vous de jouer 💸`,
@@ -5143,7 +5143,7 @@ function renderInstaTexts() {
             `Ticket du soir : PUBLIÉ ✅\nFoncez sur l'espace SM VIP+ avant le coup d'envoi à ${earliestTime} !`,
             `Pas d'émotion, que des stats 📊\nLe combiné validé par l'IA est sur l'espace membre.`,
             `Le choc ${teamsString} est dans notre combiné VIP+ 🔥\nDisponible tout de suite sur votre espace !`,
-            `Faites partie de l'élite 👑\nLe ticket Score Master est en ligne. C'est maintenant ou jamais !`,
+            `Faites partie de l'élite 👑\nLe ticket Score Meridian est en ligne. C'est maintenant ou jamais !`,
             `L'attente est terminée !\nLe combiné exclusif est en ligne sur votre Espace VIP+ 🚀\n👉 Lien en bio`,
             `Sécurisez vos gains dès maintenant 💸\nLe combiné du jour vient de tomber sur le VIP+.`,
             `Ne pariez pas à l'aveugle 👀\nLe ticket algorithmique est sur le VIP+. C'est l'heure.\n👉 Go bio`,
@@ -5323,7 +5323,7 @@ ${detailsMatchs}
 
 Graphic Elements: Two floating rectangular frames with glowing cyan neon borders. Professional Champions League broadcast style.
 
-Bottom branding: The official 3D Instagram camera logo icon placed directly next to the handle "@scoremaster.fr", both clearly visible in a modern glowing style.
+Bottom branding: The official 3D Instagram camera logo icon placed directly next to the handle "@scoremeridian.fr", both clearly visible in a modern glowing style.
 
 Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold and silver color palette, --ar 9:16`;
 
@@ -5346,7 +5346,7 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
     <div style="border-bottom:1px solid rgba(249,115,22,0.3);background:#0a0a0a;padding:50px 20px 14px;display:flex;align-items:center;gap:14px;flex-shrink:0;">
         <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#f97316,#fbbf24);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 18px rgba(249,115,22,0.35);">⚽</div>
         <div>
-            <div style="font-size:17px;font-weight:900;letter-spacing:-0.5px;color:#fff;">Score<span style="color:#fb923c;">Master</span></div>
+            <div style="font-size:17px;font-weight:900;letter-spacing:-0.5px;color:#fff;">Score<span style="color:#fb923c;">Meridian</span></div>
             <div style="font-size:11px;color:#6b7280;">Générateur de Prompt Promo IA</div>
         </div>
         <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
@@ -5359,7 +5359,7 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
     <div id="pg-main-content" style="flex:1;display:flex;overflow:hidden;"></div>
     <!-- Footer -->
     <div style="border-top:1px solid rgba(255,255,255,0.04);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#374151;flex-shrink:0;">
-        <span>@scoremaster.fr — Générateur Prompt v2.1</span>
+        <span>@scoremeridian.fr — Générateur Prompt v2.1</span>
         <span>Optimisé pour Midjourney · DALL·E 3 · Adobe Firefly</span>
     </div>
 </div>
@@ -5372,7 +5372,7 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
     <div style="border-bottom:1px solid rgba(168,85,247,0.3);background:#0a0a0a;padding:50px 20px 14px;display:flex;align-items:center;gap:14px;flex-shrink:0;">
         <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#a855f7,#7c3aed);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 18px rgba(168,85,247,0.35);">🛡️</div>
         <div>
-            <div style="font-size:17px;font-weight:900;letter-spacing:-0.5px;color:#fff;">Score<span style="color:#a855f7;">Master</span></div>
+            <div style="font-size:17px;font-weight:900;letter-spacing:-0.5px;color:#fff;">Score<span style="color:#a855f7;">Meridian</span></div>
             <div style="font-size:11px;color:#6b7280;">Générateur d'Écusson Brodé Premium</div>
         </div>
         <button onclick="closeEcusson()" style="margin-left:auto;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
@@ -5381,7 +5381,7 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
     <div id="ecusson-main-content" style="flex:1;display:flex;flex-direction:column;overflow-y:auto;padding:16px;gap:12px;"></div>
     <!-- Footer -->
     <div style="border-top:1px solid rgba(255,255,255,0.04);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#374151;flex-shrink:0;">
-        <span>@scoremaster.fr — Écusson Brodé v1.0</span>
+        <span>@scoremeridian.fr — Écusson Brodé v1.0</span>
         <span>Optimisé pour ChatGPT · Midjourney · DALL·E 3</span>
     </div>
 </div>
@@ -5389,14 +5389,14 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
     <div style="border-bottom:1px solid rgba(225,48,108,0.3);background:#0a0a0a;padding:50px 20px 14px;display:flex;align-items:center;gap:14px;flex-shrink:0;">
         <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 18px rgba(225,48,108,0.35);">📸</div>
         <div>
-            <div style="font-size:17px;font-weight:900;color:#fff;">Score<span style="color:#e1306c;">Master</span></div>
+            <div style="font-size:17px;font-weight:900;color:#fff;">Score<span style="color:#e1306c;">Meridian</span></div>
             <div style="font-size:11px;color:#6b7280;">Accroches Story Instagram</div>
         </div>
         <button onclick="closeInstaTexts()" style="margin-left:auto;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
     <div id="insta-texts-content" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;"></div>
     <div style="border-top:1px solid rgba(255,255,255,0.04);padding:10px 20px;font-size:11px;color:#374151;text-align:center;flex-shrink:0;">
-        @scoremaster.fr — Copiez et collez directement dans l'éditeur Instagram
+        @scoremeridian.fr — Copiez et collez directement dans l'éditeur Instagram
     </div>
 </div>
     <div id="promo-telegram-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;flex-direction:column;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(8px);">
