@@ -2804,7 +2804,7 @@ async function fetchMatchesFromAPI() {
         }
     }
 
-    function openCart() {
+    async function openCart() {
         window.cartDiscount = null;
         var promoInput = document.getElementById('cart-promo-input');
         var promoStatus = document.getElementById('cart-promo-status');
@@ -2814,6 +2814,33 @@ async function fetchMatchesFromAPI() {
         var popup = document.getElementById('cart-popup');
         popup.style.display = 'flex';
         setTimeout(function () { popup.style.opacity = '1'; popup.firstElementChild.style.transform = 'scale(1)'; }, 10);
+
+        await autoFillAvailablePromoCode();
+    }
+
+    async function autoFillAvailablePromoCode() {
+        if (!window.currentAuthUser) return;
+        var promoInput = document.getElementById('cart-promo-input');
+        if (!promoInput) return;
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('orders')
+                .select('discount_code')
+                .eq('user_id', window.currentAuthUser.id)
+                .eq('discount_code_used', false)
+                .not('discount_code', 'is', null)
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+            if (error) throw error;
+            if (!data || !data.discount_code) return;
+
+            promoInput.value = data.discount_code;
+            await applyPromoCode();
+        } catch (error) {
+            console.error('Erreur auto-remplissage code promo:', error);
+        }
     }
 
     function closeCart() {
