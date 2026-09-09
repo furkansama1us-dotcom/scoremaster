@@ -1503,6 +1503,7 @@ async function fetchApiScore(id, dateRaw) {
         <button class="admin-tab-btn" id="btn-tab-aisuggest" onclick="switchAdminTab('aisuggest')"><i class="fas fa-robot"></i> IA</button>
         <button class="admin-tab-btn" id="btn-tab-orders" onclick="switchAdminTab('orders')"><i class="fas fa-receipt"></i> Commandes</button>
         <button class="admin-tab-btn" id="btn-tab-notifications" onclick="switchAdminTab('notifications')"><i class="fas fa-bell"></i> Notifs</button>
+        <button class="admin-tab-btn" id="btn-tab-calendar" onclick="switchAdminTab('calendar')"><i class="fas fa-calendar-days"></i> Calendrier</button>
     </div>
 
     <!-- ONGLET 1 : DASHBOARD -->
@@ -1736,10 +1737,32 @@ async function fetchApiScore(id, dateRaw) {
         Génère les descriptions virales pour vos vidéos avec hashtags dynamiques.
     </div>
 </div>
+            <div class="admin-card" style="padding:15px; border-left:4px solid #22c55e; margin-bottom:10px; cursor:pointer; transition:all 0.2s;" onclick="openRelanceGenerator()">
+    <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff; display:flex; justify-content:space-between; align-items:center;">
+        <span><i class="fas fa-user-clock" style="color:#22c55e; margin-right:5px;"></i> Relance Adhérents</span>
+        <i class="fas fa-chevron-right" style="color:var(--text-gray); font-size:12px;"></i>
+    </div>
+    <div style="font-size:12px; color:var(--text-gray);">
+        Messages variés pour relancer les membres inactifs et les inciter à revenir.
+    </div>
+</div>
+        </div>
+    </div>
+
+    <!-- ONGLET CALENDRIER -->
+    <div class="admin-tab-content" id="admin-tab-calendar">
+        <div class="admin-section">
+            <div class="admin-section-title" style="color:var(--primary-yellow); font-size:16px; margin-bottom: 8px;">
+                <i class="fas fa-calendar-days"></i> Calendrier de contenu
+            </div>
+            <p style="font-size:13px; color:var(--text-gray); margin-bottom:20px; line-height:1.5;">
+                Un type de post différent par jour pour varier le contenu automatiquement. Clique sur un jour pour ouvrir le générateur correspondant et récupérer ton brouillon.
+            </p>
+            <div id="admin-calendar-container"></div>
         </div>
     </div>
 </div> <!-- FIN DU PANEL ADMIN -->
-    
+
 <!-- =====================================================
      POPUP PROFIL ENRICHI
      ===================================================== -->
@@ -2063,6 +2086,140 @@ function copyRawText(btn, i) {
         }, 2000);
     });
 }
+
+// ============================================================
+// RELANCE ADHÉRENTS — messages variés pour réengager les membres inactifs
+// ============================================================
+function openRelanceGenerator() {
+    var overlay = document.getElementById('relance-overlay');
+    if (overlay) {
+        overlay.style.display = 'flex';
+        setTimeout(() => overlay.style.opacity = "1", 10);
+        renderRelanceContent();
+    }
+}
+
+function closeRelanceGenerator() {
+    var overlay = document.getElementById('relance-overlay');
+    if (overlay) {
+        overlay.style.opacity = "0";
+        setTimeout(() => overlay.style.display = 'none', 300);
+    }
+}
+
+function renderRelanceContent() {
+    var container = document.getElementById('relance-content');
+    if (!container) return;
+
+    var signature = "\n\n🌐 https://scoreMeridian.fr/\n➡️ Telegram : @ScoreMasterOfficiel";
+
+    var messages = [
+        `🕰️ Tic-tac. Ton compte Score Meridian t'attend.\n\nLes autres membres ont déjà pris de l'avance ce soir. Toi, tu regardes passer le train.\n\nRevenez avant que la fenêtre ne se referme. 🚪` + signature,
+
+        `💎 L'information a un prix. L'absence en coûte plus cher encore.\n\nPendant que tu hésites, notre communauté encaisse. Ton accès VIP+ est toujours actif — profites-en.` + signature,
+
+        `👤 On a remarqué ton absence...\n\nLes combinés continuent de tomber, les scores exacts aussi. La question n'est plus "si" tu reviens, mais "quand". Pourquoi pas maintenant ? 🔓` + signature,
+
+        `🚂 Le train de la rentabilité n'attend pas les retardataires.\n\nÇa fait un moment qu'on ne t'a pas vu sur l'application. Les meilleures opportunités partent vite — remonte à bord.` + signature,
+
+        `🔒 Ton espace VIP+ n'a pas bougé. Toi, si.\n\nReviens jeter un œil — la sélection du jour est déjà en ligne, et elle ne va pas t'attendre éternellement.` + signature,
+
+        `📉 On ne va pas se mentir : rater les bons tickets, ça coûte cher à la longue.\n\nRepasse sur l'application, la prochaine analyse est prête à être découverte. 🧠` + signature,
+
+        `🌙 Pendant que la ville dort, l'algorithme travaille encore.\n\nToi aussi tu peux te réveiller à temps. Ton compte est prêt, la sélection t'attend.` + signature,
+
+        `🃏 Certains jouent au hasard. Toi, tu avais choisi la donnée.\n\nPourquoi s'arrêter en si bon chemin ? Reviens voir ce que l'IA a préparé pour toi.` + signature,
+
+        `⏳ Dernier rappel amical : ton compte est toujours actif, mais l'opportunité du jour ne durera pas.\n\nOn t'attend sur l'espace VIP+.` + signature,
+
+        `🔥 Les membres présents ce soir ne le regretteront pas.\n\nEt toi ? Reviens vite avant que la sélection ne soit plus disponible.` + signature,
+
+        `🎯 Ce n'est pas un hasard si nos membres actifs reviennent chaque jour.\n\nRejoins-les à nouveau — la prochaine analyse est déjà en ligne.` + signature,
+
+        `🗝️ Tu as la clé. Il ne manque que toi.\n\nTon accès est toujours valide, profite de la sélection du jour avant qu'elle ne change.` + signature,
+
+        `📊 Pas de nouvelles depuis un moment... pourtant l'algorithme, lui, n'a jamais arrêté de tourner.\n\nReviens voir ce que tu as manqué.` + signature,
+
+        `👑 Les places en VIP+ ne restent jamais longtemps sans mouvement.\n\nRéactive ton attention dès maintenant, la sélection du jour t'attend.` + signature,
+
+        `🚨 On a gardé ta place. Mais pas éternellement.\n\nRevisite l'application avant que la prochaine analyse ne soit plus d'actualité.` + signature
+    ];
+
+    var html = `
+        <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:10px;padding:12px;color:#22c55e;font-size:12px;margin-bottom:20px;">
+            <i class="fas fa-lightbulb"></i> Ton pour réengager les membres inactifs sans être insistant — varie le message à chaque envoi pour que ça ne sonne jamais robotique.
+        </div>`;
+
+    messages.forEach((msg, i) => {
+        html += `
+        <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(34,197,94,0.2);border-radius:16px;padding:16px;margin-bottom:12px;">
+            <div style="font-size:13px;color:#f9fafb;line-height:1.7;white-space:pre-wrap;margin-bottom:12px;">${msg}</div>
+            <button onclick="copyRelanceText(this, ${i})" data-text="${encodeURIComponent(msg)}" style="width:100%;padding:10px;border-radius:10px;border:none;background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                <span>📋 Copier pour Telegram</span>
+            </button>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+}
+
+function copyRelanceText(btn, i) {
+    var text = decodeURIComponent(btn.getAttribute('data-text'));
+    navigator.clipboard.writeText(text).then(() => {
+        var oldText = btn.innerHTML;
+        btn.innerHTML = "✅ Copié !";
+        btn.style.background = "#16a34a";
+        setTimeout(() => {
+            btn.innerHTML = oldText;
+            btn.style.background = "linear-gradient(135deg,#22c55e,#16a34a)";
+        }, 2000);
+    });
+}
+
+// ============================================================
+// CALENDRIER DE CONTENU — planning visuel 7 jours, rotation des générateurs
+// ============================================================
+const CONTENT_CALENDAR_TYPES = [
+    { label: 'Promo Web App', icon: 'fas fa-globe', color: 'var(--primary-yellow)', fn: 'sendPromoNotification' },
+    { label: 'Prompt IA (affiche combiné)', icon: 'fas fa-magic', color: '#f97316', fn: 'openPromptGenerator' },
+    { label: 'Écusson Brodé', icon: 'fas fa-shield-alt', color: '#a855f7', fn: 'openEcussonGenerator' },
+    { label: 'Story Instagram', icon: 'fab fa-instagram', color: '#e1306c', fn: 'openInstaTexts' },
+    { label: 'Annonce Telegram VIP+', icon: 'fab fa-telegram-plane', color: '#0ea5e9', fn: 'openTelegramLaunch' },
+    { label: 'Reels & Posts Instagram', icon: 'fas fa-video', color: '#f09433', fn: 'openInstaReels' },
+    { label: 'Relance Adhérents', icon: 'fas fa-user-clock', color: '#22c55e', fn: 'openRelanceGenerator' }
+];
+
+function renderAdminCalendar() {
+    var container = document.getElementById('admin-calendar-container');
+    if (!container) return;
+
+    // Index de rotation stable basé sur le nombre de jours depuis une date de référence,
+    // pour que le cycle des 7 types tourne semaine après semaine sans jamais se répéter à l'identique la même journée.
+    var refDate = new Date(2026, 0, 1);
+    var dowNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+
+    var html = '';
+    for (var offset = 0; offset < 7; offset++) {
+        var d = new Date(); d.setDate(d.getDate() + offset);
+        var daysSinceRef = Math.floor((d - refDate) / 86400000);
+        var type = CONTENT_CALENDAR_TYPES[((daysSinceRef % 7) + 7) % 7];
+        var label = offset === 0 ? "Aujourd'hui" : (offset === 1 ? 'Demain' : dowNames[d.getDay()] + ' ' + d.getDate() + '/' + (d.getMonth() + 1));
+
+        html += `
+        <div class="order-history-card" style="border-left:4px solid ${type.color};">
+            <div class="order-history-top">
+                <span class="order-history-ref">${label}</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
+                <i class="${type.icon}" style="color:${type.color}; font-size:18px; width:22px;"></i>
+                <span style="font-size:14px; font-weight:700; color:#fff;">${type.label}</span>
+            </div>
+            <button onclick="${type.fn}()" style="width:100%;margin-top:12px;padding:9px;background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-arrow-right"></i> Ouvrir le générateur</button>
+        </div>`;
+    }
+
+    container.innerHTML = html;
+}
     
     function saveState() { 
         localStorage.setItem('scoreMeridianData', JSON.stringify({ stats: appStats, platform: userPlatform })); 
@@ -2218,6 +2375,7 @@ function copyRawText(btn, i) {
         document.getElementById('admin-tab-' + tabName).classList.add('active');
         document.getElementById('btn-tab-' + tabName).classList.add('active');
         if (tabName === 'orders') loadAdminOrders();
+        if (tabName === 'calendar') renderAdminCalendar();
     }
 
     // ============================================================
@@ -6951,7 +7109,18 @@ Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold an
     </div>
     <div id="insta-reels-content" style="flex:1; overflow-y:auto; padding:20px; padding-bottom:100px;"></div>
 </div>
-    
+    <div id="relance-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:99999;flex-direction:column;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(10px);">
+    <div style="border-bottom:1px solid rgba(34,197,94,0.3); background:#0a0a0a; padding:50px 20px 14px; display:flex; align-items:center; gap:14px; flex-shrink:0;">
+        <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;font-size:18px;">👤</div>
+        <div>
+            <div style="font-size:17px;font-weight:900;color:#fff;">Relance <span style="color:#22c55e;">Adhérents</span></div>
+            <div style="font-size:11px;color:#6b7280;">Messages variés pour réengager</div>
+        </div>
+        <button onclick="closeRelanceGenerator()" style="margin-left:auto;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <div id="relance-content" style="flex:1; overflow-y:auto; padding:20px; padding-bottom:100px;"></div>
+</div>
+
 <style>
 #prompt-gen-overlay.visible { opacity: 1 !important; }
 #ecusson-gen-overlay.visible { opacity: 1 !important; }
