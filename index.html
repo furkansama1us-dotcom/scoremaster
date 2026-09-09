@@ -1006,9 +1006,14 @@ async function fetchApiScore(id, dateRaw) {
                         <div id="role-home" style="font-size: 11px; font-weight: 700; margin-top: 2px;"></div>
                     </div>
                 </div>
-                <div class="home-notif" onclick="showToast('Pas de nouvelles notifications',true)">
-                    <i class="fas fa-bell"></i>
-                    <div class="notif-dot"></div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <div class="home-notif" onclick="openMyOrdersPopup()" title="Mes commandes">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <div class="home-notif" onclick="showToast('Pas de nouvelles notifications',true)">
+                        <i class="fas fa-bell"></i>
+                        <div class="notif-dot"></div>
+                    </div>
                 </div>
             </div>
             <div class="api-banner fade-in-up delay-2">
@@ -1781,6 +1786,15 @@ async function fetchApiScore(id, dateRaw) {
         <a id="cart-whatsapp-link" href="#" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:#25D366;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:10px;text-decoration:none;"><i class="fab fa-whatsapp" style="font-size:18px;"></i> Envoyer via WhatsApp</a>
         <button onclick="sendCartViaTelegram()" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:#26A5E4;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:10px;"><i class="fab fa-telegram-plane" style="font-size:18px;"></i> Envoyer via Telegram</button>
         <button onclick="closeCartValidatedPopup()" style="width:100%;padding:12px;background:transparent;color:var(--text-gray);border:1px solid var(--border-color);border-radius:12px;font-size:14px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;">Fermer</button>
+    </div>
+</div>
+
+<!-- POPUP MES COMMANDES (raccourci depuis le header) -->
+<div id="my-orders-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+    <div style="background:var(--bg-card);padding:26px;border-radius:24px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);position:relative;">
+        <i class="fas fa-times" onclick="closeMyOrdersPopup()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
+        <h3 style="font-size:18px;font-weight:800;margin-bottom:16px;color:#fff;font-family:'Montserrat',sans-serif;"><i class="fas fa-receipt" style="color:var(--primary-yellow);"></i> Mes commandes</h3>
+        <div id="my-orders-popup-container"></div>
     </div>
 </div>
 
@@ -2570,7 +2584,8 @@ async function fetchMatchesFromAPI() {
             if (error) throw error;
         } catch (error) {
             console.error('Erreur validation panier:', error);
-            showToast("Erreur lors de la validation du panier.", true);
+            var detail = (error && (error.message || error.details)) ? (' (' + (error.message || error.details) + ')') : '';
+            showToast("Erreur lors de la validation du panier" + detail + ". Vérifie que la table 'orders' existe bien dans Supabase.", true);
             return;
         }
 
@@ -2621,8 +2636,7 @@ async function fetchMatchesFromAPI() {
     }
 
     async function loadMyOrders() {
-        var container = document.getElementById('my-orders-container');
-        if (!container || !window.currentAuthUser) return;
+        if (!window.currentAuthUser) return;
 
         try {
             const { data, error } = await supabaseClient
@@ -2639,33 +2653,46 @@ async function fetchMatchesFromAPI() {
     }
 
     function renderMyOrders(orders) {
-        var container = document.getElementById('my-orders-container');
-        if (!container) return;
+        var targets = ['my-orders-container', 'my-orders-popup-container'].map(function (id) { return document.getElementById(id); }).filter(Boolean);
+        if (!targets.length) return;
 
+        var html;
         if (!orders || orders.length === 0) {
-            container.innerHTML = '<div class="no-combined-message"><i class="fas fa-receipt"></i>Aucune commande pour le moment.</div>';
-            return;
+            html = '<div class="no-combined-message"><i class="fas fa-receipt"></i>Aucune commande pour le moment.</div>';
+        } else {
+            var statusLabels = { en_attente: 'En attente de contact', confirmee: 'Confirmée', annulee: 'Annulée' };
+            html = '';
+            orders.forEach(function (o) {
+                var itemsText = (o.items || []).map(function (it) { return it.name; }).join(', ');
+                html += `
+                <div class="order-history-card">
+                    <div class="order-history-top">
+                        <span class="order-history-ref">${o.reference}</span>
+                        <span class="order-history-date">${fmtD(o.created_at)}</span>
+                    </div>
+                    <div class="order-history-items">${itemsText}</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+                        <span class="order-history-status">${statusLabels[o.status] || o.status}</span>
+                        <span style="font-size:13px;font-weight:800;color:var(--primary-yellow);">${fmtC(o.total)}</span>
+                    </div>
+                </div>`;
+            });
         }
+        targets.forEach(function (t) { t.innerHTML = html; });
+    }
 
-        var statusLabels = { en_attente: 'En attente de contact', confirmee: 'Confirmée', annulee: 'Annulée' };
+    function openMyOrdersPopup() {
+        if (!window.currentAuthUser) { showToast('Connecte-toi pour voir tes commandes.', true); return; }
+        loadMyOrders();
+        var popup = document.getElementById('my-orders-popup');
+        popup.style.display = 'flex';
+        setTimeout(function () { popup.style.opacity = '1'; popup.firstElementChild.style.transform = 'scale(1)'; }, 10);
+    }
 
-        var html = '';
-        orders.forEach(function (o) {
-            var itemsText = (o.items || []).map(function (it) { return it.name; }).join(', ');
-            html += `
-            <div class="order-history-card">
-                <div class="order-history-top">
-                    <span class="order-history-ref">${o.reference}</span>
-                    <span class="order-history-date">${fmtD(o.created_at)}</span>
-                </div>
-                <div class="order-history-items">${itemsText}</div>
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
-                    <span class="order-history-status">${statusLabels[o.status] || o.status}</span>
-                    <span style="font-size:13px;font-weight:800;color:var(--primary-yellow);">${fmtC(o.total)}</span>
-                </div>
-            </div>`;
-        });
-        container.innerHTML = html;
+    function closeMyOrdersPopup() {
+        var popup = document.getElementById('my-orders-popup');
+        popup.style.opacity = '0'; popup.firstElementChild.style.transform = 'scale(0.9)';
+        setTimeout(function () { popup.style.display = 'none'; }, 300);
     }
 
     function addMatchFromAPI(teams, time, logo, encodedFlag = '') {
