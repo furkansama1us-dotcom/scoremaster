@@ -1508,6 +1508,10 @@ async function fetchApiScore(id, dateRaw) {
     <!-- ONGLET 1 : DASHBOARD -->
     <div class="admin-tab-content active" id="admin-tab-dashboard">
         <div class="admin-section">
+            <div class="admin-section-title" style="color:var(--text-gray); font-size:12px;"><i class="fas fa-vial"></i> Outils de test</div>
+            <button onclick="resetUnlockTestState()" style="width:100%;padding:12px;background:rgba(244,63,94,.12);color:var(--red);border:1px solid rgba(244,63,94,.3);border-radius:10px;font-size:13px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="fas fa-rotate-left"></i> Réinitialiser l'accès débloqué (comme si je n'avais rien payé)</button>
+        </div>
+        <div class="admin-section">
             <div class="admin-stats">
                 <div class="admin-stat-card yellow"><i class="fas fa-futbol"></i><span class="stat-value" id="stat-total">0</span><div class="stat-label">Publiés</div></div>
                 <div class="admin-stat-card green"><i class="fas fa-check-circle"></i><span class="stat-value" id="stat-wins">0</span><div class="stat-label">Gagnés</div></div>
@@ -3444,6 +3448,15 @@ async function fetchMatchesFromAPI() {
             }
         });
         return earliest;
+    }
+
+    function resetUnlockTestState() {
+        if (window.unlockKickoffInterval) clearInterval(window.unlockKickoffInterval);
+        localStorage.removeItem('sm_active_unlock');
+        renderUnlockState();
+        closeUnlockedComboPage();
+        closeUnlockSuccessPopup();
+        showToast("Accès débloqué réinitialisé — retour à l'état initial.");
     }
 
     function renderUnlockState() {
