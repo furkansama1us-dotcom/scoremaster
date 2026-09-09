@@ -46,3 +46,10 @@ drop policy if exists "Admins can update all orders" on public.orders;
 create policy "Admins can update all orders"
   on public.orders for update
   using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));
+
+-- Permet aux admins de supprimer une commande depuis le panel admin
+-- (sans cette policy, DELETE renvoie un "succès" silencieux sans rien supprimer)
+drop policy if exists "Admins can delete orders" on public.orders;
+create policy "Admins can delete orders"
+  on public.orders for delete
+  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));

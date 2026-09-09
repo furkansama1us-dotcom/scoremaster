@@ -2870,8 +2870,12 @@ async function fetchMatchesFromAPI() {
         if (!confirm('Supprimer définitivement la commande ' + ref + ' ?')) return;
 
         try {
-            const { error } = await supabaseClient.from('orders').delete().eq('id', orderId);
+            const { data, error } = await supabaseClient.from('orders').delete().eq('id', orderId).select();
             if (error) throw error;
+            if (!data || data.length === 0) {
+                showToast("Rien n'a été supprimé — vérifie que la policy RLS \"Admins can delete orders\" existe bien dans Supabase (relance supabase_orders_setup.sql).", true);
+                return;
+            }
             showToast('Commande supprimée.');
             loadAdminOrders();
         } catch (error) {
