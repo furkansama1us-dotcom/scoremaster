@@ -1837,6 +1837,28 @@ async function fetchApiScore(id, dateRaw) {
     </div>
 </div>
 
+<!-- POPUP SUCCÈS DÉBLOCAGE (juste après avoir saisi le code) -->
+<div id="unlock-success-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+    <div style="background:var(--bg-card);padding:26px;border-radius:24px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);position:relative;">
+        <i class="fas fa-times" onclick="closeUnlockSuccessPopup()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
+        <div style="text-align:center; margin-bottom:16px;">
+            <div style="width:60px;height:60px;background:rgba(34,197,94,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px auto;"><i class="fas fa-unlock" style="font-size:26px;color:var(--green);"></i></div>
+            <h3 style="font-size:18px;font-weight:800;color:#fff;font-family:'Montserrat',sans-serif;">Accès débloqué !</h3>
+            <p style="font-size:12px;color:var(--text-gray);margin-top:6px;">Voici le combiné du jour, en clair.</p>
+        </div>
+        <div id="unlock-success-content"></div>
+    </div>
+</div>
+
+<!-- POPUP COMBINÉ DÉBLOQUÉ (page spéciale, réouvrable via le bouton persistant) -->
+<div id="unlocked-combo-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+    <div style="background:var(--bg-card);padding:26px;border-radius:24px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);position:relative;">
+        <i class="fas fa-times" onclick="closeUnlockedComboPage()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
+        <h3 style="font-size:18px;font-weight:800;margin-bottom:16px;color:#fff;font-family:'Montserrat',sans-serif;"><i class="fas fa-unlock" style="color:var(--primary-yellow);"></i> Combiné débloqué</h3>
+        <div id="unlocked-combo-content"></div>
+    </div>
+</div>
+
 <script>
     var allCombineds = [];
     var currentCombined = null; 
@@ -2947,11 +2969,7 @@ async function fetchMatchesFromAPI() {
             <div style="font-size:11px;color:var(--text-gray);margin-top:6px;">
                 <i class="fab fa-whatsapp" style="color:#25D366;"></i> ${o.customer_phone || 'Non renseigné'} &nbsp;•&nbsp; ${fmtC(o.total)}
             </div>
-            <div id="admin-order-form-${o.id}" style="display:none;margin-top:10px;">
-                <textarea id="admin-order-content-${o.id}" class="admin-input" rows="3" placeholder="Contenu à débloquer (ex: score exact 2-1, analyse...)" style="background:var(--bg-input); border:1px solid var(--border-color); color:#fff; resize:none; width:100%; padding:10px; border-radius:10px; font-family:'Inter',sans-serif; margin-bottom:8px;"></textarea>
-                <button onclick="confirmOrderValidation('${o.id}')" style="width:100%;padding:10px;background:var(--green);color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-paper-plane"></i> Générer le code et ouvrir WhatsApp</button>
-            </div>
-            <button onclick="document.getElementById('admin-order-form-${o.id}').style.display='block'; this.style.display='none';" style="width:100%;margin-top:10px;padding:9px;background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.3);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-check"></i> Valider cette commande</button>
+            <button onclick="confirmOrderValidation('${o.id}')" style="width:100%;margin-top:10px;padding:10px;background:var(--green);color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-paper-plane"></i> Valider et générer le code (envoi WhatsApp)</button>
             <button onclick="deleteAdminOrder('${o.id}')" style="width:100%;margin-top:8px;padding:9px;background:transparent;color:var(--red);border:1px solid rgba(244,63,94,.3);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-trash-alt"></i> Supprimer</button>
         </div>`;
     }
@@ -2976,21 +2994,35 @@ async function fetchMatchesFromAPI() {
         </div>`;
     }
 
-    async function runOrderValidation(orderId, content) {
+    async function runOrderValidation(orderId) {
         var order = window.adminOrdersCache[orderId];
         if (!order) { showToast("Commande introuvable.", true); return; }
-        if (!content) { showToast("Ajoute le contenu à débloquer avant de valider.", true); return; }
         if (!order.customer_phone) { showToast("Ce client n'a pas laissé de numéro WhatsApp.", true); return; }
+        if (!currentCombined || !currentCombined.matches || !currentCombined.matches.length) {
+            showToast("Aucun combiné VIP+ en cours à débloquer pour le moment.", true);
+            return;
+        }
+
+        // Snapshot du combiné réel (vraies cotes/scores, déjà chargé côté admin) —
+        // c'est ce contenu que le client verra une fois son code saisi.
+        var snapshot = {
+            date: currentCombined.date,
+            time: currentCombined.time,
+            matches: currentCombined.matches,
+            total_odds: currentCombined.total_odds,
+            mise: currentCombined.mise,
+            gains: currentCombined.gains
+        };
 
         var unlockCode = generateOrderCode('SME');
-        var expiresAt = new Date(Date.now() + 3 * 60 * 60 * 1000); // +3h
+        var expiresAt = new Date(Date.now() + 3 * 60 * 60 * 1000); // +3h — filet de sécurité, le vrai critère d'affichage est le coup d'envoi
 
         try {
             const { error } = await supabaseClient.from('orders').update({
                 status: 'confirmee',
                 unlock_code: unlockCode,
                 unlock_expires_at: expiresAt.toISOString(),
-                unlock_content: content
+                unlock_content: JSON.stringify(snapshot)
             }).eq('id', orderId);
             if (error) throw error;
         } catch (error) {
@@ -2999,7 +3031,7 @@ async function fetchMatchesFromAPI() {
             return;
         }
 
-        var waMsg = `Bonjour ! 🎉 Ta commande ${order.reference} est validée.\n\nTon code de déblocage : ${unlockCode}\nIl est valable 3h et te donne accès à ton contenu sur l'application Score Meridian (section "Débloquer mon accès" sur l'accueil).\n\nMerci pour ta confiance ! ⚽`;
+        var waMsg = `Bonjour ! 🎉 Ta commande ${order.reference} est validée !\n\nPour voir le combiné du jour en clair (scores non floutés) :\n1️⃣ Ouvre l'application Score Meridian\n2️⃣ Sur la page d'accueil, va dans "Débloquer mon accès"\n3️⃣ Colle ce code : ${unlockCode}\n4️⃣ Clique sur "Débloquer"\n\nMerci pour ta confiance ! ⚽`;
         window.open(`https://wa.me/${(order.customer_phone || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(waMsg)}`, '_blank');
 
         showToast('Commande validée, code généré !');
@@ -3007,16 +3039,11 @@ async function fetchMatchesFromAPI() {
     }
 
     async function confirmOrderValidation(orderId) {
-        var contentEl = document.getElementById('admin-order-content-' + orderId);
-        var content = contentEl ? contentEl.value.trim() : '';
-        await runOrderValidation(orderId, content);
+        await runOrderValidation(orderId);
     }
 
     async function resendAdminOrder(orderId) {
-        var order = window.adminOrdersCache[orderId];
-        if (!order) { showToast("Commande introuvable.", true); return; }
-        if (!order.unlock_content) { showToast("Aucun contenu enregistré pour cette commande.", true); return; }
-        await runOrderValidation(orderId, order.unlock_content);
+        await runOrderValidation(orderId);
     }
 
     async function deleteAdminOrder(orderId) {
@@ -3061,14 +3088,35 @@ async function fetchMatchesFromAPI() {
             var expires = data.unlock_expires_at ? new Date(data.unlock_expires_at) : null;
             if (!expires || expires.getTime() <= Date.now()) { showToast('Ce code a expiré.', true); return; }
 
-            var unlockState = { code: code, content: data.unlock_content, expiresAt: expires.toISOString(), reference: data.reference };
+            var snapshot = null;
+            try { snapshot = JSON.parse(data.unlock_content); } catch (e) { snapshot = null; }
+            if (!snapshot || !snapshot.matches) { showToast("Erreur : contenu du combiné introuvable pour ce code.", true); return; }
+
+            var kickoff = getComboKickoffTime(snapshot);
+            if (kickoff && kickoff.getTime() <= Date.now()) { showToast('Les matchs de ce combiné ont déjà commencé.', true); return; }
+
+            var unlockState = { code: code, snapshot: snapshot, reference: data.reference };
             localStorage.setItem('sm_active_unlock', JSON.stringify(unlockState));
             renderUnlockState();
-            showToast('Accès débloqué pour 3h !');
+            openUnlockSuccessPopup(snapshot);
+            showToast('Accès débloqué !');
         } catch (error) {
             console.error('Erreur déblocage:', error);
             showToast("Erreur lors de la vérification du code.", true);
         }
+    }
+
+    function getComboKickoffTime(snapshot) {
+        if (!snapshot || !snapshot.date || !snapshot.matches) return null;
+        var earliest = null;
+        snapshot.matches.forEach(function (m) {
+            var t = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
+            if (t) {
+                var dt = new Date(`${snapshot.date}T${t[0]}:00`);
+                if (!earliest || dt < earliest) earliest = dt;
+            }
+        });
+        return earliest;
     }
 
     function renderUnlockState() {
@@ -3079,39 +3127,94 @@ async function fetchMatchesFromAPI() {
         var state = null;
         try { state = raw ? JSON.parse(raw) : null; } catch (e) { state = null; }
 
-        if (state && new Date(state.expiresAt).getTime() > Date.now()) {
-            if (window.unlockCountdownInterval) clearInterval(window.unlockCountdownInterval);
+        var kickoff = state ? getComboKickoffTime(state.snapshot) : null;
+        var stillBeforeKickoff = !kickoff || kickoff.getTime() > Date.now();
 
+        if (window.unlockKickoffInterval) clearInterval(window.unlockKickoffInterval);
+
+        if (state && stillBeforeKickoff) {
             container.innerHTML = `
-            <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25);border-radius:14px;padding:16px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-                    <span style="font-size:12px;font-weight:800;color:var(--green);"><i class="fas fa-unlock"></i> Accès débloqué</span>
-                    <span id="unlock-countdown" style="font-size:11px;color:var(--text-gray);"></span>
-                </div>
-                <div style="font-size:14px;color:#fff;line-height:1.6;white-space:pre-wrap;">${state.content}</div>
-            </div>`;
+            <button onclick="openUnlockedComboPage()" class="cart-fab-inline-btn" style="width:100%;padding:14px;background:linear-gradient(135deg, var(--primary-yellow), var(--dark-yellow));color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                <i class="fas fa-unlock"></i> Voir le combiné débloqué
+            </button>`;
 
-            var countdownEl = document.getElementById('unlock-countdown');
-            window.unlockCountdownInterval = setInterval(function () {
-                var remaining = new Date(state.expiresAt).getTime() - Date.now();
-                if (remaining <= 0) {
-                    clearInterval(window.unlockCountdownInterval);
+            // Vérifie régulièrement si les matchs ont débuté, pour faire disparaître le bouton automatiquement
+            window.unlockKickoffInterval = setInterval(function () {
+                var k = getComboKickoffTime(state.snapshot);
+                if (k && k.getTime() <= Date.now()) {
+                    clearInterval(window.unlockKickoffInterval);
                     localStorage.removeItem('sm_active_unlock');
                     renderUnlockState();
-                    return;
                 }
-                var h = Math.floor(remaining / 3600000);
-                var m = Math.floor((remaining % 3600000) / 60000);
-                var s = Math.floor((remaining % 60000) / 1000);
-                if (countdownEl) countdownEl.textContent = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + ' restant';
-            }, 1000);
+            }, 30000);
         } else {
+            if (state) localStorage.removeItem('sm_active_unlock'); // matchs déjà commencés : on nettoie
             container.innerHTML = `
             <div style="display:flex;gap:10px;">
                 <input type="text" id="unlock-code-input" class="admin-input" placeholder="Ton code (ex: SME-8X92K1)" style="flex:1;background:var(--bg-input); border:1px solid var(--border-color); color:#fff; padding:12px; border-radius:10px;">
                 <button onclick="submitUnlockCode()" style="padding:0 18px;background:var(--primary-yellow);color:#000;border:none;border-radius:10px;font-size:13px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;">Débloquer</button>
             </div>`;
         }
+    }
+
+    function openUnlockSuccessPopup(snapshot) {
+        renderUnlockedComboContent(snapshot, 'unlock-success-content');
+        var popup = document.getElementById('unlock-success-popup');
+        popup.style.display = 'flex';
+        setTimeout(function () { popup.style.opacity = '1'; popup.firstElementChild.style.transform = 'scale(1)'; }, 10);
+    }
+
+    function closeUnlockSuccessPopup() {
+        var popup = document.getElementById('unlock-success-popup');
+        popup.style.opacity = '0'; popup.firstElementChild.style.transform = 'scale(0.9)';
+        setTimeout(function () { popup.style.display = 'none'; }, 300);
+    }
+
+    function openUnlockedComboPage() {
+        var raw = localStorage.getItem('sm_active_unlock');
+        var state = null;
+        try { state = raw ? JSON.parse(raw) : null; } catch (e) { state = null; }
+        if (!state || !state.snapshot) { showToast("Aucun combiné débloqué actif.", true); return; }
+
+        renderUnlockedComboContent(state.snapshot, 'unlocked-combo-content');
+        var popup = document.getElementById('unlocked-combo-popup');
+        popup.style.display = 'flex';
+        setTimeout(function () { popup.style.opacity = '1'; popup.firstElementChild.style.transform = 'scale(1)'; }, 10);
+    }
+
+    function closeUnlockedComboPage() {
+        var popup = document.getElementById('unlocked-combo-popup');
+        popup.style.opacity = '0'; popup.firstElementChild.style.transform = 'scale(0.9)';
+        setTimeout(function () { popup.style.display = 'none'; }, 300);
+    }
+
+    function renderUnlockedComboContent(snapshot, containerId) {
+        var container = document.getElementById(containerId);
+        if (!container || !snapshot) return;
+
+        var matchesHtml = (snapshot.matches || []).map(function (m) {
+            var flagDisplay = m.league_flag ? `<span style="margin-right:6px; display:inline-flex; align-items:center; vertical-align:middle;">${m.league_flag}</span>` : '';
+            return `
+            <div class="match-row">
+                <div class="match-row-top" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div class="match-type" style="white-space:nowrap;"><i class="fas fa-futbol" style="color:#fff; margin-right:6px; font-size:14px;"></i> Score exact <span style="margin-left:5px; font-weight:700; color:var(--green);">${m.score}</span></div>
+                    <div class="match-odds">${m.odds ? Number(m.odds).toFixed(2) : '-'}</div>
+                </div>
+                <div class="match-row-bottom" style="display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%;">
+                    <div class="match-teams" style="color:#fff; flex:1; min-width:0; display:flex; align-items:center; gap:6px;">${flagDisplay}<span>${m.teams || 'Équipes'}</span></div>
+                    <div class="match-time" style="color:var(--text-gray); flex-shrink:0; white-space:nowrap;">${m.time || ''}</div>
+                </div>
+            </div>`;
+        }).join('');
+
+        container.innerHTML = `
+        <div class="combined-body" style="padding-top:0;">${matchesHtml}</div>
+        <div class="combined-footer" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px;">
+            <div class="combined-footer-row"><span class="combined-footer-label">Cote totale</span><span class="combined-footer-value">${(snapshot.total_odds || 0).toFixed(2)}</span></div>
+            <div class="combined-footer-row" style="margin-bottom: 16px;"><span class="combined-footer-label">Mise</span><span class="combined-footer-value">${fmtC(snapshot.mise || 0)}</span></div>
+            <div style="height: 1px; background: rgba(255,255,255,0.05); margin: 0 -16px 16px -16px;"></div>
+            <div class="combined-footer-row"><span class="combined-footer-label" style="font-size:14px;">Gains potentiels</span><span class="combined-footer-value gains" style="color:var(--green);">${fmtC(snapshot.gains || 0)}</span></div>
+        </div>`;
     }
 
     function addMatchFromAPI(teams, time, logo, encodedFlag = '') {
