@@ -2797,6 +2797,7 @@ async function fetchMatchesFromAPI() {
                 <button onclick="confirmOrderValidation('${o.id}')" style="width:100%;padding:10px;background:var(--green);color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-paper-plane"></i> Générer le code et ouvrir WhatsApp</button>
             </div>
             <button onclick="document.getElementById('admin-order-form-${o.id}').style.display='block'; this.style.display='none';" style="width:100%;margin-top:10px;padding:9px;background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.3);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-check"></i> Valider cette commande</button>
+            <button onclick="deleteAdminOrder('${o.id}')" style="width:100%;margin-top:8px;padding:9px;background:transparent;color:var(--red);border:1px solid rgba(244,63,94,.3);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-trash-alt"></i> Supprimer</button>
         </div>`;
     }
 
@@ -2813,14 +2814,16 @@ async function fetchMatchesFromAPI() {
                 Code : <b style="color:var(--primary-yellow);">${o.unlock_code || '—'}</b>
                 ${stillActive ? '<span style="color:var(--green);"> • actif</span>' : '<span style="color:var(--text-gray);"> • expiré</span>'}
             </div>
+            <div style="display:flex;gap:8px;margin-top:10px;">
+                <button onclick="resendAdminOrder('${o.id}')" style="flex:1;padding:9px;background:rgba(168,85,247,.12);color:var(--primary-yellow);border:1px solid rgba(168,85,247,.3);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-rotate"></i> Renvoyer</button>
+                <button onclick="deleteAdminOrder('${o.id}')" style="flex:1;padding:9px;background:transparent;color:var(--red);border:1px solid rgba(244,63,94,.3);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-trash-alt"></i> Supprimer</button>
+            </div>
         </div>`;
     }
 
-    async function confirmOrderValidation(orderId) {
+    async function runOrderValidation(orderId, content) {
         var order = window.adminOrdersCache[orderId];
         if (!order) { showToast("Commande introuvable.", true); return; }
-        var contentEl = document.getElementById('admin-order-content-' + orderId);
-        var content = contentEl ? contentEl.value.trim() : '';
         if (!content) { showToast("Ajoute le contenu à débloquer avant de valider.", true); return; }
         if (!order.customer_phone) { showToast("Ce client n'a pas laissé de numéro WhatsApp.", true); return; }
 
@@ -2846,6 +2849,35 @@ async function fetchMatchesFromAPI() {
 
         showToast('Commande validée, code généré !');
         loadAdminOrders();
+    }
+
+    async function confirmOrderValidation(orderId) {
+        var contentEl = document.getElementById('admin-order-content-' + orderId);
+        var content = contentEl ? contentEl.value.trim() : '';
+        await runOrderValidation(orderId, content);
+    }
+
+    async function resendAdminOrder(orderId) {
+        var order = window.adminOrdersCache[orderId];
+        if (!order) { showToast("Commande introuvable.", true); return; }
+        if (!order.unlock_content) { showToast("Aucun contenu enregistré pour cette commande.", true); return; }
+        await runOrderValidation(orderId, order.unlock_content);
+    }
+
+    async function deleteAdminOrder(orderId) {
+        var order = window.adminOrdersCache[orderId];
+        var ref = order ? order.reference : orderId;
+        if (!confirm('Supprimer définitivement la commande ' + ref + ' ?')) return;
+
+        try {
+            const { error } = await supabaseClient.from('orders').delete().eq('id', orderId);
+            if (error) throw error;
+            showToast('Commande supprimée.');
+            loadAdminOrders();
+        } catch (error) {
+            console.error('Erreur suppression commande:', error);
+            showToast("Erreur lors de la suppression.", true);
+        }
     }
 
     // ============================================================
