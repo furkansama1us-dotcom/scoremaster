@@ -2187,20 +2187,75 @@ async function fetchMatchesFromAPI() {
         return ((h >>> 0) % 1000) / 1000;
     }
 
-    function generateAIPrediction(home, away, dateStr) {
+    function generateAIPrediction(home, away, dateStr, homeStanding, awayStanding) {
         const s1 = seededScore(home + '|' + away + '|' + dateStr);
         const s2 = seededScore(away + '|' + home + '|' + dateStr + '#2');
         let homeProb = 38 + s1 * 24;
         let awayProb = 20 + s2 * 24;
+
+        if (homeStanding && awayStanding) {
+            var rankGap = awayStanding.position - homeStanding.position;
+            var rankAdjust = Math.max(-16, Math.min(16, rankGap * 1.3));
+            homeProb += rankAdjust;
+            awayProb -= rankAdjust;
+        }
+
+        homeProb = Math.max(8, homeProb);
+        awayProb = Math.max(8, awayProb);
+
         let drawProb = 100 - homeProb - awayProb;
-        if (drawProb < 14) {
-            const deficit = 14 - drawProb;
-            homeProb -= deficit / 2; awayProb -= deficit / 2; drawProb = 14;
+        if (drawProb < 12) {
+            const deficit = 12 - drawProb;
+            homeProb -= deficit / 2; awayProb -= deficit / 2; drawProb = 12;
         }
         homeProb = Math.round(homeProb);
         awayProb = Math.round(awayProb);
         drawProb = 100 - homeProb - awayProb;
         return { homeProb: homeProb, drawProb: drawProb, awayProb: awayProb };
+    }
+
+    // ---- Classements réels (football-data.org) pour habiller l'analyse ----
+    const AI_COMPETITIONS = [
+        { code: 'PL', name: 'Premier League' },
+        { code: 'PD', name: 'La Liga' },
+        { code: 'BL1', name: 'Bundesliga' },
+        { code: 'SA', name: 'Serie A' },
+        { code: 'FL1', name: 'Ligue 1' },
+        { code: 'CL', name: 'Ligue des Champions' }
+    ];
+
+    async function ensureStandingsLoaded() {
+        if (window.aiStandingsLoaded) return;
+        window.aiStandingsLoaded = true;
+        window.aiStandingsCache = [];
+
+        for (const comp of AI_COMPETITIONS) {
+            try {
+                var res = await fetch(`https://api.football-data.org/v4/competitions/${comp.code}/standings`, {
+                    headers: { 'X-Auth-Token': FOOTBALL_DATA_API_KEY }
+                });
+                if (!res.ok) continue;
+                var data = await res.json();
+                var table = (data.standings && data.standings.find(function (s) { return s.type === 'TOTAL'; }) || {}).table || [];
+                table.forEach(function (row) {
+                    window.aiStandingsCache.push({
+                        competition: comp.name,
+                        position: row.position,
+                        points: row.points,
+                        form: row.form || null,
+                        names: [row.team.name, row.team.shortName, row.team.tla].filter(Boolean).map(cleanStr)
+                    });
+                });
+            } catch (e) { /* compétition indisponible sur le plan gratuit, on ignore */ }
+        }
+    }
+
+    function findTeamStanding(teamName) {
+        if (!window.aiStandingsCache) return null;
+        var target = cleanStr(teamName);
+        return window.aiStandingsCache.find(function (row) {
+            return row.names.some(function (n) { return n === target || n.includes(target) || target.includes(n); });
+        }) || null;
     }
 
     function switchAIDate(offset) {
@@ -2224,6 +2279,7 @@ async function fetchMatchesFromAPI() {
         var dateStr = `${yyyy}-${mm}-${dd}`;
 
         if (window.aiCache[dateStr]) {
+            await ensureStandingsLoaded();
             renderAIPronostics(window.aiCache[dateStr], dateStr);
             return;
         }
@@ -2247,6 +2303,7 @@ async function fetchMatchesFromAPI() {
             }).slice(0, 15);
 
             window.aiCache[dateStr] = matches;
+            await ensureStandingsLoaded();
             renderAIPronostics(matches, dateStr);
         } catch (error) {
             console.error("Erreur AI Pronostics:", error);
@@ -2273,7 +2330,9 @@ async function fetchMatchesFromAPI() {
                 timeStr = new Date(m.startTimestamp * 1000).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
             }
 
-            var pred = generateAIPrediction(home, away, dateStr);
+            var homeStanding = findTeamStanding(home);
+            var awayStanding = findTeamStanding(away);
+            var pred = generateAIPrediction(home, away, dateStr, homeStanding, awayStanding);
             var maxProb = Math.max(pred.homeProb, pred.drawProb, pred.awayProb);
             var confClass = maxProb >= 45 ? 'high' : (maxProb >= 36 ? 'mid' : 'low');
             var confLabel = maxProb >= 45 ? 'Confiance élevée' : (maxProb >= 36 ? 'Confiance moyenne' : 'Confiance faible');
@@ -2282,6 +2341,22 @@ async function fetchMatchesFromAPI() {
             if (pred.homeProb === maxProb) pickLabel = `Victoire <span>${home}</span>`;
             else if (pred.awayProb === maxProb) pickLabel = `Victoire <span>${away}</span>`;
             else pickLabel = `Match nul probable`;
+
+            function formBadges(form) {
+                if (!form) return '';
+                return form.split(',').slice(-5).map(function (r) {
+                    var c = r === 'W' ? 'var(--green)' : (r === 'L' ? 'var(--red)' : 'var(--text-gray)');
+                    return `<span style="display:inline-flex;width:16px;height:16px;border-radius:4px;background:${c};color:#fff;font-size:9px;font-weight:800;align-items:center;justify-content:center;">${r}</span>`;
+                }).join(' ');
+            }
+
+            var statLine = '';
+            if (homeStanding || awayStanding) {
+                statLine += `<div style="display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--text-gray);margin-bottom:12px;background:var(--bg-input);border-radius:10px;padding:8px 10px;">`;
+                statLine += `<div style="flex:1;">${homeStanding ? `<b style="color:var(--text-light-gray);">${homeStanding.position}e</b> ${homeStanding.competition} · ${homeStanding.points} pts ${homeStanding.form ? '<br>' + formBadges(homeStanding.form) : ''}` : 'Classement indisponible'}</div>`;
+                statLine += `<div style="flex:1;text-align:right;">${awayStanding ? `<b style="color:var(--text-light-gray);">${awayStanding.position}e</b> ${awayStanding.competition} · ${awayStanding.points} pts ${awayStanding.form ? '<br>' + formBadges(awayStanding.form) : ''}` : 'Classement indisponible'}</div>`;
+                statLine += `</div>`;
+            }
 
             html += `
             <div class="ai-match-card">
@@ -2294,6 +2369,7 @@ async function fetchMatchesFromAPI() {
                     <div class="ai-match-vs">VS</div>
                     <div class="ai-match-team">${away}</div>
                 </div>
+                ${statLine}
                 <div class="ai-confidence-badge ${confClass}"><i class="fas fa-bolt"></i> ${confLabel}</div>
                 <div class="ai-prediction-label">🤖 Pronostic IA : ${pickLabel}</div>
                 <div class="ai-prob-row"><span class="ai-prob-label">${home}</span><div class="ai-prob-bar-track"><div class="ai-prob-bar-fill" style="width:${pred.homeProb}%;"></div></div><span class="ai-prob-value">${pred.homeProb}%</span></div>
