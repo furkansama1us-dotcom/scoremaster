@@ -2231,9 +2231,7 @@ async function fetchMatchesFromAPI() {
 
         for (const comp of AI_COMPETITIONS) {
             try {
-                var res = await fetch(`https://api.football-data.org/v4/competitions/${comp.code}/standings`, {
-                    headers: { 'X-Auth-Token': FOOTBALL_DATA_API_KEY }
-                });
+                var res = await fetch(`/api/football?type=standings&code=${comp.code}`);
                 if (res.status === 429) { await new Promise(function (r) { setTimeout(r, 6000); }); continue; }
                 if (!res.ok) continue;
                 var data = await res.json();
@@ -2302,12 +2300,9 @@ async function fetchMatchesFromAPI() {
             var dTo = new Date(d);
             dTo.setDate(dTo.getDate() + 1);
             var dateToStr = `${dTo.getFullYear()}-${String(dTo.getMonth() + 1).padStart(2, '0')}-${String(dTo.getDate()).padStart(2, '0')}`;
-            const TARGET_URL = `https://api.football-data.org/v4/matches?dateFrom=${dateStr}&dateTo=${dateToStr}`;
+            const TARGET_URL = `/api/football?type=matches&dateFrom=${dateStr}&dateTo=${dateToStr}`;
 
-            var response = await fetch(TARGET_URL, {
-                method: 'GET',
-                headers: { 'X-Auth-Token': FOOTBALL_DATA_API_KEY }
-            });
+            var response = await fetch(TARGET_URL);
             if (!response.ok) throw new Error("Erreur réseau ou API");
 
             var data = await response.json();
