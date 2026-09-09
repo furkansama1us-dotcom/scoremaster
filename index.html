@@ -1036,7 +1036,7 @@ async function fetchApiScore(id, dateRaw) {
             </div>
             <div style="margin:5px 20px 15px;">
                 <div class="section-header" style="padding:0; margin-bottom:10px;">
-                    <span class="section-title"><i class="fas fa-lock-open" style="color:var(--primary-yellow); margin-right:6px;"></i>Débloquer mon accès</span>
+                    <span class="section-title" id="unlock-section-title"><i class="fas fa-lock-open" style="color:var(--primary-yellow); margin-right:6px;"></i>Débloquer mon accès</span>
                 </div>
                 <div id="unlock-section-container"></div>
             </div>
@@ -1848,11 +1848,12 @@ async function fetchApiScore(id, dateRaw) {
 
 <!-- POPUP SUCCÈS DÉBLOCAGE (juste après avoir saisi le code) -->
 <div id="unlock-success-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
-    <div style="background:var(--bg-card);padding:26px;border-radius:24px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);position:relative;">
+    <div style="background:#000000;padding:26px;border-radius:24px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto;border:1px solid rgba(255,215,0,0.25);box-shadow:0 10px 40px rgba(0,0,0,0.6), 0 0 30px rgba(255,215,0,0.08);transform:scale(0.9);transition:transform 0.3s;position:relative;">
         <i class="fas fa-times" onclick="closeUnlockSuccessPopup()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
         <div style="text-align:center; margin-bottom:16px;">
-            <div style="width:60px;height:60px;background:rgba(34,197,94,.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px auto;"><i class="fas fa-unlock" style="font-size:26px;color:var(--green);"></i></div>
-            <h3 style="font-size:18px;font-weight:800;color:#fff;font-family:'Montserrat',sans-serif;">Accès débloqué !</h3>
+            <img src="logo-dark.png" alt="Score Meridian" style="width:48px;height:48px;object-fit:contain;border-radius:12px;margin-bottom:10px;">
+            <div style="width:60px;height:60px;background:#000000;border:2px solid #FFD700;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px auto;box-shadow:0 0 20px rgba(255,215,0,.35);"><i class="fas fa-ticket-alt" style="font-size:24px;color:#FFD700;"></i></div>
+            <h3 style="font-size:18px;font-weight:800;color:#FFD700;font-family:'Montserrat',sans-serif;">Accès débloqué !</h3>
             <p style="font-size:12px;color:var(--text-gray);margin-top:6px;">Voici le combiné du jour, en clair.</p>
         </div>
         <div id="unlock-success-content"></div>
@@ -3202,6 +3203,13 @@ async function fetchMatchesFromAPI() {
         var stillBeforeKickoff = !kickoff || kickoff.getTime() > Date.now();
 
         if (window.unlockKickoffInterval) clearInterval(window.unlockKickoffInterval);
+
+        var titleEl = document.getElementById('unlock-section-title');
+        if (titleEl) {
+            titleEl.innerHTML = (state && stillBeforeKickoff)
+                ? '<i class="fas fa-check-circle" style="color:var(--green); margin-right:6px;"></i>PAIEMENT VALIDÉ - ACCÈS COMBINÉ ACCORDÉ !'
+                : '<i class="fas fa-lock-open" style="color:var(--primary-yellow); margin-right:6px;"></i>Débloquer mon accès';
+        }
 
         if (state && stillBeforeKickoff) {
             container.innerHTML = `
