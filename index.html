@@ -66,6 +66,8 @@
         
         @keyframes splashFadeIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
         @keyframes loaderBounce{0%,80%,100%{transform:scale(.6);opacity:.3}40%{transform:scale(1);opacity:1}}
+        @keyframes ballSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        .ball-spinner{display:inline-block;font-size:40px;animation:ballSpin 0.8s linear infinite;margin-bottom:15px}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
         @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
         @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
@@ -2587,7 +2589,7 @@ async function fetchMatchesFromAPI() {
             return;
         }
 
-        container.innerHTML = '<div class="no-combined-message"><i class="fas fa-satellite-dish"></i>Analyse en cours...</div>';
+        container.innerHTML = '<div class="no-combined-message"><span class="ball-spinner">⚽</span><br>Veuillez patienter...</div>';
 
         try {
             // L'API football-data.org ignore les requêtes où dateFrom === dateTo :
