@@ -2440,16 +2440,20 @@ async function fetchMatchesFromAPI() {
                 var score = pickAIScoreLine(seed);
                 var odds = (6 + seed * 13).toFixed(2); // cote fictive plausible pour un score exact
                 var confidence = 90 + Math.floor(seededScore(m.id + '#conf') * 10); // 90-99%, cosmétique uniquement
+                var timestamp = m.utcDate ? new Date(m.utcDate).getTime() : 0;
                 var timeStr = m.utcDate ? new Date(m.utcDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+                var flagHtml = (m.area && m.area.flag) ? `<img src="${m.area.flag}" style="width:16px;height:12px;object-fit:cover;border-radius:2px;vertical-align:middle;">` : '';
                 return {
                     teams: `${m.homeTeam.name} - ${m.awayTeam.name}`,
                     score: score,
                     odds: odds,
                     time: timeStr,
+                    timestamp: timestamp,
                     league: m.competition.name,
+                    flagHtml: flagHtml,
                     confidence: confidence
                 };
-            });
+            }).sort(function (a, b) { return a.timestamp - b.timestamp; }); // le match qui débute en premier s'affiche en premier
 
             renderAISuggestPreview();
         } catch (error) {
@@ -2469,7 +2473,7 @@ async function fetchMatchesFromAPI() {
             return `
             <div class="ai-match-card">
                 <div class="ai-match-top">
-                    <div class="ai-match-league"><i class="fas fa-trophy" style="color:var(--text-gray);"></i> ${s.league}</div>
+                    <div class="ai-match-league">${s.flagHtml ? s.flagHtml + ' ' : '<i class="fas fa-trophy" style="color:var(--text-gray);"></i> '}${s.league}</div>
                     <div class="ai-match-time"><i class="fas fa-clock"></i> ${s.time}</div>
                 </div>
                 <div class="ai-match-teams">
@@ -2480,25 +2484,51 @@ async function fetchMatchesFromAPI() {
             </div>`;
         }).join('');
 
-        html += `<button onclick="useAISuggestions()" style="width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="fas fa-check-circle"></i> Utiliser ce combiné dans l'Éditeur</button>`;
+        html += `<button onclick="publishAISuggestions()" id="btn-publish-ai-suggest" style="width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;"><i class="fas fa-paper-plane"></i> Publier ce combiné</button>`;
 
         container.innerHTML = html;
     }
 
-    function useAISuggestions() {
+    async function publishAISuggestions() {
         if (!window.currentAISuggestions.length) return;
-        resetEditor();
+        var btn = document.getElementById('btn-publish-ai-suggest');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publication...'; }
 
-        var d = new Date(); d.setDate(d.getDate() + 1);
-        document.getElementById('admin-date').value = d.toISOString().split('T')[0];
+        var suggestions = window.currentAISuggestions.slice().sort(function (a, b) { return a.timestamp - b.timestamp; });
+        var mise = 100;
 
-        window.aiConfidenceMap = {};
-        window.currentAISuggestions.forEach(function (s) {
-            addMatchEntry({ teams: s.teams, score: s.score, odds: s.odds, time: s.time, logo: '', league_flag: '' });
-            window.aiConfidenceMap[s.teams] = s.confidence;
+        var matches = suggestions.map(function (s) {
+            return { teams: s.teams, score: s.score, odds: parseFloat(s.odds), time: s.time, logo: '', league_flag: s.flagHtml, match_status: 'en-cours', ai_confidence: s.confidence };
+        });
+        var publicMatches = suggestions.map(function (s) {
+            return { teams: s.teams, time: s.time, score: '?-?', odds: 0, logo: '', league_flag: s.flagHtml, match_status: 'en-cours' };
         });
 
-        showToast('Combiné IA chargé dans l\'Éditeur — vérifie puis publie !');
+        var tot = 1; matches.forEach(function (m) { tot *= m.odds; });
+        var gains = mise * tot;
+
+        var d = new Date(); d.setDate(d.getDate() + 1);
+        var date = d.toISOString().split('T')[0];
+        var earliestTime = suggestions[0].time;
+
+        try {
+            var pubRes = await supabaseClient.from('combineds_public').insert([{ date: date, time: earliestTime, status: 'en-cours', nombre_matchs: matches.length, matches: publicMatches }]).select().single();
+            if (pubRes.error) throw pubRes.error;
+
+            var vipRes = await supabaseClient.from('combineds_vip').insert([{ id: pubRes.data.id, matches: matches, mise: mise, gains: gains, total_odds: tot }]);
+            if (vipRes.error) throw vipRes.error;
+
+            showToast('Combiné IA publié ! Visible immédiatement par les membres SM VIP+.');
+            window.currentAISuggestions = [];
+            document.getElementById('ai-suggest-container').innerHTML = '';
+            closeAdmin();
+            await chargerDonnees();
+        } catch (error) {
+            console.error('Erreur publication combiné IA:', error);
+            showToast("Erreur lors de la publication du combiné.", true);
+        }
+
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Publier ce combiné'; }
     }
 
     function switchAIDate(offset) {
