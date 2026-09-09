@@ -1559,10 +1559,11 @@ async function fetchApiScore(id, dateRaw) {
             <div class="admin-section-title" style="color:#FF9800; font-size:16px; margin-bottom: 20px;">
                 <i class="fas fa-check-double"></i> Validation du Combiné
             </div>
-            <p style="font-size:13px; color:var(--text-gray); margin-bottom:20px; line-height:1.5;">
+            <p style="font-size:13px; color:var(--text-gray); margin-bottom:12px; line-height:1.5;">
                 Vérifiez et ajustez les scores finaux réels avant de publier ce combiné dans l'historique public de l'application.
             </p>
-            
+            <div id="validation-ai-banner" style="margin-bottom:16px;"></div>
+
             <div id="validation-matches-container"></div>
             
             <div class="admin-summary" style="margin-top:20px; background:var(--bg-input);">
@@ -1574,7 +1575,7 @@ async function fetchApiScore(id, dateRaw) {
 
             <div style="display:flex; gap:10px; margin-top:25px; margin-bottom: 20px;">
                 <button onclick="submitValidation('termine')" style="flex:1; padding:16px 10px; background:linear-gradient(135deg, var(--green), #16A34A); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer; box-shadow: 0 4px 15px rgba(34,197,94,0.3);">
-                    <i class="fas fa-check-circle" style="margin-right:5px; font-size:16px;"></i> GAGNÉ
+                    <i class="fas fa-check-circle" style="margin-right:5px; font-size:16px;"></i> Appliquer les nouveaux scores et publier
                 </button>
                 <button onclick="submitValidation('perdu')" style="flex:1; padding:16px 10px; background:linear-gradient(135deg, var(--red), #B71C1C); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:14px; cursor:pointer; box-shadow: 0 4px 15px rgba(244,63,94,0.3);">
                     <i class="fas fa-times-circle" style="margin-right:5px; font-size:16px;"></i> PERDU
@@ -3638,9 +3639,16 @@ async function autoFetchFinalScores(combined) {
         
         validationCombinedId = c.id;
         let container = document.getElementById('validation-matches-container');
-        container.innerHTML = ''; 
-        
+        container.innerHTML = '';
+
         document.getElementById('validation-odds').textContent = c.total_odds ? c.total_odds.toFixed(2) : '0.00';
+
+        var aiBanner = document.getElementById('validation-ai-banner');
+        if (aiBanner) {
+            var confs = (c.matches || []).filter(function (m) { return m.ai_confidence; }).map(function (m) { return m.ai_confidence; });
+            var avgConf = confs.length ? Math.round(confs.reduce(function (a, b) { return a + b; }, 0) / confs.length) : null;
+            aiBanner.innerHTML = avgConf ? `<span class="ai-confidence-tag"><i class="fas fa-microchip"></i> Combiné généré par l'IA — Fiabilité totale prédite : ${avgConf}%</span>` : '';
+        }
 
         if(c.matches && c.matches.length > 0) {
             c.matches.forEach((m, index) => {
@@ -3719,7 +3727,7 @@ async function autoFetchFinalScores(combined) {
         });
 
         let publicMatches = updatedMatches.map(m => ({
-            teams: m.teams, time: m.time, score: m.score, odds: m.odds, logo: m.logo, match_status: finalStatus
+            teams: m.teams, time: m.time, score: m.score, odds: m.odds, logo: m.logo, league_flag: m.league_flag, match_status: finalStatus
         }));
 
         // Recalcul du total global et des gains pour mettre à jour le ticket
@@ -4094,9 +4102,13 @@ function renderHistory() {
             });
         }
         var finalOdds = c.total_odds || c.totalOdds || (hasValidOdds ? calcOdds : 0);
-        
+
         var displayOdds = finalOdds > 0 ? finalOdds.toFixed(2) : '***.**';
-        
+
+        var aiConfidences = (c.matches || []).filter(function (m) { return m.ai_confidence; }).map(function (m) { return m.ai_confidence; });
+        var aiAvgConfidence = aiConfidences.length ? Math.round(aiConfidences.reduce(function (a, b) { return a + b; }, 0) / aiConfidences.length) : null;
+        var aiTag = aiAvgConfidence ? `<span class="ai-confidence-tag"><i class="fas fa-microchip"></i> Fiabilité totale IA ${aiAvgConfidence}%</span>` : '';
+
         var matchesHtml = '';
         if(c.matches && c.matches.length > 0) {
             matchesHtml = '<div style="margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(255,255,255,0.1);">';
@@ -4118,7 +4130,7 @@ function renderHistory() {
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
                     <div class="date"><i class="fas fa-calendar-alt"></i> Combiné du ${fmtD(c.date)}</div>
-                    <div class="status ${sc}" style="color:${statusColor};">${sl[sc] || sc}</div>
+                    <div class="status ${sc}" style="color:${statusColor};">${sl[sc] || sc}${aiTag}</div>
                 </div>
                 <div style="text-align:right; background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:10px;">
                     <div style="font-size:11px; color:var(--text-gray); margin-bottom:2px;">Cote</div>
@@ -4779,8 +4791,9 @@ ${instaMatches}⏰ Début du premier match à ${earliestTime}
 
         var vipRevealBtn = isVipObscured ? `<button id="reveal-btn-${c.id}" onclick="unblurVipCard('combined-card-vip-${c.id}', 'reveal-btn-${c.id}')" class="combined-cta-btn" style="background:linear-gradient(135deg, #A855F7, #7C3AED); color:#000; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(168,85,247, 0.3);"><i class="fas fa-eye" style="margin-right:6px;"></i> Cliquer ici pour déflouter les scores</button>` : '';
 
-        var aiMatch = matchesToDisplay.find(function (m) { return m.ai_confidence; });
-        var aiTag = aiMatch ? `<span class="ai-confidence-tag"><i class="fas fa-microchip"></i> IA ${aiMatch.ai_confidence}% fiable</span>` : '';
+        var aiConfidences = matchesToDisplay.filter(function (m) { return m.ai_confidence; }).map(function (m) { return m.ai_confidence; });
+        var aiAvgConfidence = aiConfidences.length ? Math.round(aiConfidences.reduce(function (a, b) { return a + b; }, 0) / aiConfidences.length) : null;
+        var aiTag = aiAvgConfidence ? `<span class="ai-confidence-tag"><i class="fas fa-microchip"></i> Fiabilité totale IA ${aiAvgConfidence}%</span>` : '';
 
         return `
         <div class="combined-card" id="combined-card-${isHome ? 'home' : 'vip'}-${c.id}" style="width:100%;">
