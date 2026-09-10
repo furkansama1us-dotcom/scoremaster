@@ -47,7 +47,8 @@ async function sbFetch(path, options = {}) {
         }
     });
     if (!res.ok) throw new Error(`Supabase ${path} -> ${res.status}: ${await res.text()}`);
-    return res.status === 204 ? null : res.json();
+    const text = await res.text();
+    return text ? JSON.parse(text) : null;
 }
 
 function computeTomorrowType() {
