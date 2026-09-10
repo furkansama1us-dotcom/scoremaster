@@ -76,3 +76,36 @@ drop policy if exists "Users can update their own orders" on public.orders;
 create policy "Users can update their own orders"
   on public.orders for update
   using (auth.uid() = user_id);
+
+-- ============================================================
+-- Publications automatisées (Claude + Higgsfield + Postiz)
+-- Le script VPS (service_role) dépose des brouillons ici chaque soir.
+-- L'admin approuve/rejette depuis le Panel Admin > Publications.
+-- Un endpoint Vercel (service_role) publie via Postiz les items approuvés.
+-- ============================================================
+
+create table if not exists public.pending_publications (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  scheduled_for date not null,
+  content_type text not null,
+  platform text not null,
+  caption text not null,
+  image_url text not null,
+  status text not null default 'pending',
+  reviewed_at timestamptz,
+  published_at timestamptz,
+  error text
+);
+
+alter table public.pending_publications enable row level security;
+
+drop policy if exists "Admins can view all pending publications" on public.pending_publications;
+create policy "Admins can view all pending publications"
+  on public.pending_publications for select
+  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));
+
+drop policy if exists "Admins can update pending publications" on public.pending_publications;
+create policy "Admins can update pending publications"
+  on public.pending_publications for update
+  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));

@@ -1504,6 +1504,7 @@ async function fetchApiScore(id, dateRaw) {
         <button class="admin-tab-btn" id="btn-tab-orders" onclick="switchAdminTab('orders')"><i class="fas fa-receipt"></i> Commandes</button>
         <button class="admin-tab-btn" id="btn-tab-notifications" onclick="switchAdminTab('notifications')"><i class="fas fa-bell"></i> Notifs</button>
         <button class="admin-tab-btn" id="btn-tab-calendar" onclick="switchAdminTab('calendar')"><i class="fas fa-calendar-days"></i> Calendrier</button>
+        <button class="admin-tab-btn" id="btn-tab-publications" onclick="switchAdminTab('publications')"><i class="fas fa-paper-plane"></i> Publications</button>
     </div>
 
     <!-- ONGLET 1 : DASHBOARD -->
@@ -1759,6 +1760,25 @@ async function fetchApiScore(id, dateRaw) {
                 Un type de post différent par jour pour varier le contenu automatiquement. Clique sur un jour pour ouvrir le générateur correspondant et récupérer ton brouillon.
             </p>
             <div id="admin-calendar-container"></div>
+        </div>
+    </div>
+
+    <!-- ONGLET PUBLICATIONS -->
+    <div class="admin-tab-content" id="admin-tab-publications">
+        <div class="admin-section">
+            <div class="admin-section-title" style="color:var(--primary-yellow); font-size:16px; margin-bottom: 8px;">
+                <i class="fas fa-paper-plane"></i> Publications à valider
+            </div>
+            <p style="font-size:13px; color:var(--text-gray); margin-bottom:20px; line-height:1.5;">
+                Contenu généré automatiquement chaque soir (Claude + Higgsfield). Rien n'est publié sans ta validation — approuve pour publier sur Instagram (via Postiz) ou Telegram, ou rejette.
+            </p>
+            <div id="admin-publications-pending" style="margin-bottom:24px;">
+                <div class="no-combined-message" style="padding:20px;"><i class="fas fa-inbox"></i>Aucune publication en attente.</div>
+            </div>
+            <div class="admin-section-title" style="color:var(--text-gray); font-size:13px; margin-bottom: 8px;">Historique récent</div>
+            <div id="admin-publications-history">
+                <div class="no-combined-message" style="padding:20px;"><i class="fas fa-inbox"></i>Aucun historique.</div>
+            </div>
         </div>
     </div>
 </div> <!-- FIN DU PANEL ADMIN -->
@@ -2220,8 +2240,100 @@ function renderAdminCalendar() {
 
     container.innerHTML = html;
 }
-    
-    function saveState() { 
+
+// ============================================================
+// PUBLICATIONS — validation des brouillons générés par le script VPS
+// (Claude + Higgsfield), publication via Postiz (Instagram) ou telegram_queue
+// ============================================================
+window.adminPublicationsCache = {};
+
+async function loadAdminPublications() {
+    var pendingEl = document.getElementById('admin-publications-pending');
+    var historyEl = document.getElementById('admin-publications-history');
+    if (!pendingEl || !historyEl) return;
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('pending_publications')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(30);
+        if (error) throw error;
+
+        window.adminPublicationsCache = {};
+        (data || []).forEach(function (p) { window.adminPublicationsCache[p.id] = p; });
+
+        var pending = (data || []).filter(function (p) { return p.status === 'pending'; });
+        var history = (data || []).filter(function (p) { return p.status !== 'pending'; }).slice(0, 10);
+
+        pendingEl.innerHTML = pending.length ? pending.map(renderPublicationCard).join('') : '<div class="no-combined-message" style="padding:20px;"><i class="fas fa-inbox"></i>Aucune publication en attente.</div>';
+        historyEl.innerHTML = history.length ? history.map(renderPublicationHistoryCard).join('') : '<div class="no-combined-message" style="padding:20px;"><i class="fas fa-inbox"></i>Aucun historique.</div>';
+    } catch (error) {
+        console.error('Erreur chargement publications:', error);
+        pendingEl.innerHTML = '<div class="no-combined-message" style="padding:20px;"><i class="fas fa-triangle-exclamation"></i>Erreur de chargement. Vérifie que la table pending_publications existe.</div>';
+    }
+}
+
+var PLATFORM_LABELS = { instagram: { label: 'Instagram', icon: 'fab fa-instagram', color: '#e1306c' }, telegram: { label: 'Telegram', icon: 'fab fa-telegram-plane', color: '#0ea5e9' } };
+
+function renderPublicationCard(p) {
+    var pf = PLATFORM_LABELS[p.platform] || { label: p.platform, icon: 'fas fa-share', color: 'var(--text-gray)' };
+    return `
+    <div class="order-history-card">
+        <div class="order-history-top">
+            <span style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:800; color:${pf.color};"><i class="${pf.icon}"></i> ${pf.label}</span>
+            <span class="order-history-date">${fmtD(p.created_at)}</span>
+        </div>
+        <div style="font-size:11px; color:var(--text-gray); margin:6px 0;">Type : ${p.content_type} · Prévu pour le ${p.scheduled_for}</div>
+        <img src="${p.image_url}" style="width:100%; border-radius:10px; margin-bottom:10px; display:block;" onerror="this.style.display='none'">
+        <div style="font-size:13px; color:#fff; line-height:1.5; white-space:pre-wrap; margin-bottom:12px;">${p.caption}</div>
+        <div style="display:flex; gap:8px;">
+            <button onclick="approvePublication('${p.id}')" style="flex:1;padding:10px;background:linear-gradient(135deg,var(--green),#16A34A);color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-check"></i> Approuver</button>
+            <button onclick="rejectPublication('${p.id}')" style="flex:1;padding:10px;background:transparent;color:var(--red);border:1px solid rgba(244,63,94,.3);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-times"></i> Rejeter</button>
+        </div>
+    </div>`;
+}
+
+function renderPublicationHistoryCard(p) {
+    var pf = PLATFORM_LABELS[p.platform] || { label: p.platform, icon: 'fas fa-share', color: 'var(--text-gray)' };
+    var statusMap = { published: { label: 'Publié ✅', color: 'var(--green)' }, rejected: { label: 'Rejeté', color: 'var(--text-gray)' }, failed: { label: 'Échec ❌', color: 'var(--red)' }, approved: { label: 'En cours de publication...', color: 'var(--primary-yellow)' } };
+    var st = statusMap[p.status] || { label: p.status, color: 'var(--text-gray)' };
+    return `
+    <div class="order-history-card">
+        <div class="order-history-top">
+            <span style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:800; color:${pf.color};"><i class="${pf.icon}"></i> ${pf.label}</span>
+            <span class="order-history-date">${fmtD(p.created_at)}</span>
+        </div>
+        <div style="font-size:11px; color:${st.color}; font-weight:700; margin-top:4px;">${st.label}</div>
+        ${p.error ? `<div style="font-size:10px; color:var(--red); margin-top:4px; word-break:break-all;">${p.error}</div>` : ''}
+    </div>`;
+}
+
+async function approvePublication(id) {
+    try {
+        const { error } = await supabaseClient.from('pending_publications').update({ status: 'approved', reviewed_at: new Date().toISOString() }).eq('id', id);
+        if (error) throw error;
+        showToast('Approuvé ! Publication en cours (via le cron, quelques minutes).');
+        loadAdminPublications();
+    } catch (error) {
+        console.error('Erreur approbation publication:', error);
+        showToast("Erreur lors de l'approbation.", true);
+    }
+}
+
+async function rejectPublication(id) {
+    try {
+        const { error } = await supabaseClient.from('pending_publications').update({ status: 'rejected', reviewed_at: new Date().toISOString() }).eq('id', id);
+        if (error) throw error;
+        showToast('Publication rejetée.');
+        loadAdminPublications();
+    } catch (error) {
+        console.error('Erreur rejet publication:', error);
+        showToast('Erreur lors du rejet.', true);
+    }
+}
+
+    function saveState() {
         localStorage.setItem('scoreMeridianData', JSON.stringify({ stats: appStats, platform: userPlatform })); 
     }
 
@@ -2376,6 +2488,7 @@ function renderAdminCalendar() {
         document.getElementById('btn-tab-' + tabName).classList.add('active');
         if (tabName === 'orders') loadAdminOrders();
         if (tabName === 'calendar') renderAdminCalendar();
+        if (tabName === 'publications') loadAdminPublications();
     }
 
     // ============================================================
