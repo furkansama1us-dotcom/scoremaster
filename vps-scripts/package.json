@@ -4,7 +4,6 @@
   "type": "module",
   "private": true,
   "dependencies": {
-    "@higgsfield/client": "latest",
     "dotenv": "^16.4.5"
   }
 }

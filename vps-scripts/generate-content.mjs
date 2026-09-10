@@ -9,7 +9,6 @@
 // Ne publie jamais rien directement — c'est api/publish-approved.js (Vercel)
 // qui s'en charge, une fois que l'admin a cliqué "Approuver".
 
-import { higgsfield, config as hfConfig } from '@higgsfield/client/v2';
 import 'dotenv/config';
 
 const {
@@ -25,7 +24,7 @@ if (!ANTHROPIC_API_KEY || !HF_KEY_ID || !HF_KEY_SECRET || !SUPABASE_URL || !SUPA
     process.exit(1);
 }
 
-hfConfig({ credentials: `${HF_KEY_ID}:${HF_KEY_SECRET}` });
+const HF_AUTH = `Key ${HF_KEY_ID}:${HF_KEY_SECRET}`;
 
 const CONTENT_TYPES = [
     { key: 'promo', label: 'Promo Web App', platforms: ['instagram', 'telegram'], aspect: '4:5' },
@@ -125,15 +124,40 @@ Réponds UNIQUEMENT avec un objet JSON strict, sans texte autour, au format :
     return JSON.parse(jsonMatch[0]);
 }
 
+function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
 async function generateImage(prompt, aspect) {
-    const jobSet = await higgsfield.subscribe('bytedance/seedream/v4/text-to-image', {
-        input: { aspect_ratio: aspect, prompt },
-        withPolling: true
+    const submitRes = await fetch('https://api.higgsfield.ai/higgsfield-ai/soul/v2/standard', {
+        method: 'POST',
+        headers: { Authorization: HF_AUTH, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, aspect_ratio: aspect })
     });
-    if (!jobSet.isCompleted || !jobSet.jobs || !jobSet.jobs[0] || !jobSet.jobs[0].results) {
-        throw new Error('Génération Higgsfield échouée ou incomplète: ' + JSON.stringify(jobSet).slice(0, 400));
+    if (!submitRes.ok) throw new Error(`Higgsfield submit -> ${submitRes.status}: ${await submitRes.text()}`);
+    const submitData = await submitRes.json();
+    const statusUrl = submitData.status_url;
+    if (!statusUrl) throw new Error('Higgsfield: pas de status_url dans la réponse: ' + JSON.stringify(submitData));
+
+    // Poll jusqu'à 3 minutes (l'image est en général prête en 20-60s)
+    for (let attempt = 0; attempt < 36; attempt++) {
+        await sleep(5000);
+        const statusRes = await fetch(statusUrl, { headers: { Authorization: HF_AUTH } });
+        if (!statusRes.ok) throw new Error(`Higgsfield status -> ${statusRes.status}: ${await statusRes.text()}`);
+        const statusData = await statusRes.json();
+
+        if (statusData.status === 'completed' || statusData.status === 'succeeded') {
+            const url = statusData.images?.[0]?.url
+                || statusData.result?.url
+                || statusData.output?.[0]?.url
+                || statusData.url;
+            if (!url) throw new Error('Higgsfield: génération terminée mais URL introuvable dans: ' + JSON.stringify(statusData).slice(0, 500));
+            return url;
+        }
+        if (statusData.status === 'failed' || statusData.status === 'error') {
+            throw new Error('Higgsfield: génération échouée: ' + JSON.stringify(statusData).slice(0, 500));
+        }
+        // sinon: queued / in_progress -> on continue à attendre
     }
-    return jobSet.jobs[0].results.raw.url;
+    throw new Error('Higgsfield: délai dépassé (3 min) en attendant la génération.');
 }
 
 async function main() {
