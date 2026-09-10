@@ -27,13 +27,13 @@ if (!ANTHROPIC_API_KEY || !HF_KEY_ID || !HF_KEY_SECRET || !SUPABASE_URL || !SUPA
 const HF_AUTH = `Key ${HF_KEY_ID}:${HF_KEY_SECRET}`;
 
 const CONTENT_TYPES = [
-    { key: 'promo', label: 'Promo Web App', platforms: ['instagram', 'telegram'], aspect: '4:5' },
-    { key: 'prompt_ia', label: 'Prompt IA (affiche combiné)', platforms: ['instagram', 'telegram'], aspect: '4:5' },
+    { key: 'promo', label: 'Promo Web App', platforms: ['instagram', 'telegram'], aspect: '3:4' },
+    { key: 'prompt_ia', label: 'Prompt IA (affiche combiné)', platforms: ['instagram', 'telegram'], aspect: '3:4' },
     { key: 'ecusson', label: 'Écusson Brodé', platforms: ['instagram'], aspect: '1:1' },
     { key: 'story', label: 'Story Instagram', platforms: ['instagram'], aspect: '9:16' },
-    { key: 'telegram_vip', label: 'Annonce Telegram VIP+', platforms: ['telegram'], aspect: '4:5' },
+    { key: 'telegram_vip', label: 'Annonce Telegram VIP+', platforms: ['telegram'], aspect: '3:4' },
     { key: 'reels', label: 'Reels & Posts Instagram', platforms: ['instagram'], aspect: '9:16' },
-    { key: 'relance', label: 'Relance Adhérents', platforms: ['telegram'], aspect: '4:5' }
+    { key: 'relance', label: 'Relance Adhérents', platforms: ['telegram'], aspect: '3:4' }
 ];
 
 async function sbFetch(path, options = {}) {
