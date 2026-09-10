@@ -28,7 +28,8 @@ async function sbFetch(path, options) {
         const text = await res.text();
         throw new Error(`Supabase ${path} -> ${res.status}: ${text}`);
     }
-    return res.status === 204 ? null : res.json();
+    const text = await res.text();
+    return text ? JSON.parse(text) : null;
 }
 
 async function postizFetch(path, options) {
@@ -70,6 +71,7 @@ module.exports = async function handler(req, res) {
                         method: 'POST',
                         body: JSON.stringify({
                             type: 'now',
+                            date: new Date().toISOString(),
                             shortLink: false,
                             tags: [],
                             posts: [{
