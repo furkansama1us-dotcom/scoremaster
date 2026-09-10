@@ -126,8 +126,8 @@ Réponds UNIQUEMENT avec un objet JSON strict, sans texte autour, au format :
 }
 
 async function generateImage(prompt, aspect) {
-    const jobSet = await higgsfield.subscribe('flux-pro/kontext/max/text-to-image', {
-        input: { aspect_ratio: aspect, prompt, safety_tolerance: 2 },
+    const jobSet = await higgsfield.subscribe('bytedance/seedream/v4/text-to-image', {
+        input: { aspect_ratio: aspect, prompt },
         withPolling: true
     });
     if (!jobSet.isCompleted || !jobSet.jobs || !jobSet.jobs[0] || !jobSet.jobs[0].results) {
