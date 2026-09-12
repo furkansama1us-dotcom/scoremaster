@@ -51,6 +51,12 @@ function sendMessage(chatId, text, keyboard) {
     }, keyboard ? { reply_markup: { inline_keyboard: keyboard } } : {}));
 }
 
+// Retire les boutons du message déjà répondu, pour empêcher le client de revenir
+// en arrière sur un choix (et de redéclencher la réponse + la notif admin en boucle).
+function clearKeyboard(chatId, messageId) {
+    return tg('editMessageReplyMarkup', { chat_id: chatId, message_id: messageId, reply_markup: { inline_keyboard: [] } });
+}
+
 function generateOrderRef() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let out = '';
@@ -322,45 +328,50 @@ module.exports = async function handler(req, res) {
         if (update.callback_query) {
             const cq = update.callback_query;
             const chatId = cq.message.chat.id;
+            const messageId = cq.message.message_id;
             const data = cq.data || '';
-            await tg('answerCallbackQuery', { callback_query_id: cq.id });
+
+            // Chaque étape n'accepte le clic que si le state en base correspond
+            // exactement à l'étape attendue : un clic sur un bouton déjà répondu
+            // (message pas encore retiré, double-tap, ancien message) est ignoré
+            // et le client est prévenu au lieu de redéclencher la réponse/la notif admin.
+            const STEP_STATES = {
+                'join': 'awaiting_join',
+                'platform:': 'awaiting_platform',
+                'sport:': 'awaiting_sport',
+                'exp:': 'awaiting_experience',
+                'luck:': 'awaiting_luck'
+            };
+            const matchedPrefix = Object.keys(STEP_STATES).find(function (p) { return data === p || data.startsWith(p); });
 
             if (data.startsWith('pack:')) {
+                await tg('answerCallbackQuery', { callback_query_id: cq.id });
+                await clearKeyboard(chatId, messageId);
                 await handlePackChoice(chatId, data.slice(5));
-            } else if (data === 'join') {
+            } else if (matchedPrefix) {
                 const convo = await getConversation(chatId);
-                if (convo && convo.state === 'awaiting_join') {
-                    await handleJoinConfirm(chatId, convo);
-                }
-            } else if (data.startsWith('platform:')) {
-                // Pas de vérification stricte de state ici : si l'écriture en base d'une
-                // étape précédente a échoué (ex: colonnes manquantes), le state peut ne
-                // pas avoir avancé alors que l'utilisateur, lui, a bien progressé dans le
-                // fil de discussion — on se fie donc juste à l'existence de la conversation.
-                const convo = await getConversation(chatId);
-                if (convo) {
-                    await handlePlatformChoice(chatId, data.slice(9), convo);
-                }
-            } else if (data.startsWith('sport:')) {
-                const convo = await getConversation(chatId);
-                if (convo) {
-                    await handleSportChoice(chatId, data.slice(6), convo);
-                }
-            } else if (data.startsWith('exp:')) {
-                const convo = await getConversation(chatId);
-                if (convo) {
-                    await handleExperienceChoice(chatId, data.slice(4), convo);
-                }
-            } else if (data.startsWith('luck:')) {
-                const convo = await getConversation(chatId);
-                if (convo) {
-                    await handleLuckChoice(chatId, data.slice(5), convo);
+                const expectedState = STEP_STATES[matchedPrefix];
+                if (convo && convo.state === expectedState) {
+                    await tg('answerCallbackQuery', { callback_query_id: cq.id });
+                    await clearKeyboard(chatId, messageId);
+                    const value = matchedPrefix === 'join' ? null : data.slice(matchedPrefix.length);
+                    if (matchedPrefix === 'join') await handleJoinConfirm(chatId, convo);
+                    else if (matchedPrefix === 'platform:') await handlePlatformChoice(chatId, value, convo);
+                    else if (matchedPrefix === 'sport:') await handleSportChoice(chatId, value, convo);
+                    else if (matchedPrefix === 'exp:') await handleExperienceChoice(chatId, value, convo);
+                    else if (matchedPrefix === 'luck:') await handleLuckChoice(chatId, value, convo);
+                } else {
+                    await tg('answerCallbackQuery', { callback_query_id: cq.id, text: 'Déjà répondu, merci ! 😊', show_alert: false });
+                    await clearKeyboard(chatId, messageId);
                 }
             } else if (data === 'relaunch') {
+                await tg('answerCallbackQuery', { callback_query_id: cq.id });
                 const convo = await getConversation(chatId);
                 if (convo) {
                     await handleRelaunch(chatId, convo);
                 }
+            } else {
+                await tg('answerCallbackQuery', { callback_query_id: cq.id });
             }
             return res.status(200).json({ ok: true });
         }
