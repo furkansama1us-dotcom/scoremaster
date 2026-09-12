@@ -81,21 +81,21 @@ ${matchInfo ? `Combiné en cours (noms d'équipes uniquement, PAS de score) : ${
 Ne répète pas ces accroches/légendes déjà utilisées récemment :
 ${recentHistory.length ? recentHistory.map(h => `- ${h.slice(0, 120)}`).join('\n') : '(aucun historique)'}
 
-STYLE VISUEL OBLIGATOIRE pour "image_prompt" (référence : les visuels marketing d'app du compte Instagram @sport.meridian — PAS des scènes cinématiques/photos dramatiques) :
-- Un vrai graphisme marketing d'application mobile professionnel : fond dégradé bleu marine/noir profond avec touches dorées, typographie bold moderne et minimaliste.
-- Une maquette de téléphone (mockup) propre et réaliste montrant un écran plausible de l'app (liste de matchs, cote, score prédit par IA, badge "AI Prediction").
-- 2 à 4 éléments de texte MAXIMUM, chacun COURT (3-6 mots), à donner EXACTEMENT entre guillemets dans le prompt (ex: "Predict smarter with AI.", "AI PREDICTION · PSG 2-1"). Ne jamais demander de paragraphes ou de texte dense : les générateurs d'image rendent mal le texte long, donc moins de texte = plus pro.
-- Optionnel : liste de fonctionnalités avec coches (✓), badges App Store / Google Play, petites icônes UI (stats, IA, live score).
-- Qualité : rendu net type design graphique professionnel (Figma/Webflow marketing page), pas de flou artistique, pas de photo de stade/silhouette/scène narrative.
+STYLE VISUEL OBLIGATOIRE pour "image_prompt" :
+- Illustration digitale stylisée, contours sombres marqués, ink wash haute-contraste, style bande dessinée premium (PAS de photo réaliste, PAS de maquette d'écran/interface détaillée — les générateurs d'image rendent très mal le texte dense ou les faux écrans d'app : ça donne un résultat illisible).
+- Une scène/personnage/objet simple et élégant (silhouette, montre, carte VIP, train, stade...) sur lequel apparaît discrètement le monogramme "SM" surmonté d'une couronne dorée — jamais plus de 2-3 caractères ou un mot très court à ce niveau.
+- Si un texte principal doit apparaître sur l'affiche, UN SEUL élément, TRÈS COURT (2-4 mots maximum), à donner EXACTEMENT entre guillemets dans le prompt (ex: "SM VICTOIRE").
+- Palette bleu marine/noir profond avec touches dorées et néons discrets selon l'ambiance.
+- Qualité : rendu net et cohérent, jamais de texte long ni de fausse interface d'application à faire apparaître dans l'image.
 
-Ton du texte (caption) par type :
+Ton par type (caption ET ambiance de l'illustration) :
 - Promo Web App : lumineux, accueillant, évoque l'application mobile
-- Prompt IA (affiche combiné) : met en avant la prédiction IA et le score exact
-- Écusson Brodé : gros plan textile brodé premium, esthétique luxe (garde ce type tel quel, ne pas appliquer le style app-mockup ici)
+- Prompt IA (affiche combiné) : poster stylisé mettant en scène le score exact prédit
+- Écusson Brodé : gros plan textile brodé premium, esthétique luxe (garde ce type tel quel)
 - Story Instagram : verticale, punchy, très peu de texte
-- Annonce Telegram VIP+ : urgence/compte à rebours, mais toujours en graphisme d'app propre (pas de scène noire/néons)
-- Reels & Posts Instagram : met en avant les fonctionnalités/résultats de l'app
-- Relance Adhérents : rappel amical, met en avant la valeur de l'abonnement VIP+
+- Annonce Telegram VIP+ : urgence/compte à rebours, horloge, néons, ville la nuit
+- Reels & Posts Instagram : scène d'action dynamique, football
+- Relance Adhérents : ambiance noir/mystère — silhouette, train, montre qui tic-tac, porte verrouillée
 
 Réponds UNIQUEMENT avec un objet JSON strict, sans texte autour, au format :
 {"caption": "légende en français avec emojis, prête à poster", "image_prompt": "prompt en anglais pour un générateur d'image, décrivant précisément la scène/composition/ambiance/style, avec les textes exacts entre guillemets"}`;
