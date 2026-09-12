@@ -115,6 +115,13 @@ create policy "Admins can update pending publications"
   on public.pending_publications for update
   using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));
 
+-- Permet aux admins de nettoyer l'historique (supprimer une entrée ou tout vider)
+-- depuis l'onglet Publications du Panel Admin.
+drop policy if exists "Admins can delete pending publications" on public.pending_publications;
+create policy "Admins can delete pending publications"
+  on public.pending_publications for delete
+  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));
+
 -- ============================================================
 -- Parrainage Telegram — lien d'invitation personnel par membre,
 -- suivi des amis qui rejoignent le canal, récompense tous les 3 filleuls

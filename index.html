@@ -1844,7 +1844,10 @@ async function fetchApiScore(id, dateRaw) {
             <div id="admin-publications-pending" style="margin-bottom:24px;">
                 <div class="no-combined-message" style="padding:20px;"><i class="fas fa-inbox"></i>Aucune publication en attente.</div>
             </div>
-            <div class="admin-section-title" style="color:var(--text-gray); font-size:13px; margin-bottom: 8px;">Historique récent</div>
+            <div class="admin-section-title" style="color:var(--text-gray); font-size:13px; margin-bottom: 8px; display:flex; justify-content:space-between; align-items:center;">
+                <span>Historique récent</span>
+                <button onclick="clearAllPublicationHistory()" style="background:rgba(244,63,94,0.1); color:var(--red); border:1px solid rgba(244,63,94,0.3); border-radius:8px; padding:5px 10px; font-size:11px; font-weight:700; cursor:pointer;"><i class="fas fa-broom"></i> Vider l'historique</button>
+            </div>
             <div id="admin-publications-history">
                 <div class="no-combined-message" style="padding:20px;"><i class="fas fa-inbox"></i>Aucun historique.</div>
             </div>
@@ -2550,16 +2553,28 @@ function renderPublicationCard(p) {
 
 function renderPublicationHistoryCard(p) {
     var pf = PLATFORM_LABELS[p.platform] || { label: p.platform, icon: 'fas fa-share', color: 'var(--text-gray)' };
-    var statusMap = { published: { label: 'Publié ✅', color: 'var(--green)' }, rejected: { label: 'Rejeté', color: 'var(--text-gray)' }, failed: { label: 'Échec ❌', color: 'var(--red)' }, approved: { label: 'En cours de publication...', color: 'var(--primary-yellow)' } };
+    var statusMap = {
+        published: { label: 'Publié ✅', color: 'var(--green)' },
+        rejected: { label: 'Rejeté', color: 'var(--text-gray)' },
+        failed: { label: 'Échec ❌', color: 'var(--red)' },
+        approved: { label: 'En cours de publication...', color: 'var(--primary-yellow)' },
+        generating: { label: 'Génération en cours (Higgsfield)...', color: 'var(--primary-yellow)' }
+    };
     var st = statusMap[p.status] || { label: p.status, color: 'var(--text-gray)' };
+    var captionPreview = p.caption ? (p.caption.length > 140 ? p.caption.slice(0, 140) + '…' : p.caption) : '';
+    var thumbHtml = p.image_url ? `<img src="${p.image_url}" style="width:100%; border-radius:8px; margin-top:8px; display:block;" onerror="this.style.display='none'">` : '';
     return `
     <div class="order-history-card">
         <div class="order-history-top">
             <span style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:800; color:${pf.color};"><i class="${pf.icon}"></i> ${pf.label}</span>
             <span class="order-history-date">${fmtD(p.created_at)}</span>
         </div>
+        <div style="font-size:11px; color:var(--text-gray); margin-top:4px;">Type : <b style="color:var(--text-light-gray);">${p.content_type || '?'}</b> · Prévu pour le ${p.scheduled_for || '?'}</div>
         <div style="font-size:11px; color:${st.color}; font-weight:700; margin-top:4px;">${st.label}</div>
+        ${captionPreview ? `<div style="font-size:12px; color:var(--text-light-gray); margin-top:6px; line-height:1.4; white-space:pre-wrap;">${captionPreview}</div>` : ''}
+        ${thumbHtml}
         ${p.error ? `<div style="font-size:10px; color:var(--red); margin-top:4px; word-break:break-all;">${p.error}</div>` : ''}
+        <button onclick="deletePublicationRow('${p.id}')" style="margin-top:8px; width:100%; padding:7px; background:transparent; color:var(--red); border:1px solid rgba(244,63,94,.3); border-radius:8px; font-size:11px; font-weight:700; cursor:pointer;"><i class="fas fa-trash"></i> Supprimer de l'historique</button>
     </div>`;
 }
 
@@ -2584,6 +2599,32 @@ async function rejectPublication(id) {
     } catch (error) {
         console.error('Erreur rejet publication:', error);
         showToast('Erreur lors du rejet.', true);
+    }
+}
+
+async function deletePublicationRow(id) {
+    if (!confirm("Supprimer définitivement cette entrée de l'historique ?")) return;
+    try {
+        const { error } = await supabaseClient.from('pending_publications').delete().eq('id', id);
+        if (error) throw error;
+        showToast('Entrée supprimée.');
+        loadAdminPublications();
+    } catch (error) {
+        console.error('Erreur suppression publication:', error);
+        showToast('Erreur lors de la suppression.', true);
+    }
+}
+
+async function clearAllPublicationHistory() {
+    if (!confirm("Supprimer tout l'historique des publications (publiées, rejetées, échouées) ? Les publications en attente de validation ne sont pas touchées.")) return;
+    try {
+        const { error } = await supabaseClient.from('pending_publications').delete().neq('status', 'pending');
+        if (error) throw error;
+        showToast('Historique vidé.');
+        loadAdminPublications();
+    } catch (error) {
+        console.error('Erreur vidage historique publications:', error);
+        showToast("Erreur lors du vidage de l'historique.", true);
     }
 }
 
