@@ -4301,6 +4301,23 @@ async function fetchMatchesFromAPI() {
         }
     }
 
+    function showGooglePopup() {
+        var popup = document.getElementById('google-popup');
+        popup.style.display = 'flex';
+        setTimeout(function () { popup.style.opacity = '1'; popup.firstElementChild.style.transform = 'scale(1)'; }, 10);
+    }
+
+    function closeGooglePopup() {
+        var popup = document.getElementById('google-popup');
+        popup.style.opacity = '0'; popup.firstElementChild.style.transform = 'scale(0.9)';
+        setTimeout(function () { popup.style.display = 'none'; }, 300);
+    }
+
+    function goToSignupFromGoogle() {
+        closeGooglePopup();
+        if (!isSignUpMode) toggleAuthMode();
+    }
+
     function openLoginWhatsApp() {
         var msg = 'Bonjour ! J\'ai une question sur Score Master.';
         window.open('https://wa.me/' + WHATSAPP_ADMIN_NUMBER + '?text=' + encodeURIComponent(msg), '_blank');
