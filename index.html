@@ -3387,7 +3387,10 @@ async function fetchMatchesFromAPI() {
     function renderAIList() {
         var container = document.getElementById('ai-pronostics-container');
         if (!container) return;
-        var list = (window.aiCurrentEnriched || []).slice();
+        var nowSec = Date.now() / 1000;
+        var list = (window.aiCurrentEnriched || []).filter(function (x) {
+            return !x.startTimestamp || (nowSec - x.startTimestamp) < 2 * 3600;
+        });
 
         if (window.aiFilterState.vipOnly) list = list.filter(function (x) { return x.isVipPick; });
         if (window.aiFilterState.freeOnly) list = list.filter(function (x) { return !x.isVipPick; });
