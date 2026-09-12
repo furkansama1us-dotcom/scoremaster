@@ -170,14 +170,22 @@ async function handlePackChoice(chatId, packKey) {
     await sendMessage(chatId, hypeMessage(pack), joinKeyboard());
 }
 
+async function safeUpsertConversation(chatId, patch) {
+    try {
+        await upsertConversation(chatId, patch);
+    } catch (e) {
+        console.error('upsertConversation failed (colonnes manquantes en base ?):', e);
+    }
+}
+
 async function handleJoinConfirm(chatId, convo) {
     const pack = PACKS[convo.pack_type];
     const orderRef = generateOrderRef();
-    await upsertConversation(chatId, { state: 'awaiting_platform', order_ref: orderRef });
     await sendMessage(chatId,
         `Top ! Hâte de te voir parmi nous. 🙌\n\nUn admin se libère pour toi dans quelques instants. En attendant, j'ai deux petites questions pour mieux te connaître et t'orienter au mieux 😊\n\nSur quelle plateforme paries-tu d'habitude ?`,
         platformKeyboard()
     );
+    await safeUpsertConversation(chatId, { state: 'awaiting_platform', order_ref: orderRef });
     await notifyAdmin(
         `💰 NOUVELLE DEMANDE (Bot Telegram)\n\nRéférence : ${orderRef}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Le client vient de confirmer, il répond encore à quelques questions avant que je te notifie à nouveau avec plus de détails.`
     );
@@ -185,21 +193,21 @@ async function handleJoinConfirm(chatId, convo) {
 
 async function handlePlatformChoice(chatId, platformKey, convo) {
     const reply = PLATFORM_REPLIES[platformKey] || PLATFORM_REPLIES.autre;
-    await upsertConversation(chatId, { state: 'awaiting_sport', betting_platform: PLATFORM_LABELS[platformKey] || platformKey });
     await sendMessage(chatId,
         `${reply}\n\nEt sinon, sur quel type de sport paries-tu le plus ?`,
         sportKeyboard()
     );
+    await safeUpsertConversation(chatId, { state: 'awaiting_sport', betting_platform: PLATFORM_LABELS[platformKey] || platformKey });
 }
 
 async function handleSportChoice(chatId, sportKey, convo) {
     const pack = PACKS[convo.pack_type];
     const reply = SPORT_REPLIES[sportKey] || SPORT_REPLIES.autre;
-    await upsertConversation(chatId, { state: 'awaiting_admin', betting_sport: SPORT_LABELS[sportKey] || sportKey });
     await sendMessage(chatId,
         `${reply}\n\nMerci pour ces questions et réponses aussi rapides ! 🙏 Je relance l'admin de mon côté !`,
         relaunchKeyboard()
     );
+    await safeUpsertConversation(chatId, { state: 'awaiting_admin', betting_sport: SPORT_LABELS[sportKey] || sportKey });
     await notifyAdmin(
         `✅ COMPLÉMENT DE DEMANDE (Bot Telegram)\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n🎯 Plateforme habituelle : ${convo.betting_platform || '?'}\n🏅 Sport favori : ${SPORT_LABELS[sportKey] || sportKey}\n\n➡️ Contacte le client sur Telegram pour finaliser le paiement.`
     );
