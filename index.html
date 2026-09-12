@@ -996,9 +996,17 @@ async function fetchApiScore(id, dateRaw) {
                 openQuickEditScreen(id);
             }
         } else {
-            showToast("Aucun score terminé trouvé pour ces matchs.", true);
+            // L'API n'a rien trouvé (compétition non couverte, décalage horaire...) :
+            // on ouvre quand même l'écran de saisie pour que l'admin puisse rentrer
+            // les scores à la main, au lieu de rester bloqué sans aucune action possible.
+            showToast("Aucun score trouvé automatiquement — saisis-les manuellement ci-dessous.", true);
+            if (c.status === 'en-cours') {
+                openValidationScreen(id);
+            } else {
+                openQuickEditScreen(id);
+            }
         }
-        
+
     } catch(e) {
         console.error("Erreur fetchApiScore:", e);
         showToast("Erreur lors de la récupération.", true);
@@ -5931,9 +5939,9 @@ ${aiPrompt}
             // Les CTA d'achat/déblocage n'ont plus de sens une fois le match en direct
             cardContainer.querySelectorAll('.combined-cta-btn, .add-to-cart-btn, .combo-time-message, .live-follow-btn').forEach(function (el) { el.remove(); });
             cardContainer.insertAdjacentHTML('beforeend', `
-                <div style="margin-top:12px; padding:16px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:14px; text-align:center;">
-                    <div style="font-size:13px; color:#fff; font-weight:700; margin-bottom:10px;"><i class="fas fa-circle" style="color:var(--red); font-size:8px; margin-right:6px;"></i>Les matchs ont déjà débuté !</div>
-                    <div style="font-size:12px; color:var(--text-gray); margin-bottom:14px; line-height:1.5;">Rejoignez notre Telegram pour rester à l'affût des résultats en direct et ne rater aucun combiné.</div>
+                <div id="combo-live-status-notice" style="margin-top:12px; padding:16px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:14px; text-align:center;">
+                    <div id="combo-live-status-title" style="font-size:13px; color:#fff; font-weight:700; margin-bottom:10px;"><i class="fas fa-circle" style="color:var(--red); font-size:8px; margin-right:6px;"></i>Les matchs ont déjà débuté !</div>
+                    <div id="combo-live-status-desc" style="font-size:12px; color:var(--text-gray); margin-bottom:14px; line-height:1.5;">Rejoignez notre Telegram pour rester à l'affût des résultats en direct et ne rater aucun combiné.</div>
                     <a href="${TELEGRAM_LINK}" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:8px; padding:11px 20px; background:#26A5E4; color:#fff; border-radius:10px; font-size:13px; font-weight:800; text-decoration:none;"><i class="fab fa-telegram-plane"></i> Rejoindre le Telegram</a>
                 </div>`);
         }
@@ -5962,6 +5970,7 @@ ${aiPrompt}
             var data = await res.json();
             var apiMatches = (data.matches || []).filter(function (m) { return m.utcDate && m.utcDate.slice(0, 10) === dateStr; });
 
+            var finishedCount = 0;
             var html = (currentCombined.matches || []).map(function (m) {
                 var live = findLiveMatchFor(m.teams, apiMatches);
                 var statusLabel = 'À venir';
@@ -5989,7 +5998,7 @@ ${aiPrompt}
                         statusLabel = '🔴 EN DIRECT' + (estMinute ? ` ${estMinute}'` : '');
                         statusColor = 'var(--red)';
                     }
-                    else if (bucket === 'finished') { statusLabel = 'Terminé'; statusColor = 'var(--green)'; }
+                    else if (bucket === 'finished') { statusLabel = 'Terminé'; statusColor = 'var(--green)'; finishedCount++; }
                     else { statusLabel = live.status === 'TIMED' || live.status === 'SCHEDULED' ? 'À venir' : live.status; }
                     if (live.score && live.score.fullTime && live.score.fullTime.home !== null) {
                         scoreDisplay = `${live.score.fullTime.home} - ${live.score.fullTime.away}`;
@@ -6006,6 +6015,14 @@ ${aiPrompt}
             }).join('');
 
             container.innerHTML = html || '<div class="no-combined-message" style="padding:20px;"><i class="fas fa-futbol"></i>Aucune info en direct pour le moment.</div>';
+
+            var titleEl = document.getElementById('combo-live-status-title');
+            var descEl = document.getElementById('combo-live-status-desc');
+            var totalMatches = (currentCombined.matches || []).length;
+            if (titleEl && descEl && totalMatches > 0 && finishedCount === totalMatches) {
+                titleEl.innerHTML = '<i class="fas fa-flag-checkered" style="color:var(--green); margin-right:6px;"></i>Les matchs sont terminés !';
+                descEl.textContent = "Le résultat final est en cours de vérification par notre équipe, retrouve-le très vite dans l'historique.";
+            }
         } catch (e) {
             console.error('Erreur scores live combiné:', e);
             container.innerHTML = '<div class="no-combined-message" style="padding:20px;"><i class="fas fa-triangle-exclamation"></i>Erreur de chargement des scores.</div>';
