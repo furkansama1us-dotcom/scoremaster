@@ -5762,10 +5762,10 @@ async function queueVictoryPublication(id) {
     var c = allCombineds.find(x => x.id == id);
     if (!c) return;
     try {
-        var caption = buildVictoryTelegramText(c);
+        var matches = (c.matches || []).map(function (m) { return { teams: m.teams, score: m.score }; });
         var imagePrompt = buildVictoryImagePromptRaw(c);
-        var data = await adminApiCall('/api/generate-victory-content', { caption: caption, imagePrompt: imagePrompt, dateStr: c.date });
-        showToast('Victoire en préparation : Higgsfield génère la photo, tu la retrouveras dans Publications pour validation. 🎨');
+        var data = await adminApiCall('/api/generate-victory-content', { matches: matches, imagePrompt: imagePrompt, dateStr: c.date });
+        showToast('Victoire en préparation : Claude rédige le texte, Higgsfield génère la photo — tu la retrouveras dans Publications pour validation. 🎨');
         startGenerationPolling(data.rows.map(function (r) { return r.id; }), data.statusUrl);
         loadAdminPublications();
     } catch (error) {
