@@ -4846,10 +4846,11 @@ async function autoFetchFinalScores(combined) {
             switchAdminTab('dashboard');
             renderAdminHistory();
 
-            // Dès la validation d'un combiné GAGNÉ, on publie automatiquement le message
-            // de victoire + le prompt photo — plus besoin de repasser par un bouton séparé.
+            // Dès la validation d'un combiné GAGNÉ, on lance la génération du message +
+            // de la photo de victoire (Higgsfield). Rien n'est publié automatiquement :
+            // ça atterrit dans Publications pour validation manuelle avant envoi Telegram.
             if (finalStatus === 'termine') {
-                sendVictoryPackage(idJustValidated);
+                queueVictoryPublication(idJustValidated);
             }
 
         } catch (e) {
@@ -5699,23 +5700,34 @@ ${matchLines}
 — Maître Gon 🎩, Score Master`;
 }
 
-// Envoi direct (sans confirmation) : utilisé automatiquement dès la validation d'un combiné gagnant.
-function sendVictoryPackage(id) {
+// Ne publie jamais directement : génère la photo (Higgsfield) et dépose un
+// brouillon dans pending_publications, comme le reste du Calendrier de contenu.
+// L'admin le retrouve dans l'onglet Publications, vérifie, puis Approuve —
+// c'est seulement à ce moment que le cron le publie (texte + photo) sur le
+// groupe Telegram.
+async function queueVictoryPublication(id) {
     var c = allCombineds.find(x => x.id == id);
-    if (!c) return Promise.resolve();
-    return sendGroupTelegram(buildVictoryTelegramText(c)).then(() => {
-        showToast("Message de victoire publié sur le groupe Telegram ! 🍾");
-        return generateAndSendInstaPrompt(id);
-    }).catch(() => showToast("Erreur lors de la publication sur Telegram", true));
+    if (!c) return;
+    try {
+        var caption = buildVictoryTelegramText(c);
+        var imagePrompt = buildVictoryImagePromptRaw(c);
+        var data = await adminApiCall('/api/generate-victory-content', { caption: caption, imagePrompt: imagePrompt, dateStr: c.date });
+        showToast('Victoire en préparation : Higgsfield génère la photo, tu la retrouveras dans Publications pour validation. 🎨');
+        startGenerationPolling(data.rows.map(function (r) { return r.id; }), data.statusUrl);
+        loadAdminPublications();
+    } catch (error) {
+        console.error('Erreur génération victoire:', error);
+        showToast('Erreur lors de la préparation de la publication de victoire.', true);
+    }
 }
 
-// Bouton manuel (renvoi/relance) : garde une confirmation, au cas où l'admin veuille republier.
+// Bouton manuel (renvoi/relance) : garde une confirmation, au cas où l'admin veuille repréparer.
 function sendTelegramWin(id) {
     var c = allCombineds.find(x => x.id == id);
     if (!c) { showToast("Combiné introuvable", true); return; }
 
-    if (confirm("Publier le message de VICTOIRE (+ prompt photo) sur le groupe Telegram pour ce combiné ?")) {
-        sendVictoryPackage(id);
+    if (confirm("Préparer le message de VICTOIRE (+ photo) pour validation dans Publications ?")) {
+        queueVictoryPublication(id);
     }
     // ============================================================
 // GÉNÉRATION DU PROMPT IA PREMIUM (FORMAT 9:16 + LOGO SM)
@@ -7488,7 +7500,7 @@ function fallbackCopy(txt) {
     // ============================================================
 // GÉNÉRATION DU PROMPT IA PREMIUM (FORMAT 9:16 + LOGO SM + INSTA)
 // ============================================================
-function buildInstaPromptText(c) {
+function buildVictoryImagePromptRaw(c) {
     let detailsMatchs = "";
 
     if (c.matches && c.matches.length > 0) {
@@ -7511,7 +7523,7 @@ function buildInstaPromptText(c) {
         });
     }
 
-    let aiPrompt = `A high-end stylized digital illustration, dark bold outlines, high-contrast ink wash, premium comic book art style, vertical 9:16 ratio. NO phone, NO screen, NO app interface anywhere in the image.
+    return `A high-end stylized digital illustration, dark bold outlines, high-contrast ink wash, premium comic book art style, vertical 9:16 ratio. NO phone, NO screen, NO app interface anywhere in the image.
 
 Background: Spectacular low-angle view of a wet, reflective football pitch in a stadium at night, dramatic floodlights, golden confetti falling, illustrated (not photorealistic).
 
@@ -7523,9 +7535,11 @@ ${detailsMatchs}
 Bottom: The exact text "@scoremaster.fr" in clean white lettering.
 
 Style: Photorealistic illustration, 8k, cinematic lighting, high contrast, gold and silver color palette, no more than 3 short text elements total, --ar 9:16`;
+}
 
+function buildInstaPromptText(c) {
     // Uniquement le prompt formaté dans un bloc de code Telegram pour un tap-to-copy rapide
-    return `\`\`\`\n${aiPrompt}\n\`\`\``;
+    return `\`\`\`\n${buildVictoryImagePromptRaw(c)}\n\`\`\``;
 }
 
 function generateAndSendInstaPrompt(id) {
