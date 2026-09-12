@@ -73,7 +73,7 @@ async function draftWithClaude(type, recentHistory, combine) {
         ? combine.matches.map(m => `${m.teams} (${m.time || '?'})`).join(', ')
         : null;
 
-    const prompt = `Tu écris pour "Score Master" (SM), un service français de pronostics sportifs premium (packs payants + espace VIP+). Identité visuelle dorée/premium (couronne dorée, monogramme "SM"). Ton de marque : affiches illustrées dramatiques/cinématiques, jamais de vrais blasons de club (stylise/générique), jamais de visage de personne réelle/célébrité.
+    const prompt = `Tu écris pour "Score Master" (SM), un service français de pronostics sportifs premium (packs payants + espace VIP+). Identité visuelle : bleu marine/noir profond + doré premium, couronne dorée, monogramme "SM". Jamais de vrais blasons de club (générique/stylisé), jamais de visage de personne réelle/célébrité.
 
 Type de contenu à produire aujourd'hui : "${type.label}".
 ${matchInfo ? `Combiné en cours (noms d'équipes uniquement, PAS de score) : ${matchInfo}` : "Aucun combiné en cours actuellement — reste générique (marque/app), sans référence à un match précis."}
@@ -81,17 +81,24 @@ ${matchInfo ? `Combiné en cours (noms d'équipes uniquement, PAS de score) : ${
 Ne répète pas ces accroches/légendes déjà utilisées récemment :
 ${recentHistory.length ? recentHistory.map(h => `- ${h.slice(0, 120)}`).join('\n') : '(aucun historique)'}
 
-Ton par type :
+STYLE VISUEL OBLIGATOIRE pour "image_prompt" (référence : les visuels marketing d'app du compte Instagram @sport.meridian — PAS des scènes cinématiques/photos dramatiques) :
+- Un vrai graphisme marketing d'application mobile professionnel : fond dégradé bleu marine/noir profond avec touches dorées, typographie bold moderne et minimaliste.
+- Une maquette de téléphone (mockup) propre et réaliste montrant un écran plausible de l'app (liste de matchs, cote, score prédit par IA, badge "AI Prediction").
+- 2 à 4 éléments de texte MAXIMUM, chacun COURT (3-6 mots), à donner EXACTEMENT entre guillemets dans le prompt (ex: "Predict smarter with AI.", "AI PREDICTION · PSG 2-1"). Ne jamais demander de paragraphes ou de texte dense : les générateurs d'image rendent mal le texte long, donc moins de texte = plus pro.
+- Optionnel : liste de fonctionnalités avec coches (✓), badges App Store / Google Play, petites icônes UI (stats, IA, live score).
+- Qualité : rendu net type design graphique professionnel (Figma/Webflow marketing page), pas de flou artistique, pas de photo de stade/silhouette/scène narrative.
+
+Ton du texte (caption) par type :
 - Promo Web App : lumineux, accueillant, évoque l'application mobile
-- Prompt IA (affiche combiné) : poster cinématique stade/foule/tableau de score, dramatique
-- Écusson Brodé : gros plan textile brodé premium, esthétique luxe
-- Story Instagram : composition verticale punchy, grande zone pour texte
-- Annonce Telegram VIP+ : urgence/compte à rebours, horloge, néons, ville la nuit
-- Reels & Posts Instagram : scène d'action dynamique, flou de mouvement, football
-- Relance Adhérents : ambiance noir/mystère — silhouette, train, montre qui tic-tac, porte verrouillée
+- Prompt IA (affiche combiné) : met en avant la prédiction IA et le score exact
+- Écusson Brodé : gros plan textile brodé premium, esthétique luxe (garde ce type tel quel, ne pas appliquer le style app-mockup ici)
+- Story Instagram : verticale, punchy, très peu de texte
+- Annonce Telegram VIP+ : urgence/compte à rebours, mais toujours en graphisme d'app propre (pas de scène noire/néons)
+- Reels & Posts Instagram : met en avant les fonctionnalités/résultats de l'app
+- Relance Adhérents : rappel amical, met en avant la valeur de l'abonnement VIP+
 
 Réponds UNIQUEMENT avec un objet JSON strict, sans texte autour, au format :
-{"caption": "légende en français avec emojis, prête à poster", "image_prompt": "prompt en anglais pour un générateur d'image, décrivant précisément la scène/composition/ambiance/style"}`;
+{"caption": "légende en français avec emojis, prête à poster", "image_prompt": "prompt en anglais pour un générateur d'image, décrivant précisément la scène/composition/ambiance/style, avec les textes exacts entre guillemets"}`;
 
     const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',

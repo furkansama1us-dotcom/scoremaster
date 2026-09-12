@@ -43,14 +43,17 @@ const CONTENT_TYPES = [
 ];
 
 // Scènes utilisées en mode "urgence" (appels intraday, 2-3x/jour) — on fait
-// tourner la scène pour ne pas répéter le même visuel à chaque appel.
+// tourner l'élément d'urgence pour ne pas répéter le même visuel à chaque
+// appel. Chaque scène doit être intégrée comme un ÉLÉMENT D'INTERFACE dans
+// une maquette d'app propre (voir consigne de style dans draftWithClaude),
+// pas comme une scène photo/cinématique.
 const URGENCE_SCENES = [
-    'a lone silhouette sprinting to catch a departing high-speed train at night, neon-lit platform, cyberpunk city skyline, motion blur, golden "SM" crown logo glowing on the train\'s side',
-    'a close-up of an antique pocket watch with golden hands ticking down, dramatic dark background, sparks of golden light, sense of urgency',
-    'a silhouette running through a rain-soaked neon-lit metro station at night, glowing golden exit sign, cinematic wide shot',
-    'a golden vault door slowly closing, dramatic lighting, sparks flying, sense of a closing opportunity, luxury aesthetic',
-    'an elegant figure checking a luxury golden wristwatch under city neon lights at night, tension in the pose, cinematic close-up',
-    'a golden crown-shaped countdown timer floating above a dark stadium at night, glowing numbers, dramatic lighting'
+    'a countdown timer UI badge ("2H LEFT") overlaid on a clean app mockup screen showing an AI match prediction card',
+    'a "closing soon" ribbon banner across the top of a phone mockup displaying the app\'s live odds screen',
+    'a subtle golden hourglass icon next to a bold headline on an app promo graphic',
+    'a small red "LIVE" pulse badge on a phone mockup next to an AI-predicted score card',
+    'a lock icon morphing into an unlock icon UI element beside the app\'s VIP+ access screen mockup',
+    'a progress bar UI element ("Spots filling fast") under the app\'s prediction card mockup'
 ];
 
 function computeTodayUrgenceScene() {
@@ -109,7 +112,7 @@ async function draftWithClaude(type, recentHistory, combine, forcedScene) {
         ? combine.matches.map(m => `${m.teams} (${m.time || '?'})`).join(', ')
         : null;
 
-    const prompt = `Tu écris pour "Score Master" (SM), un service français de pronostics sportifs premium (packs payants + espace VIP+). Identité visuelle dorée/premium (couronne dorée, monogramme "SM"). Ton de marque : affiches illustrées dramatiques/cinématiques, jamais de vrais blasons de club (stylise/générique), jamais de visage de personne réelle/célébrité.
+    const prompt = `Tu écris pour "Score Master" (SM), un service français de pronostics sportifs premium (packs payants + espace VIP+). Identité visuelle : bleu marine/noir profond + doré premium, couronne dorée, monogramme "SM". Jamais de vrais blasons de club (générique/stylisé), jamais de visage de personne réelle/célébrité.
 
 Type de contenu à produire aujourd'hui : "${type.label}".
 ${matchInfo ? `Combiné en cours (noms d'équipes uniquement, PAS de score) : ${matchInfo}` : "Aucun combiné en cours actuellement — reste générique (marque/app), sans référence à un match précis."}
@@ -117,17 +120,24 @@ ${matchInfo ? `Combiné en cours (noms d'équipes uniquement, PAS de score) : ${
 Ne répète pas ces accroches/légendes déjà utilisées récemment :
 ${recentHistory.length ? recentHistory.map(h => `- ${h.slice(0, 120)}`).join('\n') : '(aucun historique)'}
 
-${forcedScene ? `Scène imposée pour le prompt image (reprends-la fidèlement, en anglais, en l'enrichissant de détails de composition/lumière/style) :\n${forcedScene}` : `Ton par type :
+${forcedScene ? `STYLE VISUEL OBLIGATOIRE pour "image_prompt" (référence : les visuels marketing d'app du compte Instagram @sport.meridian) : un vrai graphisme marketing d'application mobile, PAS une scène photo/cinématique. Intègre cette idée d'urgence comme un ÉLÉMENT D'INTERFACE (bandeau "Offer ends soon", minuteur, badge urgence) dans une maquette d'app propre, fond dégradé bleu marine/doré, typographie bold minimaliste :\n${forcedScene}` : `STYLE VISUEL OBLIGATOIRE pour "image_prompt" (référence : les visuels marketing d'app du compte Instagram @sport.meridian — PAS des scènes cinématiques/photos dramatiques) :
+- Un vrai graphisme marketing d'application mobile professionnel : fond dégradé bleu marine/noir profond avec touches dorées, typographie bold moderne et minimaliste.
+- Une maquette de téléphone (mockup) propre et réaliste montrant un écran plausible de l'app (liste de matchs, cote, score prédit par IA, badge "AI Prediction").
+- 2 à 4 éléments de texte MAXIMUM, chacun COURT (3-6 mots), à donner EXACTEMENT entre guillemets dans le prompt (ex: "Predict smarter with AI.", "AI PREDICTION · PSG 2-1"). Ne jamais demander de paragraphes ou de texte dense.
+- Optionnel : liste de fonctionnalités avec coches (✓), badges App Store / Google Play, petites icônes UI (stats, IA, live score).
+- Qualité : rendu net type design graphique professionnel, pas de flou artistique, pas de photo de stade/silhouette/scène narrative.
+
+Ton du texte (caption) par type :
 - Promo Web App : lumineux, accueillant, évoque l'application mobile
-- Prompt IA (affiche combiné) : poster cinématique stade/foule/tableau de score, dramatique
-- Écusson Brodé : gros plan textile brodé premium, esthétique luxe
-- Story Instagram : composition verticale punchy, grande zone pour texte
-- Annonce Telegram VIP+ : urgence/compte à rebours, horloge, néons, ville la nuit
-- Reels & Posts Instagram : scène d'action dynamique, flou de mouvement, football
-- Relance Adhérents : ambiance noir/mystère — silhouette, train, montre qui tic-tac, porte verrouillée`}
+- Prompt IA (affiche combiné) : met en avant la prédiction IA et le score exact
+- Écusson Brodé : gros plan textile brodé premium, esthétique luxe (garde ce type tel quel, ne pas appliquer le style app-mockup ici)
+- Story Instagram : verticale, punchy, très peu de texte
+- Annonce Telegram VIP+ : urgence/compte à rebours, mais toujours en graphisme d'app propre (pas de scène noire/néons)
+- Reels & Posts Instagram : met en avant les fonctionnalités/résultats de l'app
+- Relance Adhérents : rappel amical, met en avant la valeur de l'abonnement VIP+`}
 
 Réponds UNIQUEMENT avec un objet JSON strict, sans texte autour, au format :
-{"caption": "légende en français avec emojis, prête à poster", "image_prompt": "prompt en anglais pour un générateur d'image, décrivant précisément la scène/composition/ambiance/style"}`;
+{"caption": "légende en français avec emojis, prête à poster", "image_prompt": "prompt en anglais pour un générateur d'image, décrivant précisément la scène/composition/ambiance/style, avec les textes exacts entre guillemets"}`;
 
     const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
