@@ -162,4 +162,6 @@ alter table public.bot_conversations add column if not exists last_relaunch_at t
 -- de pari habituels), pour personnaliser l'échange et aider à la négociation.
 alter table public.bot_conversations add column if not exists betting_platform text;
 alter table public.bot_conversations add column if not exists betting_sport text;
+alter table public.bot_conversations add column if not exists betting_experience text;
+alter table public.bot_conversations add column if not exists betting_luck text;
 alter table public.bot_conversations enable row level security;

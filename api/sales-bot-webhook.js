@@ -135,6 +135,40 @@ const SPORT_REPLIES = {
     autre: `Peu importe le sport, l'important c'est la rigueur de l'analyse avant de miser 💪`
 };
 
+function experienceKeyboard() {
+    return [
+        [{ text: 'Je débute', callback_data: 'exp:debutant' }, { text: "Moins d'1 an", callback_data: 'exp:moins1an' }],
+        [{ text: '1 à 3 ans', callback_data: 'exp:1a3ans' }, { text: 'Plus de 3 ans', callback_data: 'exp:plus3ans' }]
+    ];
+}
+
+const EXPERIENCE_LABELS = {
+    debutant: 'Débutant', moins1an: "Moins d'1 an", '1a3ans': '1 à 3 ans', plus3ans: 'Plus de 3 ans'
+};
+const EXPERIENCE_REPLIES = {
+    debutant: `Parfait, on va t'accompagner pas à pas dès le début, tu es au bon endroit pour bien démarrer 🙌`,
+    moins1an: `Nickel, tu commences à avoir de bons repères alors, on va t'aider à passer un cap 📈`,
+    '1a3ans': `Top, tu as déjà de l'expérience, tu vas vite voir la différence avec nos analyses 💪`,
+    plus3ans: `Un vrai vétéran alors ! Tu sauras d'autant mieux apprécier la qualité de nos tickets 🔥`
+};
+
+function luckKeyboard() {
+    return [
+        [{ text: 'Plutôt de bonnes séries 📈', callback_data: 'luck:bonnes' }],
+        [{ text: 'Plutôt en dents de scie 📉', callback_data: 'luck:dents' }],
+        [{ text: 'Je débute, pas encore testé', callback_data: 'luck:debut' }]
+    ];
+}
+
+const LUCK_LABELS = {
+    bonnes: 'Plutôt de bonnes séries', dents: 'Plutôt en dents de scie', debut: 'Pas encore testé'
+};
+const LUCK_REPLIES = {
+    bonnes: `Excellent ! On va t'aider à stabiliser ça sur la durée, plutôt qu'au coup par coup 🔥`,
+    dents: `C'est justement pour casser cette irrégularité qu'on est là : nos analyses visent la régularité, pas le coup de chance 💪`,
+    debut: `Alors on va faire en sorte que ta première expérience avec nous soit la bonne 😉`
+};
+
 function hypeMessage(pack) {
     return `Tu as enfin décidé de passer au niveau supérieur, très bon choix ! 🔥\n\n`
         + `Chaque jour, des dizaines de membres de notre communauté <b>Score Master</b> encaissent grâce à nos analyses 📈💰. On ne te promet pas la lune : on te donne les tickets préparés par une équipe qui cumule plus de 20 ans d'expérience dans l'analyse sportive, avec une rigueur et une transparence qui font notre réputation depuis le début.\n\n`
@@ -210,19 +244,37 @@ async function handlePlatformChoice(chatId, platformKey, convo) {
 }
 
 async function handleSportChoice(chatId, sportKey, convo) {
-    const pack = PACKS[convo.pack_type];
     const reply = SPORT_REPLIES[sportKey] || SPORT_REPLIES.autre;
     await sendMessage(chatId,
-        `${reply}\n\nMerci pour ces questions et réponses aussi rapides ! 🙏 Je relance l'admin de mon côté !`,
+        `${reply}\n\nDepuis combien de temps paries-tu ? <i>(ça nous aide à adapter le niveau de détail de nos analyses pour toi)</i>`,
+        experienceKeyboard()
+    );
+    await safeUpsertConversation(chatId, { state: 'awaiting_experience', betting_sport: SPORT_LABELS[sportKey] || sportKey });
+}
+
+async function handleExperienceChoice(chatId, expKey, convo) {
+    const reply = EXPERIENCE_REPLIES[expKey] || '';
+    await sendMessage(chatId,
+        `${reply}\n\nEt sinon, plutôt de bonnes séries avec tes pronostics jusqu'ici, ou plutôt en dents de scie ?`,
+        luckKeyboard()
+    );
+    await safeUpsertConversation(chatId, { state: 'awaiting_luck', betting_experience: EXPERIENCE_LABELS[expKey] || expKey });
+}
+
+async function handleLuckChoice(chatId, luckKey, convo) {
+    const pack = PACKS[convo.pack_type];
+    const reply = LUCK_REPLIES[luckKey] || '';
+    await sendMessage(chatId,
+        `${reply}\n\nEn tout cas t'as fait le bon choix de nous rejoindre, l'équipe est hyper rigoureuse sur l'analyse, on ne sort un ticket que quand on est vraiment confiants dessus. Merci pour ces questions et réponses aussi rapides ! 🙏 Je relance l'admin de mon côté !`,
         relaunchKeyboard()
     );
-    await safeUpsertConversation(chatId, { state: 'awaiting_admin', betting_sport: SPORT_LABELS[sportKey] || sportKey });
+    await safeUpsertConversation(chatId, { state: 'awaiting_admin', betting_luck: LUCK_LABELS[luckKey] || luckKey });
     const firstName = (convo.telegram_name || '').split(' ')[0] || '';
     const platformLabel = convo.betting_platform || '';
-    const sportLabel = SPORT_LABELS[sportKey] || sportKey;
+    const sportLabel = convo.betting_sport || '';
     const platformLine = platformLabel ? ` Vu que tu paries sur ${platformLabel}, garde en tête que` : ' Sache que';
     await notifyAdmin(
-        `✅ COMPLÉMENT DE DEMANDE (Bot Telegram)\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n🎯 Plateforme habituelle : ${convo.betting_platform || '?'}\n🏅 Sport favori : ${sportLabel}\n\n➡️ Contacte le client sur Telegram pour poursuivre l'échange.\n\n📋 Message suggéré à lui envoyer (copier-coller) :\n« Ah top${firstName ? ', ' + firstName : ''} ! 😊${platformLine} nos pronostics ${sportLabel.toLowerCase()} sont particulièrement solides en ce moment 🔥. Et sinon, t'as déjà eu de bonnes séries avec tes pronostics, ou plutôt en dents de scie ? On va essayer de changer ça avec nous 😉 »\n\n⚠️ Le paiement (PayPal/PCS) reste à toi de l'aborder plus tard, une fois le contact établi.`
+        `✅ COMPLÉMENT DE DEMANDE (Bot Telegram)\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n🎯 Plateforme habituelle : ${convo.betting_platform || '?'}\n🏅 Sport favori : ${sportLabel || '?'}\n📅 Expérience : ${convo.betting_experience || '?'}\n🎲 Régularité : ${LUCK_LABELS[luckKey] || luckKey}\n\n➡️ Contacte le client sur Telegram pour poursuivre l'échange.\n\n📋 Message suggéré à lui envoyer (copier-coller) :\n« Ah top${firstName ? ', ' + firstName : ''} ! 😊${platformLine} nos pronostics ${sportLabel.toLowerCase()} sont particulièrement solides en ce moment 🔥. »\n\n⚠️ Le paiement (PayPal/PCS) reste à toi de l'aborder plus tard, une fois le contact établi.`
     );
 }
 
@@ -249,7 +301,7 @@ async function handleRelaunch(chatId, convo) {
     await sendMessage(chatId, `C'est noté ! Un admin va vous contacter très vite. Merci de votre patience 🙏 (${newCount}/3)`);
     const firstName = (convo.telegram_name || '').split(' ')[0] || '';
     await notifyAdmin(
-        `🔔 RELANCE (${newCount}/3) — Bot Telegram\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type}\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n${convo.betting_platform ? `🎯 Plateforme habituelle : ${convo.betting_platform}\n` : ''}${convo.betting_sport ? `🏅 Sport favori : ${convo.betting_sport}\n` : ''}\n➡️ Le client attend toujours ton contact.\n\n📋 Message suggéré à lui envoyer (copier-coller) :\n« Salut${firstName ? ' ' + firstName : ''} ! 😊 Désolé pour l'attente, je m'occupe de toi tout de suite ! En tout cas t'as fait le bon choix de nous rejoindre, l'équipe est hyper rigoureuse sur l'analyse, on ne sort un ticket que quand on est vraiment confiants dessus. »\n\n⚠️ Le paiement (PayPal/PCS) reste à toi de l'aborder plus tard, une fois le contact établi.`
+        `🔔 RELANCE (${newCount}/3) — Bot Telegram\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type}\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n${convo.betting_platform ? `🎯 Plateforme habituelle : ${convo.betting_platform}\n` : ''}${convo.betting_sport ? `🏅 Sport favori : ${convo.betting_sport}\n` : ''}${convo.betting_experience ? `📅 Expérience : ${convo.betting_experience}\n` : ''}${convo.betting_luck ? `🎲 Régularité : ${convo.betting_luck}\n` : ''}\n➡️ Le client attend toujours ton contact.\n\n📋 Message suggéré à lui envoyer (copier-coller) :\n« Salut${firstName ? ' ' + firstName : ''} ! 😊 Désolé pour l'attente, je m'occupe de toi tout de suite ! En tout cas t'as fait le bon choix de nous rejoindre, l'équipe est hyper rigoureuse sur l'analyse, on ne sort un ticket que quand on est vraiment confiants dessus. »\n\n⚠️ Le paiement (PayPal/PCS) reste à toi de l'aborder plus tard, une fois le contact établi.`
     );
 }
 
@@ -293,6 +345,16 @@ module.exports = async function handler(req, res) {
                 const convo = await getConversation(chatId);
                 if (convo) {
                     await handleSportChoice(chatId, data.slice(6), convo);
+                }
+            } else if (data.startsWith('exp:')) {
+                const convo = await getConversation(chatId);
+                if (convo) {
+                    await handleExperienceChoice(chatId, data.slice(4), convo);
+                }
+            } else if (data.startsWith('luck:')) {
+                const convo = await getConversation(chatId);
+                if (convo) {
+                    await handleLuckChoice(chatId, data.slice(5), convo);
                 }
             } else if (data === 'relaunch') {
                 const convo = await getConversation(chatId);
