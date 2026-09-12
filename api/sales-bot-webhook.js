@@ -143,14 +143,22 @@ function hypeMessage(pack) {
 }
 
 async function handleStart(chatId, from, startParam) {
-    const preselectedKey = startParam && startParam.startsWith('pack_') ? startParam.slice(5) : null;
+    // Le lien depuis l'app encode aussi le pseudo du compte Score Master, sous la
+    // forme "pack_<packKey>__u_<pseudo>" (le start param Telegram n'accepte que
+    // [A-Za-z0-9_]). On préfère ce pseudo au prénom Telegram pour interpeller le
+    // client de façon reconnaissable, comme sur son compte de l'app.
+    const uIdx = startParam ? startParam.indexOf('__u_') : -1;
+    const packPart = startParam ? (uIdx >= 0 ? startParam.slice(0, uIdx) : startParam) : null;
+    const appPseudo = uIdx >= 0 ? startParam.slice(uIdx + 4) : null;
+
+    const preselectedKey = packPart && packPart.startsWith('pack_') ? packPart.slice(5) : null;
     const preselectedPack = preselectedKey && PACKS[preselectedKey] ? preselectedKey : null;
 
     await upsertConversation(chatId, {
         state: preselectedPack ? 'awaiting_join' : 'awaiting_pack',
         pack_type: preselectedPack,
         telegram_username: from.username || null,
-        telegram_name: [from.first_name, from.last_name].filter(Boolean).join(' ') || null
+        telegram_name: appPseudo || [from.first_name, from.last_name].filter(Boolean).join(' ') || null
     });
 
     if (preselectedPack) {

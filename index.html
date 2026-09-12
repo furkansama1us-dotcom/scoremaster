@@ -6105,7 +6105,11 @@ ${aiPrompt}
         var packNames = { 'journalier': 'SM Score Exact Journalier', 'vip': 'SM VIP+ (à vie)', 'hebdo': 'SM Combiné Hebdo' };
         var packName = packNames[packType] || 'Pack Score Master';
         document.getElementById('subscribe-pack-title').textContent = 'Souscrire au ' + packName;
-        document.getElementById('subscribe-bot-link').href = `https://t.me/${SALES_BOT_USERNAME}?start=pack_${packType}`;
+        var appPseudo = (window.currentUserProfile && window.currentUserProfile.pseudo) ? window.currentUserProfile.pseudo : '';
+        // Le start param Telegram n'accepte que [A-Za-z0-9_], 64 caractères max.
+        var safePseudo = appPseudo.replace(/[^A-Za-z0-9]/g, '').slice(0, 32);
+        var startParam = `pack_${packType}` + (safePseudo ? `__u_${safePseudo}` : '');
+        document.getElementById('subscribe-bot-link').href = `https://t.me/${SALES_BOT_USERNAME}?start=${startParam}`;
 
         var waMsg = `Bonjour ! Je suis intéressé(e) par le pack "${packName}"${price ? ` (${fmtC(price)})` : ''}. Pouvez-vous m'aider à finaliser mon accès ?`;
         document.getElementById('subscribe-whatsapp-link').href = `https://wa.me/${WHATSAPP_ADMIN_NUMBER}?text=${encodeURIComponent(waMsg)}`;
