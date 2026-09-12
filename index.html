@@ -286,6 +286,10 @@
         .ai-confidence-badge.high{background:rgba(34,197,94,.15);color:var(--green);border:1px solid rgba(34,197,94,.3)}
         .ai-confidence-badge.mid{background:rgba(255,193,7,.15);color:var(--primary-yellow);border:1px solid rgba(255,193,7,.3)}
         .ai-confidence-badge.low{background:rgba(244,63,94,.15);color:var(--red);border:1px solid rgba(244,63,94,.3)}
+        .ai-confidence-badge.vip{background:linear-gradient(135deg,rgba(255,193,7,.22),rgba(184,134,11,.18));color:#FFC107;border:1px solid rgba(255,193,7,.4)}
+        .ai-vip-tag{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:800;letter-spacing:.4px;padding:3px 8px;border-radius:20px;background:linear-gradient(135deg,#FFC107,#B8860B);color:#000;margin-left:6px}
+        .ai-match-card.ai-vip-locked{position:relative;overflow:hidden}
+        #ai-vip-filter-btn.active{background:linear-gradient(135deg,#FFC107,#B8860B);color:#000;border-color:#FFC107}
         .ai-prediction-label{font-size:13px;font-weight:700;margin-bottom:10px}
         .ai-prediction-label span{color:var(--primary-yellow)}
         .ai-prob-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:11px}
@@ -1504,6 +1508,13 @@ async function fetchApiScore(id, dateRaw) {
                 <div class="ai-date-tab active" data-offset="0" onclick="switchAIDate(0)">Aujourd'hui</div>
                 <div class="ai-date-tab" data-offset="1" onclick="switchAIDate(1)">Demain</div>
                 <div class="ai-date-tab" data-offset="2" onclick="switchAIDate(2)">J+2</div>
+            </div>
+            <div class="ai-filter-bar" style="display:flex; align-items:center; gap:8px; padding:0 20px 15px; flex-wrap:wrap;">
+                <select id="ai-sort-select" onchange="setAISort(this.value)" style="background:var(--bg-input); color:#fff; border:1px solid var(--border-color); border-radius:10px; padding:8px 12px; font-size:12px; font-weight:600; font-family:'Montserrat',sans-serif;">
+                    <option value="desc">Confiance : décroissante</option>
+                    <option value="asc">Confiance : croissante</option>
+                </select>
+                <div id="ai-vip-filter-btn" onclick="toggleAIVipFilter()" style="display:flex; align-items:center; gap:6px; padding:8px 14px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:10px; font-size:12px; font-weight:700; color:var(--text-gray); cursor:pointer; white-space:nowrap;"><i class="fas fa-crown" style="color:#FFC107;"></i> Matchs VIP</div>
             </div>
             <div id="ai-pronostics-container" style="padding: 0 20px 20px;">
                 <div class="no-combined-message"><i class="fas fa-satellite-dish"></i>Chargement des analyses...</div>
@@ -3277,17 +3288,29 @@ async function fetchMatchesFromAPI() {
         }
     }
 
-    function renderAIPronostics(matches, dateStr) {
-        var container = document.getElementById('ai-pronostics-container');
-        if (!container) return;
+    window.aiFilterState = { sort: 'desc', vipOnly: false };
 
-        if (!matches || matches.length === 0) {
-            container.innerHTML = '<div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun match trouvé pour cette date.</div>';
-            return;
-        }
+    function redistributeConfidence(pred, winnerKey, conf) {
+        var remaining = 100 - conf;
+        var keys = ['homeProb', 'drawProb', 'awayProb'].filter(function (k) { return k !== winnerKey; });
+        var sumOthers = pred[keys[0]] + pred[keys[1]];
+        var r0 = sumOthers > 0 ? Math.round(remaining * pred[keys[0]] / sumOthers) : Math.floor(remaining / 2);
+        var r1 = remaining - r0;
+        var out = {};
+        out[winnerKey] = conf; out[keys[0]] = Math.max(1, r0); out[keys[1]] = Math.max(1, remaining - Math.max(1, r0));
+        return { homeProb: out.homeProb, drawProb: out.drawProb, awayProb: out.awayProb };
+    }
 
-        var html = '';
-        matches.forEach(function (m) {
+    function formBadges(form) {
+        if (!form) return '';
+        return form.split(',').slice(-5).map(function (r) {
+            var c = r === 'W' ? 'var(--green)' : (r === 'L' ? 'var(--red)' : 'var(--text-gray)');
+            return `<span style="display:inline-flex;width:16px;height:16px;border-radius:4px;background:${c};color:#fff;font-size:9px;font-weight:800;align-items:center;justify-content:center;">${r}</span>`;
+        }).join(' ');
+    }
+
+    function buildAIEnrichedList(matches, dateStr) {
+        return matches.map(function (m) {
             var home = (m.homeTeam && m.homeTeam.name) || "Domicile";
             var away = (m.awayTeam && m.awayTeam.name) || "Extérieur";
             var league = (m.tournament && m.tournament.name) || "Compétition";
@@ -3300,51 +3323,100 @@ async function fetchMatchesFromAPI() {
             var awayStanding = findTeamStanding(away);
             var pred = generateAIPrediction(home, away, dateStr, homeStanding, awayStanding);
             var maxProb = Math.max(pred.homeProb, pred.drawProb, pred.awayProb);
-            var confClass = maxProb >= 45 ? 'high' : (maxProb >= 36 ? 'mid' : 'low');
-            var confLabel = maxProb >= 45 ? 'Confiance élevée' : (maxProb >= 36 ? 'Confiance moyenne' : 'Confiance faible');
+            var winnerKey = pred.homeProb === maxProb ? 'homeProb' : (pred.awayProb === maxProb ? 'awayProb' : 'drawProb');
+
+            var seed = home + '|' + away + '|' + dateStr;
+            var isVipPick = seededScore(seed + '#vip') < 0.35;
+            var conf = isVipPick
+                ? Math.round(95 + seededScore(seed + '#vipconf') * 4)
+                : Math.round(51 + seededScore(seed + '#normconf') * 22);
+            pred = redistributeConfidence(pred, winnerKey, conf);
+
+            var confClass = isVipPick ? 'vip' : (conf >= 65 ? 'high' : 'mid');
+            var confLabel = isVipPick ? 'Très élevé' : (conf >= 65 ? 'Confiance élevée' : 'Confiance moyenne');
 
             var pickLabel;
-            if (pred.homeProb === maxProb) pickLabel = `Victoire <span>${home}</span>`;
-            else if (pred.awayProb === maxProb) pickLabel = `Victoire <span>${away}</span>`;
+            if (winnerKey === 'homeProb') pickLabel = `Victoire <span>${home}</span>`;
+            else if (winnerKey === 'awayProb') pickLabel = `Victoire <span>${away}</span>`;
             else pickLabel = `Match nul probable`;
 
-            function formBadges(form) {
-                if (!form) return '';
-                return form.split(',').slice(-5).map(function (r) {
-                    var c = r === 'W' ? 'var(--green)' : (r === 'L' ? 'var(--red)' : 'var(--text-gray)');
-                    return `<span style="display:inline-flex;width:16px;height:16px;border-radius:4px;background:${c};color:#fff;font-size:9px;font-weight:800;align-items:center;justify-content:center;">${r}</span>`;
-                }).join(' ');
-            }
-
-            var statLine = '';
-            if (homeStanding || awayStanding) {
-                statLine += `<div style="display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--text-gray);margin-bottom:12px;background:var(--bg-input);border-radius:10px;padding:8px 10px;">`;
-                statLine += `<div style="flex:1;">${homeStanding ? `<b style="color:var(--text-light-gray);">${homeStanding.position}e</b> ${homeStanding.competition} · ${homeStanding.points} pts ${homeStanding.form ? '<br>' + formBadges(homeStanding.form) : ''}` : 'Classement indisponible'}</div>`;
-                statLine += `<div style="flex:1;text-align:right;">${awayStanding ? `<b style="color:var(--text-light-gray);">${awayStanding.position}e</b> ${awayStanding.competition} · ${awayStanding.points} pts ${awayStanding.form ? '<br>' + formBadges(awayStanding.form) : ''}` : 'Classement indisponible'}</div>`;
-                statLine += `</div>`;
-            }
-
-            html += `
-            <div class="ai-match-card">
-                <div class="ai-match-top">
-                    <div class="ai-match-league"><i class="fas fa-trophy" style="color:var(--text-gray);"></i> ${league}</div>
-                    <div class="ai-match-time"><i class="fas fa-clock"></i> ${timeStr}</div>
-                </div>
-                <div class="ai-match-teams">
-                    <div class="ai-match-team">${home}</div>
-                    <div class="ai-match-vs">VS</div>
-                    <div class="ai-match-team">${away}</div>
-                </div>
-                ${statLine}
-                <div class="ai-confidence-badge ${confClass}"><i class="fas fa-bolt"></i> ${confLabel}</div>
-                <div class="ai-prediction-label">🤖 Pronostic IA : ${pickLabel}</div>
-                <div class="ai-prob-row"><span class="ai-prob-label">${home}</span><div class="ai-prob-bar-track"><div class="ai-prob-bar-fill" style="width:${pred.homeProb}%;"></div></div><span class="ai-prob-value">${pred.homeProb}%</span></div>
-                <div class="ai-prob-row"><span class="ai-prob-label">Nul</span><div class="ai-prob-bar-track"><div class="ai-prob-bar-fill" style="width:${pred.drawProb}%;"></div></div><span class="ai-prob-value">${pred.drawProb}%</span></div>
-                <div class="ai-prob-row"><span class="ai-prob-label">${away}</span><div class="ai-prob-bar-track"><div class="ai-prob-bar-fill" style="width:${pred.awayProb}%;"></div></div><span class="ai-prob-value">${pred.awayProb}%</span></div>
-            </div>`;
+            return { home: home, away: away, league: league, timeStr: timeStr, homeStanding: homeStanding, awayStanding: awayStanding, pred: pred, conf: conf, isVipPick: isVipPick, confClass: confClass, confLabel: confLabel, pickLabel: pickLabel };
         });
+    }
 
-        container.innerHTML = html;
+    function buildAIMatchCardHtml(item) {
+        var home = item.home, away = item.away, pred = item.pred;
+        var statLine = '';
+        if (item.homeStanding || item.awayStanding) {
+            statLine += `<div style="display:flex;justify-content:space-between;gap:10px;font-size:11px;color:var(--text-gray);margin-bottom:12px;background:var(--bg-input);border-radius:10px;padding:8px 10px;">`;
+            statLine += `<div style="flex:1;">${item.homeStanding ? `<b style="color:var(--text-light-gray);">${item.homeStanding.position}e</b> ${item.homeStanding.competition} · ${item.homeStanding.points} pts ${item.homeStanding.form ? '<br>' + formBadges(item.homeStanding.form) : ''}` : 'Classement indisponible'}</div>`;
+            statLine += `<div style="flex:1;text-align:right;">${item.awayStanding ? `<b style="color:var(--text-light-gray);">${item.awayStanding.position}e</b> ${item.awayStanding.competition} · ${item.awayStanding.points} pts ${item.awayStanding.form ? '<br>' + formBadges(item.awayStanding.form) : ''}` : 'Classement indisponible'}</div>`;
+            statLine += `</div>`;
+        }
+
+        var vipTag = item.isVipPick ? '<span class="ai-vip-tag"><i class="fas fa-crown"></i> VIP</span>' : '';
+        var isLockedForViewer = item.isVipPick && !window.isUserVip;
+        var blurClass = isLockedForViewer ? 'blurred-value' : '';
+
+        var lockedNotice = isLockedForViewer ? `<button onclick="navigateTo('packs')" style="width:100%; margin-top:10px; display:flex; align-items:center; justify-content:center; gap:8px; background:linear-gradient(135deg,#FFC107,#B8860B); border:none; color:#000; padding:12px; border-radius:10px; font-size:13px; font-weight:800; font-family:'Montserrat',sans-serif; cursor:pointer;"><i class="fas fa-eye-slash"></i> Voir le combiné</button>` : '';
+
+        return `
+        <div class="ai-match-card${isLockedForViewer ? ' ai-vip-locked' : ''}">
+            <div class="ai-match-top">
+                <div class="ai-match-league"><i class="fas fa-trophy" style="color:var(--text-gray);"></i> ${item.league}</div>
+                <div class="ai-match-time"><i class="fas fa-clock"></i> ${item.timeStr}</div>
+            </div>
+            <div class="ai-match-teams">
+                <div class="ai-match-team ${blurClass}">${home}</div>
+                <div class="ai-match-vs">VS</div>
+                <div class="ai-match-team ${blurClass}">${away}</div>
+            </div>
+            ${statLine}
+            <div class="ai-confidence-badge ${item.confClass}"><i class="fas fa-bolt"></i> ${item.confLabel}${vipTag}</div>
+            <div class="ai-prediction-label ${blurClass}">🤖 Pronostic IA : ${item.pickLabel}</div>
+            <div class="ai-prob-row"><span class="ai-prob-label ${blurClass}">${home}</span><div class="ai-prob-bar-track"><div class="ai-prob-bar-fill" style="width:${pred.homeProb}%;"></div></div><span class="ai-prob-value ${blurClass}">${pred.homeProb}%</span></div>
+            <div class="ai-prob-row"><span class="ai-prob-label">Nul</span><div class="ai-prob-bar-track"><div class="ai-prob-bar-fill" style="width:${pred.drawProb}%;"></div></div><span class="ai-prob-value ${blurClass}">${pred.drawProb}%</span></div>
+            <div class="ai-prob-row"><span class="ai-prob-label ${blurClass}">${away}</span><div class="ai-prob-bar-track"><div class="ai-prob-bar-fill" style="width:${pred.awayProb}%;"></div></div><span class="ai-prob-value ${blurClass}">${pred.awayProb}%</span></div>
+            ${lockedNotice}
+        </div>`;
+    }
+
+    function renderAIList() {
+        var container = document.getElementById('ai-pronostics-container');
+        if (!container) return;
+        var list = (window.aiCurrentEnriched || []).slice();
+
+        if (window.aiFilterState.vipOnly) list = list.filter(function (x) { return x.isVipPick; });
+        list.sort(function (a, b) { return window.aiFilterState.sort === 'asc' ? a.conf - b.conf : b.conf - a.conf; });
+
+        var vipBtn = document.getElementById('ai-vip-filter-btn');
+        if (vipBtn) vipBtn.classList.toggle('active', window.aiFilterState.vipOnly);
+        var sortSelect = document.getElementById('ai-sort-select');
+        if (sortSelect) sortSelect.value = window.aiFilterState.sort;
+
+        if (list.length === 0) {
+            container.innerHTML = '<div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun match ne correspond à ce filtre.</div>';
+            return;
+        }
+
+        container.innerHTML = list.map(buildAIMatchCardHtml).join('');
+    }
+
+    function setAISort(val) { window.aiFilterState.sort = val; renderAIList(); }
+    function toggleAIVipFilter() { window.aiFilterState.vipOnly = !window.aiFilterState.vipOnly; renderAIList(); }
+
+    function renderAIPronostics(matches, dateStr) {
+        var container = document.getElementById('ai-pronostics-container');
+        if (!container) return;
+
+        if (!matches || matches.length === 0) {
+            window.aiCurrentEnriched = [];
+            container.innerHTML = '<div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun match trouvé pour cette date.</div>';
+            return;
+        }
+
+        window.aiCurrentEnriched = buildAIEnrichedList(matches, dateStr);
+        renderAIList();
     }
 
     // ============================================================
