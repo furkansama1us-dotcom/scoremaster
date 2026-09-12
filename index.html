@@ -1584,14 +1584,19 @@ async function fetchApiScore(id, dateRaw) {
     <!-- ONGLET SUGGESTIONS IA -->
     <div class="admin-tab-content" id="admin-tab-aisuggest">
         <div class="admin-section">
-            <div class="admin-section-title"><i class="fas fa-robot" style="color:var(--primary-yellow);"></i> Suggestions IA — Combiné J+1</div>
+            <div class="admin-section-title"><i class="fas fa-robot" style="color:var(--primary-yellow);"></i> Suggestions IA — Combiné</div>
             <div class="ai-intro-banner" style="margin:0 0 16px;">
                 <div class="ai-intro-badge"><i class="fas fa-microchip"></i> AI-POWERED</div>
-                <div class="ai-intro-text">Génère 2 matchs de grandes ligues prévus demain avec un score exact prédit par l'IA. Relis, ajuste si besoin dans l'Éditeur, puis publie comme d'habitude — le combiné apparaîtra automatiquement chez tous les membres SM VIP+.</div>
+                <div class="ai-intro-text">Génère 2 matchs de grandes ligues avec un score exact prédit par l'IA, pour aujourd'hui ou demain. Relis, ajuste si besoin dans l'Éditeur, puis publie comme d'habitude — le combiné apparaîtra automatiquement chez tous les membres SM VIP+.</div>
             </div>
-            <button onclick="generateAISuggestions()" id="btn-generate-ai-suggest" style="width:100%; padding:13px; background:linear-gradient(135deg, var(--primary-yellow), var(--dark-yellow)); color:#fff; border:none; border-radius:12px; cursor:pointer; margin-bottom:15px; font-weight:800; font-family:'Montserrat',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px;">
-                <i class="fas fa-wand-magic-sparkles"></i> Générer 2 suggestions (demain)
-            </button>
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <button onclick="generateAISuggestions(0)" id="btn-generate-ai-suggest-today" style="flex:1; padding:13px; background:linear-gradient(135deg, var(--primary-yellow), var(--dark-yellow)); color:#fff; border:none; border-radius:12px; cursor:pointer; font-weight:800; font-family:'Montserrat',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px;">
+                    <i class="fas fa-wand-magic-sparkles"></i> Aujourd'hui (J+0)
+                </button>
+                <button onclick="generateAISuggestions(1)" id="btn-generate-ai-suggest-tomorrow" style="flex:1; padding:13px; background:linear-gradient(135deg, var(--primary-yellow), var(--dark-yellow)); color:#fff; border:none; border-radius:12px; cursor:pointer; font-weight:800; font-family:'Montserrat',sans-serif; display:flex; align-items:center; justify-content:center; gap:8px;">
+                    <i class="fas fa-wand-magic-sparkles"></i> Demain (J+1)
+                </button>
+            </div>
             <div id="ai-suggest-container"></div>
         </div>
     </div>
@@ -2761,15 +2766,21 @@ async function fetchMatchesFromAPI() {
         return scorelines[idx];
     }
 
-    async function generateAISuggestions() {
+    async function generateAISuggestions(dayOffset) {
+        dayOffset = dayOffset || 0;
         var container = document.getElementById('ai-suggest-container');
-        var btn = document.getElementById('btn-generate-ai-suggest');
+        var btnToday = document.getElementById('btn-generate-ai-suggest-today');
+        var btnTomorrow = document.getElementById('btn-generate-ai-suggest-tomorrow');
+        var btn = dayOffset === 0 ? btnToday : btnTomorrow;
+        var otherBtn = dayOffset === 0 ? btnTomorrow : btnToday;
+        var label = dayOffset === 0 ? "Aujourd'hui (J+0)" : 'Demain (J+1)';
         btn.disabled = true;
+        otherBtn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyse en cours...';
         container.innerHTML = '';
 
         var d = new Date();
-        d.setDate(d.getDate() + 1);
+        d.setDate(d.getDate() + dayOffset);
         var dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         var dTo = new Date(d); dTo.setDate(dTo.getDate() + 1);
         var dateToStr = `${dTo.getFullYear()}-${String(dTo.getMonth() + 1).padStart(2, '0')}-${String(dTo.getDate()).padStart(2, '0')}`;
@@ -2785,8 +2796,9 @@ async function fetchMatchesFromAPI() {
             });
 
             if (matches.length < 2) {
-                container.innerHTML = '<div class="no-combined-message" style="padding:20px;"><i class="fas fa-circle-exclamation"></i>Pas assez de matchs de grandes ligues trouvés pour demain. Réessaie plus tard.</div>';
-                btn.disabled = false; btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Générer 2 suggestions (demain)';
+                container.innerHTML = `<div class="no-combined-message" style="padding:20px;"><i class="fas fa-circle-exclamation"></i>Pas assez de matchs de grandes ligues trouvés pour ${dayOffset === 0 ? "aujourd'hui" : 'demain'}. Réessaie plus tard.</div>`;
+                btn.disabled = false; otherBtn.disabled = false;
+                btn.innerHTML = `<i class="fas fa-wand-magic-sparkles"></i> ${label}`;
                 return;
             }
 
@@ -2821,7 +2833,8 @@ async function fetchMatchesFromAPI() {
         }
 
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Générer 2 suggestions (demain)';
+        otherBtn.disabled = false;
+        btn.innerHTML = `<i class="fas fa-wand-magic-sparkles"></i> ${label}`;
     }
 
     function renderAISuggestPreview() {
