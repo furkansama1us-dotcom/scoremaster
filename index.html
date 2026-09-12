@@ -5709,35 +5709,48 @@ function buildVictoryTelegramText(c) {
     const ticketDate = new Date(c.date).toLocaleDateString('fr-FR');
 
     // Récupération des scores du combiné
+    // (pas de markdown *gras* : Postiz ne l'interprète pas pour Telegram, ça
+    // s'affichait littéralement avec les astérisques visibles dans le message)
     let matchLines = "";
     if (c.matches && c.matches.length > 0) {
         c.matches.forEach(m => {
-            matchLines += `✅ *${m.teams}* | Score : ${m.score}\n`;
+            matchLines += `🎯 ${m.teams} — Score : ${m.score} ✅\n`;
         });
     }
 
-    // Messages de victoire — ton chaleureux et professionnel, signés Maître Gon
-    const winMessages = [
-        `✅ Ticket validé ! Le combiné du ${ticketDate} est passé, bravo à tous ceux qui nous ont suivis aujourd'hui. On continue sur cette lancée ensemble. 🙌`,
-        `🏆 Et voilà, un nouveau succès pour la communauté Score Master ! Le ticket du ${ticketDate} est confirmé gagnant. Merci pour votre confiance. 🤝`,
-        `📈 Bonne nouvelle : le combiné du ${ticketDate} est validé. Notre travail d'analyse continue de porter ses fruits, merci d'être à nos côtés. 🙏`,
-        `🎯 Objectif atteint sur le ticket du ${ticketDate} ! Félicitations à tous nos membres VIP+, on prépare déjà la suite. 👏`,
-        `✅ Le verdict est tombé : combiné gagnant pour le ${ticketDate}. Ravi de partager cette victoire avec vous tous. 🙌`,
-        `🤝 Encore un ticket honoré aujourd'hui (${ticketDate}). C'est cette rigueur qui fait notre réputation, merci de nous faire confiance.`,
-        `🏅 Combiné du ${ticketDate} validé avec succès ! Une nouvelle preuve que le sérieux paie sur la durée. Merci à toute la communauté.`,
-        `✅ C'est officiel, le ticket du ${ticketDate} est gagnant. Merci à chacun d'entre vous pour votre fidélité, on continue ensemble. 🙌`
+    // Accroches — ton dynamique, confiant et professionnel
+    const hooks = [
+        '🔥 NOUVEAU TICKET HONORÉ !',
+        '🔥 ENCORE UN TICKET VALIDÉ !',
+        '🔥 OBJECTIF ATTEINT !',
+        '🔥 LE VERDICT EST TOMBÉ !'
     ];
+    const hook = hooks[Math.floor(Math.random() * hooks.length)];
 
-    // Sélection aléatoire d'un message
-    let randomWinMessage = winMessages[Math.floor(Math.random() * winMessages.length)];
+    const regularityLines = [
+        "La régularité, la rigueur et la confiance : c'est ça, la signature Score Master. 💪",
+        "Encore une preuve que le sérieux et la constance paient sur la durée. 💪",
+        "Chaque ticket est le résultat d'une analyse rigoureuse, pas du hasard. 💪",
+        "C'est cette rigueur, match après match, qui fait notre réputation. 💪"
+    ];
+    const regularityLine = regularityLines[Math.floor(Math.random() * regularityLines.length)];
 
     // Assemblage du message final Telegram
-    return `${randomWinMessage}
+    return `${hook}
 
-📋 *Détails du ticket :*
+Ticket validé aujourd'hui, ${ticketDate} ✅
+
+📋 LES RÉSULTATS DU JOUR :
+
 ${matchLines}
+${regularityLine}
+
+🤝 Merci à toute la communauté pour votre confiance et votre fidélité !
+
+🚀 Rejoignez l'aventure Score Master dès maintenant :
+
 🌐 Site Web : https://scoremaster.fr/
-➡️ Telegram : @ScoreMasterOfficiel`;
+📲 Telegram : @ScoreMasterOfficiel`;
 }
 
 // Ne publie jamais directement : génère la photo (Higgsfield) et dépose un
@@ -7567,7 +7580,7 @@ function buildVictoryImagePromptRaw(c) {
         ? `You may subtly incorporate the national flag(s) of ${countries.join(' and ')} as a color/pattern motif somewhere in the scene (e.g. on a banner, a scarf, a ribbon) — purely as color/graphic motifs, with NO text or lettering on them.`
         : '';
 
-    return `A stylized, hand-drawn illustrated football scene, dark bold ink outlines, high-contrast ink wash, premium comic book / graphic novel art style. NOT photorealistic, NOT 3D render, NOT a photo. Vertical 9:16 ratio.
+    return `A stylized, hand-drawn illustrated football scene, dark bold ink outlines, high-contrast ink wash, premium comic book / graphic novel art style. NOT photorealistic, NOT 3D render, NOT a photo. Square 1:1 ratio composition.
 
 ABSOLUTE RULE: NO text, NO numbers, NO score, NO scoreboard, NO typography or lettering of any kind anywhere in the image, under any circumstance — image generators render text as garbled/illegible, so the composition must rely purely on imagery, never on written characters. NO phone, NO screen, NO tablet, NO app interface anywhere.
 

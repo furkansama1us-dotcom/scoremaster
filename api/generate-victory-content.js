@@ -74,7 +74,7 @@ module.exports = async function handler(req, res) {
             return res.status(400).json({ error: 'caption et imagePrompt requis' });
         }
 
-        const statusUrl = await submitHiggsfield(imagePrompt, '9:16');
+        const statusUrl = await submitHiggsfield(imagePrompt, '1:1');
 
         const rows = await sbFetch('pending_publications', {
             method: 'POST',
