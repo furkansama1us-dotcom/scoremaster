@@ -5712,72 +5712,9 @@ ${aiPrompt}
     var c = allCombineds.find(x => x.id == id);
     if (!c) { showToast("Combiné introuvable", true); return; }
 
-    let detailsMatchs = "";
-    let instaMatches = "";
-    let earliestTime = '23:59';
-
-    if (c.matches && c.matches.length > 0) {
-        c.matches.forEach((m) => {
-            let timeFormatted = m.time ? m.time.replace(':', 'H') : "21H00";
-
-            detailsMatchs += `Match : ${m.teams} (${timeFormatted}) | `;
-            instaMatches += `🏆 ${m.teams}\n`;
-
-            let extracted = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
-            if (extracted && extracted[0] < earliestTime) earliestTime = extracted[0];
-        });
-    }
-
-    // PROMPT ULTRA OPTIMISÉ
-    let aiPrompt = `
-Illustration digitale stylisée premium (contours sombres, ink wash), PAS une photo réaliste, PAS de téléphone/écran/interface visible dans l'image.
-
-TEXTE PRINCIPAL (OBLIGATOIRE, COURT ET EXACT) :
-- "Combiné disponible." (typographie bold blanche/dorée, une seule ligne)
-
-ARRIÈRE-PLAN :
-- Dégradé bleu marine profond vers noir, touches dorées discrètes
-- Aucune photo de stade, foule ou scène narrative — uniquement du design graphique propre
-
-ZONE CENTRALE :
-- Illustration digitale stylisée (contours sombres, ink wash), AUCUN téléphone/écran/interface visible
-- Afficher clairement les matchs suivants (texte net, lisible, pas de superposition) :
-${detailsMatchs}
-
-STYLE VISUEL :
-- Illustration premium, propre et nette, pas de photo réaliste
-- Typographie minimaliste, parfaitement lisible
-- Composition centrée et équilibrée
-- Maximum 3 éléments de texte au total sur l'affiche
-
-ZONE BASSE :
-- Petit monogramme doré "SM" + texte exact : "@scoremaster.fr" en blanc
-
-CONTRAINTES STRICTES :
-- Texte uniquement en français
-- Aucun mot en anglais
-- Pas d’erreur de typographie
-- Respect exact des mots affichés
-
---ar 9:16 --style raw --v 6
-`;
-
-    // TEXTE INSTAGRAM OPTIMISÉ
-    let instaText = `🔥 COMBINÉ SCORE EXACT DISPONIBLE !
-
-${instaMatches}⏰ Début du premier match à ${earliestTime}
-
-💸 Accède au VIP+ via le lien en bio
-📈 Ne rate pas cette opportunité !
-
-@scoremaster.fr`;
-
-    let telegramText = `🎨 *PROMPT IA POSTER PROMO :*\n\`\`\`\n${aiPrompt}\n\`\`\`\n\n📝 *TEXTE INSTAGRAM :*\n\`\`\`\n${instaText}\n\`\`\``;
-
-    if (confirm("Générer et envoyer le prompt de PROMOTION sur Telegram ?")) {
-        sendAdminTelegram(telegramText).then(() => {
-            showToast("Prompt Promo optimisé envoyé ! 🚀");
-        });
+    if (confirm("Générer et publier automatiquement une Promo (Claude + Higgsfield) pour ce combiné ?\n\nLe brouillon atterrira dans l'onglet Publications pour validation avant envoi.")) {
+        generateContentNow('promo', 0, null);
+        showToast('Génération lancée ! Va dans Publications ou Calendrier pour approuver une fois prêt.');
     }
 }
 
