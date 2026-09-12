@@ -5969,13 +5969,22 @@ ${aiPrompt}
                 var scoreDisplay = '-';
                 if (live) {
                     var bucket = matchsStatusBucket(live.status);
-                    if (bucket === 'live') {
+                    if (live.status === 'PAUSED') {
+                        statusLabel = '🔴 Mi-temps';
+                        statusColor = 'var(--red)';
+                    } else if (bucket === 'live') {
                         // football-data.org (plan gratuit) ne fournit pas la minute de jeu :
-                        // on l'estime à partir du coup d'envoi réel (± mi-temps non comptée).
+                        // on l'estime à partir du coup d'envoi réel, en retirant la pause de
+                        // mi-temps (~15 min) une fois la 2e période commencée.
                         var estMinute = live.minute;
                         if (!estMinute && live.utcDate) {
                             var elapsedMin = Math.floor((Date.now() - Date.parse(live.utcDate)) / 60000);
-                            if (elapsedMin >= 0 && elapsedMin <= 130) estMinute = Math.min(elapsedMin, 90);
+                            if (elapsedMin >= 0 && elapsedMin <= 45) {
+                                estMinute = elapsedMin;
+                            } else if (elapsedMin > 45) {
+                                var secondHalfMin = elapsedMin - 15; // retire la pause de mi-temps estimée
+                                if (secondHalfMin >= 46 && secondHalfMin <= 130) estMinute = Math.min(secondHalfMin, 90);
+                            }
                         }
                         statusLabel = '🔴 EN DIRECT' + (estMinute ? ` ${estMinute}'` : '');
                         statusColor = 'var(--red)';
