@@ -3216,10 +3216,10 @@ async function fetchMatchesFromAPI() {
             var dayLabel = (window.currentAISuggestionsOffset || 0) === 0 ? "aujourd'hui" : 'demain';
             var matchLinesAI = suggestions.map(function (s) { return `🏆 ${s.teams} (${s.time})`; }).join('\n');
             var telegramAIMsg =
-                `🔥 *LE COMBINÉ EST DISPONIBLE !* 🚀\n\n` +
-                `Les affiches (${dayLabel}) :\n${matchLinesAI}\n\n` +
-                `⏰ Début des hostilités à *${earliestTime}* !\n\n` +
-                `C'est maintenant qu'il faut miser sur votre espace VIP+ Score Master ! 💎💰\n\n` +
+                `🏆 *Le combiné du jour est disponible !*\n\n` +
+                `Ici Maître Gon 👋 Voici les affiches retenues pour ${dayLabel} :\n${matchLinesAI}\n\n` +
+                `⏰ Coup d'envoi à *${earliestTime}*.\n\n` +
+                `Comme toujours, l'analyse complète est disponible dès maintenant dans votre espace VIP+ Score Master. 🙌\n\n` +
                 `🌐 Site Web : https://scoremaster.fr/\n` +
                 `➡️ Telegram : @ScoreMasterOfficiel`;
             sendGroupTelegram(telegramAIMsg).catch(function () {
@@ -4839,12 +4839,19 @@ async function autoFetchFinalScores(combined) {
             if (updateVip.error) throw updateVip.error;
 
             showToast(finalStatus === 'termine' ? 'Combiné validé GAGNÉ !' : 'Combiné validé PERDU.');
+            var idJustValidated = validationCombinedId;
             validationCombinedId = null;
-            
+
             await chargerDonnees();
             switchAdminTab('dashboard');
             renderAdminHistory();
-            
+
+            // Dès la validation d'un combiné GAGNÉ, on publie automatiquement le message
+            // de victoire + le prompt photo — plus besoin de repasser par un bouton séparé.
+            if (finalStatus === 'termine') {
+                sendVictoryPackage(idJustValidated);
+            }
+
         } catch (e) {
             console.error("Erreur validation :", e);
             showToast("Erreur lors de la validation", true);
@@ -5653,66 +5660,63 @@ async function autoConfirmFinishedCombineds() {
 }
 
 // ============================================================
-// ENVOI DU MESSAGE DE VICTOIRE SUR TELEGRAM (20 MESSAGES)
+// ENVOI DU MESSAGE DE VICTOIRE SUR TELEGRAM (voix "Maître Gon")
 // ============================================================
-function sendTelegramWin(id) {
-    var c = allCombineds.find(x => x.id == id);
-    if (!c) { showToast("Combiné introuvable", true); return; }
-
-
+function buildVictoryTelegramText(c) {
     // Formatage de la date du ticket
     const ticketDate = new Date(c.date).toLocaleDateString('fr-FR');
 
     // Récupération des scores du combiné
     let matchLines = "";
     if (c.matches && c.matches.length > 0) {
-        c.matches.forEach(m => { 
-            matchLines += `✅ *${m.teams}* | Score : ${m.score}\n`; 
+        c.matches.forEach(m => {
+            matchLines += `✅ *${m.teams}* | Score : ${m.score}\n`;
         });
     }
 
-    // 20 Messages de victoire différents
+    // Messages de victoire — ton chaleureux et professionnel, signés Maître Gon
     const winMessages = [
-        `BOOM ! 💥 Encore un ticket validé ! Félicitations à tous ceux qui ont suivi le combiné du ${ticketDate}. L'algorithme a encore frappé fort ! 💸`,
-        `✅ ENCAISSÉ ! Le travail paie toujours. On vient de plumer les bookmakers sur le ticket du ${ticketDate}. Qui est prêt pour le prochain ? 💰`,
-        `🎯 BINGO ! Précision chirurgicale sur les scores exacts ! Bravo aux VIP+ qui s'en mettent plein les poches ce soir ! 🍾`,
-        `🤑 Et ça fait un de plus ! Le ticket du ${ticketDate} passe crème. On continue la série de victoires. Ne restez pas sur la touche !`,
-        `🔥 ON FIRE ! Vous avez douté ? Regardez les résultats ! Le combiné score exact est validé avec succès. 📈`,
-        `💰 C'EST DEDANS ! Une soirée parfaite pour les membres Score Master. Les scores étaient donnés !`,
-        `🍾 CHAMPAGNE ! Un nouveau ticket VIP+ validé. C'est ça l'expertise Score Master. Foncez voir l'historique sur l'appli !`,
-        `👑 LES ROIS DU PRONO ! Le ticket du ${ticketDate} est vert. 100% de réussite sur ces scores. On ne s'arrête plus !`,
-        `💸 BRAQUAGE RÉUSSI ! Les bookmakers pleurent. Félicitations à toute l'équipe pour ce ticket validé !`,
-        `✅ ENCORE UN VERDICT PARFAIT ! L'analyse a payé. C'était du gâteau. Préparez-vous pour le prochain !`,
-        `🚀 ON DÉCOLLE ! Le compte en banque s'envole grâce au ticket du ${ticketDate}. Bravo à tous les visionnaires !`,
-        `💎 UN BIJOU VALIDÉ ! C'était écrit d'avance. Les scores exacts sont rentrés comme prévu !`,
-        `💶 CAISSE ! Le ticket VIP+ du ${ticketDate} est dans la poche. L'algorithme ne ment jamais.`,
-        `🥇 MASTERCLASS ! Une nouvelle leçon de paris sportifs donnée. Le ticket est validé haut la main !`,
-        `💥 INCROYABLE ! Quel frisson et quelle victoire ! Le ticket score exact passe en beauté !`,
-        `💸 PAY PAY PAY ! On récupère notre dû chez les bookmakers. Le ticket du ${ticketDate} est vert de chez vert !`,
-        `✅ MISSION ACCOMPLIE ! Le combiné a fait le travail. On encaisse et on recommence !`,
-        `🎯 DANS LE MILLE ! L'info était fiable à 100%. Bravo à tous ceux qui ont eu la chance d'avoir le VIP+ !`,
-        `💰 C'EST TROP FACILE ! Nouvelle victoire fracassante sur le ticket du ${ticketDate}. Rejoignez l'élite !`,
-        `🔥 BOUM BOUM BOUM ! Le réseau VIP+ a encore frappé. Le ticket score exact est validé. Quelle soirée !`
+        `✅ Ticket validé ! Le combiné du ${ticketDate} est passé, bravo à tous ceux qui nous ont suivis aujourd'hui. On continue sur cette lancée ensemble. 🙌`,
+        `🏆 Et voilà, un nouveau succès pour la communauté Score Master ! Le ticket du ${ticketDate} est confirmé gagnant. Merci pour votre confiance. 🤝`,
+        `📈 Bonne nouvelle : le combiné du ${ticketDate} est validé. Notre travail d'analyse continue de porter ses fruits, merci d'être à nos côtés. 🙏`,
+        `🎯 Objectif atteint sur le ticket du ${ticketDate} ! Félicitations à tous nos membres VIP+, on prépare déjà la suite. 👏`,
+        `✅ Le verdict est tombé : combiné gagnant pour le ${ticketDate}. Ravi de partager cette victoire avec vous tous. 🙌`,
+        `🤝 Encore un ticket honoré aujourd'hui (${ticketDate}). C'est cette rigueur qui fait notre réputation, merci de nous faire confiance.`,
+        `🏅 Combiné du ${ticketDate} validé avec succès ! Une nouvelle preuve que le sérieux paie sur la durée. Merci à toute la communauté.`,
+        `✅ C'est officiel, le ticket du ${ticketDate} est gagnant. Merci à chacun d'entre vous pour votre fidélité, on continue ensemble. 🙌`
     ];
 
     // Sélection aléatoire d'un message
     let randomWinMessage = winMessages[Math.floor(Math.random() * winMessages.length)];
 
     // Assemblage du message final Telegram
-    let telegramText = 
-`${randomWinMessage}
+    return `${randomWinMessage}
 
 📋 *Détails du ticket :*
 ${matchLines}
-🚀 *Rejoignez l'élite sur l'application :* https://scoremaster.fr/`;
+🚀 *Rejoignez la communauté sur l'application :* https://scoremaster.fr/
 
-   // Envoi via Postiz (publication directe sur le groupe) + prompt image de victoire en DM admin
+— Maître Gon 🎩, Score Master`;
+}
+
+// Envoi direct (sans confirmation) : utilisé automatiquement dès la validation d'un combiné gagnant.
+function sendVictoryPackage(id) {
+    var c = allCombineds.find(x => x.id == id);
+    if (!c) return Promise.resolve();
+    return sendGroupTelegram(buildVictoryTelegramText(c)).then(() => {
+        showToast("Message de victoire publié sur le groupe Telegram ! 🍾");
+        return generateAndSendInstaPrompt(id);
+    }).catch(() => showToast("Erreur lors de la publication sur Telegram", true));
+}
+
+// Bouton manuel (renvoi/relance) : garde une confirmation, au cas où l'admin veuille republier.
+function sendTelegramWin(id) {
+    var c = allCombineds.find(x => x.id == id);
+    if (!c) { showToast("Combiné introuvable", true); return; }
+
     if (confirm("Publier le message de VICTOIRE (+ prompt photo) sur le groupe Telegram pour ce combiné ?")) {
-            sendGroupTelegram(telegramText).then(() => {
-                showToast("Message de victoire publié sur le groupe Telegram ! 🍾");
-                generateAndSendInstaPrompt(id);
-            }).catch(() => showToast("Erreur lors de la publication sur Telegram", true));
-        }
+        sendVictoryPackage(id);
+    }
     // ============================================================
 // GÉNÉRATION DU PROMPT IA PREMIUM (FORMAT 9:16 + LOGO SM)
 // ============================================================
