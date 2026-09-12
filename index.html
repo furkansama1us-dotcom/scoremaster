@@ -680,6 +680,7 @@
     
     const TELEGRAM_LINK = "https://t.me/scoremasteroff";
     const TELEGRAM_DM_USERNAME = "ScoreMasterOfficiel"; // compte perso pour messages directs pré-remplis (pas le channel)
+    const SALES_BOT_USERNAME = "ScoreMasterAssistantBot"; // bot conversationnel pour les achats de pack
     const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
     
@@ -1919,9 +1920,8 @@ async function fetchApiScore(id, dateRaw) {
     <div style="background:var(--bg-card);padding:30px;border-radius:24px;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);position:relative;">
         <i class="fas fa-times" onclick="closeSubscribePopup()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
         <h3 style="font-size:18px;font-weight:800;margin-bottom:8px;color:#fff;font-family:'Montserrat',sans-serif;" id="subscribe-pack-title">Souscrire au pack</h3>
-        <p style="font-size:13px;color:var(--text-gray);margin-bottom:24px;line-height:1.5;font-family:'Inter',sans-serif;">Contacte-nous directement pour finaliser ton accès en quelques minutes ⚡</p>
-        <a id="subscribe-whatsapp-link" href="#" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:#25D366;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:10px;text-decoration:none;"><i class="fab fa-whatsapp" style="font-size:18px;"></i> Contacter via WhatsApp</a>
-        <button onclick="subscribeSendViaTelegram()" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:#26A5E4;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fab fa-telegram-plane" style="font-size:18px;"></i> Contacter via Telegram</button>
+        <p style="font-size:13px;color:var(--text-gray);margin-bottom:24px;line-height:1.5;font-family:'Inter',sans-serif;">Notre assistant Telegram t'accompagne pas à pas pour finaliser ton accès en quelques minutes ⚡</p>
+        <a id="subscribe-bot-link" href="#" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:#26A5E4;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;text-decoration:none;"><i class="fab fa-telegram-plane" style="font-size:18px;"></i> Démarrer avec notre assistant</a>
     </div>
 </div>
 
@@ -6059,10 +6059,7 @@ ${instaMatches}⏰ Début du premier match à ${earliestTime}
         var packNames = { 'journalier': 'SM Score Exact Journalier', 'vip': 'SM VIP+ (à vie)', 'hebdo': 'SM Combiné Hebdo' };
         var packName = packNames[packType] || 'Pack Score Master';
         document.getElementById('subscribe-pack-title').textContent = 'Souscrire au ' + packName;
-
-        var msg = `Bonjour ! Je suis intéressé(e) par le pack "${packName}"${price ? ` (${fmtC(price)})` : ''}. Pouvez-vous m'aider à finaliser mon accès ?`;
-        document.getElementById('subscribe-whatsapp-link').href = `https://wa.me/${WHATSAPP_ADMIN_NUMBER}?text=${encodeURIComponent(msg)}`;
-        window._subscribeTelegramMsg = msg;
+        document.getElementById('subscribe-bot-link').href = `https://t.me/${SALES_BOT_USERNAME}?start=pack_${packType}`;
 
         var popup = document.getElementById('subscribe-popup');
         popup.style.display = 'flex';
@@ -6073,11 +6070,6 @@ ${instaMatches}⏰ Début du premier match à ${earliestTime}
         var popup = document.getElementById('subscribe-popup');
         popup.style.opacity = '0'; popup.firstElementChild.style.transform = 'scale(0.9)';
         setTimeout(function () { popup.style.display = 'none'; }, 300);
-    }
-
-    function subscribeSendViaTelegram() {
-        var msg = window._subscribeTelegramMsg || '';
-        window.open(`https://t.me/${TELEGRAM_DM_USERNAME}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
     function closeSuccessPopup() {
