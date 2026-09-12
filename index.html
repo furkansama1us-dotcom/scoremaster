@@ -693,6 +693,29 @@
             console.error("Erreur Telegram Queue:", e);
         }
     }
+
+    // Publie directement sur le canal Telegram public (via Postiz), pour les
+    // contenus destinés aux membres (relance, annonce victoire, combiné
+    // disponible...) — à ne PAS utiliser pour les notifs admin privées
+    // (commandes, résultats à valider), qui restent sur sendAdminTelegram.
+    async function sendGroupTelegram(text, imageUrl) {
+        try {
+            let cleanText = text.replace(/[*_\[\]`]/g, '');
+            let session = await supabaseClient.auth.getSession();
+            let accessToken = session && session.data && session.data.session ? session.data.session.access_token : '';
+            let res = await fetch('/api/telegram-post', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken },
+                body: JSON.stringify({ message: cleanText, imageUrl: imageUrl || undefined })
+            });
+            let data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Erreur publication Telegram');
+            return data;
+        } catch(e) {
+            console.error("Erreur publication groupe Telegram:", e);
+            throw e;
+        }
+    }
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // Profil utilisateur global (chargé après login)
@@ -907,9 +930,9 @@ ${matchLines}
         let telegramText = reminders[Math.floor(Math.random() * reminders.length)];
 
         if (confirm("Veux-tu envoyer un message de relance...")) {
-            sendAdminTelegram(telegramText).then(() => {
-                showToast("Relance envoyée avec succès !");
-            });
+            sendGroupTelegram(telegramText).then(() => {
+                showToast("Relance publiée sur le groupe Telegram !");
+            }).catch(() => showToast("Erreur lors de la publication sur Telegram", true));
         }
     }
 
@@ -4756,9 +4779,6 @@ async function autoFetchFinalScores(combined) {
         ];
         
         let telegramDraft =
-            `📝 *BROUILLON CANAL PUBLIC :*\n` +
-            `_(À copier/coller sur votre canal)_\n\n` +
-            `---\n\n` +
             `${intros[Math.floor(Math.random() * intros.length)]}\n\n` +
             `🏆 *AU PROGRAMME :*\n` +
             `${matchLines}\n` +
@@ -4769,7 +4789,7 @@ async function autoFetchFinalScores(combined) {
             `🌐 Site Web : https://scoreMeridian.fr/\n` +
             `➡️ Telegram : @ScoreMasterOfficiel`;
 
-        sendAdminTelegram(telegramDraft);
+        sendGroupTelegram(telegramDraft).catch(() => showToast("Erreur lors de la publication sur le groupe Telegram", true));
 
         // On nettoie l'éditeur après publication
         resetEditor();
@@ -5341,11 +5361,11 @@ function sendTelegramWin(id) {
 ${matchLines}
 🚀 *Rejoignez l'élite sur l'application :* https://scoreMeridian.fr/`;
 
-   // Envoi via Supabase (Sécurisé)
-    if (confirm("Envoyer le message de VICTOIRE sur Telegram pour ce combiné ?")) {
-            sendAdminTelegram(telegramText).then(() => {
-                showToast("Message de victoire envoyé sur Telegram ! 🍾");
-            });
+   // Envoi via Postiz (publication directe sur le groupe)
+    if (confirm("Publier le message de VICTOIRE sur le groupe Telegram pour ce combiné ?")) {
+            sendGroupTelegram(telegramText).then(() => {
+                showToast("Message de victoire publié sur le groupe Telegram ! 🍾");
+            }).catch(() => showToast("Erreur lors de la publication sur Telegram", true));
         }
     // ============================================================
 // GÉNÉRATION DU PROMPT IA PREMIUM (FORMAT 9:16 + LOGO SM)
