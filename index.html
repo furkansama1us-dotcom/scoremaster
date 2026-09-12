@@ -2829,6 +2829,8 @@ async function fetchMatchesFromAPI() {
             matches.sort(function (a, b) { return seededScore(a.id + dateStr) - seededScore(b.id + dateStr); });
             var picked = matches.slice(0, 2);
 
+            window.currentAISuggestionsOffset = dayOffset;
+            window.currentAISuggestionsDateStr = dateStr;
             window.currentAISuggestions = picked.map(function (m) {
                 var seed = seededScore(m.homeTeam.name + m.awayTeam.name + dateStr);
                 var score = pickAIScoreLine(seed);
@@ -2902,8 +2904,10 @@ async function fetchMatchesFromAPI() {
         var tot = 1; matches.forEach(function (m) { tot *= m.odds; });
         var gains = mise * tot;
 
-        var d = new Date(); d.setDate(d.getDate() + 1);
-        var date = d.toISOString().split('T')[0];
+        var date = window.currentAISuggestionsDateStr || (function () {
+            var d = new Date(); d.setDate(d.getDate() + (window.currentAISuggestionsOffset || 0));
+            return d.toISOString().split('T')[0];
+        })();
         var earliestTime = suggestions[0].time;
 
         try {
@@ -2914,6 +2918,20 @@ async function fetchMatchesFromAPI() {
             if (vipRes.error) throw vipRes.error;
 
             showToast('Combiné IA publié ! Visible immédiatement par les membres SM VIP+.');
+
+            var dayLabel = (window.currentAISuggestionsOffset || 0) === 0 ? "aujourd'hui" : 'demain';
+            var matchLinesAI = suggestions.map(function (s) { return `🏆 ${s.teams} (${s.time})`; }).join('\n');
+            var telegramAIMsg =
+                `🔥 *LE COMBINÉ EST DISPONIBLE !* 🚀\n\n` +
+                `Les affiches (${dayLabel}) :\n${matchLinesAI}\n\n` +
+                `⏰ Début des hostilités à *${earliestTime}* !\n\n` +
+                `C'est maintenant qu'il faut miser sur votre espace VIP+ Score Meridian ! 💎💰\n\n` +
+                `🌐 Site Web : https://scoreMeridian.fr/\n` +
+                `➡️ Telegram : @ScoreMasterOfficiel`;
+            sendGroupTelegram(telegramAIMsg).catch(function () {
+                showToast("Combiné publié, mais erreur lors de la notification Telegram.", true);
+            });
+
             window.currentAISuggestions = [];
             document.getElementById('ai-suggest-container').innerHTML = '';
             closeAdmin();
