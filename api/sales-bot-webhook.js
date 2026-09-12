@@ -3,11 +3,10 @@
 // un polling actifs sur le même bot).
 //
 // Guide un client Telegram (avec ou sans compte sur l'app) à travers le
-// choix d'un pack puis du mode de paiement (PayPal ou recharge PCS),
-// jusqu'à la prise en charge par un admin. Rien n'est validé/payé
-// automatiquement : tout part en notification Telegram privée
-// (telegram_queue) pour une vérification manuelle, comme pour les
-// commandes classiques du panier.
+// choix d'un pack, puis une confirmation d'adhésion, jusqu'à la prise en
+// charge par un admin qui gère lui-même le paiement en message privé.
+// Rien n'est validé/payé automatiquement : tout part en notification
+// Telegram privée (telegram_queue) pour une prise en charge manuelle.
 
 const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -15,12 +14,10 @@ const SALES_BOT_TOKEN = process.env.SALES_BOT_TOKEN;
 const SALES_BOT_WEBHOOK_SECRET = process.env.SALES_BOT_WEBHOOK_SECRET;
 
 const PACKS = {
-    journalier: { label: 'SM Score Exact Journalier', price: 50, emoji: '⚡', pcsCards: '1 carte de 50€' },
-    vip: { label: 'SM VIP+ (à vie)', price: 99.99, emoji: '👑', pcsCards: '1 carte de 100€' },
-    hebdo: { label: 'SM Combiné Hebdo', price: 69.99, emoji: '🔥', pcsCards: '1 carte de 50€ + 1 carte de 20€ (total 70€)' }
+    journalier: { label: 'SM Score Exact Journalier', price: 50, emoji: '⚡' },
+    vip: { label: 'SM VIP+ (à vie)', price: 99.99, emoji: '👑' },
+    hebdo: { label: 'SM Combiné Hebdo', price: 69.99, emoji: '🔥' }
 };
-
-const PCS_PURCHASE_LINK = 'https://dundle.com/fr/pcs/';
 
 async function sbFetch(path, options) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, Object.assign({}, options, {
@@ -92,11 +89,19 @@ function packKeyboard() {
     });
 }
 
-function paymentKeyboard() {
-    return [
-        [{ text: '💳 PayPal', callback_data: 'pay:paypal' }],
-        [{ text: '🎫 Recharge PCS', callback_data: 'pay:pcs' }]
-    ];
+function joinKeyboard() {
+    return [[{ text: '✅ J\'adhère maintenant !', callback_data: 'join' }]];
+}
+
+function relaunchKeyboard() {
+    return [[{ text: '🔔 Relancer l\'admin', callback_data: 'relaunch' }]];
+}
+
+function hypeMessage(pack) {
+    return `Tu as enfin décidé de passer au niveau supérieur, très bon choix ! 🔥\n\n`
+        + `Chaque jour, des dizaines de membres de notre communauté <b>Score Master</b> encaissent grâce à nos analyses 📈💰. On ne te promet pas la lune : on te donne les tickets préparés par une équipe qui cumule plus de 20 ans d'expérience dans l'analyse sportive, avec une rigueur et une transparence qui font notre réputation depuis le début.\n\n`
+        + `Tu es sur le point de rejoindre les centaines de membres qui nous font confiance au quotidien et qui vivent l'expérience Score Master de l'intérieur. 🙌\n\n`
+        + `Pack sélectionné : <b>${pack.label}</b> (${pack.price}€)`;
 }
 
 async function handleStart(chatId, from, startParam) {
@@ -104,18 +109,14 @@ async function handleStart(chatId, from, startParam) {
     const preselectedPack = preselectedKey && PACKS[preselectedKey] ? preselectedKey : null;
 
     await upsertConversation(chatId, {
-        state: preselectedPack ? 'awaiting_payment' : 'awaiting_pack',
+        state: preselectedPack ? 'awaiting_join' : 'awaiting_pack',
         pack_type: preselectedPack,
         telegram_username: from.username || null,
         telegram_name: [from.first_name, from.last_name].filter(Boolean).join(' ') || null
     });
 
     if (preselectedPack) {
-        const pack = PACKS[preselectedPack];
-        await sendMessage(chatId,
-            `Bonjour et bienvenue chez <b>Score Master</b> ! 👋😊\n\nVous avez sélectionné le pack <b>${pack.label}</b> (${pack.price}€). Excellent choix ! 🎉\n\nComment souhaitez-vous régler ?`,
-            paymentKeyboard()
-        );
+        await sendMessage(chatId, hypeMessage(PACKS[preselectedPack]), joinKeyboard());
     } else {
         await sendMessage(chatId,
             `Bonjour et bienvenue chez <b>Score Master</b> ! 👋😊\n\nRavi de vous accueillir. Quel pack vous intéresse aujourd'hui ?`,
@@ -127,39 +128,25 @@ async function handleStart(chatId, from, startParam) {
 async function handlePackChoice(chatId, packKey) {
     const pack = PACKS[packKey];
     if (!pack) return;
-    await upsertConversation(chatId, { state: 'awaiting_payment', pack_type: packKey });
-    await sendMessage(chatId,
-        `Excellent choix ! 🎉 Le pack <b>${pack.label}</b> (${pack.price}€) va vous ouvrir les portes de nos meilleures analyses.\n\nComment souhaitez-vous régler ?`,
-        paymentKeyboard()
-    );
+    await upsertConversation(chatId, { state: 'awaiting_join', pack_type: packKey });
+    await sendMessage(chatId, hypeMessage(pack), joinKeyboard());
 }
 
-async function handlePaymentChoice(chatId, method, convo) {
+async function handleJoinConfirm(chatId, convo) {
     const pack = PACKS[convo.pack_type];
     const orderRef = generateOrderRef();
 
-    if (method === 'paypal') {
-        await upsertConversation(chatId, { state: 'done', payment_method: 'paypal', order_ref: orderRef });
-        await sendMessage(chatId,
-            `Parfait, merci ! 💳\n\nUn membre de notre équipe Score Master va vous contacter très rapidement pour finaliser le paiement PayPal.\n\nMerci pour votre confiance, à très vite ! 🙏`
-        );
-        await notifyAdmin(
-            `💰 NOUVELLE DEMANDE (Bot Telegram)\n\nRéférence : ${orderRef}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\nPaiement : PayPal\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Contacte le client sur Telegram pour finaliser.`
-        );
-    } else if (method === 'pcs') {
-        await upsertConversation(chatId, { state: 'pcs_awaiting_admin', payment_method: 'pcs', order_ref: orderRef });
-        const cardsAdvice = pack && pack.pcsCards ? `\n\nPour votre pack (${pack.price}€), prenez : <b>${pack.pcsCards}</b>.` : '';
-        await sendMessage(chatId,
-            `Très bon choix ! 🎫\n\nSi vous n'avez pas encore de carte de recharge PCS, vous pouvez en acheter une ici :\n${PCS_PURCHASE_LINK}${cardsAdvice}\n\nUne fois votre/vos carte(s) en main, un membre de notre équipe vous contactera directement pour finaliser et vérifier votre code ensemble. 😊`,
-            [[{ text: '🔔 Relancer l\'admin', callback_data: 'pcs:relaunch' }]]
-        );
-        await notifyAdmin(
-            `💰 NOUVELLE DEMANDE (Bot Telegram)\n\nRéférence : ${orderRef}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\nPaiement : Recharge PCS\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Contacte le client sur Telegram pour vérifier son code ensemble et valider.\n\n📋 Message suggéré à lui envoyer :\n« Salut ! 😊 J'ai vu que tu étais prêt(e) avec ton code de recharge PCS pour ton pack ${pack ? pack.label : convo.pack_type}. Dès que tu peux, envoie-le-moi directement ici et je vérifie ça avec toi tout de suite. Une fois validé, j'active ton accès immédiatement ! 🚀 »`
-        );
-    }
+    await upsertConversation(chatId, { state: 'awaiting_admin', order_ref: orderRef });
+    await sendMessage(chatId,
+        `Top ! Hâte de te voir parmi nous. 🙌\n\nJe viens de notifier un admin, il prendra contact avec toi dans les prochaines minutes qui suivent. Ne quitte pas ! :)`,
+        relaunchKeyboard()
+    );
+    await notifyAdmin(
+        `💰 NOUVELLE DEMANDE (Bot Telegram)\n\nRéférence : ${orderRef}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Contacte le client sur Telegram pour finaliser le paiement.`
+    );
 }
 
-async function handlePcsRelaunch(chatId, convo) {
+async function handleRelaunch(chatId, convo) {
     const pack = PACKS[convo.pack_type];
     const count = convo.relaunch_count || 0;
 
@@ -181,7 +168,7 @@ async function handlePcsRelaunch(chatId, convo) {
     await upsertConversation(chatId, { relaunch_count: newCount, last_relaunch_at: new Date().toISOString() });
     await sendMessage(chatId, `C'est noté ! Un admin va vous contacter très vite. Merci de votre patience 🙏 (${newCount}/3)`);
     await notifyAdmin(
-        `🔔 RELANCE (${newCount}/3) — Bot Telegram\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type}\nPaiement : Recharge PCS\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Le client attend toujours ton contact.\n\n📋 Message suggéré à lui envoyer :\n« Salut ! 😊 Désolé pour l'attente, je m'occupe de toi tout de suite ! Envoie-moi ton code de recharge PCS ici et je vérifie ça avec toi immédiatement. Une fois validé, j'active ton accès ! 🚀 »`
+        `🔔 RELANCE (${newCount}/3) — Bot Telegram\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type}\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Le client attend toujours ton contact.`
     );
 }
 
@@ -207,15 +194,15 @@ module.exports = async function handler(req, res) {
 
             if (data.startsWith('pack:')) {
                 await handlePackChoice(chatId, data.slice(5));
-            } else if (data.startsWith('pay:')) {
+            } else if (data === 'join') {
                 const convo = await getConversation(chatId);
-                if (convo && convo.state === 'awaiting_payment') {
-                    await handlePaymentChoice(chatId, data.slice(4), convo);
+                if (convo && convo.state === 'awaiting_join') {
+                    await handleJoinConfirm(chatId, convo);
                 }
-            } else if (data === 'pcs:relaunch') {
+            } else if (data === 'relaunch') {
                 const convo = await getConversation(chatId);
-                if (convo && convo.state === 'pcs_awaiting_admin') {
-                    await handlePcsRelaunch(chatId, convo);
+                if (convo && convo.state === 'awaiting_admin') {
+                    await handleRelaunch(chatId, convo);
                 }
             }
             return res.status(200).json({ ok: true });
@@ -235,7 +222,7 @@ module.exports = async function handler(req, res) {
             const convo = await getConversation(chatId);
             if (!convo) {
                 await handleStart(chatId, msg.from);
-            } else if (convo.state === 'done' || convo.state === 'pcs_awaiting_admin') {
+            } else if (convo.state === 'awaiting_admin') {
                 await sendMessage(chatId, `Un membre de notre équipe va vous répondre très vite, merci de patienter un instant 🙏😊`);
             } else {
                 await sendMessage(chatId, `Merci de choisir une option ci-dessus 👆 pour continuer.`);
