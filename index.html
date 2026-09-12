@@ -5718,39 +5718,108 @@ function buildVictoryTelegramText(c) {
         });
     }
 
-    // Accroches — ton dynamique, confiant et professionnel
-    const hooks = [
-        '🔥 NOUVEAU TICKET HONORÉ !',
-        '🔥 ENCORE UN TICKET VALIDÉ !',
-        '🔥 OBJECTIF ATTEINT !',
-        '🔥 LE VERDICT EST TOMBÉ !'
-    ];
-    const hook = hooks[Math.floor(Math.random() * hooks.length)];
-
-    const regularityLines = [
-        "La régularité, la rigueur et la confiance : c'est ça, la signature Score Master. 💪",
-        "Encore une preuve que le sérieux et la constance paient sur la durée. 💪",
-        "Chaque ticket est le résultat d'une analyse rigoureuse, pas du hasard. 💪",
-        "C'est cette rigueur, match après match, qui fait notre réputation. 💪"
-    ];
-    const regularityLine = regularityLines[Math.floor(Math.random() * regularityLines.length)];
-
-    // Assemblage du message final Telegram
-    return `${hook}
+    // 6 modèles complets et distincts (pas juste une accroche qui change) —
+    // un seul est tiré au hasard à chaque publication, pour éviter l'effet
+    // "toujours le même message" tout en restant 100% statique (pas d'IA).
+    const templates = [
+        `🔥 NOUVEAU TICKET HONORÉ !
 
 Ticket validé aujourd'hui, ${ticketDate} ✅
 
 📋 LES RÉSULTATS DU JOUR :
 
 ${matchLines}
-${regularityLine}
+La régularité, la rigueur et la confiance : c'est ça, la signature Score Master. 💪
 
 🤝 Merci à toute la communauté pour votre confiance et votre fidélité !
 
 🚀 Rejoignez l'aventure Score Master dès maintenant :
 
 🌐 Site Web : https://scoremaster.fr/
-📲 Telegram : @ScoreMasterOfficiel`;
+📲 Telegram : @ScoreMasterOfficiel`,
+
+        `🔥 ENCORE UN TICKET VALIDÉ !
+
+Le combiné du ${ticketDate} est passé avec succès ✅
+
+📋 CE QUI ÉTAIT ANNONCÉ :
+
+${matchLines}
+Chaque ticket est le résultat d'une analyse rigoureuse, pas du hasard. 💪
+
+🤝 Merci à tous ceux qui nous suivent au quotidien, votre confiance compte énormément.
+
+🚀 Envie de rejoindre la communauté ?
+
+🌐 Site Web : https://scoremaster.fr/
+📲 Telegram : @ScoreMasterOfficiel`,
+
+        `🔥 OBJECTIF ATTEINT !
+
+Verdict tombé pour le ${ticketDate} : ticket honoré ✅
+
+📋 LE DÉTAIL DU TICKET :
+
+${matchLines}
+C'est cette rigueur, match après match, qui fait notre réputation. 💪
+
+🤝 Merci à toute la communauté Score Master pour sa fidélité !
+
+🚀 On continue sur cette lancée — rejoignez-nous dès maintenant :
+
+🌐 Site Web : https://scoremaster.fr/
+📲 Telegram : @ScoreMasterOfficiel`,
+
+        `🔥 LE VERDICT EST TOMBÉ !
+
+Ticket du ${ticketDate} confirmé gagnant ✅
+
+📋 LES SCORES DU JOUR :
+
+${matchLines}
+Encore une preuve que le sérieux et la constance paient sur la durée. 💪
+
+🤝 Un grand merci à tous nos membres pour leur confiance !
+
+🚀 Rejoignez Score Master et suivez la suite avec nous :
+
+🌐 Site Web : https://scoremaster.fr/
+📲 Telegram : @ScoreMasterOfficiel`,
+
+        `🔥 ANALYSE VALIDÉE !
+
+Ticket honoré ce ${ticketDate} ✅
+
+📋 LES MATCHS DU JOUR :
+
+${matchLines}
+Pas de coup de chance ici : juste du travail sérieux, répété match après match. 💪
+
+🤝 Merci à toute la communauté pour son soutien constant.
+
+🚀 Prêt à nous rejoindre ?
+
+🌐 Site Web : https://scoremaster.fr/
+📲 Telegram : @ScoreMasterOfficiel`,
+
+        `🔥 UN TICKET DE PLUS AU COMPTEUR !
+
+C'est officiel, le combiné du ${ticketDate} est gagnant ✅
+
+📋 RETOUR SUR LE TICKET :
+
+${matchLines}
+La régularité ne doit rien au hasard : c'est le fruit d'une analyse sérieuse à chaque publication. 💪
+
+🤝 Merci à chacun d'entre vous pour votre fidélité au quotidien.
+
+🚀 Rejoignez la communauté Score Master dès aujourd'hui :
+
+🌐 Site Web : https://scoremaster.fr/
+📲 Telegram : @ScoreMasterOfficiel`
+    ];
+
+    return templates[Math.floor(Math.random() * templates.length)];
 }
 
 // Ne publie jamais directement : génère la photo (Higgsfield) et dépose un
@@ -5762,10 +5831,10 @@ async function queueVictoryPublication(id) {
     var c = allCombineds.find(x => x.id == id);
     if (!c) return;
     try {
-        var matches = (c.matches || []).map(function (m) { return { teams: m.teams, score: m.score }; });
+        var caption = buildVictoryTelegramText(c);
         var imagePrompt = buildVictoryImagePromptRaw(c);
-        var data = await adminApiCall('/api/generate-victory-content', { matches: matches, imagePrompt: imagePrompt, dateStr: c.date });
-        showToast('Victoire en préparation : Claude rédige le texte, Higgsfield génère la photo — tu la retrouveras dans Publications pour validation. 🎨');
+        var data = await adminApiCall('/api/generate-victory-content', { caption: caption, imagePrompt: imagePrompt, dateStr: c.date });
+        showToast('Victoire en préparation : Higgsfield génère la photo, tu la retrouveras dans Publications pour validation. 🎨');
         startGenerationPolling(data.rows.map(function (r) { return r.id; }), data.statusUrl);
         loadAdminPublications();
     } catch (error) {
