@@ -1067,6 +1067,9 @@ async function fetchApiScore(id, dateRaw) {
 
 <!-- APP -->
 <div id="app">
+    <div id="matchs-ticker-wrap" style="display:none; flex-shrink:0; padding-top:var(--safe-top);">
+        <div id="matchs-ticker" class="matchs-ticker"></div>
+    </div>
     <div class="pages-container">
 
         <!-- HOME -->
@@ -1405,9 +1408,6 @@ async function fetchApiScore(id, dateRaw) {
 
         <!-- MATCHS (façon sportmeridian.com) -->
         <div class="page" id="page-matchs">
-            <div id="matchs-ticker-wrap" style="display:none;">
-                <div id="matchs-ticker" class="matchs-ticker"></div>
-            </div>
 
             <div class="matchs-hero">
                 <h2 class="matchs-hero-title">Pronostics football du jour, scores en direct et analyses IA</h2>
@@ -4200,6 +4200,12 @@ async function fetchMatchesFromAPI() {
         await chargerDonnees();
         loadMyOrders();
         renderUnlockState();
+
+        // Bandeau de scores en direct — persistant sur toutes les pages, pas
+        // seulement sur la page Matchs (loadMatchsPage alimente aussi ce bandeau).
+        loadMatchsPage(window.matchsCurrentOffset || 0);
+        if (window.globalTickerInterval) clearInterval(window.globalTickerInterval);
+        window.globalTickerInterval = setInterval(function () { loadMatchsPage(window.matchsCurrentOffset || 0); }, 60000);
 
         if (window.isAdmin) {
             // Rafraîchit juste les données pour afficher les scores détectés par le cron serveur
