@@ -5757,7 +5757,7 @@ async function queueVictoryPublication(id) {
         loadAdminPublications();
     } catch (error) {
         console.error('Erreur génération victoire:', error);
-        showToast('Erreur lors de la préparation de la publication de victoire.', true);
+        showToast('Erreur victoire : ' + (error && error.message ? error.message : 'inconnue'), true);
     }
 }
 
