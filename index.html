@@ -5234,20 +5234,18 @@ function sendInstaPrompt(id) {
         });
     }
 
-    let aiPrompt = `A high-end cinematic sports digital poster, vertical 9:16 ratio. 
+    let aiPrompt = `A clean, professional mobile app marketing graphic, vertical 9:16 ratio, in the style of a modern sports-prediction app promo (App Store screenshot style, NOT a photorealistic stadium scene).
 
-Background: Spectacular low-angle view from a wet, ultra-reflective football pitch in a grand stadium at night. Dramatic lighting, glowing stadium floodlights, lens flares, falling luxurious golden confetti, subtle cyan lightning and golden sparks.
+Background: Deep navy-blue to black gradient with subtle gold accents, minimal geometric shapes, no crowd/stadium photo.
 
-Top Center: A massive 3D metallic chrome "SM" logo topped with a luxurious 3D golden crown (highly reflective). Below the logo, the word "VICTOIRE" in brilliant 3D cyan neon text, and "SCORE EXACT" in polished 3D gold text.
+Top: Bold minimal headline text, exact string: "Predicted. Nailed it." in white/gold, clean modern sans-serif typography.
 
-Center (Dynamic Data):
+Center: A realistic phone mockup showing the app's UI — a match result card with a green checkmark icon, the label "AI PREDICTION" in a small gold badge, and the exact score(s) clearly displayed:
 ${detailsMatchs}
 
-Graphic Elements: Two floating rectangular frames with glowing cyan neon borders. Professional Champions League broadcast style.
+Bottom: A small gold crown "SM" monogram logo above the exact text "@scoremaster.fr", plus a subtle "✓ Verified by AI" badge.
 
-Bottom branding: The official 3D Instagram camera logo icon placed directly next to the handle "@scoremaster.fr", both clearly visible in a modern glowing style.
-
-Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold and silver color palette, --ar 9:16`;
+Style: Ultra-clean UI/UX marketing design, sharp typography, no more than 3 short text elements total, high-end fintech/app aesthetic, --ar 9:16`;
 
     // Uniquement le prompt formaté dans un bloc de code Telegram pour un tap-to-copy rapide
     let telegramText = `\`\`\`\n${aiPrompt}\n\`\`\``;
@@ -5287,34 +5285,28 @@ function sendPromoPrompt(id) {
 
     // PROMPT ULTRA OPTIMISÉ
     let aiPrompt = `
-Affiche promotionnelle sportive premium ultra réaliste.
+Graphisme marketing d'application mobile professionnel et épuré, PAS une scène de stade photoréaliste (référence de style : les visuels Instagram de @sport.meridian).
 
-TEXTE PRINCIPAL (OBLIGATOIRE ET EXACT) :
-- "COMBINÉ" (énorme texte 3D blanc chromé brillant, style métallique)
-- "DISPONIBLE" (juste en dessous, néon orange lumineux)
+TEXTE PRINCIPAL (OBLIGATOIRE, COURT ET EXACT) :
+- "Combiné disponible." (typographie bold blanche/dorée, une seule ligne)
 
 ARRIÈRE-PLAN :
-- Stade de football de nuit
-- Projecteurs puissants avec lumière volumétrique
-- Foule floue en arrière-plan
-- Ambiance cinématographique orange et bleu
-- Particules lumineuses et étincelles dynamiques
+- Dégradé bleu marine profond vers noir, touches dorées discrètes
+- Aucune photo de stade, foule ou scène narrative — uniquement du design graphique propre
 
 ZONE CENTRALE :
-- Panneaux en verre translucide futuriste
-- Afficher clairement les matchs suivants :
+- Une maquette de téléphone (mockup) réaliste montrant l'écran de l'app avec une carte de prédiction IA
+- Afficher clairement les matchs suivants (texte net, lisible, pas de superposition) :
 ${detailsMatchs}
 
 STYLE VISUEL :
-- Ultra réaliste
-- Qualité Unreal Engine 5
-- Design graphique professionnel
-- Typographie parfaite et lisible
+- Design d'interface app premium, propre et net (type page marketing App Store)
+- Typographie minimaliste, parfaitement lisible
 - Composition centrée et équilibrée
+- Maximum 3 éléments de texte au total sur l'affiche
 
 ZONE BASSE :
-- Icône Instagram dégradé violet/orange
-- Texte exact : "@scoremaster.fr" en blanc
+- Petit monogramme doré "SM" + texte exact : "@scoremaster.fr" en blanc
 
 FORMAT OBLIGATOIRE POUR CHAQUE MATCH :
 • Nom équipe vs Nom équipe (HHHMM)
@@ -5546,20 +5538,18 @@ function sendInstaPrompt(id) {
     }
 
     // On fusionne ton style "Premium" avec les données du match et ton branding
-    let aiPrompt = `A high-end cinematic sports digital poster, vertical 9:16 ratio. 
+    let aiPrompt = `A clean, professional mobile app marketing graphic, vertical 9:16 ratio, in the style of a modern sports-prediction app promo (App Store screenshot style, NOT a photorealistic stadium scene).
 
-Background: Spectacular low-angle view from a wet, ultra-reflective football pitch in a grand stadium at night. Dramatic lighting, glowing stadium floodlights, lens flares, falling luxurious golden confetti, subtle cyan lightning and golden sparks.
+Background: Deep navy-blue to black gradient with subtle gold accents, minimal geometric shapes, no crowd/stadium photo.
 
-Top Center: A massive 3D metallic chrome "SM" logo topped with a luxurious 3D golden crown (highly reflective). Below the logo, the word "VICTOIRE" in brilliant 3D cyan neon text, and "SCORE EXACT" in polished 3D gold text.
+Top: Bold minimal headline text, exact string: "Predicted. Nailed it." in white/gold, clean modern sans-serif typography.
 
-Center (Dynamic Data):
+Center: A realistic phone mockup showing the app's UI — a match result card with a green checkmark icon, the label "AI PREDICTION" in a small gold badge, and the exact score(s) clearly displayed:
 ${detailsMatchs}
 
-Graphic Elements: Two floating rectangular frames with glowing cyan neon borders. Professional Champions League broadcast style.
+Bottom: A small gold crown "SM" monogram logo above the exact text "@scoremaster.fr", plus a subtle "✓ Verified by AI" badge.
 
-Bottom branding: The Instagram handle "@scoremaster.fr" clearly visible in a modern glowing font.
-
-Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold and silver color palette, --ar 9:16`;
+Style: Ultra-clean UI/UX marketing design, sharp typography, no more than 3 short text elements total, high-end fintech/app aesthetic, --ar 9:16`;
 
     let telegramText = `🎨 *TON PROMPT IA PRÊT À L'EMPLOI* 🎨
 
@@ -5598,34 +5588,28 @@ ${aiPrompt}
 
     // PROMPT ULTRA OPTIMISÉ
     let aiPrompt = `
-Affiche promotionnelle sportive premium ultra réaliste.
+Graphisme marketing d'application mobile professionnel et épuré, PAS une scène de stade photoréaliste (référence de style : les visuels Instagram de @sport.meridian).
 
-TEXTE PRINCIPAL (OBLIGATOIRE ET EXACT) :
-- "COMBINÉ" (énorme texte 3D blanc chromé brillant, style métallique)
-- "DISPONIBLE" (juste en dessous, néon orange lumineux)
+TEXTE PRINCIPAL (OBLIGATOIRE, COURT ET EXACT) :
+- "Combiné disponible." (typographie bold blanche/dorée, une seule ligne)
 
 ARRIÈRE-PLAN :
-- Stade de football de nuit
-- Projecteurs puissants avec lumière volumétrique
-- Foule floue en arrière-plan
-- Ambiance cinématographique orange et bleu
-- Particules lumineuses et étincelles dynamiques
+- Dégradé bleu marine profond vers noir, touches dorées discrètes
+- Aucune photo de stade, foule ou scène narrative — uniquement du design graphique propre
 
 ZONE CENTRALE :
-- Panneaux en verre translucide futuriste
-- Afficher clairement les matchs suivants :
+- Une maquette de téléphone (mockup) réaliste montrant l'écran de l'app avec une carte de prédiction IA
+- Afficher clairement les matchs suivants (texte net, lisible, pas de superposition) :
 ${detailsMatchs}
 
 STYLE VISUEL :
-- Ultra réaliste
-- Qualité Unreal Engine 5
-- Design graphique professionnel
-- Typographie parfaite et lisible
+- Design d'interface app premium, propre et net (type page marketing App Store)
+- Typographie minimaliste, parfaitement lisible
 - Composition centrée et équilibrée
+- Maximum 3 éléments de texte au total sur l'affiche
 
 ZONE BASSE :
-- Icône Instagram dégradé violet/orange
-- Texte exact : "@scoremaster.fr" en blanc
+- Petit monogramme doré "SM" + texte exact : "@scoremaster.fr" en blanc
 
 CONTRAINTES STRICTES :
 - Texte uniquement en français
@@ -7284,20 +7268,18 @@ function sendInstaPrompt(id) {
         });
     }
 
-    let aiPrompt = `A high-end cinematic sports digital poster, vertical 9:16 ratio. 
+    let aiPrompt = `A clean, professional mobile app marketing graphic, vertical 9:16 ratio, in the style of a modern sports-prediction app promo (App Store screenshot style, NOT a photorealistic stadium scene).
 
-Background: Spectacular low-angle view from a wet, ultra-reflective football pitch in a grand stadium at night. Dramatic lighting, glowing stadium floodlights, lens flares, falling luxurious golden confetti, subtle cyan lightning and golden sparks.
+Background: Deep navy-blue to black gradient with subtle gold accents, minimal geometric shapes, no crowd/stadium photo.
 
-Top Center: A massive 3D metallic chrome "SM" logo topped with a luxurious 3D golden crown (highly reflective). Below the logo, the word "VICTOIRE" in brilliant 3D cyan neon text, and "SCORE EXACT" in polished 3D gold text.
+Top: Bold minimal headline text, exact string: "Predicted. Nailed it." in white/gold, clean modern sans-serif typography.
 
-Center (Dynamic Data):
+Center: A realistic phone mockup showing the app's UI — a match result card with a green checkmark icon, the label "AI PREDICTION" in a small gold badge, and the exact score(s) clearly displayed:
 ${detailsMatchs}
 
-Graphic Elements: Two floating rectangular frames with glowing cyan neon borders. Professional Champions League broadcast style.
+Bottom: A small gold crown "SM" monogram logo above the exact text "@scoremaster.fr", plus a subtle "✓ Verified by AI" badge.
 
-Bottom branding: The official 3D Instagram camera logo icon placed directly next to the handle "@scoremaster.fr", both clearly visible in a modern glowing style.
-
-Style: Photorealistic, 8k resolution, cinematic lighting, high contrast, gold and silver color palette, --ar 9:16`;
+Style: Ultra-clean UI/UX marketing design, sharp typography, no more than 3 short text elements total, high-end fintech/app aesthetic, --ar 9:16`;
 
     // Uniquement le prompt formaté dans un bloc de code Telegram pour un tap-to-copy rapide
     let telegramText = `\`\`\`\n${aiPrompt}\n\`\`\``;
