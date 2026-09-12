@@ -7540,41 +7540,45 @@ function fallbackCopy(txt) {
     // ============================================================
 // GÉNÉRATION DU PROMPT IA PREMIUM (FORMAT 9:16 + LOGO SM + INSTA)
 // ============================================================
-function buildVictoryImagePromptRaw(c) {
-    let detailsMatchs = "";
+// Mapping emoji drapeau -> nom de pays, pour évoquer visuellement le pays de la
+// compétition sans jamais écrire de texte dans l'image (les générateurs d'image
+// rendent le texte/les chiffres illisibles ou déformés à chaque fois).
+const FLAG_EMOJI_TO_COUNTRY = {
+    '🇫🇷': 'France', '🇪🇸': 'Spain', '🇬🇧': 'England', '🏴󠁧󠁢󠁥󠁮󠁧󠁿': 'England', '🇮🇹': 'Italy',
+    '🇩🇪': 'Germany', '🇵🇹': 'Portugal', '🇳🇱': 'the Netherlands', '🇧🇪': 'Belgium',
+    '🇹🇷': 'Turkey', '🇧🇷': 'Brazil', '🇷🇸': 'Serbia', '🇺🇸': 'the United States'
+};
 
-    if (c.matches && c.matches.length > 0) {
-        c.matches.forEach((m, index) => {
-            let teams = m.teams.split('-');
-            let scores = m.score.split('-');
-
-            if (teams.length === 2 && scores.length === 2) {
-                let eqA = teams[0].trim();
-                let eqB = teams[1].trim();
-                let scA = parseInt(scores[0].trim());
-                let scB = parseInt(scores[1].trim());
-
-                let vainqueur = (scA > scB) ? `victory of ${eqA}` : (scB > scA) ? `victory of ${eqB}` : `draw`;
-
-                detailsMatchs += `- Match ${index + 1}: ${eqA} vs ${eqB}. Show the ${vainqueur} with the exact score "${m.score}".\n`;
-            } else {
-                detailsMatchs += `- Match ${m.teams} with the exact score "${m.score}".\n`;
+function extractLeagueCountries(c) {
+    var countries = [];
+    (c.matches || []).forEach(function (m) {
+        if (!m.league_flag) return;
+        Object.keys(FLAG_EMOJI_TO_COUNTRY).forEach(function (emoji) {
+            if (m.league_flag.indexOf(emoji) !== -1 && countries.indexOf(FLAG_EMOJI_TO_COUNTRY[emoji]) === -1) {
+                countries.push(FLAG_EMOJI_TO_COUNTRY[emoji]);
             }
         });
-    }
+    });
+    return countries;
+}
 
-    return `A high-end stylized digital illustration, dark bold outlines, high-contrast ink wash, premium comic book art style, vertical 9:16 ratio. NO phone, NO screen, NO app interface anywhere in the image.
+function buildVictoryImagePromptRaw(c) {
+    var countries = extractLeagueCountries(c);
+    var flagLine = countries.length
+        ? `You may subtly incorporate the national flag(s) of ${countries.join(' and ')} as a color/pattern motif somewhere in the scene (e.g. on a banner, a scarf, a ribbon) — purely as color/graphic motifs, with NO text or lettering on them.`
+        : '';
 
-Background: Spectacular low-angle view of a wet, reflective football pitch in a stadium at night, dramatic floodlights, golden confetti falling, illustrated (not photorealistic).
+    return `A stylized, hand-drawn illustrated football scene, dark bold ink outlines, high-contrast ink wash, premium comic book / graphic novel art style. NOT photorealistic, NOT 3D render, NOT a photo. Vertical 9:16 ratio.
 
-Top Center: A stylized gold crown resting above the monogram "SM", both rendered as clean illustrated line art. Below it, the exact short text "VICTOIRE" in bold gold lettering.
+ABSOLUTE RULE: NO text, NO numbers, NO score, NO scoreboard, NO typography or lettering of any kind anywhere in the image, under any circumstance — image generators render text as garbled/illegible, so the composition must rely purely on imagery, never on written characters. NO phone, NO screen, NO tablet, NO app interface anywhere.
 
-Center: The exact score(s) displayed as a clean illustrated scoreboard graphic:
-${detailsMatchs}
+Scene: A triumphant, celebratory low-angle view of a football stadium pitch at night, dramatic floodlights, golden confetti falling, an euphoric crowd silhouette in the stands — illustrated, not photorealistic.
 
-Bottom: The exact text "@scoremaster.fr" in clean white lettering.
+Brand mark (the ONLY graphic emblem allowed, no accompanying text): a clean illustrated gold crown resting above a bold shield-shaped monogram "SM" emblem (like a football club crest), integrated tastefully into the scene — for example engraved on a trophy, printed on a banner, or subtly lit in the background. Keep it small and elegant, never the main focus.
 
-Style: Photorealistic illustration, 8k, cinematic lighting, high contrast, gold and silver color palette, no more than 3 short text elements total, --ar 9:16`;
+${flagLine}
+
+Style: flat vibrant illustrated ink-wash / graphic novel style, bold dark outlines, dramatic cinematic lighting, deep navy/black background with gold accent lighting, painterly texture, absolutely no readable text, letters or digits anywhere in the composition.`;
 }
 
 function buildInstaPromptText(c) {

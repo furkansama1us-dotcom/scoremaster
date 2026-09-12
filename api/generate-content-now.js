@@ -83,13 +83,14 @@ ${matchInfo ? `Combiné en cours (noms d'équipes uniquement, PAS de score) : ${
 Ne répète pas ces accroches/légendes déjà utilisées récemment :
 ${recentHistory.length ? recentHistory.map(h => `- ${h.slice(0, 120)}`).join('\n') : '(aucun historique)'}
 
-STYLE VISUEL OBLIGATOIRE pour "image_prompt" :
-- Illustration digitale stylisée, contours sombres marqués, ink wash haute-contraste, style bande dessinée premium (PAS de photo réaliste, PAS de maquette d'écran/interface détaillée — les générateurs d'image rendent très mal le texte dense ou les faux écrans : ça donne un résultat illisible).
-- INTERDIT : aucun téléphone/smartphone/iPhone, aucun écran, aucune tablette, aucune interface d'app visible dans l'image, sous aucun prétexte.
-- Une scène/personnage/objet simple et élégant SANS écran (silhouette, montre, carte VIP, train, stade, porte, sablier...) sur lequel apparaît discrètement le monogramme "SM" surmonté d'une couronne dorée — jamais plus de 2-3 caractères ou un mot très court à ce niveau.
-- Si un texte principal doit apparaître sur l'affiche, UN SEUL élément, TRÈS COURT (2-4 mots maximum), à donner EXACTEMENT entre guillemets dans le prompt (ex: "SM VICTOIRE").
+STYLE VISUEL OBLIGATOIRE pour "image_prompt" (à écrire en anglais) :
+- Illustration digitale stylisée, dessinée à la main, contours sombres marqués, ink wash haute-contraste, style bande dessinée / roman graphique premium (PAS de photo réaliste, PAS de rendu 3D, PAS de maquette d'écran/interface).
+- INTERDIT ABSOLU : AUCUN texte, AUCUN chiffre, AUCUNE typographie ou lettrage visible dans l'image, sous aucun prétexte — les générateurs d'image rendent systématiquement le texte illisible/déformé, donc la composition doit reposer uniquement sur l'image, jamais sur des caractères écrits.
+- INTERDIT : aucun téléphone/smartphone/iPhone, aucun écran, aucune tablette, aucune interface d'app visible dans l'image.
+- Seul élément de marque autorisé (sans aucun texte à côté) : un monogramme "SM" en forme d'écusson (façon blason de club) surmonté d'une couronne dorée, intégré discrètement dans la scène (gravé sur un trophée, sur une bannière, éclairé en arrière-plan...) — toujours petit et élégant, jamais l'élément central.
+- Tu peux évoquer le pays de la compétition concernée via un drapeau national stylisé intégré dans le décor (bannière, écharpe, ruban...), uniquement comme motif de couleur, sans aucun texte dessus.
 - Palette bleu marine/noir profond avec touches dorées et néons discrets selon l'ambiance.
-- Qualité : rendu net et cohérent, jamais de texte long ni d'écran/interface à faire apparaître dans l'image.
+- Scène/personnage/objet élégant SANS écran : silhouette, montre, carte VIP, train, stade, porte, sablier, foule en liesse, confettis...
 
 Ton par type (caption ET ambiance de l'illustration) :
 - Promo Web App : lumineux, accueillant, évoque l'application mobile
@@ -101,7 +102,7 @@ Ton par type (caption ET ambiance de l'illustration) :
 - Relance Adhérents : ambiance noir/mystère — silhouette, train, montre qui tic-tac, porte verrouillée
 
 Réponds UNIQUEMENT avec un objet JSON strict, sans texte autour, au format :
-{"caption": "légende en français avec emojis, prête à poster", "image_prompt": "prompt en anglais pour un générateur d'image, décrivant précisément la scène/composition/ambiance/style, avec les textes exacts entre guillemets"}`;
+{"caption": "légende en français avec emojis, prête à poster", "image_prompt": "prompt en anglais pour un générateur d'image, décrivant précisément la scène/composition/ambiance/style — sans aucun texte/chiffre à faire apparaître dans l'image"}`;
 
     const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
