@@ -5706,10 +5706,11 @@ function sendTelegramWin(id) {
 ${matchLines}
 🚀 *Rejoignez l'élite sur l'application :* https://scoremaster.fr/`;
 
-   // Envoi via Postiz (publication directe sur le groupe)
-    if (confirm("Publier le message de VICTOIRE sur le groupe Telegram pour ce combiné ?")) {
+   // Envoi via Postiz (publication directe sur le groupe) + prompt image de victoire en DM admin
+    if (confirm("Publier le message de VICTOIRE (+ prompt photo) sur le groupe Telegram pour ce combiné ?")) {
             sendGroupTelegram(telegramText).then(() => {
                 showToast("Message de victoire publié sur le groupe Telegram ! 🍾");
+                generateAndSendInstaPrompt(id);
             }).catch(() => showToast("Erreur lors de la publication sur Telegram", true));
         }
     // ============================================================
@@ -7483,23 +7484,20 @@ function fallbackCopy(txt) {
     // ============================================================
 // GÉNÉRATION DU PROMPT IA PREMIUM (FORMAT 9:16 + LOGO SM + INSTA)
 // ============================================================
-function sendInstaPrompt(id) {
-    var c = allCombineds.find(x => x.id == id);
-    if (!c) { showToast("Combiné introuvable", true); return; }
-
+function buildInstaPromptText(c) {
     let detailsMatchs = "";
 
     if (c.matches && c.matches.length > 0) {
         c.matches.forEach((m, index) => {
             let teams = m.teams.split('-');
             let scores = m.score.split('-');
-            
+
             if (teams.length === 2 && scores.length === 2) {
-                let eqA = teams[0].trim(); 
+                let eqA = teams[0].trim();
                 let eqB = teams[1].trim();
-                let scA = parseInt(scores[0].trim()); 
+                let scA = parseInt(scores[0].trim());
                 let scB = parseInt(scores[1].trim());
-                
+
                 let vainqueur = (scA > scB) ? `victory of ${eqA}` : (scB > scA) ? `victory of ${eqB}` : `draw`;
 
                 detailsMatchs += `- Match ${index + 1}: ${eqA} vs ${eqB}. Show the ${vainqueur} with the exact score "${m.score}".\n`;
@@ -7523,12 +7521,23 @@ Bottom: The exact text "@scoremaster.fr" in clean white lettering.
 Style: Photorealistic illustration, 8k, cinematic lighting, high contrast, gold and silver color palette, no more than 3 short text elements total, --ar 9:16`;
 
     // Uniquement le prompt formaté dans un bloc de code Telegram pour un tap-to-copy rapide
-    let telegramText = `\`\`\`\n${aiPrompt}\n\`\`\``;
+    return `\`\`\`\n${aiPrompt}\n\`\`\``;
+}
+
+function generateAndSendInstaPrompt(id) {
+    var c = allCombineds.find(x => x.id == id);
+    if (!c) return Promise.resolve();
+    return sendAdminTelegram(buildInstaPromptText(c)).then(() => {
+        showToast("Prompt IA (photo de victoire) envoyé ! 🎨");
+    });
+}
+
+function sendInstaPrompt(id) {
+    var c = allCombineds.find(x => x.id == id);
+    if (!c) { showToast("Combiné introuvable", true); return; }
 
     if (confirm("Générer et envoyer le prompt IA Premium sur Telegram ?")) {
-        sendAdminTelegram(telegramText).then(() => {
-            showToast("Prompt IA envoyé ! 🎨");
-        });
+        generateAndSendInstaPrompt(id);
     }
 }
 </script>
