@@ -1775,6 +1775,15 @@ async function fetchApiScore(id, dateRaw) {
         Messages variés pour relancer les membres inactifs et les inciter à revenir.
     </div>
 </div>
+            <div class="admin-card" style="padding:15px; border-left:4px solid #ec4899; margin-bottom:10px; cursor:pointer; transition:all 0.2s;" onclick="sendReferralReminder()">
+    <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff; display:flex; justify-content:space-between; align-items:center;">
+        <span><i class="fas fa-user-plus" style="color:#ec4899; margin-right:5px;"></i> Rappel Parrainage</span>
+        <i class="fas fa-chevron-right" style="color:var(--text-gray); font-size:12px;"></i>
+    </div>
+    <div style="font-size:12px; color:var(--text-gray);">
+        Poste un rappel sur le groupe pour inviter les membres à parrainer 3 amis et débloquer un pronostic VIP+.
+    </div>
+</div>
         </div>
     </div>
 
@@ -2158,6 +2167,23 @@ function openRelanceGenerator() {
         overlay.style.display = 'flex';
         setTimeout(() => overlay.style.opacity = "1", 10);
         renderRelanceContent();
+    }
+}
+
+// Rappel du programme de parrainage, posté directement sur le groupe Telegram.
+function sendReferralReminder() {
+    var messages = [
+        `👥 *PARRAINAGE SCORE MASTER* 👑\n\nInvite 3 amis sur ce canal et débloque un pronostic VIP+ 100% gratuit ! 🎁\n\n1️⃣ Ouvre l'application Score Master\n2️⃣ Va dans ton profil ⚙️\n3️⃣ Récupère ton lien de parrainage personnel\n4️⃣ Partage-le avec tes amis\n\nRécompense répétable à chaque nouveau palier de 3 ! 🔁\n\n🌐 https://scoremaster.fr/`,
+        `🎁 Tu veux un pronostic VIP+ gratuit ? Rien de plus simple.\n\nInvite 3 amis à rejoindre ce canal via ton lien personnel (dispo dans ton profil sur l'app) et débloque un score exact offert. 👑\n\n🌐 https://scoremaster.fr/`,
+        `🔥 On récompense la fidélité !\n\n3 amis invités sur Telegram = 1 pronostic VIP+ offert. Ton lien personnel t'attend dans ton profil sur l'application Score Master. 👥👑\n\n🌐 https://scoremaster.fr/`
+    ];
+    var text = messages[Math.floor(Math.random() * messages.length)];
+    if (confirm('Publier le rappel de parrainage sur le groupe Telegram ?')) {
+        sendGroupTelegram(text).then(function () {
+            showToast('Rappel de parrainage publié sur le groupe !');
+        }).catch(function () {
+            showToast('Erreur lors de la publication sur Telegram.', true);
+        });
     }
 }
 
