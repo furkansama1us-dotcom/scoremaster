@@ -86,7 +86,10 @@
         .hex-grid-login { position: absolute; top: 0; left: 0; width: 100%; height: 35%; opacity: 0.15; pointer-events: none; overflow: hidden; z-index: 0; }
         .hex-grid-login svg { width: 100%; height: 100%; }
 
-        .login-header { flex:0 0 auto; padding-top:calc(30px + var(--safe-top)); padding-bottom:20px; text-align:center; position:relative; z-index:1; }
+        .login-header { flex:0 0 auto; padding-top:30px; padding-bottom:20px; text-align:center; position:relative; z-index:1; animation:loginFadeIn .6s ease-out; }
+        @keyframes loginFadeIn { from{opacity:0; transform:translateY(-12px);} to{opacity:1; transform:translateY(0);} }
+        .login-form-container { animation:loginFadeIn .6s ease-out .15s backwards; }
+        .login-input:focus { transform:scale(1.01); }
         .login-logo-img { width:110px; height:auto; object-fit:contain; filter:drop-shadow(0 0 25px rgba(255,193,7,0.25)); border-radius:24px; }
         
         .login-form-container {
@@ -1017,6 +1020,12 @@ async function fetchApiScore(id, dateRaw) {
             <rect width="100%" height="100%" fill="url(#hex-login)"/>
         </svg>
     </div>
+    <div class="promo-ticker" style="position:relative; z-index:1; padding-top:var(--safe-top); flex-shrink:0;">
+        <div class="promo-ticker-track">
+            <span class="promo-ticker-item"><i class="fas fa-rocket"></i> Score Master V2 est arrivé ! Nouvelle version, nouvelles fonctionnalités et des remises exceptionnelles pour fêter notre grand retour. Profitez-en avant que ça ne s'arrête !</span>
+            <span class="promo-ticker-item"><i class="fas fa-rocket"></i> Score Master V2 est arrivé ! Nouvelle version, nouvelles fonctionnalités et des remises exceptionnelles pour fêter notre grand retour. Profitez-en avant que ça ne s'arrête !</span>
+        </div>
+    </div>
     <div class="login-header">
         <img id="img-login" alt="Score Master" class="login-logo-img">
     </div>
@@ -1039,6 +1048,9 @@ async function fetchApiScore(id, dateRaw) {
         <div style="position:relative;width:100%;">
             <input type="password" class="login-input" id="login-password" placeholder="••••••••••••">
             <i class="fas fa-eye" id="togglePassword" style="position:absolute;right:15px;top:15px;cursor:pointer;font-size:16px;z-index:10;"></i>
+        </div>
+        <div style="text-align:right; margin:-12px 0 16px; position:relative; z-index:1;">
+            <a href="#" class="forgot-password" style="font-size:12px;" onclick="handleForgotPassword(); return false;">Mot de passe oublié ?</a>
         </div>
         <button class="login-btn" id="btn-action" onclick="handleAuth()">Connexion</button>
         <div class="login-error" id="login-error"><i class="fas fa-exclamation-circle"></i> Identifiants incorrects</div>
@@ -4264,6 +4276,10 @@ async function fetchMatchesFromAPI() {
         var password = document.getElementById('login-password').value;
         var username = document.getElementById('login-username').value;
         if (!email || !password || (isSignUpMode && !username)) { showToast('Veuillez remplir tous champs', true); return; }
+        var btn = document.getElementById('btn-action');
+        var originalLabel = btn.textContent;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         try {
             var result;
             if (isSignUpMode) {
@@ -4281,6 +4297,21 @@ async function fetchMatchesFromAPI() {
             }, 400);
         } catch (err) {
             showToast(err.message || "Erreur d'authentification", true);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = originalLabel;
+        }
+    }
+
+    async function handleForgotPassword() {
+        var email = document.getElementById('login-email').value.trim();
+        if (!email) { showToast('Entre ton email dans le champ ci-dessus d\'abord.', true); return; }
+        try {
+            var result = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+            if (result.error) throw result.error;
+            showToast('Email de réinitialisation envoyé ! Vérifie ta boîte mail. 📩');
+        } catch (err) {
+            showToast(err.message || "Erreur lors de l'envoi de l'email.", true);
         }
     }
 
