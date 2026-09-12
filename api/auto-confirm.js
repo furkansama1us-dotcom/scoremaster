@@ -35,13 +35,13 @@ function matchTeamsToFixture(teamsStr, fixtures) {
 }
 
 async function sbFetch(path, options) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, Object.assign({
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, Object.assign({}, options, {
         headers: Object.assign({
             'apikey': SUPABASE_SERVICE_ROLE_KEY,
             'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
             'Content-Type': 'application/json'
         }, (options && options.headers) || {})
-    }, options));
+    }));
     if (!res.ok) {
         const text = await res.text();
         throw new Error(`Supabase ${path} -> ${res.status}: ${text}`);

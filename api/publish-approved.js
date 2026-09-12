@@ -17,13 +17,13 @@ const POSTIZ_API_KEY = process.env.POSTIZ_API_KEY;
 const POSTIZ_DOMAIN = process.env.POSTIZ_DOMAIN || 'postiz.srv1960340.hstgr.cloud';
 
 async function sbFetch(path, options) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, Object.assign({
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, Object.assign({}, options, {
         headers: Object.assign({
             'apikey': SUPABASE_SERVICE_ROLE_KEY,
             'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
             'Content-Type': 'application/json'
         }, (options && options.headers) || {})
-    }, options));
+    }));
     if (!res.ok) {
         const text = await res.text();
         throw new Error(`Supabase ${path} -> ${res.status}: ${text}`);
@@ -33,12 +33,12 @@ async function sbFetch(path, options) {
 }
 
 async function postizFetch(path, options) {
-    const res = await fetch(`https://${POSTIZ_DOMAIN}/api/public/v1${path}`, Object.assign({
+    const res = await fetch(`https://${POSTIZ_DOMAIN}/api/public/v1${path}`, Object.assign({}, options, {
         headers: Object.assign({
             'Authorization': POSTIZ_API_KEY,
             'Content-Type': 'application/json'
         }, (options && options.headers) || {})
-    }, options));
+    }));
     const text = await res.text();
     let data;
     try { data = JSON.parse(text); } catch (e) { data = text; }

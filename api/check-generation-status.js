@@ -11,13 +11,13 @@ const HF_KEY_ID = process.env.HF_KEY_ID;
 const HF_KEY_SECRET = process.env.HF_KEY_SECRET;
 
 async function sbFetch(path, options) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, Object.assign({
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, Object.assign({}, options, {
         headers: Object.assign({
             'apikey': SUPABASE_SERVICE_ROLE_KEY,
             'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
             'Content-Type': 'application/json'
         }, (options && options.headers) || {})
-    }, options));
+    }));
     if (!res.ok) throw new Error(`Supabase ${path} -> ${res.status}: ${await res.text()}`);
     const text = await res.text();
     return text ? JSON.parse(text) : null;
