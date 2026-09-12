@@ -3,8 +3,8 @@
 // via GET /api/publish-approved?secret=...
 //
 // - platform "instagram" -> publié immédiatement via l'API Postiz
-// - platform "telegram"  -> déposé dans telegram_queue (pas de canal Telegram
-//   branché sur Postiz pour l'instant, on réutilise le circuit déjà en place)
+// - platform "telegram"  -> publié immédiatement via l'API Postiz (canal
+//   Telegram connecté)
 //
 // Utilise la clé service_role Supabase (bypass RLS) + la clé API Postiz :
 // toutes deux lues uniquement depuis les variables d'environnement Vercel,
@@ -60,10 +60,16 @@ module.exports = async function handler(req, res) {
         const approved = await sbFetch(`pending_publications?status=eq.approved&select=*`);
         summary.checked = approved.length;
 
+        let integrationsCache = null;
+        async function getIntegrations() {
+            if (!integrationsCache) integrationsCache = await postizFetch('/integrations');
+            return integrationsCache;
+        }
+
         for (const item of approved) {
             try {
                 if (item.platform === 'instagram') {
-                    const integrations = await postizFetch('/integrations');
+                    const integrations = await getIntegrations();
                     const ig = (integrations || []).find(function (i) { return i.identifier && i.identifier.indexOf('instagram') !== -1; });
                     if (!ig) throw new Error('Aucune intégration Instagram trouvée sur Postiz');
 
@@ -82,9 +88,23 @@ module.exports = async function handler(req, res) {
                         })
                     });
                 } else if (item.platform === 'telegram') {
-                    await sbFetch('telegram_queue', {
+                    const integrations = await getIntegrations();
+                    const tg = (integrations || []).find(function (i) { return i.identifier && i.identifier.indexOf('telegram') !== -1; });
+                    if (!tg) throw new Error('Aucune intégration Telegram trouvée sur Postiz');
+
+                    await postizFetch('/posts', {
                         method: 'POST',
-                        body: JSON.stringify([{ message: `${item.caption}\n\n🖼️ ${item.image_url}` }])
+                        body: JSON.stringify({
+                            type: 'now',
+                            date: new Date().toISOString(),
+                            shortLink: false,
+                            tags: [],
+                            posts: [{
+                                integration: { id: tg.id },
+                                value: [{ content: item.caption, image: [{ id: item.id, path: item.image_url }] }],
+                                settings: { __type: 'telegram' }
+                            }]
+                        })
                     });
                 } else {
                     throw new Error(`Plateforme inconnue: ${item.platform}`);
