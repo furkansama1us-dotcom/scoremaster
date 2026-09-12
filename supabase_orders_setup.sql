@@ -91,12 +91,17 @@ create table if not exists public.pending_publications (
   content_type text not null,
   platform text not null,
   caption text not null,
-  image_url text not null,
+  image_url text not null default '',
   status text not null default 'pending',
   reviewed_at timestamptz,
   published_at timestamptz,
-  error text
+  error text,
+  hf_status_url text
 );
+
+-- Migration (si la table existait déjà avant ces colonnes) :
+alter table public.pending_publications alter column image_url set default '';
+alter table public.pending_publications add column if not exists hf_status_url text;
 
 alter table public.pending_publications enable row level security;
 

@@ -1785,7 +1785,7 @@ async function fetchApiScore(id, dateRaw) {
                 <i class="fas fa-calendar-days"></i> Calendrier de contenu
             </div>
             <p style="font-size:13px; color:var(--text-gray); margin-bottom:20px; line-height:1.5;">
-                Un type de post différent par jour pour varier le contenu automatiquement. Clique sur un jour pour ouvrir le générateur correspondant et récupérer ton brouillon.
+                Aujourd'hui et demain uniquement. Clique sur "Générer" : Claude écrit la légende, Higgsfield crée l'image, et le brouillon atterrit ci-dessous prêt à approuver — même circuit que la génération automatique de nuit.
             </p>
             <div id="admin-calendar-container"></div>
         </div>
@@ -2225,48 +2225,179 @@ function copyRelanceText(btn, i) {
 }
 
 // ============================================================
-// CALENDRIER DE CONTENU — planning visuel 7 jours, rotation des générateurs
+// CALENDRIER DE CONTENU — dashboard type Postiz, J+0 / J+1 uniquement.
+// Un clic sur "Générer" enchaîne Claude (légende + prompt image) puis
+// Higgsfield (image), dépose le brouillon dans pending_publications, et
+// suit la progression en direct jusqu'à ce qu'il soit prêt à approuver.
 // ============================================================
 const CONTENT_CALENDAR_TYPES = [
-    { label: 'Promo Web App', icon: 'fas fa-globe', color: 'var(--primary-yellow)', fn: 'sendPromoNotification' },
-    { label: 'Prompt IA (affiche combiné)', icon: 'fas fa-magic', color: '#f97316', fn: 'openPromptGenerator' },
-    { label: 'Écusson Brodé', icon: 'fas fa-shield-alt', color: '#ffc107', fn: 'openEcussonGenerator' },
-    { label: 'Story Instagram', icon: 'fab fa-instagram', color: '#e1306c', fn: 'openInstaTexts' },
-    { label: 'Annonce Telegram VIP+', icon: 'fab fa-telegram-plane', color: '#0ea5e9', fn: 'openTelegramLaunch' },
-    { label: 'Reels & Posts Instagram', icon: 'fas fa-video', color: '#f09433', fn: 'openInstaReels' },
-    { label: 'Relance Adhérents', icon: 'fas fa-user-clock', color: '#22c55e', fn: 'openRelanceGenerator' }
+    { key: 'promo', label: 'Promo Web App', icon: 'fas fa-globe', color: 'var(--primary-yellow)', platforms: ['instagram', 'telegram'] },
+    { key: 'prompt_ia', label: 'Prompt IA (affiche combiné)', icon: 'fas fa-magic', color: '#f97316', platforms: ['instagram', 'telegram'] },
+    { key: 'ecusson', label: 'Écusson Brodé', icon: 'fas fa-shield-alt', color: '#ffc107', platforms: ['instagram'] },
+    { key: 'story', label: 'Story Instagram', icon: 'fab fa-instagram', color: '#e1306c', platforms: ['instagram'] },
+    { key: 'telegram_vip', label: 'Annonce Telegram VIP+', icon: 'fab fa-telegram-plane', color: '#0ea5e9', platforms: ['telegram'] },
+    { key: 'reels', label: 'Reels & Posts Instagram', icon: 'fas fa-video', color: '#f09433', platforms: ['instagram'] },
+    { key: 'relance', label: 'Relance Adhérents', icon: 'fas fa-user-clock', color: '#22c55e', platforms: ['telegram'] }
 ];
 
-function renderAdminCalendar() {
+window._calendarPollers = window._calendarPollers || {};
+
+async function adminApiCall(endpoint, body) {
+    let session = await supabaseClient.auth.getSession();
+    let accessToken = session && session.data && session.data.session ? session.data.session.access_token : '';
+    let res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken },
+        body: JSON.stringify(body || {})
+    });
+    let data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erreur serveur');
+    return data;
+}
+
+function dateStrOffset(offset) {
+    var d = new Date(); d.setDate(d.getDate() + offset);
+    return d.toISOString().slice(0, 10);
+}
+
+async function renderAdminCalendar() {
     var container = document.getElementById('admin-calendar-container');
     if (!container) return;
 
-    // Index de rotation stable basé sur le nombre de jours depuis une date de référence,
-    // pour que le cycle des 7 types tourne semaine après semaine sans jamais se répéter à l'identique la même journée.
-    var refDate = new Date(2026, 0, 1);
-    var dowNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+    var todayStr = dateStrOffset(0);
+    var tomorrowStr = dateStrOffset(1);
 
-    var html = '';
-    for (var offset = 0; offset < 7; offset++) {
-        var d = new Date(); d.setDate(d.getDate() + offset);
-        var daysSinceRef = Math.floor((d - refDate) / 86400000);
-        var type = CONTENT_CALENDAR_TYPES[((daysSinceRef % 7) + 7) % 7];
-        var label = offset === 0 ? "Aujourd'hui" : (offset === 1 ? 'Demain' : dowNames[d.getDay()] + ' ' + d.getDate() + '/' + (d.getMonth() + 1));
-
-        html += `
-        <div class="order-history-card" style="border-left:4px solid ${type.color};">
-            <div class="order-history-top">
-                <span class="order-history-ref">${label}</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:10px; margin-top:8px;">
-                <i class="${type.icon}" style="color:${type.color}; font-size:18px; width:22px;"></i>
-                <span style="font-size:14px; font-weight:700; color:#fff;">${type.label}</span>
-            </div>
-            <button onclick="${type.fn}()" style="width:100%;margin-top:12px;padding:9px;background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-arrow-right"></i> Ouvrir le générateur</button>
-        </div>`;
+    var rows = [];
+    try {
+        var res = await supabaseClient.from('pending_publications').select('*').in('scheduled_for', [todayStr, tomorrowStr]).order('created_at', { ascending: false });
+        if (res.error) throw res.error;
+        rows = res.data || [];
+    } catch (e) {
+        console.error('Erreur chargement calendrier:', e);
     }
 
+    var html = '';
+    [{ label: "Aujourd'hui", dateStr: todayStr, offset: 0 }, { label: 'Demain', dateStr: tomorrowStr, offset: 1 }].forEach(function (day) {
+        html += `<div style="font-size:12px; font-weight:800; color:var(--text-gray); text-transform:uppercase; letter-spacing:0.5px; margin:18px 0 10px;">${day.label} — ${day.dateStr}</div>`;
+
+        CONTENT_CALENDAR_TYPES.forEach(function (type) {
+            var typeRows = rows.filter(function (r) { return r.scheduled_for === day.dateStr && r.content_type === type.label; });
+            html += renderCalendarCard(type, day, typeRows);
+        });
+    });
+
     container.innerHTML = html;
+
+    // Reprend le suivi de toute génération encore en cours (ex: après un rechargement de page)
+    var seenUrls = {};
+    rows.filter(function (r) { return r.status === 'generating' && r.hf_status_url; }).forEach(function (r) {
+        if (seenUrls[r.hf_status_url]) return;
+        seenUrls[r.hf_status_url] = true;
+        var ids = rows.filter(function (x) { return x.hf_status_url === r.hf_status_url; }).map(function (x) { return x.id; });
+        startGenerationPolling(ids, r.hf_status_url);
+    });
+}
+
+function renderCalendarCard(type, day, typeRows) {
+    var cardId = 'cal-card-' + type.key + '-' + day.offset;
+    var hasGenerating = typeRows.some(function (r) { return r.status === 'generating'; });
+    var readyRows = typeRows.filter(function (r) { return r.status === 'pending'; });
+    var failedRows = typeRows.filter(function (r) { return r.status === 'failed'; });
+
+    var platformBadges = type.platforms.map(function (pf) {
+        var row = typeRows.find(function (r) { return r.platform === pf; });
+        var pfInfo = PLATFORM_LABELS[pf] || { label: pf, icon: 'fas fa-share' };
+        var statusMap = {
+            generating: { label: 'Génération...', color: 'var(--primary-yellow)' },
+            pending: { label: 'Prêt à approuver', color: 'var(--green)' },
+            approved: { label: 'En publication...', color: 'var(--primary-yellow)' },
+            published: { label: 'Publié ✅', color: 'var(--green)' },
+            rejected: { label: 'Rejeté', color: 'var(--text-gray)' },
+            failed: { label: 'Échec ❌', color: 'var(--red)' }
+        };
+        var st = row ? (statusMap[row.status] || { label: row.status, color: 'var(--text-gray)' }) : { label: 'Non généré', color: 'var(--text-gray)' };
+        return `<span style="display:inline-flex; align-items:center; gap:4px; font-size:10px; font-weight:700; color:${st.color}; background:rgba(255,255,255,0.05); padding:4px 8px; border-radius:8px;"><i class="${pfInfo.icon}"></i> ${pfInfo.label} : ${st.label}</span>`;
+    }).join('');
+
+    var actionHtml;
+    if (hasGenerating) {
+        actionHtml = `<button disabled style="width:100%;margin-top:12px;padding:9px;background:rgba(255,255,255,.04);color:var(--text-gray);border:1px solid rgba(255,255,255,.08);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:not-allowed;"><i class="fas fa-spinner fa-spin"></i> Génération en cours...</button>`;
+    } else if (readyRows.length) {
+        actionHtml = `<div style="display:flex; gap:8px; margin-top:12px;">
+            <button onclick="approveCalendarRows('${type.key}', ${day.offset})" style="flex:1;padding:9px;background:linear-gradient(135deg,var(--green),#16A34A);color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-check"></i> Approuver</button>
+            <button onclick="switchAdminTab('publications')" style="flex:1;padding:9px;background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-eye"></i> Voir</button>
+        </div>`;
+    } else {
+        actionHtml = `<button id="${cardId}-btn" onclick="generateContentNow('${type.key}', ${day.offset}, '${cardId}-btn')" style="width:100%;margin-top:12px;padding:9px;background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-wand-magic-sparkles"></i> Générer${failedRows.length ? ' à nouveau' : ''}</button>`;
+    }
+
+    var thumbHtml = readyRows.length && readyRows[0].image_url ? `<img src="${readyRows[0].image_url}" style="width:100%; border-radius:10px; margin-top:10px; display:block;" onerror="this.style.display='none'">` : '';
+
+    return `
+    <div class="order-history-card" id="${cardId}" style="border-left:4px solid ${type.color}; margin-bottom:10px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <i class="${type.icon}" style="color:${type.color}; font-size:18px; width:22px;"></i>
+            <span style="font-size:14px; font-weight:700; color:#fff; flex:1;">${type.label}</span>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:10px;">${platformBadges}</div>
+        ${thumbHtml}
+        ${actionHtml}
+    </div>`;
+}
+
+async function generateContentNow(typeKey, dayOffset, btnId) {
+    var btn = document.getElementById(btnId);
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Lancement...'; }
+    try {
+        var data = await adminApiCall('/api/generate-content-now', { typeKey: typeKey, dayOffset: dayOffset });
+        showToast('Génération lancée ! Claude a écrit la légende, Higgsfield crée l\'image...');
+        await renderAdminCalendar();
+        startGenerationPolling(data.rows.map(function (r) { return r.id; }), data.statusUrl);
+    } catch (error) {
+        console.error('Erreur génération contenu:', error);
+        showToast('Erreur lors du lancement de la génération.', true);
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Générer'; }
+    }
+}
+
+function startGenerationPolling(rowIds, statusUrl) {
+    if (window._calendarPollers[statusUrl]) return;
+    var attempts = 0;
+    window._calendarPollers[statusUrl] = setInterval(async function () {
+        attempts++;
+        try {
+            var data = await adminApiCall('/api/check-generation-status', { statusUrl: statusUrl, rowIds: rowIds });
+            if (data.done || attempts > 40) {
+                clearInterval(window._calendarPollers[statusUrl]);
+                delete window._calendarPollers[statusUrl];
+                if (data.failed) showToast('La génération a échoué.', true);
+                else if (data.done) showToast('Image prête ! Brouillon disponible ci-dessous.');
+                await renderAdminCalendar();
+                loadAdminPublications();
+            }
+        } catch (e) {
+            console.error('Erreur suivi génération:', e);
+        }
+    }, 5000);
+}
+
+async function approveCalendarRows(typeKey, dayOffset) {
+    var type = CONTENT_CALENDAR_TYPES.find(function (t) { return t.key === typeKey; });
+    if (!type) return;
+    var dateStr = dateStrOffset(dayOffset);
+    try {
+        const { data, error } = await supabaseClient.from('pending_publications').select('id').eq('scheduled_for', dateStr).eq('content_type', type.label).eq('status', 'pending');
+        if (error) throw error;
+        for (const row of (data || [])) {
+            await supabaseClient.from('pending_publications').update({ status: 'approved', reviewed_at: new Date().toISOString() }).eq('id', row.id);
+        }
+        showToast('Approuvé ! Publication en cours (via le cron, quelques minutes).');
+        await renderAdminCalendar();
+        loadAdminPublications();
+    } catch (error) {
+        console.error('Erreur approbation calendrier:', error);
+        showToast("Erreur lors de l'approbation.", true);
+    }
 }
 
 // ============================================================
