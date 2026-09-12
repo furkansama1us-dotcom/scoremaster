@@ -1168,20 +1168,10 @@ async function fetchApiScore(id, dateRaw) {
             </div>
             <!-- ===== BLOC LIVE SCORES ===== -->
 <div id="live-scores-section" style="display:none; margin: 0 20px 20px;">
-    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-        <h3 style="font-size:17px; font-weight:700; margin:0;">⚽ Scores en Direct</h3>
-        <span id="live-badge" style="display:flex; align-items:center; gap:5px; background:rgba(244,63,94,0.15); border:1px solid rgba(244,63,94,0.3); padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; color:#F43F5E;">
-            <span style="width:6px;height:6px;background:#F43F5E;border-radius:50%;animation:pulse 1s infinite;display:inline-block;"></span> LIVE
-        </span>
-    </div>
-    <div id="live-scores-container" style="background:#1E1E2E; border-radius:16px; overflow:hidden; border:1px solid #2A2A3A; padding:4px 0;">
-        <div style="padding:20px; text-align:center; color:var(--text-gray); font-size:13px;">
-            <i class="fas fa-satellite-dish" style="margin-right:8px;"></i>Connexion en cours...
-        </div>
-    </div>
-    <div style="text-align:center; margin-top:8px; font-size:10px; color:var(--text-gray);">
-        Actualisation automatique toutes les 2 min
-    </div>
+    <button onclick="openComboLiveView()" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; background:rgba(244,63,94,0.15); border:1px solid rgba(244,63,94,0.3); color:#F43F5E; padding:12px; border-radius:14px; font-size:14px; font-weight:700; font-family:'Montserrat',sans-serif; cursor:pointer;">
+        <span style="width:6px;height:6px;background:#F43F5E;border-radius:50%;animation:pulse 1s infinite;display:inline-block;"></span>
+        Suivre en LIVE
+    </button>
 </div>
 <!-- ===== FIN BLOC LIVE SCORES ===== -->
             <div class="home-vip-section fade-in-up delay-5">
@@ -4458,24 +4448,8 @@ async function startLiveScores() {
         return;
     }
 
-    // Sinon c'est l'heure, on affiche
+    // Sinon c'est l'heure, on affiche le bouton "Suivre en LIVE"
     document.getElementById('live-scores-section').style.display = 'block';
-    
-    // On force le badge en mode LIVE
-    const badge = document.getElementById('live-badge');
-    if (badge) {
-        badge.style.background = 'rgba(244,63,94,0.15)';
-        badge.style.borderColor = 'rgba(244,63,94,0.3)';
-        badge.style.color = '#F43F5E';
-        badge.innerHTML = '<span style="width:6px;height:6px;background:#F43F5E;border-radius:50%;animation:pulse 1s infinite;display:inline-block;margin-right:5px;"></span> LIVE';
-    }
-
-    await fetchAndRenderLiveScores(matches);
-
-    if (livePollingInterval) clearInterval(livePollingInterval);
-    livePollingInterval = setInterval(async () => {
-        await fetchAndRenderLiveScores(matches);
-    }, 160000);
 
     // Programmation du fetch final 2h après le DERNIER match (avec la BONNE DATE)
     const [lh, lmin] = lastMatchTime.split(':').map(Number);
@@ -4516,98 +4490,6 @@ async function fetchTeamLogo(teamName) {
     }
 }
 
-// ============================================================
-// AFFICHAGE DES SCORES EN DIRECT (REMPLACE TA LIGNE 1961)
-// ============================================================
-async function fetchAndRenderLiveScores(matches) {
-    const container = document.getElementById('live-scores-container');
-    const dateStr = toDateStr(currentCombined.date);
-
-    let allFixtures = [];
-    try {
-        allFixtures = await fetchFixtures(dateStr);
-    } catch(e) { console.error("Erreur Live API"); }
-
-    const now = new Date();
-    const currentHrMin = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
-
-    let html = '';
-
-    for (const m of matches) {
-        const parts = (m.teams || '').split(' - ');
-        const homeTeamStr = (parts[0] || 'Domicile').trim();
-        const awayTeamStr = (parts[1] || 'Extérieur').trim();
-        const fixture = findFixture(allFixtures, m.teams);
-
-        const homeLogoUrl = await fetchTeamLogo(homeTeamStr);
-        const awayLogoUrl = await fetchTeamLogo(awayTeamStr);
-
-        const defaultShield = `<div style="width:40px;height:40px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.05);border-radius:50%;border:1px solid var(--border-color);"><i class="fas fa-shield-alt" style="font-size:18px;color:var(--text-gray);"></i></div>`;
-        const homeLogoTag = homeLogoUrl ? `<img src="${homeLogoUrl}" style="width:40px; height:40px; object-fit:contain; margin-bottom:8px;" crossorigin="anonymous">` : defaultShield;
-        const awayLogoTag = awayLogoUrl ? `<img src="${awayLogoUrl}" style="width:40px; height:40px; object-fit:contain; margin-bottom:8px;" crossorigin="anonymous">` : defaultShield;
-
-        let homeGoals = '-', awayGoals = '-';
-        let statusLabel = '', statusColor = 'var(--text-gray)';
-        let isUnavailable = false;
-
-        if (fixture) {
-            const isFinished = fixture.status.finished;
-            homeGoals = fixture.home.score !== null ? fixture.home.score : 0;
-            awayGoals = fixture.away.score !== null ? fixture.away.score : 0;
-
-            if (!fixture.status.started) {
-                statusLabel = 'À venir';
-            } else if (isFinished) {
-                statusLabel = 'Terminé ✅'; statusColor = 'var(--green)';
-            } else {
-                statusLabel = `<span style="display:inline-block;width:6px;height:6px;background:#22C55E;border-radius:50%;margin-right:4px;animation:pulse 1s infinite;"></span> En direct`;
-                statusColor = '#22C55E';
-            }
-        } else {
-            const matchCleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
-            
-            // On vérifie qu'on est bien le jour J avant de dire "En cours" ou "Non dispo"
-            const isToday = (currentCombined.date === now.toISOString().split('T')[0]);
-
-            if (isToday && matchCleanTime && currentHrMin >= matchCleanTime[0]) {
-                isUnavailable = true;
-                statusLabel = 'Non dispo.'; 
-            } else {
-                statusLabel = matchCleanTime ? matchCleanTime[0] : 'À venir';
-            }
-        }
-
-        if (isUnavailable) {
-            html += `
-            <div style="padding:16px; border-bottom:1px solid rgba(255,255,255,0.05); opacity: 0.8;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <span style="font-size:11px; color:var(--text-gray); text-transform:uppercase;">Aujourd'hui</span>
-                    <span style="font-size:12px; font-weight:800; color:${statusColor};">${statusLabel}</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="display:flex; flex-direction:column; align-items:center; width:30%;">${homeLogoTag}<span style="font-size:12px; font-weight:500; color:#fff; text-align:center;">${homeTeamStr}</span></div>
-                    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; width:40%;"><i class="fas fa-satellite-dish" style="color:var(--text-gray); font-size:16px; margin-bottom:6px;"></i><span style="font-size:10px; color:var(--text-gray); text-align:center;">Score non dispo.</span></div>
-                    <div style="display:flex; flex-direction:column; align-items:center; width:30%;">${awayLogoTag}<span style="font-size:12px; font-weight:500; color:#fff; text-align:center;">${awayTeamStr}</span></div>
-                </div>
-            </div>`;
-        } else {
-            html += `
-            <div style="padding:16px; border-bottom:1px solid rgba(255,255,255,0.05);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <span style="font-size:11px; color:var(--text-gray); text-transform:uppercase;">Aujourd'hui</span>
-                    <span style="font-size:12px; font-weight:800; color:${statusColor};">${statusLabel}</span>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="display:flex; flex-direction:column; align-items:center; width:35%;">${homeLogoTag}<span style="font-size:12px; font-weight:500; color:#fff; text-align:center;">${homeTeamStr}</span></div>
-                    <div style="display:flex; align-items:center; justify-content:center; width:30%;"><span style="font-size:32px; color:#fff;">${homeGoals}</span><span style="font-size:18px; color:var(--text-gray); margin:0 10px;">-</span><span style="font-size:32px; color:#fff;">${awayGoals}</span></div>
-                    <div style="display:flex; flex-direction:column; align-items:center; width:35%;">${awayLogoTag}<span style="font-size:12px; font-weight:500; color:#fff; text-align:center;">${awayTeamStr}</span></div>
-                </div>
-            </div>`;
-        }
-    }
-    
-    container.innerHTML = html || '<div style="padding:20px; text-align:center; color:var(--text-gray);">Connexion...</div>';
-}
 // ============================================================
 // RÉCUPÉRATION ET AFFICHAGE DES RÉSULTATS FINAUX (SANS STATUTS NI PRONOS)
 // ============================================================
