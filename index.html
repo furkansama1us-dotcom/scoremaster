@@ -5969,7 +5969,17 @@ ${aiPrompt}
                 var scoreDisplay = '-';
                 if (live) {
                     var bucket = matchsStatusBucket(live.status);
-                    if (bucket === 'live') { statusLabel = '🔴 EN DIRECT' + (live.minute ? ` ${live.minute}'` : ''); statusColor = 'var(--red)'; }
+                    if (bucket === 'live') {
+                        // football-data.org (plan gratuit) ne fournit pas la minute de jeu :
+                        // on l'estime à partir du coup d'envoi réel (± mi-temps non comptée).
+                        var estMinute = live.minute;
+                        if (!estMinute && live.utcDate) {
+                            var elapsedMin = Math.floor((Date.now() - Date.parse(live.utcDate)) / 60000);
+                            if (elapsedMin >= 0 && elapsedMin <= 130) estMinute = Math.min(elapsedMin, 90);
+                        }
+                        statusLabel = '🔴 EN DIRECT' + (estMinute ? ` ${estMinute}'` : '');
+                        statusColor = 'var(--red)';
+                    }
                     else if (bucket === 'finished') { statusLabel = 'Terminé'; statusColor = 'var(--green)'; }
                     else { statusLabel = live.status === 'TIMED' || live.status === 'SCHEDULED' ? 'À venir' : live.status; }
                     if (live.score && live.score.fullTime && live.score.fullTime.home !== null) {
