@@ -1900,6 +1900,16 @@ async function fetchApiScore(id, dateRaw) {
     </div>
 </div>
 
+<div id="full-history-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:10002;flex-direction:column;opacity:0;transition:opacity 0.3s;">
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:calc(16px + var(--safe-top)) 20px 16px;">
+        <span style="font-weight:900; font-size:16px; color:#fff;">Historique des combinés</span>
+        <i class="fas fa-times" onclick="closeFullHistory()" style="color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
+    </div>
+    <div style="flex:1; overflow-y:auto; padding:0 20px 30px;">
+        <div id="full-history-container"></div>
+    </div>
+</div>
+
 <!-- AUTRES POPUPS -->
 <div id="vip-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
     <div style="background:var(--bg-card);padding:40px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);">
@@ -5046,23 +5056,7 @@ async function autoFetchFinalScores(combined) {
     // ============================================================
 // AFFICHAGE DE L'HISTORIQUE PUBLIC (PAGE ACCUEIL)
 // ============================================================
-function renderHistory() {
-    var hc = document.getElementById('history-container');
-    if (!hc) return;
-    
-    var historyData = allCombineds.filter(function(c) { 
-        return currentCombined ? c.id !== currentCombined.id : true; 
-    });
-    
-    if (historyData.length === 0) {
-        hc.innerHTML = '<div class="no-combined-message"><i class="fas fa-history"></i>Aucun historique pour le moment.</div>';
-        return;
-    }
-    
-    var html = '';
-    var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
-    
-    historyData.forEach(function(c) {
+function buildHistoryCardHtml(c, sl) {
         var sc = c.status;
         var statusColor = sc === 'termine' ? 'var(--green)' : (sc === 'perdu' ? 'var(--red)' : 'var(--primary-yellow)');
         
@@ -5098,7 +5092,7 @@ function renderHistory() {
             matchesHtml += '</div>';
         }
 
-        html += `<div class="history-card ${sc}">
+        return `<div class="history-card ${sc}">
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <div>
                     <div class="date"><i class="fas fa-calendar-alt"></i> Combiné du ${fmtD(c.date)}</div>
@@ -5111,9 +5105,52 @@ function renderHistory() {
             </div>
             ${matchesHtml}
         </div>`;
+}
+
+function getHistoryData() {
+    return allCombineds.filter(function(c) {
+        return currentCombined ? c.id !== currentCombined.id : true;
     });
-    
+}
+
+function renderHistory() {
+    var hc = document.getElementById('history-container');
+    if (!hc) return;
+
+    var historyData = getHistoryData();
+
+    if (historyData.length === 0) {
+        hc.innerHTML = '<div class="no-combined-message"><i class="fas fa-history"></i>Aucun historique pour le moment.</div>';
+        return;
+    }
+
+    var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
+    var html = historyData.slice(0, 3).map(function(c) { return buildHistoryCardHtml(c, sl); }).join('');
+
+    if (historyData.length > 3) {
+        html += `<button onclick="openFullHistory()" style="width:100%; margin-top:6px; padding:13px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); color:#fff; border-radius:12px; font-size:14px; font-weight:700; font-family:'Montserrat',sans-serif; cursor:pointer;">Voir tout <i class="fas fa-chevron-right" style="font-size:11px; margin-left:4px;"></i></button>`;
+    }
+
     hc.innerHTML = html;
+}
+
+function openFullHistory() {
+    var container = document.getElementById('full-history-container');
+    var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
+    var historyData = getHistoryData();
+    container.innerHTML = historyData.length
+        ? historyData.map(function(c) { return buildHistoryCardHtml(c, sl); }).join('')
+        : '<div class="no-combined-message"><i class="fas fa-history"></i>Aucun historique pour le moment.</div>';
+
+    var overlay = document.getElementById('full-history-overlay');
+    overlay.style.display = 'flex';
+    setTimeout(function () { overlay.style.opacity = '1'; }, 10);
+}
+
+function closeFullHistory() {
+    var overlay = document.getElementById('full-history-overlay');
+    overlay.style.opacity = '0';
+    setTimeout(function () { overlay.style.display = 'none'; }, 300);
 }
     // ============================================================
 // AFFICHAGE DE L'HISTORIQUE ADMIN (AVEC BOUTON VICTOIRE TELEGRAM)
