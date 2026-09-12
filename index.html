@@ -679,6 +679,7 @@
     const LOGO_SPLASH = "logo-splash.png";
     
     const TELEGRAM_LINK = "https://t.me/scoremasteroff";
+    const TELEGRAM_DM_USERNAME = "ScoreMasterOfficiel"; // compte perso pour messages directs pré-remplis (pas le channel)
     const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
     
@@ -3735,15 +3736,11 @@ async function fetchMatchesFromAPI() {
         setTimeout(function () { popup.style.display = 'none'; }, 300);
     }
 
-    async function sendCartViaTelegram() {
+    function sendCartViaTelegram() {
         var order = window.lastValidatedOrder;
         if (!order) return;
         var msg = `Bonjour ! Je viens de valider mon panier sur Score Master.\nRéférence : ${order.reference}\nArticles :\n${order.itemsList}\nTotal : ${fmtC(order.total)}`;
-        try {
-            await navigator.clipboard.writeText(msg);
-            showToast('Message copié ! Colle-le dans la discussion Telegram.');
-        } catch (e) { /* clipboard indisponible, on ouvre quand même Telegram */ }
-        window.open(TELEGRAM_LINK, '_blank');
+        window.open(`https://t.me/${TELEGRAM_DM_USERNAME}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
     async function loadMyOrders() {
@@ -6078,13 +6075,9 @@ ${instaMatches}⏰ Début du premier match à ${earliestTime}
         setTimeout(function () { popup.style.display = 'none'; }, 300);
     }
 
-    async function subscribeSendViaTelegram() {
+    function subscribeSendViaTelegram() {
         var msg = window._subscribeTelegramMsg || '';
-        try {
-            await navigator.clipboard.writeText(msg);
-            showToast('Message copié ! Colle-le dans la discussion Telegram.');
-        } catch (e) { /* clipboard indisponible, on ouvre quand même Telegram */ }
-        window.open(TELEGRAM_LINK, '_blank');
+        window.open(`https://t.me/${TELEGRAM_DM_USERNAME}?text=${encodeURIComponent(msg)}`, '_blank');
     }
 
     function closeSuccessPopup() {
