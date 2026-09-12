@@ -186,8 +186,9 @@ async function handleJoinConfirm(chatId, convo) {
         platformKeyboard()
     );
     await safeUpsertConversation(chatId, { state: 'awaiting_platform', order_ref: orderRef });
+    const firstName = (convo.telegram_name || '').split(' ')[0] || '';
     await notifyAdmin(
-        `💰 NOUVELLE DEMANDE (Bot Telegram)\n\nRéférence : ${orderRef}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Le client vient de confirmer, il répond encore à quelques questions avant que je te notifie à nouveau avec plus de détails.`
+        `💰 NOUVELLE DEMANDE (Bot Telegram)\n\nRéférence : ${orderRef}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Le client vient de confirmer, il répond encore à quelques questions avant que je te notifie à nouveau avec plus de détails.\n\n📋 Message suggéré à lui envoyer dès maintenant (copier-coller) :\n« Salut${firstName ? ' ' + firstName : ''} ! 😊 Bienvenue chez Score Master, ravi de t'avoir parmi nous ! Je m'occupe personnellement de toi pour activer ton pack ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€). Tu préfères régler par PayPal ou par carte PCS ? »`
     );
 }
 
@@ -208,8 +209,12 @@ async function handleSportChoice(chatId, sportKey, convo) {
         relaunchKeyboard()
     );
     await safeUpsertConversation(chatId, { state: 'awaiting_admin', betting_sport: SPORT_LABELS[sportKey] || sportKey });
+    const firstName = (convo.telegram_name || '').split(' ')[0] || '';
+    const platformLabel = convo.betting_platform || '';
+    const sportLabel = SPORT_LABELS[sportKey] || sportKey;
+    const platformLine = platformLabel ? ` Vu que tu paries sur ${platformLabel}, garde en tête que` : ' Sache que';
     await notifyAdmin(
-        `✅ COMPLÉMENT DE DEMANDE (Bot Telegram)\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n🎯 Plateforme habituelle : ${convo.betting_platform || '?'}\n🏅 Sport favori : ${SPORT_LABELS[sportKey] || sportKey}\n\n➡️ Contacte le client sur Telegram pour finaliser le paiement.`
+        `✅ COMPLÉMENT DE DEMANDE (Bot Telegram)\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n🎯 Plateforme habituelle : ${convo.betting_platform || '?'}\n🏅 Sport favori : ${sportLabel}\n\n➡️ Contacte le client sur Telegram pour finaliser le paiement.\n\n📋 Message suggéré à lui envoyer (copier-coller) :\n« Merci${firstName ? ' ' + firstName : ''} pour tes réponses ! 😊${platformLine} nos pronostics ${sportLabel.toLowerCase()} sont particulièrement solides en ce moment 🔥. On finalise ton accès tout de suite, tu préfères régler par PayPal ou par carte PCS ? »`
     );
 }
 
@@ -234,8 +239,9 @@ async function handleRelaunch(chatId, convo) {
     const newCount = count + 1;
     await upsertConversation(chatId, { relaunch_count: newCount, last_relaunch_at: new Date().toISOString() });
     await sendMessage(chatId, `C'est noté ! Un admin va vous contacter très vite. Merci de votre patience 🙏 (${newCount}/3)`);
+    const firstName = (convo.telegram_name || '').split(' ')[0] || '';
     await notifyAdmin(
-        `🔔 RELANCE (${newCount}/3) — Bot Telegram\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type}\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n${convo.betting_platform ? `🎯 Plateforme habituelle : ${convo.betting_platform}\n` : ''}${convo.betting_sport ? `🏅 Sport favori : ${convo.betting_sport}\n` : ''}\n➡️ Le client attend toujours ton contact.`
+        `🔔 RELANCE (${newCount}/3) — Bot Telegram\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type}\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n${convo.betting_platform ? `🎯 Plateforme habituelle : ${convo.betting_platform}\n` : ''}${convo.betting_sport ? `🏅 Sport favori : ${convo.betting_sport}\n` : ''}\n➡️ Le client attend toujours ton contact.\n\n📋 Message suggéré à lui envoyer (copier-coller) :\n« Salut${firstName ? ' ' + firstName : ''} ! 😊 Désolé pour l'attente, je m'occupe de toi tout de suite ! On finalise ton pack ${pack ? pack.label : convo.pack_type}, tu préfères régler par PayPal ou par carte PCS ? »`
     );
 }
 
