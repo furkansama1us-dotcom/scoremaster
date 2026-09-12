@@ -133,3 +133,25 @@ create table if not exists public.referral_bot_state (
 );
 insert into public.referral_bot_state (id) values ('singleton') on conflict do nothing;
 alter table public.referral_bot_state enable row level security;
+
+-- ============================================================
+-- Bot conversationnel de vente (Telegram) — guide un client Telegram
+-- (avec ou sans compte sur l'app) à travers le choix d'un pack puis du
+-- mode de paiement, jusqu'à la prise en charge par un admin. Aucune
+-- écriture dans "orders" ici : tout part en notification Telegram privée
+-- (telegram_queue) pour rester géré manuellement, comme demandé.
+-- ============================================================
+
+create table if not exists public.bot_conversations (
+  chat_id bigint primary key,
+  state text not null default 'start',
+  pack_type text,
+  payment_method text,
+  pcs_code text,
+  telegram_username text,
+  telegram_name text,
+  order_ref text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.bot_conversations enable row level security;

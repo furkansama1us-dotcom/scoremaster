@@ -1,0 +1,213 @@
+// Webhook du bot conversationnel de vente Telegram (bot dédié, distinct de
+// Postiz et du bot de parrainage — Telegram interdit d'avoir un webhook ET
+// un polling actifs sur le même bot).
+//
+// Guide un client Telegram (avec ou sans compte sur l'app) à travers le
+// choix d'un pack puis du mode de paiement (PayPal ou recharge PCS),
+// jusqu'à la prise en charge par un admin. Rien n'est validé/payé
+// automatiquement : tout part en notification Telegram privée
+// (telegram_queue) pour une vérification manuelle, comme pour les
+// commandes classiques du panier.
+
+const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SALES_BOT_TOKEN = process.env.SALES_BOT_TOKEN;
+const SALES_BOT_WEBHOOK_SECRET = process.env.SALES_BOT_WEBHOOK_SECRET;
+
+const PACKS = {
+    journalier: { label: 'SM Score Exact Journalier', price: 50, emoji: '⚡' },
+    vip: { label: 'SM VIP+ (à vie)', price: 99.99, emoji: '👑' },
+    hebdo: { label: 'SM Combiné Hebdo', price: 69.99, emoji: '🔥' }
+};
+
+async function sbFetch(path, options) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, Object.assign({}, options, {
+        headers: Object.assign({
+            'apikey': SUPABASE_SERVICE_ROLE_KEY,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+            'Content-Type': 'application/json'
+        }, (options && options.headers) || {})
+    }));
+    if (!res.ok) throw new Error(`Supabase ${path} -> ${res.status}: ${await res.text()}`);
+    const text = await res.text();
+    return text ? JSON.parse(text) : null;
+}
+
+async function tg(method, payload) {
+    const res = await fetch(`https://api.telegram.org/bot${SALES_BOT_TOKEN}/${method}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!data.ok) console.error(`Telegram ${method} -> `, data);
+    return data;
+}
+
+function sendMessage(chatId, text, keyboard) {
+    return tg('sendMessage', Object.assign({
+        chat_id: chatId,
+        text,
+        parse_mode: 'HTML'
+    }, keyboard ? { reply_markup: { inline_keyboard: keyboard } } : {}));
+}
+
+function generateOrderRef() {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let out = '';
+    for (let i = 0; i < 6; i++) out += chars[Math.floor(Math.random() * chars.length)];
+    return `SMB-${out}`;
+}
+
+async function getConversation(chatId) {
+    const rows = await sbFetch(`bot_conversations?chat_id=eq.${chatId}&select=*`);
+    return (rows && rows[0]) || null;
+}
+
+async function upsertConversation(chatId, patch) {
+    const existing = await getConversation(chatId);
+    const withTimestamp = Object.assign({}, patch, { updated_at: new Date().toISOString() });
+    if (existing) {
+        await sbFetch(`bot_conversations?chat_id=eq.${chatId}`, { method: 'PATCH', body: JSON.stringify(withTimestamp) });
+    } else {
+        const body = Object.assign({ chat_id: chatId }, withTimestamp);
+        await sbFetch('bot_conversations', { method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify([body]) });
+    }
+}
+
+async function notifyAdmin(text) {
+    await sbFetch('telegram_queue', {
+        method: 'POST',
+        headers: { Prefer: 'return=minimal' },
+        body: JSON.stringify([{ message: text }])
+    });
+}
+
+function packKeyboard() {
+    return Object.keys(PACKS).map(function (key) {
+        var p = PACKS[key];
+        return [{ text: `${p.emoji} ${p.label} — ${p.price}€`, callback_data: `pack:${key}` }];
+    });
+}
+
+function paymentKeyboard() {
+    return [
+        [{ text: '💳 PayPal', callback_data: 'pay:paypal' }],
+        [{ text: '🎫 Recharge PCS', callback_data: 'pay:pcs' }]
+    ];
+}
+
+async function handleStart(chatId, from) {
+    await upsertConversation(chatId, {
+        state: 'awaiting_pack',
+        telegram_username: from.username || null,
+        telegram_name: [from.first_name, from.last_name].filter(Boolean).join(' ') || null
+    });
+    await sendMessage(chatId,
+        `Bonjour et bienvenue chez <b>Score Master</b> ! 👋😊\n\nRavi de vous accueillir. Quel pack vous intéresse aujourd'hui ?`,
+        packKeyboard()
+    );
+}
+
+async function handlePackChoice(chatId, packKey) {
+    const pack = PACKS[packKey];
+    if (!pack) return;
+    await upsertConversation(chatId, { state: 'awaiting_payment', pack_type: packKey });
+    await sendMessage(chatId,
+        `Excellent choix ! 🎉 Le pack <b>${pack.label}</b> (${pack.price}€) va vous ouvrir les portes de nos meilleures analyses.\n\nComment souhaitez-vous régler ?`,
+        paymentKeyboard()
+    );
+}
+
+async function handlePaymentChoice(chatId, method, convo) {
+    const pack = PACKS[convo.pack_type];
+    const orderRef = generateOrderRef();
+
+    if (method === 'paypal') {
+        await upsertConversation(chatId, { state: 'done', payment_method: 'paypal', order_ref: orderRef });
+        await sendMessage(chatId,
+            `Parfait, merci ! 💳\n\nUn membre de notre équipe Score Master va vous contacter très rapidement pour finaliser le paiement PayPal.\n\nMerci pour votre confiance, à très vite ! 🙏`
+        );
+        await notifyAdmin(
+            `💰 NOUVELLE DEMANDE (Bot Telegram)\n\nRéférence : ${orderRef}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\nPaiement : PayPal\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Contacte le client sur Telegram pour finaliser.`
+        );
+    } else if (method === 'pcs') {
+        await upsertConversation(chatId, { state: 'awaiting_pcs_code' });
+        await sendMessage(chatId,
+            `Très bon choix ! 🎫\n\nMerci de me transmettre le code de recharge PCS que vous avez reçu, je m'occupe du reste. 😊`
+        );
+    }
+}
+
+async function handlePcsCode(chatId, code, convo) {
+    const pack = PACKS[convo.pack_type];
+    const orderRef = generateOrderRef();
+    await upsertConversation(chatId, { state: 'done', payment_method: 'pcs', pcs_code: code, order_ref: orderRef });
+
+    await sendMessage(chatId,
+        `Merci beaucoup ! 🙏\n\nJe rencontre un petit souci technique avec la vérification automatique en ce moment. Pas d'inquiétude : un membre de notre équipe va vérifier ça manuellement et revient vers vous dans les prochaines minutes.\n\nNe quittez pas la conversation, on s'occupe de tout ! 😊`
+    );
+    await notifyAdmin(
+        `💰 NOUVELLE DEMANDE (Bot Telegram)\n\nRéférence : ${orderRef}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\nPaiement : Recharge PCS\n🎫 Code transmis : ${code}\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Vérifie le code toi-même puis contacte le client sur Telegram pour valider.`
+    );
+}
+
+module.exports = async function handler(req, res) {
+    if (req.method !== 'POST') return res.status(200).json({ ok: true });
+    if (!SUPABASE_SERVICE_ROLE_KEY || !SALES_BOT_TOKEN) {
+        console.error('Variables d\'environnement manquantes (SUPABASE_SERVICE_ROLE_KEY, SALES_BOT_TOKEN).');
+        return res.status(200).json({ ok: true });
+    }
+    if (SALES_BOT_WEBHOOK_SECRET) {
+        const headerSecret = req.headers['x-telegram-bot-api-secret-token'];
+        if (headerSecret !== SALES_BOT_WEBHOOK_SECRET) return res.status(401).json({ error: 'Secret invalide' });
+    }
+
+    try {
+        const update = req.body || {};
+
+        if (update.callback_query) {
+            const cq = update.callback_query;
+            const chatId = cq.message.chat.id;
+            const data = cq.data || '';
+            await tg('answerCallbackQuery', { callback_query_id: cq.id });
+
+            if (data.startsWith('pack:')) {
+                await handlePackChoice(chatId, data.slice(5));
+            } else if (data.startsWith('pay:')) {
+                const convo = await getConversation(chatId);
+                if (convo && convo.state === 'awaiting_payment') {
+                    await handlePaymentChoice(chatId, data.slice(4), convo);
+                }
+            }
+            return res.status(200).json({ ok: true });
+        }
+
+        if (update.message) {
+            const msg = update.message;
+            const chatId = msg.chat.id;
+            const text = (msg.text || '').trim();
+
+            if (text === '/start') {
+                await handleStart(chatId, msg.from);
+                return res.status(200).json({ ok: true });
+            }
+
+            const convo = await getConversation(chatId);
+            if (!convo) {
+                await handleStart(chatId, msg.from);
+            } else if (convo.state === 'awaiting_pcs_code' && text) {
+                await handlePcsCode(chatId, text, convo);
+            } else if (convo.state === 'done') {
+                await sendMessage(chatId, `Un membre de notre équipe va vous répondre très vite, merci de patienter un instant 🙏😊`);
+            } else {
+                await sendMessage(chatId, `Merci de choisir une option ci-dessus 👆 pour continuer.`);
+            }
+        }
+
+        res.status(200).json({ ok: true });
+    } catch (error) {
+        console.error('Erreur webhook sales bot:', error);
+        res.status(200).json({ ok: true });
+    }
+};
