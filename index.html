@@ -3421,9 +3421,25 @@ async function fetchMatchesFromAPI() {
                 return;
             }
 
-            // Mélange déterministe par jour pour varier la sélection sans dépendre de l'ordre API
-            matches.sort(function (a, b) { return seededScore(a.id + dateStr) - seededScore(b.id + dateStr); });
-            var picked = matches.slice(0, 2);
+            // On choisit la PAIRE de matchs dont les coups d'envoi sont les plus proches
+            // (plutôt que 2 matchs pris au hasard, qui peuvent être à plusieurs heures
+            // d'écart) — avec un léger mélange déterministe par jour pour départager
+            // les paires ex-aequo sans dépendre de l'ordre de l'API.
+            var bestPair = null;
+            var bestGap = Infinity;
+            for (var i = 0; i < matches.length; i++) {
+                for (var j = i + 1; j < matches.length; j++) {
+                    var tA = matches[i].utcDate ? new Date(matches[i].utcDate).getTime() : 0;
+                    var tB = matches[j].utcDate ? new Date(matches[j].utcDate).getTime() : 0;
+                    var gap = Math.abs(tA - tB);
+                    var tieBreak = seededScore(matches[i].id + '|' + matches[j].id + '|' + dateStr);
+                    if (gap < bestGap || (gap === bestGap && tieBreak < 0.5)) {
+                        bestGap = gap;
+                        bestPair = [matches[i], matches[j]];
+                    }
+                }
+            }
+            var picked = bestPair || matches.slice(0, 2);
 
             window.currentAISuggestionsOffset = dayOffset;
             window.currentAISuggestionsDateStr = dateStr;
