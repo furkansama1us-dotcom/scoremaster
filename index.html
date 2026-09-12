@@ -2574,8 +2574,23 @@ function renderPublicationHistoryCard(p) {
         ${captionPreview ? `<div style="font-size:12px; color:var(--text-light-gray); margin-top:6px; line-height:1.4; white-space:pre-wrap;">${captionPreview}</div>` : ''}
         ${thumbHtml}
         ${p.error ? `<div style="font-size:10px; color:var(--red); margin-top:4px; word-break:break-all;">${p.error}</div>` : ''}
+        ${p.status === 'approved' ? `<button id="publish-now-${p.id}" onclick="publishNow('${p.id}')" style="margin-top:8px; width:100%; padding:9px; background:linear-gradient(135deg,var(--primary-yellow),#B8860B); color:#000; border:none; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer;"><i class="fas fa-bolt"></i> Publier maintenant (ne pas attendre le cron)</button>` : ''}
         <button onclick="deletePublicationRow('${p.id}')" style="margin-top:8px; width:100%; padding:7px; background:transparent; color:var(--red); border:1px solid rgba(244,63,94,.3); border-radius:8px; font-size:11px; font-weight:700; cursor:pointer;"><i class="fas fa-trash"></i> Supprimer de l'historique</button>
     </div>`;
+}
+
+async function publishNow(id) {
+    var btn = document.getElementById('publish-now-' + id);
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publication en cours...'; }
+    try {
+        await adminApiCall('/api/publish-now', { id: id });
+        showToast('Publié immédiatement ! 🚀');
+        loadAdminPublications();
+    } catch (error) {
+        console.error('Erreur publication immédiate:', error);
+        showToast('Erreur : ' + (error && error.message ? error.message : 'inconnue'), true);
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-bolt"></i> Publier maintenant (ne pas attendre le cron)'; }
+    }
 }
 
 async function approvePublication(id) {
