@@ -1511,14 +1511,14 @@ async function fetchApiScore(id, dateRaw) {
                 <div class="ai-date-tab" data-offset="1" onclick="switchAIDate(1)">Demain</div>
                 <div class="ai-date-tab" data-offset="2" onclick="switchAIDate(2)">J+2</div>
             </div>
-            <div class="ai-filter-bar" style="display:flex; align-items:center; gap:8px; padding:0 20px 15px; flex-wrap:wrap;">
-                <select id="ai-sort-select" onchange="setAISort(this.value)" style="background:var(--bg-input); color:#fff; border:1px solid var(--border-color); border-radius:10px; padding:8px 12px; font-size:12px; font-weight:600; font-family:'Montserrat',sans-serif;">
+            <div class="ai-filter-bar" style="display:flex; align-items:center; gap:8px; padding:0 20px 15px; flex-wrap:nowrap; overflow-x:auto;">
+                <select id="ai-sort-select" onchange="setAISort(this.value)" style="flex-shrink:0; background:var(--bg-input); color:#fff; border:1px solid var(--border-color); border-radius:10px; padding:8px 10px; font-size:12px; font-weight:600; font-family:'Montserrat',sans-serif;">
                     <option value="time">Heure : croissante</option>
                     <option value="desc">Confiance : décroissante</option>
                     <option value="asc">Confiance : croissante</option>
                 </select>
-                <div id="ai-vip-filter-btn" onclick="toggleAIVipFilter()" style="display:flex; align-items:center; gap:6px; padding:8px 14px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:10px; font-size:12px; font-weight:700; color:var(--text-gray); cursor:pointer; white-space:nowrap;"><i class="fas fa-crown" style="color:#FFC107;"></i> Matchs VIP</div>
-                <div id="ai-free-filter-btn" onclick="toggleAIFreeFilter()" style="display:flex; align-items:center; gap:6px; padding:8px 14px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:10px; font-size:12px; font-weight:700; color:var(--text-gray); cursor:pointer; white-space:nowrap;"><i class="fas fa-unlock" style="color:var(--green);"></i> Gratuit</div>
+                <div id="ai-vip-filter-btn" onclick="toggleAIVipFilter()" style="flex-shrink:0; display:flex; align-items:center; gap:6px; padding:8px 12px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:10px; font-size:12px; font-weight:700; color:var(--text-gray); cursor:pointer; white-space:nowrap;"><i class="fas fa-crown" style="color:#FFC107;"></i> Matchs VIP</div>
+                <div id="ai-free-filter-btn" onclick="toggleAIFreeFilter()" style="flex-shrink:0; display:flex; align-items:center; gap:6px; padding:8px 12px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:10px; font-size:12px; font-weight:700; color:var(--text-gray); cursor:pointer; white-space:nowrap;"><i class="fas fa-unlock" style="color:var(--green);"></i> Gratuit</div>
             </div>
             <div id="ai-pronostics-container" style="padding: 0 20px 20px;">
                 <div class="no-combined-message"><i class="fas fa-satellite-dish"></i>Chargement des analyses...</div>
