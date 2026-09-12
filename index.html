@@ -1877,7 +1877,7 @@ async function fetchApiScore(id, dateRaw) {
 </div>
 
 <!-- OVERLAY LIVE — combiné flouté + scores en direct -->
-<div id="combo-live-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:9999;flex-direction:column;opacity:0;transition:opacity 0.3s;">
+<div id="combo-live-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:10002;flex-direction:column;opacity:0;transition:opacity 0.3s;">
     <div style="display:flex; align-items:center; justify-content:space-between; padding:calc(16px + var(--safe-top)) 20px 16px;">
         <div style="display:flex; align-items:center; gap:8px;">
             <span style="width:8px;height:8px;background:var(--red);border-radius:50%;animation:pulse 1.2s infinite;"></span>
@@ -5528,10 +5528,14 @@ function renderAdminHistory() {
             finishTime = new Date(finishTime.getTime() + (2 * 60 * 60 * 1000));
 
             if (now >= finishTime) {
-                let btns = `<button onclick="openValidationScreen('${c.id}')" style="background:#FF9800; color:#000;"><i class="fas fa-check-double"></i> Valider</button><button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(244,63,94,0.15); color:var(--red); border:1px solid rgba(244,63,94,0.4);"><i class="fas fa-satellite-dish"></i> Score API</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(244,63,94,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
-                let detectionBadge = c.detected_scores
-                    ? '<span style="color:var(--green); font-weight:bold;">À vérifier ⚠️ <i class="fas fa-check-circle" title="Scores réels détectés"></i> Scores prêts</span>'
-                    : '<span style="color:#FF9800; font-weight:bold;">À vérifier ⚠️</span>';
+                let hasDetected = !!c.detected_scores;
+                let verifyBtn = hasDetected
+                    ? `<button onclick="openValidationScreen('${c.id}')" style="background:var(--green); color:#000; font-weight:bold;"><i class="fas fa-eye"></i> Vérifier le score final</button>`
+                    : `<button disabled style="background:rgba(255,255,255,.06); color:var(--text-gray); cursor:not-allowed;"><i class="fas fa-hourglass-half"></i> Score pas encore dispo</button>`;
+                let btns = `${verifyBtn}<button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(244,63,94,0.15); color:var(--red); border:1px solid rgba(244,63,94,0.4);"><i class="fas fa-satellite-dish"></i> Score API</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(244,63,94,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
+                let detectionBadge = hasDetected
+                    ? '<span style="color:var(--green); font-weight:bold;"><i class="fas fa-check-circle"></i> Score final disponible !</span>'
+                    : '<span style="color:#FF9800; font-weight:bold;"><i class="fas fa-hourglass-half"></i> Scores finaux pas encore disponibles</span>';
                 htmlPending += cardBaseHtml(detectionBadge, btns);
             } else {
                 // SECTION EN COURS : NOUVEAU BOUTON PROMO AJOUTÉ ICI
