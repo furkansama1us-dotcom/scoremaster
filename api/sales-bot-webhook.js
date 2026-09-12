@@ -267,18 +267,22 @@ module.exports = async function handler(req, res) {
                     await handleJoinConfirm(chatId, convo);
                 }
             } else if (data.startsWith('platform:')) {
+                // Pas de vérification stricte de state ici : si l'écriture en base d'une
+                // étape précédente a échoué (ex: colonnes manquantes), le state peut ne
+                // pas avoir avancé alors que l'utilisateur, lui, a bien progressé dans le
+                // fil de discussion — on se fie donc juste à l'existence de la conversation.
                 const convo = await getConversation(chatId);
-                if (convo && convo.state === 'awaiting_platform') {
+                if (convo) {
                     await handlePlatformChoice(chatId, data.slice(9), convo);
                 }
             } else if (data.startsWith('sport:')) {
                 const convo = await getConversation(chatId);
-                if (convo && convo.state === 'awaiting_sport') {
+                if (convo) {
                     await handleSportChoice(chatId, data.slice(6), convo);
                 }
             } else if (data === 'relaunch') {
                 const convo = await getConversation(chatId);
-                if (convo && convo.state === 'awaiting_admin') {
+                if (convo) {
                     await handleRelaunch(chatId, convo);
                 }
             }
