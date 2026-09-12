@@ -1807,6 +1807,15 @@ async function fetchApiScore(id, dateRaw) {
         Messages variés pour relancer les membres inactifs et les inciter à revenir.
     </div>
 </div>
+            <div class="admin-card" style="padding:15px; border-left:4px solid #ffc107; margin-bottom:10px; cursor:pointer; transition:all 0.2s;" onclick="openComebackGenerator()">
+    <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff; display:flex; justify-content:space-between; align-items:center;">
+        <span><i class="fas fa-rotate-left" style="color:#ffc107; margin-right:5px;"></i> Grand Retour</span>
+        <i class="fas fa-chevron-right" style="color:var(--text-gray); font-size:12px;"></i>
+    </div>
+    <div style="font-size:12px; color:var(--text-gray);">
+        Messages de reprise après une longue pause, pour annoncer le retour à la communauté.
+    </div>
+</div>
             <div class="admin-card" style="padding:15px; border-left:4px solid #ec4899; margin-bottom:10px; cursor:pointer; transition:all 0.2s;" onclick="sendReferralReminder()">
     <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff; display:flex; justify-content:space-between; align-items:center;">
         <span><i class="fas fa-user-plus" style="color:#ec4899; margin-right:5px;"></i> Rappel Parrainage</span>
@@ -2307,6 +2316,119 @@ function renderRelanceContent() {
     });
 
     container.innerHTML = html;
+}
+
+function openComebackGenerator() {
+    var overlay = document.getElementById('comeback-overlay');
+    if (overlay) {
+        overlay.style.display = 'flex';
+        setTimeout(() => overlay.style.opacity = "1", 10);
+        renderComebackContent();
+    }
+}
+
+function closeComebackGenerator() {
+    var overlay = document.getElementById('comeback-overlay');
+    if (overlay) {
+        overlay.style.opacity = "0";
+        setTimeout(() => overlay.style.display = 'none', 300);
+    }
+}
+
+function renderComebackContent() {
+    var container = document.getElementById('comeback-content');
+    if (!container) return;
+
+    var signature = "\n\n🌐 Site Web : https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel";
+
+    // Pas de markdown (#, **) : Postiz ne l'interprète pas pour Telegram, ça
+    // s'affiche littéralement — l'emphase passe par les MAJUSCULES et les emojis déjà en place.
+    var messages = [
+        `🚨 SCORE MASTER EST DE RETOUR !\n\nLa pause est terminée. Le travail reprend. 💪\n\nMême méthode, même rigueur, même exigence… mais avec une motivation encore plus grande.\n\n❤️ Merci à tous ceux qui sont restés présents malgré l'attente.\n\nAujourd'hui, une nouvelle page commence.\n\n🎯 Les analyses reprennent. Les prochains tickets arrivent.\n\nOn est de retour. Et ça fait du bien. 🔥` + signature,
+
+        `💥 C'EST REPARTI.\n\nAprès une pause, Score Master retrouve enfin son terrain.\n\nPas de grandes promesses.\nPas de bruit inutile.\n\nJuste du travail, de l'analyse et de la rigueur. 🎯\n\n🤝 Merci à tous ceux qui ont attendu et continué à nous soutenir.\n\nLa motivation est là.\nL'envie aussi.\n\n🚀 Maintenant, place à la suite.` + signature,
+
+        `❤️ QUEL PLAISIR DE VOUS RETROUVER !\n\nCette pause nous a rappelé une chose essentielle : derrière Score Master, il y a surtout une communauté.\n\nUne communauté fidèle, patiente et présente. 🤝\n\nAujourd'hui, nous revenons avec la même rigueur et une énergie renouvelée.\n\n🎯 Les analyses reprennent.\n📊 Les tickets reviennent.\n🔥 L'aventure continue.\n\nMerci d'être toujours là.\n\nScore Master est de retour. 🏆` + signature,
+
+        `🚨 FIN DE LA PAUSE.\n\nLe calme est terminé.\n\nScore Master reprend officiellement du service avec une seule envie : retourner au travail. 💪\n\n📊 Analyser.\n🎯 Préparer.\n📈 Progresser.\n\nLa méthode reste la même.\nL'exigence reste la même.\n\nMais l'envie de revenir auprès de vous est plus forte que jamais. ❤️\n\n🔥 On reprend dès maintenant.` + signature,
+
+        `⚡ THE COMEBACK IS ON.\n\nAprès une pause, Score Master fait son retour.\n\nPlus motivés.\nPlus concentrés.\nToujours aussi exigeants. 💪\n\nNotre identité n'a pas changé : sérieux, analyse et discipline.\n\n🤝 Et surtout, une communauté que nous sommes fiers de retrouver.\n\n🏆 Un nouveau chapitre commence aujourd'hui.\n\nRestez connectés. La suite arrive.` + signature,
+
+        `💙 CE MESSAGE EST POUR VOUS.\n\nÀ ceux qui sont restés.\nÀ ceux qui ont attendu.\nÀ ceux qui ont continué à croire en Score Master.\n\nMerci. 🤝\n\nAujourd'hui, nous sommes de retour et particulièrement fiers de retrouver notre communauté.\n\n🔥 Même sérieux.\n🎯 Même rigueur.\n💪 Encore plus de motivation.\n\nLa pause est terminée.\n\nOn repart ensemble.` + signature,
+
+        `🔥 PLUS MOTIVÉS QUE JAMAIS.\n\nScore Master reprend du service.\n\nCette pause nous a permis de prendre du recul, de préparer la suite et de revenir avec une énergie nouvelle. 💪\n\nNotre façon de travailler ne change pas :\n\n📊 Analyse\n🎯 Discipline\n📈 Régularité\n\n❤️ Merci à toute la communauté pour sa patience.\n\nMaintenant, il est temps de reprendre.\n\n🚀 Les prochains tickets arrivent.` + signature,
+
+        `👑 NOUVEAU CHAPITRE.\n\nUne pause se termine.\nUne nouvelle aventure commence.\n\nScore Master est officiellement de retour. 🔥\n\nNous revenons avec la même identité, les mêmes valeurs et encore plus d'ambition.\n\n🤝 Merci à tous ceux qui sont restés fidèles.\n\nVous faites partie de cette histoire.\n\n🎯 Maintenant, écrivons la suite ensemble.` + signature,
+
+        `💪 RIEN N'A CHANGÉ.\n\nLa pause est terminée, mais notre manière de travailler reste exactement la même.\n\nDe la rigueur.\nDe la discipline.\nDe l'analyse.\nEt surtout, du sérieux. 🎯\n\n❤️ Merci à ceux qui sont restés présents.\n\nAujourd'hui, Score Master retrouve sa communauté.\n\n🔥 Et on a énormément de choses à vous montrer.\n\nRestez connectés.` + signature,
+
+        `🚀 SCORE MASTER EST PRÊT.\n\nAprès cette pause, il est temps de remettre les machines en route. 🔥\n\nLes analyses sont de nouveau au centre de notre quotidien.\n\n🎯 Même méthode.\n📊 Même sérieux.\n💪 Nouvelle énergie.\n\nEt surtout…\n\n❤️ Le plaisir de vous retrouver.\n\nMerci à tous ceux qui ont patienté.\n\nLa suite commence maintenant.` + signature,
+
+        `🦁 DE RETOUR AUX AFFAIRES.\n\nScore Master reprend du service.\n\nAprès cette pause, nous revenons concentrés, déterminés et surtout impatients de retrouver notre communauté.\n\nPas besoin de parler plus que nécessaire.\n\n📊 Le travail parlera pour nous.\n\n🎯 Les analyses reprennent.\n🔥 Les tickets arrivent.\n💪 L'aventure continue.\n\nMerci à ceux qui sont restés.` + signature,
+
+        `❤️ VOUS NOUS AVEZ MANQUÉ.\n\nEt maintenant, nous sommes enfin de retour.\n\nCette pause aura été l'occasion de prendre du recul, mais une chose est certaine :\n\n🔥 L'envie de revenir était bien présente.\n\nMerci à notre communauté pour sa patience et sa fidélité. 🤝\n\nAujourd'hui, on remet tout en marche.\n\n🎯 Analyses.\n📊 Travail.\n🚀 Nouveaux tickets.\n\nC'est reparti !` + signature,
+
+        `🎯 RETOUR AU TRAVAIL.\n\nLa pause est derrière nous.\n\nPlace maintenant à ce que nous faisons de mieux : analyser, travailler et avancer avec méthode.\n\n💪 Score Master revient avec une motivation intacte.\n\n❤️ Merci à ceux qui sont restés à nos côtés.\n\nVous avez attendu.\n\nNous avons travaillé.\n\n🔥 Il est maintenant temps de reprendre ensemble.` + signature,
+
+        `🏅 UNE COMMUNAUTÉ. UNE ÉQUIPE. UNE AVENTURE.\n\nScore Master revient.\n\nEt ce retour n'aurait pas la même saveur sans vous. ❤️\n\nMerci pour votre patience, votre fidélité et votre confiance.\n\nAujourd'hui, nous repartons avec :\n\n💪 Plus de motivation\n🎯 Toujours la même rigueur\n🔥 Une envie énorme de retrouver le rythme\n\nLa suite, on l'écrit ensemble.\n\n🚀 Bienvenue à nouveau chez Score Master.` + signature,
+
+        `🔥 LE MOMENT EST VENU.\n\nAprès une pause, Score Master reprend officiellement du service.\n\nNous avons pris le temps nécessaire.\n\nMaintenant, il est temps d'avancer.\n\n🎯 L'analyse reprend.\n📊 Le travail reprend.\n💪 La motivation est au maximum.\n\n🤝 Merci à tous ceux qui ont attendu ce moment avec nous.\n\nLe retour commence aujourd'hui.\n\nEt cette fois encore, on avance ensemble. 🚀` + signature,
+
+        `⚡ NOUS Y SOMMES.\n\nLe moment que beaucoup attendaient est arrivé.\n\nScore Master reprend du service. 🔥\n\nUne pause derrière nous.\nUne nouvelle dynamique devant nous.\n\nNotre ligne directrice reste inchangée :\n\n🎯 Rigueur\n📊 Analyse\n💪 Discipline\n\n❤️ Merci à tous ceux qui sont encore là.\n\nVous êtes une partie essentielle de cette aventure.\n\n🚀 Maintenant, place à l'action.` + signature,
+
+        `🏆 ON REVIENT AVEC LA DALLE.\n\nLa pause est terminée.\n\nEt autant vous le dire : la motivation est au rendez-vous. 🔥\n\nScore Master reprend avec la même rigueur, mais une envie encore plus forte de retrouver son rythme.\n\n🤝 Merci à ceux qui sont restés fidèles.\n\nVous avez été patients.\n\nMaintenant, c'est à nous de reprendre le travail. 💪\n\n🎯 Les prochains tickets arrivent.` + signature,
+
+        `👊 TOUJOURS DEBOUT.\n\nUne pause ne définit pas une aventure.\n\nCe qui compte, c'est la capacité à revenir, à se remettre au travail et à continuer d'avancer.\n\n🔥 Score Master est de retour.\n\nAvec les mêmes valeurs.\nLa même rigueur.\nEt une motivation renouvelée.\n\n❤️ Merci à tous ceux qui sont restés.\n\nOn repart ensemble. Et on est fiers de vous avoir à nos côtés.` + signature,
+
+        `🚀 LE RETOUR N'EST QUE LE DÉBUT.\n\nScore Master reprend officiellement du service.\n\nCette pause est maintenant derrière nous.\n\nDevant nous ?\n\n🎯 De nouvelles analyses.\n📊 De nouveaux tickets.\n🔥 Une nouvelle énergie.\n\n🤝 Merci à tous ceux qui ont continué à nous suivre.\n\nVotre fidélité nous donne encore plus envie d'avancer.\n\nOn revient. On travaille. On construit la suite.\n\n🏆 Et cette suite, on veut la vivre avec vous.` + signature,
+
+        `👑 SCORE MASTER EST DE RETOUR.\n\nPas besoin d'en dire davantage.\n\nLa pause est terminée.\nLe travail reprend.\nLa communauté est réunie. ❤️\n\n🔥 Nous revenons avec une motivation énorme.\n\n🎯 La rigueur reste notre priorité.\n📊 L'analyse reste au cœur de notre méthode.\n🤝 Et vous restez au cœur de l'aventure.\n\nMerci à tous ceux qui sont restés fidèles.\n\nAujourd'hui, on recommence.\nDemain, on continue.\nEt ensemble, on écrit la suite. 🚀` + signature
+    ];
+
+    var html = `
+        <div style="background:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3);border-radius:10px;padding:12px;color:#ffc107;font-size:12px;margin-bottom:20px;">
+            <i class="fas fa-lightbulb"></i> 20 messages pour annoncer une reprise après une longue pause. Copie celui qui te plaît, ou publie-le directement sur le groupe Telegram.
+        </div>`;
+
+    messages.forEach((msg, i) => {
+        html += `
+        <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(255,193,7,0.2);border-radius:16px;padding:16px;margin-bottom:12px;">
+            <div style="font-size:13px;color:#f9fafb;line-height:1.7;white-space:pre-wrap;margin-bottom:12px;">${msg}</div>
+            <div style="display:flex; gap:8px;">
+                <button onclick="copyComebackText(this, ${i})" data-text="${encodeURIComponent(msg)}" style="flex:1;padding:10px;border-radius:10px;border:none;background:rgba(255,255,255,.06);color:#fff;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                    <span>📋 Copier</span>
+                </button>
+                <button onclick="publishComebackText(${i})" data-text="${encodeURIComponent(msg)}" style="flex:1;padding:10px;border-radius:10px;border:none;background:linear-gradient(135deg,#ffc107,#b8860b);color:#000;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                    <span>🚀 Publier</span>
+                </button>
+            </div>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+}
+
+function copyComebackText(btn, i) {
+    var text = decodeURIComponent(btn.getAttribute('data-text'));
+    navigator.clipboard.writeText(text).then(() => {
+        var oldText = btn.innerHTML;
+        btn.innerHTML = "✅ Copié !";
+        setTimeout(() => { btn.innerHTML = oldText; }, 2000);
+    });
+}
+
+function publishComebackText(i) {
+    var container = document.getElementById('comeback-content');
+    var btn = container.querySelectorAll('[onclick^="publishComebackText"]')[i];
+    var text = btn ? decodeURIComponent(btn.getAttribute('data-text')) : '';
+    if (!text) return;
+    if (confirm('Publier ce message de retour sur le groupe Telegram ?')) {
+        sendGroupTelegram(text).then(function () {
+            showToast('Message de retour publié sur le groupe ! 🔙');
+        }).catch(function () {
+            showToast('Erreur lors de la publication sur Telegram.', true);
+        });
+    }
 }
 
 function copyRelanceText(btn, i) {
@@ -7804,6 +7926,17 @@ function sendInstaPrompt(id) {
         <button onclick="closeRelanceGenerator()" style="margin-left:auto;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
     <div id="relance-content" style="flex:1; overflow-y:auto; padding:20px; padding-bottom:100px;"></div>
+</div>
+    <div id="comeback-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:99999;flex-direction:column;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(10px);">
+    <div style="border-bottom:1px solid rgba(255,193,7,0.3); background:#0a0a0a; padding:50px 20px 14px; display:flex; align-items:center; gap:14px; flex-shrink:0;">
+        <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#ffc107,#b8860b);display:flex;align-items:center;justify-content:center;font-size:18px;">🔙</div>
+        <div>
+            <div style="font-size:17px;font-weight:900;color:#fff;">Grand <span style="color:#ffc107;">Retour</span></div>
+            <div style="font-size:11px;color:#6b7280;">Messages de reprise après une longue pause</div>
+        </div>
+        <button onclick="closeComebackGenerator()" style="margin-left:auto;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <div id="comeback-content" style="flex:1; overflow-y:auto; padding:20px; padding-bottom:100px;"></div>
 </div>
 
 <style>
