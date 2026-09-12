@@ -182,7 +182,7 @@ async function handleJoinConfirm(chatId, convo) {
     const pack = PACKS[convo.pack_type];
     const orderRef = generateOrderRef();
     await sendMessage(chatId,
-        `Top ! Hâte de te voir parmi nous. 🙌\n\nUn admin se libère pour toi dans quelques instants. En attendant, j'ai deux petites questions pour mieux te connaître et t'orienter au mieux 😊\n\nSur quelle plateforme paries-tu d'habitude ?`,
+        `Top ! Hâte de te voir parmi nous. 🙌\n\nUn admin se libère pour toi dans quelques instants. En attendant, j'ai deux petites questions pour mieux te connaître et t'orienter au mieux 😊\n\nSur quelle plateforme paries-tu d'habitude ? <i>(ça nous permet d'adapter nos conseils aux meilleures cotes disponibles chez toi)</i>`,
         platformKeyboard()
     );
     await safeUpsertConversation(chatId, { state: 'awaiting_platform', order_ref: orderRef });
@@ -194,7 +194,7 @@ async function handleJoinConfirm(chatId, convo) {
 async function handlePlatformChoice(chatId, platformKey, convo) {
     const reply = PLATFORM_REPLIES[platformKey] || PLATFORM_REPLIES.autre;
     await sendMessage(chatId,
-        `${reply}\n\nEt sinon, sur quel type de sport paries-tu le plus ?`,
+        `${reply}\n\nEt sinon, sur quel type de sport paries-tu le plus ? <i>(ça nous aide à te proposer des analyses bien plus pertinentes et ciblées, avec de meilleures cotes sur ton sport de prédilection)</i>`,
         sportKeyboard()
     );
     await safeUpsertConversation(chatId, { state: 'awaiting_sport', betting_platform: PLATFORM_LABELS[platformKey] || platformKey });
