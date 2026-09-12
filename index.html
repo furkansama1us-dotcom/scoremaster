@@ -28,11 +28,11 @@
         :root{--primary-yellow:#FFC107;--dark-yellow:#B8860B;--bg-dark:#0A0E1F;--bg-card:#131B33;--bg-input:#1C2541;--text-white:#FFFFFF;--text-gray:#8A93A8;--text-light-gray:#B4BCD0;--green:#22C55E;--red:#F43F5E;--blue:#3B82F6;--border-color:#232C47;--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
         
         html, body {
-            height: 100%; width: 100%; overflow: hidden; position: fixed; top: 0; left: 0; background: #000; font-family: 'Inter', 'Montserrat', sans-serif; color: var(--text-white);
+            height: 100%; width: 100%; overflow: hidden; position: fixed; top: 0; left: 0; background: var(--bg-dark); font-family: 'Inter', 'Montserrat', sans-serif; color: var(--text-white);
         }
 
-        #app { 
-            display: none; width: 100vw; height: 100svh; flex-direction: column; background: var(--bg-dark); position: relative;
+        #app {
+            display: none; width: 100vw; height: 100vh; height: 100svh; height: 100dvh; flex-direction: column; background: var(--bg-dark); position: relative;
         }
         #app.active { display: flex; }
         
