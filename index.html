@@ -3277,6 +3277,7 @@ async function fetchMatchesFromAPI() {
                     homeTeam: { name: m.homeTeam && m.homeTeam.name },
                     awayTeam: { name: m.awayTeam && m.awayTeam.name },
                     tournament: { name: m.competition && m.competition.name },
+                    area: { flag: m.area && m.area.flag },
                     startTimestamp: m.utcDate ? Date.parse(m.utcDate) / 1000 : null
                 };
             }).sort(function (a, b) {
@@ -3318,6 +3319,7 @@ async function fetchMatchesFromAPI() {
             var home = (m.homeTeam && m.homeTeam.name) || "Domicile";
             var away = (m.awayTeam && m.awayTeam.name) || "Extérieur";
             var league = (m.tournament && m.tournament.name) || "Compétition";
+            var flagUrl = m.area && m.area.flag;
             var timeStr = "--:--";
             if (m.startTimestamp) {
                 timeStr = new Date(m.startTimestamp * 1000).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -3344,7 +3346,7 @@ async function fetchMatchesFromAPI() {
             else if (winnerKey === 'awayProb') pickLabel = `Victoire <span>${away}</span>`;
             else pickLabel = `Match nul probable`;
 
-            return { home: home, away: away, league: league, timeStr: timeStr, startTimestamp: m.startTimestamp || 0, homeStanding: homeStanding, awayStanding: awayStanding, pred: pred, conf: conf, isVipPick: isVipPick, confClass: confClass, confLabel: confLabel, pickLabel: pickLabel };
+            return { home: home, away: away, league: league, flagUrl: flagUrl, timeStr: timeStr, startTimestamp: m.startTimestamp || 0, homeStanding: homeStanding, awayStanding: awayStanding, pred: pred, conf: conf, isVipPick: isVipPick, confClass: confClass, confLabel: confLabel, pickLabel: pickLabel };
         });
     }
 
@@ -3367,7 +3369,7 @@ async function fetchMatchesFromAPI() {
         return `
         <div class="ai-match-card${isLockedForViewer ? ' ai-vip-locked' : ''}">
             <div class="ai-match-top">
-                <div class="ai-match-league"><i class="fas fa-trophy" style="color:var(--text-gray);"></i> ${item.league}</div>
+                <div class="ai-match-league">${item.flagUrl ? `<img src="${item.flagUrl}" style="width:16px;height:12px;object-fit:cover;border-radius:2px;vertical-align:middle;margin-right:4px;">` : '<i class="fas fa-trophy" style="color:var(--text-gray);"></i> '}${item.league}</div>
                 <div class="ai-match-time"><i class="fas fa-clock"></i> ${item.timeStr}</div>
             </div>
             <div class="ai-match-teams">
