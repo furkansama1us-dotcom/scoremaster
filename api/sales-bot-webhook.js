@@ -15,9 +15,9 @@ const SALES_BOT_TOKEN = process.env.SALES_BOT_TOKEN;
 const SALES_BOT_WEBHOOK_SECRET = process.env.SALES_BOT_WEBHOOK_SECRET;
 
 const PACKS = {
-    journalier: { label: 'SM Score Exact Journalier', price: 50, emoji: '⚡' },
-    vip: { label: 'SM VIP+ (à vie)', price: 99.99, emoji: '👑' },
-    hebdo: { label: 'SM Combiné Hebdo', price: 69.99, emoji: '🔥' }
+    journalier: { label: 'SM Score Exact Journalier', price: 50, emoji: '⚡', pcsCards: '1 carte de 50€' },
+    vip: { label: 'SM VIP+ (à vie)', price: 99.99, emoji: '👑', pcsCards: '1 carte de 100€' },
+    hebdo: { label: 'SM Combiné Hebdo', price: 69.99, emoji: '🔥', pcsCards: '1 carte de 50€ + 1 carte de 20€ (total 70€)' }
 };
 
 const PCS_PURCHASE_LINK = 'https://dundle.com/fr/pcs/';
@@ -99,16 +99,29 @@ function paymentKeyboard() {
     ];
 }
 
-async function handleStart(chatId, from) {
+async function handleStart(chatId, from, startParam) {
+    const preselectedKey = startParam && startParam.startsWith('pack_') ? startParam.slice(5) : null;
+    const preselectedPack = preselectedKey && PACKS[preselectedKey] ? preselectedKey : null;
+
     await upsertConversation(chatId, {
-        state: 'awaiting_pack',
+        state: preselectedPack ? 'awaiting_payment' : 'awaiting_pack',
+        pack_type: preselectedPack,
         telegram_username: from.username || null,
         telegram_name: [from.first_name, from.last_name].filter(Boolean).join(' ') || null
     });
-    await sendMessage(chatId,
-        `Bonjour et bienvenue chez <b>Score Master</b> ! 👋😊\n\nRavi de vous accueillir. Quel pack vous intéresse aujourd'hui ?`,
-        packKeyboard()
-    );
+
+    if (preselectedPack) {
+        const pack = PACKS[preselectedPack];
+        await sendMessage(chatId,
+            `Bonjour et bienvenue chez <b>Score Master</b> ! 👋😊\n\nVous avez sélectionné le pack <b>${pack.label}</b> (${pack.price}€). Excellent choix ! 🎉\n\nComment souhaitez-vous régler ?`,
+            paymentKeyboard()
+        );
+    } else {
+        await sendMessage(chatId,
+            `Bonjour et bienvenue chez <b>Score Master</b> ! 👋😊\n\nRavi de vous accueillir. Quel pack vous intéresse aujourd'hui ?`,
+            packKeyboard()
+        );
+    }
 }
 
 async function handlePackChoice(chatId, packKey) {
@@ -135,8 +148,10 @@ async function handlePaymentChoice(chatId, method, convo) {
         );
     } else if (method === 'pcs') {
         await upsertConversation(chatId, { state: 'awaiting_pcs_code' });
+        const cardsAdvice = pack && pack.pcsCards ? `\n\nPour votre pack (${pack.price}€), prenez : <b>${pack.pcsCards}</b>.` : '';
         await sendMessage(chatId,
-            `Très bon choix ! 🎫\n\nSi vous n'avez pas encore de carte de recharge PCS, vous pouvez en acheter une ici :\n${PCS_PURCHASE_LINK}\n\nUne fois votre carte en main, envoyez-moi simplement le code de recharge qui figure dessus, je m'occupe du reste. 😊`
+            `Très bon choix ! 🎫\n\nSi vous n'avez pas encore de carte de recharge PCS, vous pouvez en acheter une ici :\n${PCS_PURCHASE_LINK}${cardsAdvice}\n\nUne fois votre/vos carte(s) en main, cliquez ci-dessous ou envoyez-moi directement le ou les codes de recharge. 😊`,
+            [[{ text: '✅ J\'ai le code !', callback_data: 'pcs:ready' }]]
         );
     }
 }
@@ -181,6 +196,11 @@ module.exports = async function handler(req, res) {
                 if (convo && convo.state === 'awaiting_payment') {
                     await handlePaymentChoice(chatId, data.slice(4), convo);
                 }
+            } else if (data === 'pcs:ready') {
+                const convo = await getConversation(chatId);
+                if (convo && convo.state === 'awaiting_pcs_code') {
+                    await sendMessage(chatId, `Parfait ! Envoyez-moi le code maintenant 👇`);
+                }
             }
             return res.status(200).json({ ok: true });
         }
@@ -190,8 +210,9 @@ module.exports = async function handler(req, res) {
             const chatId = msg.chat.id;
             const text = (msg.text || '').trim();
 
-            if (text === '/start') {
-                await handleStart(chatId, msg.from);
+            if (text === '/start' || text.startsWith('/start ')) {
+                const startParam = text.startsWith('/start ') ? text.slice(7).trim() : null;
+                await handleStart(chatId, msg.from, startParam);
                 return res.status(200).json({ ok: true });
             }
 
