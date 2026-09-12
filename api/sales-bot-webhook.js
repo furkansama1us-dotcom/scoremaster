@@ -147,25 +147,41 @@ async function handlePaymentChoice(chatId, method, convo) {
             `💰 NOUVELLE DEMANDE (Bot Telegram)\n\nRéférence : ${orderRef}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\nPaiement : PayPal\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Contacte le client sur Telegram pour finaliser.`
         );
     } else if (method === 'pcs') {
-        await upsertConversation(chatId, { state: 'awaiting_pcs_code' });
+        await upsertConversation(chatId, { state: 'pcs_awaiting_admin', payment_method: 'pcs', order_ref: orderRef });
         const cardsAdvice = pack && pack.pcsCards ? `\n\nPour votre pack (${pack.price}€), prenez : <b>${pack.pcsCards}</b>.` : '';
         await sendMessage(chatId,
-            `Très bon choix ! 🎫\n\nSi vous n'avez pas encore de carte de recharge PCS, vous pouvez en acheter une ici :\n${PCS_PURCHASE_LINK}${cardsAdvice}\n\nUne fois votre/vos carte(s) en main, cliquez ci-dessous ou envoyez-moi directement le ou les codes de recharge. 😊`,
-            [[{ text: '✅ J\'ai le code ! Appeler un admin SM pour la vérification', callback_data: 'pcs:ready' }]]
+            `Très bon choix ! 🎫\n\nSi vous n'avez pas encore de carte de recharge PCS, vous pouvez en acheter une ici :\n${PCS_PURCHASE_LINK}${cardsAdvice}\n\nUne fois votre/vos carte(s) en main, un membre de notre équipe vous contactera directement pour finaliser et vérifier votre code ensemble. 😊`,
+            [[{ text: '🔔 Relancer l\'admin', callback_data: 'pcs:relaunch' }]]
+        );
+        await notifyAdmin(
+            `💰 NOUVELLE DEMANDE (Bot Telegram)\n\nRéférence : ${orderRef}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\nPaiement : Recharge PCS\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Contacte le client sur Telegram pour vérifier son code ensemble et valider.`
         );
     }
 }
 
-async function handlePcsCode(chatId, code, convo) {
+async function handlePcsRelaunch(chatId, convo) {
     const pack = PACKS[convo.pack_type];
-    const orderRef = generateOrderRef();
-    await upsertConversation(chatId, { state: 'done', payment_method: 'pcs', pcs_code: code, order_ref: orderRef });
+    const count = convo.relaunch_count || 0;
 
-    await sendMessage(chatId,
-        `Merci beaucoup ! 🙏\n\nJe rencontre un petit souci technique avec la vérification automatique en ce moment. Pas d'inquiétude : un membre de notre équipe va vérifier ça manuellement et revient vers vous dans les prochaines minutes.\n\nNe quittez pas la conversation, on s'occupe de tout ! 😊`
-    );
+    if (count >= 3) {
+        await sendMessage(chatId, `Un membre de notre équipe va vous répondre très prochainement, merci de votre patience 🙏😊`);
+        return;
+    }
+
+    if (convo.last_relaunch_at) {
+        const elapsed = Date.now() - new Date(convo.last_relaunch_at).getTime();
+        if (elapsed < 30000) {
+            const remaining = Math.ceil((30000 - elapsed) / 1000);
+            await sendMessage(chatId, `Merci de patienter encore ${remaining}s avant de relancer à nouveau 😊`);
+            return;
+        }
+    }
+
+    const newCount = count + 1;
+    await upsertConversation(chatId, { relaunch_count: newCount, last_relaunch_at: new Date().toISOString() });
+    await sendMessage(chatId, `C'est noté ! Un admin va vous contacter très vite. Merci de votre patience 🙏 (${newCount}/3)`);
     await notifyAdmin(
-        `💰 NOUVELLE DEMANDE (Bot Telegram)\n\nRéférence : ${orderRef}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\nPaiement : Recharge PCS\n🎫 Code transmis : ${code}\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Vérifie le code toi-même puis contacte le client sur Telegram pour valider.`
+        `🔔 RELANCE (${newCount}/3) — Bot Telegram\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type}\nPaiement : Recharge PCS\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Le client attend toujours ton contact.`
     );
 }
 
@@ -196,10 +212,10 @@ module.exports = async function handler(req, res) {
                 if (convo && convo.state === 'awaiting_payment') {
                     await handlePaymentChoice(chatId, data.slice(4), convo);
                 }
-            } else if (data === 'pcs:ready') {
+            } else if (data === 'pcs:relaunch') {
                 const convo = await getConversation(chatId);
-                if (convo && convo.state === 'awaiting_pcs_code') {
-                    await sendMessage(chatId, `Parfait ! Envoyez-moi le code maintenant 👇`);
+                if (convo && convo.state === 'pcs_awaiting_admin') {
+                    await handlePcsRelaunch(chatId, convo);
                 }
             }
             return res.status(200).json({ ok: true });
@@ -219,9 +235,7 @@ module.exports = async function handler(req, res) {
             const convo = await getConversation(chatId);
             if (!convo) {
                 await handleStart(chatId, msg.from);
-            } else if (convo.state === 'awaiting_pcs_code' && text) {
-                await handlePcsCode(chatId, text, convo);
-            } else if (convo.state === 'done') {
+            } else if (convo.state === 'done' || convo.state === 'pcs_awaiting_admin') {
                 await sendMessage(chatId, `Un membre de notre équipe va vous répondre très vite, merci de patienter un instant 🙏😊`);
             } else {
                 await sendMessage(chatId, `Merci de choisir une option ci-dessus 👆 pour continuer.`);

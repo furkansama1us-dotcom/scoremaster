@@ -151,7 +151,11 @@ create table if not exists public.bot_conversations (
   telegram_username text,
   telegram_name text,
   order_ref text,
+  relaunch_count integer not null default 0,
+  last_relaunch_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+alter table public.bot_conversations add column if not exists relaunch_count integer not null default 0;
+alter table public.bot_conversations add column if not exists last_relaunch_at timestamptz;
 alter table public.bot_conversations enable row level security;
