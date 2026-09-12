@@ -75,9 +75,10 @@ module.exports = async function handler(req, res) {
         const tg = (integrations || []).find(function (i) { return i.identifier && i.identifier.indexOf('telegram') !== -1; });
         if (!tg) throw new Error('Aucune intégration Telegram trouvée sur Postiz');
 
-        const value = imageUrl
-            ? [{ content: message, image: [{ id: 'manual-' + Date.now(), path: imageUrl }] }]
-            : [{ content: message }];
+        const value = [{
+            content: message,
+            image: imageUrl ? [{ id: 'manual-' + Date.now(), path: imageUrl }] : []
+        }];
 
         await postizFetch('/posts', {
             method: 'POST',
