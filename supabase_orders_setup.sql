@@ -114,3 +114,22 @@ drop policy if exists "Admins can update pending publications" on public.pending
 create policy "Admins can update pending publications"
   on public.pending_publications for update
   using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));
+
+-- ============================================================
+-- Parrainage Telegram — lien d'invitation personnel par membre,
+-- suivi des amis qui rejoignent le canal, récompense tous les 3 filleuls
+-- (déblocage d'un pronostic VIP+ via le système de code existant).
+-- ============================================================
+
+alter table public.profiles
+  add column if not exists referral_invite_link text,
+  add column if not exists referral_joins_count integer not null default 0,
+  add column if not exists referral_rewards_claimed integer not null default 0;
+
+-- État du bot de parrainage (offset getUpdates), une seule ligne.
+create table if not exists public.referral_bot_state (
+  id text primary key default 'singleton',
+  last_update_id bigint not null default 0
+);
+insert into public.referral_bot_state (id) values ('singleton') on conflict do nothing;
+alter table public.referral_bot_state enable row level security;

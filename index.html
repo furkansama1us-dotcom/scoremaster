@@ -1848,6 +1848,20 @@ async function fetchApiScore(id, dateRaw) {
             </select>
         </div>
         <button class="profile-save-btn" onclick="saveProfileFromModal()"><i class="fas fa-save" style="margin-right:6px;"></i> Enregistrer</button>
+
+        <div style="margin:18px 0; padding:16px; background:rgba(255,193,7,0.08); border:1px solid rgba(255,193,7,0.2); border-radius:14px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                <i class="fas fa-user-plus" style="color:var(--primary-yellow);"></i>
+                <span style="font-weight:800; font-size:14px; color:#fff;">Parrainage</span>
+            </div>
+            <p style="font-size:12px; color:var(--text-gray); line-height:1.5; margin-bottom:10px;">Invite 3 amis sur notre canal Telegram et débloque un pronostic VIP+ gratuit — répétable à chaque nouveau palier de 3 !</p>
+            <div id="referral-progress" style="font-size:12px; color:var(--text-gray); margin-bottom:10px;">Chargement...</div>
+            <div id="referral-link-box" style="display:none; gap:8px; margin-bottom:8px;">
+                <input id="referral-link-input" readonly style="flex:1; padding:10px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:8px; color:#fff; font-size:11px;">
+            </div>
+            <button id="referral-action-btn" onclick="handleReferralAction()" style="width:100%; padding:11px; background:linear-gradient(135deg,var(--primary-yellow),var(--dark-yellow)); color:#000; border:none; border-radius:10px; font-size:13px; font-weight:800; font-family:'Montserrat',sans-serif; cursor:pointer;"><i class="fas fa-link"></i> Obtenir mon lien de parrainage</button>
+        </div>
+
         <button class="profile-logout-btn" onclick="logoutUser()"><i class="fas fa-sign-out-alt" style="margin-right:6px;"></i> Se déconnecter</button>
     </div>
 </div>
@@ -2522,12 +2536,80 @@ async function rejectPublication(id) {
         var modal = document.getElementById('profile-modal');
         modal.style.display = 'flex';
         setTimeout(function() { modal.classList.add('visible'); }, 10);
+        loadReferralStatus();
     }
 
     function closeProfileModal() {
         var modal = document.getElementById('profile-modal');
         modal.classList.remove('visible');
         setTimeout(function() { modal.style.display = 'none'; }, 300);
+    }
+
+    // ============================================================
+    // PARRAINAGE — lien Telegram personnel + suivi des filleuls
+    // ============================================================
+    async function loadReferralStatus() {
+        var progressEl = document.getElementById('referral-progress');
+        if (!window.currentAuthUser) { progressEl.textContent = 'Connecte-toi pour parrainer tes amis.'; return; }
+        try {
+            const { data, error } = await supabaseClient.from('profiles').select('referral_invite_link, referral_joins_count, referral_rewards_claimed').eq('id', window.currentAuthUser.id).single();
+            if (error) throw error;
+            renderReferralStatus(data);
+        } catch (e) {
+            console.error('Erreur chargement parrainage:', e);
+            progressEl.textContent = 'Erreur de chargement.';
+        }
+    }
+
+    function renderReferralStatus(data) {
+        var progressEl = document.getElementById('referral-progress');
+        var linkBox = document.getElementById('referral-link-box');
+        var linkInput = document.getElementById('referral-link-input');
+        var btn = document.getElementById('referral-action-btn');
+        var count = data.referral_joins_count || 0;
+        var claimed = data.referral_rewards_claimed || 0;
+        var remainingForNext = count % 3 === 0 ? 3 : 3 - (count % 3);
+
+        if (data.referral_invite_link) {
+            linkBox.style.display = 'flex';
+            linkInput.value = data.referral_invite_link;
+            btn.innerHTML = '<i class="fas fa-copy"></i> Copier mon lien';
+            btn.onclick = function () { copyReferralLink(data.referral_invite_link); };
+            progressEl.innerHTML = `👥 ${count} ami(s) invité(s) — 🎁 ${claimed} récompense(s) débloquée(s)<br>Encore ${remainingForNext} pour la prochaine récompense !`;
+        } else {
+            linkBox.style.display = 'none';
+            progressEl.textContent = 'Génère ton lien personnel pour commencer à parrainer.';
+        }
+    }
+
+    async function handleReferralAction() {
+        var btn = document.getElementById('referral-action-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Génération...';
+        try {
+            let session = await supabaseClient.auth.getSession();
+            let accessToken = session && session.data && session.data.session ? session.data.session.access_token : '';
+            let res = await fetch('/api/referral-get-link', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken }
+            });
+            let data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Erreur');
+            renderReferralStatus({ referral_invite_link: data.inviteLink, referral_joins_count: data.joinsCount, referral_rewards_claimed: data.rewardsClaimed });
+        } catch (e) {
+            console.error('Erreur génération lien parrainage:', e);
+            showToast('Erreur lors de la génération du lien.', true);
+        }
+        btn.disabled = false;
+    }
+
+    function copyReferralLink(link) {
+        var el = document.createElement('textarea');
+        el.value = link;
+        document.body.appendChild(el);
+        el.select();
+        try { document.execCommand('copy'); showToast('Lien copié !'); } catch (e) { showToast('Erreur de copie.', true); }
+        document.body.removeChild(el);
     }
 
     function saveProfileFromModal() {
