@@ -1,10 +1,16 @@
-// Script de génération de contenu quotidien pour Score Meridian.
-// Tourne sur le VPS via cron chaque soir vers 22h (Europe/Paris).
-// Choisit le type de contenu de demain (rotation 7 jours, même logique que
-// l'app), génère une légende + un prompt image via Claude (Anthropic API),
-// génère l'image via Higgsfield, et dépose le brouillon dans Supabase
-// (table pending_publications, status='pending') pour validation manuelle
-// dans le Panel Admin > Publications.
+// Script de génération de contenu pour Score Master.
+// Tourne sur le VPS via cron, deux modes :
+//   - mode par défaut (aucun argument) : appelé chaque soir vers 22h,
+//     choisit le type de contenu de demain (rotation 7 jours) et dépose
+//     un brouillon pour ce type.
+//   - mode "urgence" (--mode=urgence) : appelé 2-3 fois par jour (matin/
+//     midi/soir), génère un teaser cinématique/urgence pour AUJOURD'HUI
+//     (style "train qui n'attend pas les retardataires"), en variant la
+//     scène à chaque appel pour ne pas se répéter.
+// Génère une légende + un prompt image via Claude (Anthropic API), génère
+// l'image via Higgsfield, et dépose le brouillon dans Supabase (table
+// pending_publications, status='pending') pour validation manuelle dans
+// le Panel Admin > Publications.
 //
 // Ne publie jamais rien directement — c'est api/publish-approved.js (Vercel)
 // qui s'en charge, une fois que l'admin a cliqué "Approuver".
@@ -35,6 +41,25 @@ const CONTENT_TYPES = [
     { key: 'reels', label: 'Reels & Posts Instagram', platforms: ['instagram'], aspect: '9:16' },
     { key: 'relance', label: 'Relance Adhérents', platforms: ['telegram'], aspect: '3:4' }
 ];
+
+// Scènes utilisées en mode "urgence" (appels intraday, 2-3x/jour) — on fait
+// tourner la scène pour ne pas répéter le même visuel à chaque appel.
+const URGENCE_SCENES = [
+    'a lone silhouette sprinting to catch a departing high-speed train at night, neon-lit platform, cyberpunk city skyline, motion blur, golden "SM" crown logo glowing on the train\'s side',
+    'a close-up of an antique pocket watch with golden hands ticking down, dramatic dark background, sparks of golden light, sense of urgency',
+    'a silhouette running through a rain-soaked neon-lit metro station at night, glowing golden exit sign, cinematic wide shot',
+    'a golden vault door slowly closing, dramatic lighting, sparks flying, sense of a closing opportunity, luxury aesthetic',
+    'an elegant figure checking a luxury golden wristwatch under city neon lights at night, tension in the pose, cinematic close-up',
+    'a golden crown-shaped countdown timer floating above a dark stadium at night, glowing numbers, dramatic lighting'
+];
+
+function computeTodayUrgenceScene() {
+    const today = new Date();
+    const daySeed = today.getUTCFullYear() * 372 + (today.getUTCMonth() + 1) * 31 + today.getUTCDate();
+    const hourSlot = Math.floor(today.getUTCHours() / 6); // varie aussi selon le créneau horaire dans la journée
+    const index = (daySeed + hourSlot) % URGENCE_SCENES.length;
+    return URGENCE_SCENES[index];
+}
 
 async function sbFetch(path, options = {}) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
@@ -79,12 +104,12 @@ async function getCurrentCombine() {
     }
 }
 
-async function draftWithClaude(type, recentHistory, combine) {
+async function draftWithClaude(type, recentHistory, combine, forcedScene) {
     const matchInfo = combine && combine.matches && combine.matches.length
         ? combine.matches.map(m => `${m.teams} (${m.time || '?'})`).join(', ')
         : null;
 
-    const prompt = `Tu écris pour "Score Meridian" (SM), un service français de pronostics sportifs premium (packs payants + espace VIP+). Ton de marque : affiches illustrées dramatiques/cinématiques, jamais de vrais blasons de club (stylise/générique), jamais de visage de personne réelle/célébrité.
+    const prompt = `Tu écris pour "Score Master" (SM), un service français de pronostics sportifs premium (packs payants + espace VIP+). Identité visuelle dorée/premium (couronne dorée, monogramme "SM"). Ton de marque : affiches illustrées dramatiques/cinématiques, jamais de vrais blasons de club (stylise/générique), jamais de visage de personne réelle/célébrité.
 
 Type de contenu à produire aujourd'hui : "${type.label}".
 ${matchInfo ? `Combiné en cours (noms d'équipes uniquement, PAS de score) : ${matchInfo}` : "Aucun combiné en cours actuellement — reste générique (marque/app), sans référence à un match précis."}
@@ -92,14 +117,14 @@ ${matchInfo ? `Combiné en cours (noms d'équipes uniquement, PAS de score) : ${
 Ne répète pas ces accroches/légendes déjà utilisées récemment :
 ${recentHistory.length ? recentHistory.map(h => `- ${h.slice(0, 120)}`).join('\n') : '(aucun historique)'}
 
-Ton par type :
+${forcedScene ? `Scène imposée pour le prompt image (reprends-la fidèlement, en anglais, en l'enrichissant de détails de composition/lumière/style) :\n${forcedScene}` : `Ton par type :
 - Promo Web App : lumineux, accueillant, évoque l'application mobile
 - Prompt IA (affiche combiné) : poster cinématique stade/foule/tableau de score, dramatique
 - Écusson Brodé : gros plan textile brodé premium, esthétique luxe
 - Story Instagram : composition verticale punchy, grande zone pour texte
 - Annonce Telegram VIP+ : urgence/compte à rebours, horloge, néons, ville la nuit
 - Reels & Posts Instagram : scène d'action dynamique, flou de mouvement, football
-- Relance Adhérents : ambiance noir/mystère — silhouette, train, montre qui tic-tac, porte verrouillée
+- Relance Adhérents : ambiance noir/mystère — silhouette, train, montre qui tic-tac, porte verrouillée`}
 
 Réponds UNIQUEMENT avec un objet JSON strict, sans texte autour, au format :
 {"caption": "légende en français avec emojis, prête à poster", "image_prompt": "prompt en anglais pour un générateur d'image, décrivant précisément la scène/composition/ambiance/style"}`;
@@ -162,12 +187,26 @@ async function generateImage(prompt, aspect) {
 }
 
 async function main() {
-    const { type, dateStr } = computeTomorrowType();
-    console.log(`[${new Date().toISOString()}] Type de contenu pour ${dateStr} : ${type.label} (${type.platforms.join(', ')})`);
+    const modeArg = process.argv.find(a => a.startsWith('--mode='));
+    const mode = modeArg ? modeArg.split('=')[1] : 'daily';
+
+    let type, dateStr, forcedScene;
+    if (mode === 'urgence') {
+        const today = new Date();
+        dateStr = today.toISOString().slice(0, 10);
+        type = { key: 'urgence', label: 'Teaser Urgence Combiné', platforms: ['instagram', 'telegram'], aspect: '3:4' };
+        forcedScene = computeTodayUrgenceScene();
+        console.log(`[${new Date().toISOString()}] Mode urgence — teaser pour ${dateStr} (scène: ${forcedScene.slice(0, 60)}...)`);
+    } else {
+        const tomorrow = computeTomorrowType();
+        type = tomorrow.type;
+        dateStr = tomorrow.dateStr;
+        console.log(`[${new Date().toISOString()}] Type de contenu pour ${dateStr} : ${type.label} (${type.platforms.join(', ')})`);
+    }
 
     const [recentHistory, combine] = await Promise.all([getRecentHistory(), getCurrentCombine()]);
 
-    const draft = await draftWithClaude(type, recentHistory, combine);
+    const draft = await draftWithClaude(type, recentHistory, combine, forcedScene);
     console.log('Légende générée :', draft.caption);
     console.log('Prompt image :', draft.image_prompt);
 
