@@ -151,7 +151,7 @@ async function handlePaymentChoice(chatId, method, convo) {
         const cardsAdvice = pack && pack.pcsCards ? `\n\nPour votre pack (${pack.price}€), prenez : <b>${pack.pcsCards}</b>.` : '';
         await sendMessage(chatId,
             `Très bon choix ! 🎫\n\nSi vous n'avez pas encore de carte de recharge PCS, vous pouvez en acheter une ici :\n${PCS_PURCHASE_LINK}${cardsAdvice}\n\nUne fois votre/vos carte(s) en main, cliquez ci-dessous ou envoyez-moi directement le ou les codes de recharge. 😊`,
-            [[{ text: '✅ J\'ai le code !', callback_data: 'pcs:ready' }]]
+            [[{ text: '✅ J\'ai le code ! Appeler un admin SM pour la vérification', callback_data: 'pcs:ready' }]]
         );
     }
 }
