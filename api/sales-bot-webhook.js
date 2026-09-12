@@ -154,7 +154,7 @@ async function handlePaymentChoice(chatId, method, convo) {
             [[{ text: '🔔 Relancer l\'admin', callback_data: 'pcs:relaunch' }]]
         );
         await notifyAdmin(
-            `💰 NOUVELLE DEMANDE (Bot Telegram)\n\nRéférence : ${orderRef}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\nPaiement : Recharge PCS\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Contacte le client sur Telegram pour vérifier son code ensemble et valider.`
+            `💰 NOUVELLE DEMANDE (Bot Telegram)\n\nRéférence : ${orderRef}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\nPaiement : Recharge PCS\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Contacte le client sur Telegram pour vérifier son code ensemble et valider.\n\n📋 Message suggéré à lui envoyer :\n« Salut ! 😊 J'ai vu que tu étais prêt(e) avec ton code de recharge PCS pour ton pack ${pack ? pack.label : convo.pack_type}. Dès que tu peux, envoie-le-moi directement ici et je vérifie ça avec toi tout de suite. Une fois validé, j'active ton accès immédiatement ! 🚀 »`
         );
     }
 }
@@ -181,7 +181,7 @@ async function handlePcsRelaunch(chatId, convo) {
     await upsertConversation(chatId, { relaunch_count: newCount, last_relaunch_at: new Date().toISOString() });
     await sendMessage(chatId, `C'est noté ! Un admin va vous contacter très vite. Merci de votre patience 🙏 (${newCount}/3)`);
     await notifyAdmin(
-        `🔔 RELANCE (${newCount}/3) — Bot Telegram\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type}\nPaiement : Recharge PCS\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Le client attend toujours ton contact.`
+        `🔔 RELANCE (${newCount}/3) — Bot Telegram\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type}\nPaiement : Recharge PCS\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Le client attend toujours ton contact.\n\n📋 Message suggéré à lui envoyer :\n« Salut ! 😊 Désolé pour l'attente, je m'occupe de toi tout de suite ! Envoie-moi ton code de recharge PCS ici et je vérifie ça avec toi immédiatement. Une fois validé, j'active ton accès ! 🚀 »`
     );
 }
 
