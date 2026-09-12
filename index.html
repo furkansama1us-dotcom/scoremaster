@@ -5725,12 +5725,13 @@ ${aiPrompt}
         var aiConfidences = matchesToDisplay.filter(function (m) { return m.ai_confidence; }).map(function (m) { return m.ai_confidence; });
         var aiAvgConfidence = aiConfidences.length ? Math.round(aiConfidences.reduce(function (a, b) { return a + b; }, 0) / aiConfidences.length) : null;
         var aiTag = aiAvgConfidence ? `<span class="ai-confidence-tag"><i class="fas fa-microchip"></i> Fiabilité totale IA ${aiAvgConfidence}%</span>` : '';
-        var liveBadge = isLive ? `<span onclick="openComboLiveView()" style="display:inline-flex; align-items:center; gap:4px; background:rgba(244,63,94,0.15); color:var(--red); border:1px solid rgba(244,63,94,0.4); padding:3px 9px; border-radius:20px; font-size:10px; font-weight:800; cursor:pointer; margin-left:6px;"><span style="width:6px;height:6px;background:var(--red);border-radius:50%;animation:pulse 1.2s infinite;"></span> LIVE</span>` : '';
+        var statusBadgeLabel = isLive ? '<span style="width:6px;height:6px;background:#fff;border-radius:50%;animation:pulse 1.2s infinite;display:inline-block;margin-right:5px;"></span>LIVE' : sl[sc];
+        var statusBadgeClick = isLive ? ' onclick="openComboLiveView()" style="cursor:pointer;"' : '';
 
         return `
         <div class="combined-card" id="combined-card-${isHome ? 'home' : 'vip'}-${c.id}" style="width:100%;">
             <div class="combined-header">
-                <div class="combined-status"><span class="status-badge ${sc}">${sl[sc]}</span><span class="combined-label">Combiné</span>${aiTag}${liveBadge}</div>
+                <div class="combined-status"><span class="status-badge ${sc}"${statusBadgeClick}>${statusBadgeLabel}</span><span class="combined-label">Combiné</span>${aiTag}</div>
                 <i class="fas fa-ellipsis-h combined-more"></i>
             </div>
             <div class="combined-progress"><div class="combined-progress-fill" style="width:${pw};${pc}"></div></div>
