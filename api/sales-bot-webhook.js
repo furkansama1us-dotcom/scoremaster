@@ -97,6 +97,44 @@ function relaunchKeyboard() {
     return [[{ text: '🔔 Relancer l\'admin', callback_data: 'relaunch' }]];
 }
 
+function platformKeyboard() {
+    return [
+        [{ text: 'Winamax', callback_data: 'platform:winamax' }, { text: 'Unibet', callback_data: 'platform:unibet' }],
+        [{ text: 'Betclic', callback_data: 'platform:betclic' }, { text: 'PMU', callback_data: 'platform:pmu' }],
+        [{ text: 'Bureau de tabac', callback_data: 'platform:tabac' }],
+        [{ text: 'Autre / Aucune', callback_data: 'platform:autre' }]
+    ];
+}
+
+function sportKeyboard() {
+    return [
+        [{ text: '⚽ Football', callback_data: 'sport:football' }, { text: '🏀 Basket', callback_data: 'sport:basket' }],
+        [{ text: '🎾 Tennis', callback_data: 'sport:tennis' }, { text: '🥊 Autre sport', callback_data: 'sport:autre' }]
+    ];
+}
+
+const PLATFORM_LABELS = {
+    winamax: 'Winamax', unibet: 'Unibet', betclic: 'Betclic', pmu: 'PMU', tabac: 'Bureau de tabac', autre: 'Autre / Aucune'
+};
+const PLATFORM_REPLIES = {
+    winamax: `Winamax, excellent choix ! 📈 Les cotes y sont généralement parmi les plus élevées du marché, tu as l'œil !`,
+    unibet: `Unibet, un classique fiable et sérieux 👌, tu ne peux pas te tromper avec ça.`,
+    betclic: `Betclic propose souvent de bons bonus de bienvenue 🎁, ça peut vite faire la différence sur la durée.`,
+    pmu: `Le PMU, une valeur sûre pour les turfistes 🐎 ! Sache juste que les cotes foot y sont parfois un peu plus basses qu'ailleurs.`,
+    tabac: `Le bureau de tabac, c'est pratique, mais tu passes souvent à côté des meilleures cotes en ligne. Si un jour tu veux te créer un compte sur une plateforme en ligne, n'hésite pas à demander, je peux te conseiller ! 😉`,
+    autre: `Peu importe la plateforme, l'essentiel c'est d'avoir les bonnes infos avant de miser 💪`
+};
+
+const SPORT_LABELS = {
+    football: 'Football', basket: 'Basket', tennis: 'Tennis', autre: 'Autre sport'
+};
+const SPORT_REPLIES = {
+    football: `Le football, c'est justement notre spécialité chez Score Master ⚽🔥, tu es exactement au bon endroit !`,
+    basket: `Le basket (NBA, Euroligue...) peut être très rentable avec la bonne analyse, on couvre aussi ce sport de près 🏀`,
+    tennis: `Le tennis demande une vraie lecture fine des surfaces et de la forme du moment, un sport qu'on adore analyser aussi 🎾`,
+    autre: `Peu importe le sport, l'important c'est la rigueur de l'analyse avant de miser 💪`
+};
+
 function hypeMessage(pack) {
     return `Tu as enfin décidé de passer au niveau supérieur, très bon choix ! 🔥\n\n`
         + `Chaque jour, des dizaines de membres de notre communauté <b>Score Master</b> encaissent grâce à nos analyses 📈💰. On ne te promet pas la lune : on te donne les tickets préparés par une équipe qui cumule plus de 20 ans d'expérience dans l'analyse sportive, avec une rigueur et une transparence qui font notre réputation depuis le début.\n\n`
@@ -133,16 +171,33 @@ async function handlePackChoice(chatId, packKey) {
 }
 
 async function handleJoinConfirm(chatId, convo) {
-    const pack = PACKS[convo.pack_type];
     const orderRef = generateOrderRef();
-
-    await upsertConversation(chatId, { state: 'awaiting_admin', order_ref: orderRef });
+    await upsertConversation(chatId, { state: 'awaiting_platform', order_ref: orderRef });
     await sendMessage(chatId,
-        `Top ! Hâte de te voir parmi nous. 🙌\n\nJe viens de notifier un admin, il prendra contact avec toi dans les prochaines minutes qui suivent. Ne quitte pas ! :)`,
+        `Top ! Hâte de te voir parmi nous. 🙌\n\nUn admin se libère pour toi dans quelques instants. En attendant, j'ai deux petites questions pour mieux te connaître et t'orienter au mieux 😊\n\nSur quelle plateforme paries-tu d'habitude ?`,
+        platformKeyboard()
+    );
+}
+
+async function handlePlatformChoice(chatId, platformKey, convo) {
+    const reply = PLATFORM_REPLIES[platformKey] || PLATFORM_REPLIES.autre;
+    await upsertConversation(chatId, { state: 'awaiting_sport', betting_platform: PLATFORM_LABELS[platformKey] || platformKey });
+    await sendMessage(chatId,
+        `${reply}\n\nEt sinon, sur quel type de sport paries-tu le plus ?`,
+        sportKeyboard()
+    );
+}
+
+async function handleSportChoice(chatId, sportKey, convo) {
+    const pack = PACKS[convo.pack_type];
+    const reply = SPORT_REPLIES[sportKey] || SPORT_REPLIES.autre;
+    await upsertConversation(chatId, { state: 'awaiting_admin', betting_sport: SPORT_LABELS[sportKey] || sportKey });
+    await sendMessage(chatId,
+        `${reply}\n\nMerci pour ces questions et réponses aussi rapides ! 🙏 Je relance l'admin de mon côté !`,
         relaunchKeyboard()
     );
     await notifyAdmin(
-        `💰 NOUVELLE DEMANDE (Bot Telegram)\n\nRéférence : ${orderRef}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Contacte le client sur Telegram pour finaliser le paiement.`
+        `💰 NOUVELLE DEMANDE (Bot Telegram)\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n🎯 Plateforme habituelle : ${convo.betting_platform || '?'}\n🏅 Sport favori : ${SPORT_LABELS[sportKey] || sportKey}\n\n➡️ Contacte le client sur Telegram pour finaliser le paiement.`
     );
 }
 
@@ -168,7 +223,7 @@ async function handleRelaunch(chatId, convo) {
     await upsertConversation(chatId, { relaunch_count: newCount, last_relaunch_at: new Date().toISOString() });
     await sendMessage(chatId, `C'est noté ! Un admin va vous contacter très vite. Merci de votre patience 🙏 (${newCount}/3)`);
     await notifyAdmin(
-        `🔔 RELANCE (${newCount}/3) — Bot Telegram\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type}\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Le client attend toujours ton contact.`
+        `🔔 RELANCE (${newCount}/3) — Bot Telegram\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type}\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n${convo.betting_platform ? `🎯 Plateforme habituelle : ${convo.betting_platform}\n` : ''}${convo.betting_sport ? `🏅 Sport favori : ${convo.betting_sport}\n` : ''}\n➡️ Le client attend toujours ton contact.`
     );
 }
 
@@ -198,6 +253,16 @@ module.exports = async function handler(req, res) {
                 const convo = await getConversation(chatId);
                 if (convo && convo.state === 'awaiting_join') {
                     await handleJoinConfirm(chatId, convo);
+                }
+            } else if (data.startsWith('platform:')) {
+                const convo = await getConversation(chatId);
+                if (convo && convo.state === 'awaiting_platform') {
+                    await handlePlatformChoice(chatId, data.slice(9), convo);
+                }
+            } else if (data.startsWith('sport:')) {
+                const convo = await getConversation(chatId);
+                if (convo && convo.state === 'awaiting_sport') {
+                    await handleSportChoice(chatId, data.slice(6), convo);
                 }
             } else if (data === 'relaunch') {
                 const convo = await getConversation(chatId);

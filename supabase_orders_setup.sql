@@ -158,4 +158,8 @@ create table if not exists public.bot_conversations (
 );
 alter table public.bot_conversations add column if not exists relaunch_count integer not null default 0;
 alter table public.bot_conversations add column if not exists last_relaunch_at timestamptz;
+-- Petites questions posées en attendant la prise en charge admin (plateforme/sport
+-- de pari habituels), pour personnaliser l'échange et aider à la négociation.
+alter table public.bot_conversations add column if not exists betting_platform text;
+alter table public.bot_conversations add column if not exists betting_sport text;
 alter table public.bot_conversations enable row level security;
