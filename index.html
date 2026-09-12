@@ -7543,19 +7543,18 @@ function fallbackCopy(txt) {
 // Mapping emoji drapeau -> nom de pays, pour évoquer visuellement le pays de la
 // compétition sans jamais écrire de texte dans l'image (les générateurs d'image
 // rendent le texte/les chiffres illisibles ou déformés à chaque fois).
-const FLAG_EMOJI_TO_COUNTRY = {
-    '🇫🇷': 'France', '🇪🇸': 'Spain', '🇬🇧': 'England', '🏴󠁧󠁢󠁥󠁮󠁧󠁿': 'England', '🇮🇹': 'Italy',
-    '🇩🇪': 'Germany', '🇵🇹': 'Portugal', '🇳🇱': 'the Netherlands', '🇧🇪': 'Belgium',
-    '🇹🇷': 'Turkey', '🇧🇷': 'Brazil', '🇷🇸': 'Serbia', '🇺🇸': 'the United States'
-};
-
 function extractLeagueCountries(c) {
+    var flagEmojiToCountry = {
+        '🇫🇷': 'France', '🇪🇸': 'Spain', '🇬🇧': 'England', '🏴󠁧󠁢󠁥󠁮󠁧󠁿': 'England', '🇮🇹': 'Italy',
+        '🇩🇪': 'Germany', '🇵🇹': 'Portugal', '🇳🇱': 'the Netherlands', '🇧🇪': 'Belgium',
+        '🇹🇷': 'Turkey', '🇧🇷': 'Brazil', '🇷🇸': 'Serbia', '🇺🇸': 'the United States'
+    };
     var countries = [];
     (c.matches || []).forEach(function (m) {
         if (!m.league_flag) return;
-        Object.keys(FLAG_EMOJI_TO_COUNTRY).forEach(function (emoji) {
-            if (m.league_flag.indexOf(emoji) !== -1 && countries.indexOf(FLAG_EMOJI_TO_COUNTRY[emoji]) === -1) {
-                countries.push(FLAG_EMOJI_TO_COUNTRY[emoji]);
+        Object.keys(flagEmojiToCountry).forEach(function (emoji) {
+            if (m.league_flag.indexOf(emoji) !== -1 && countries.indexOf(flagEmojiToCountry[emoji]) === -1) {
+                countries.push(flagEmojiToCountry[emoji]);
             }
         });
     });
