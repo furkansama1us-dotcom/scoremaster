@@ -1072,9 +1072,8 @@ async function fetchApiScore(id, dateRaw) {
             <span>API sportifs connectés</span>
             <div class="api-status-dot"></div>
         </div>
-        <div style="display:flex; gap:8px; margin-top:10px; position:relative; z-index:1;">
-            <a href="#" onclick="openLoginWhatsApp(); return false;" style="flex:1; display:flex; align-items:center; justify-content:center; gap:7px; padding:10px; background:rgba(37,211,102,0.1); border:1px solid rgba(37,211,102,0.3); border-radius:12px; color:#25D366; font-size:12.5px; font-weight:700; text-decoration:none;"><i class="fab fa-whatsapp"></i> WhatsApp</a>
-            <a href="#" onclick="window.open(TELEGRAM_LINK, '_blank'); return false;" style="flex:1; display:flex; align-items:center; justify-content:center; gap:7px; padding:10px; background:rgba(38,165,228,0.1); border:1px solid rgba(38,165,228,0.3); border-radius:12px; color:#26A5E4; font-size:12.5px; font-weight:700; text-decoration:none;"><i class="fab fa-telegram-plane"></i> Telegram</a>
+        <div style="margin-top:10px; position:relative; z-index:1;">
+            <a href="#" onclick="window.open(TELEGRAM_LINK, '_blank'); return false;" style="display:flex; align-items:center; justify-content:center; gap:7px; padding:10px; background:rgba(38,165,228,0.1); border:1px solid rgba(38,165,228,0.3); border-radius:12px; color:#26A5E4; font-size:12.5px; font-weight:700; text-decoration:none;"><i class="fab fa-telegram-plane"></i> Telegram</a>
         </div>
     </div>
 </div>
@@ -4316,11 +4315,6 @@ async function fetchMatchesFromAPI() {
     function goToSignupFromGoogle() {
         closeGooglePopup();
         if (!isSignUpMode) toggleAuthMode();
-    }
-
-    function openLoginWhatsApp() {
-        var msg = 'Bonjour ! J\'ai une question sur Score Master.';
-        window.open('https://wa.me/' + WHATSAPP_ADMIN_NUMBER + '?text=' + encodeURIComponent(msg), '_blank');
     }
 
     async function handleForgotPassword() {
