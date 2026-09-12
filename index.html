@@ -290,6 +290,7 @@
         .ai-vip-tag{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:800;letter-spacing:.4px;padding:3px 8px;border-radius:20px;background:linear-gradient(135deg,#FFC107,#B8860B);color:#000;margin-left:6px}
         .ai-match-card.ai-vip-locked{position:relative;overflow:hidden}
         #ai-vip-filter-btn.active{background:linear-gradient(135deg,#FFC107,#B8860B);color:#000;border-color:#FFC107}
+        #ai-free-filter-btn.active{background:linear-gradient(135deg,var(--green),#16A34A);color:#fff;border-color:var(--green)}
         .ai-prediction-label{font-size:13px;font-weight:700;margin-bottom:10px}
         .ai-prediction-label span{color:var(--primary-yellow)}
         .ai-prob-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:11px}
@@ -1511,10 +1512,12 @@ async function fetchApiScore(id, dateRaw) {
             </div>
             <div class="ai-filter-bar" style="display:flex; align-items:center; gap:8px; padding:0 20px 15px; flex-wrap:wrap;">
                 <select id="ai-sort-select" onchange="setAISort(this.value)" style="background:var(--bg-input); color:#fff; border:1px solid var(--border-color); border-radius:10px; padding:8px 12px; font-size:12px; font-weight:600; font-family:'Montserrat',sans-serif;">
+                    <option value="time">Heure : croissante</option>
                     <option value="desc">Confiance : décroissante</option>
                     <option value="asc">Confiance : croissante</option>
                 </select>
                 <div id="ai-vip-filter-btn" onclick="toggleAIVipFilter()" style="display:flex; align-items:center; gap:6px; padding:8px 14px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:10px; font-size:12px; font-weight:700; color:var(--text-gray); cursor:pointer; white-space:nowrap;"><i class="fas fa-crown" style="color:#FFC107;"></i> Matchs VIP</div>
+                <div id="ai-free-filter-btn" onclick="toggleAIFreeFilter()" style="display:flex; align-items:center; gap:6px; padding:8px 14px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:10px; font-size:12px; font-weight:700; color:var(--text-gray); cursor:pointer; white-space:nowrap;"><i class="fas fa-unlock" style="color:var(--green);"></i> Gratuit</div>
             </div>
             <div id="ai-pronostics-container" style="padding: 0 20px 20px;">
                 <div class="no-combined-message"><i class="fas fa-satellite-dish"></i>Chargement des analyses...</div>
@@ -3288,7 +3291,7 @@ async function fetchMatchesFromAPI() {
         }
     }
 
-    window.aiFilterState = { sort: 'desc', vipOnly: false };
+    window.aiFilterState = { sort: 'time', vipOnly: false, freeOnly: false };
 
     function redistributeConfidence(pred, winnerKey, conf) {
         var remaining = 100 - conf;
@@ -3340,7 +3343,7 @@ async function fetchMatchesFromAPI() {
             else if (winnerKey === 'awayProb') pickLabel = `Victoire <span>${away}</span>`;
             else pickLabel = `Match nul probable`;
 
-            return { home: home, away: away, league: league, timeStr: timeStr, homeStanding: homeStanding, awayStanding: awayStanding, pred: pred, conf: conf, isVipPick: isVipPick, confClass: confClass, confLabel: confLabel, pickLabel: pickLabel };
+            return { home: home, away: away, league: league, timeStr: timeStr, startTimestamp: m.startTimestamp || 0, homeStanding: homeStanding, awayStanding: awayStanding, pred: pred, conf: conf, isVipPick: isVipPick, confClass: confClass, confLabel: confLabel, pickLabel: pickLabel };
         });
     }
 
@@ -3372,7 +3375,7 @@ async function fetchMatchesFromAPI() {
                 <div class="ai-match-team ${blurClass}">${away}</div>
             </div>
             ${statLine}
-            <div class="ai-confidence-badge ${item.confClass}"><i class="fas fa-bolt"></i> ${item.confLabel}${vipTag}</div>
+            <div class="ai-confidence-badge ${item.confClass}"><i class="fas fa-bolt"></i> ${item.confLabel} (${item.conf}%)${vipTag}</div>
             <div class="ai-prediction-label ${blurClass}">🤖 Pronostic IA : ${item.pickLabel}</div>
             <div class="ai-prob-row"><span class="ai-prob-label ${blurClass}">${home}</span><div class="ai-prob-bar-track"><div class="ai-prob-bar-fill" style="width:${pred.homeProb}%;"></div></div><span class="ai-prob-value ${blurClass}">${pred.homeProb}%</span></div>
             <div class="ai-prob-row"><span class="ai-prob-label">Nul</span><div class="ai-prob-bar-track"><div class="ai-prob-bar-fill" style="width:${pred.drawProb}%;"></div></div><span class="ai-prob-value ${blurClass}">${pred.drawProb}%</span></div>
@@ -3387,10 +3390,20 @@ async function fetchMatchesFromAPI() {
         var list = (window.aiCurrentEnriched || []).slice();
 
         if (window.aiFilterState.vipOnly) list = list.filter(function (x) { return x.isVipPick; });
-        list.sort(function (a, b) { return window.aiFilterState.sort === 'asc' ? a.conf - b.conf : b.conf - a.conf; });
+        if (window.aiFilterState.freeOnly) list = list.filter(function (x) { return !x.isVipPick; });
+        if (window.aiFilterState.sort === 'time') {
+            list.sort(function (a, b) { return a.startTimestamp - b.startTimestamp; });
+        } else {
+            list.sort(function (a, b) {
+                var diff = window.aiFilterState.sort === 'asc' ? a.conf - b.conf : b.conf - a.conf;
+                return diff !== 0 ? diff : (a.startTimestamp - b.startTimestamp);
+            });
+        }
 
         var vipBtn = document.getElementById('ai-vip-filter-btn');
         if (vipBtn) vipBtn.classList.toggle('active', window.aiFilterState.vipOnly);
+        var freeBtn = document.getElementById('ai-free-filter-btn');
+        if (freeBtn) freeBtn.classList.toggle('active', window.aiFilterState.freeOnly);
         var sortSelect = document.getElementById('ai-sort-select');
         if (sortSelect) sortSelect.value = window.aiFilterState.sort;
 
@@ -3403,7 +3416,16 @@ async function fetchMatchesFromAPI() {
     }
 
     function setAISort(val) { window.aiFilterState.sort = val; renderAIList(); }
-    function toggleAIVipFilter() { window.aiFilterState.vipOnly = !window.aiFilterState.vipOnly; renderAIList(); }
+    function toggleAIVipFilter() {
+        window.aiFilterState.vipOnly = !window.aiFilterState.vipOnly;
+        if (window.aiFilterState.vipOnly) window.aiFilterState.freeOnly = false;
+        renderAIList();
+    }
+    function toggleAIFreeFilter() {
+        window.aiFilterState.freeOnly = !window.aiFilterState.freeOnly;
+        if (window.aiFilterState.freeOnly) window.aiFilterState.vipOnly = false;
+        renderAIList();
+    }
 
     function renderAIPronostics(matches, dateStr) {
         var container = document.getElementById('ai-pronostics-container');
