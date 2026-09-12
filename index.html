@@ -529,8 +529,8 @@
         .spots-fill { height: 100%; border-radius: 3px; transition: width 1s ease; animation: spotsPulse 2s ease infinite; }
         @keyframes spotsPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
 
-        .guarantee-badge { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: rgba(34,197,94, 0.05); border: 1px solid rgba(34,197,94, 0.2); border-radius: 10px; margin-bottom: 14px; font-size: 12px; color: var(--green); font-weight: 600; }
-        .guarantee-badge i { font-size: 16px; }
+        .guarantee-badge { display: flex; align-items: center; gap: 10px; padding: 12px 16px; background: rgba(34,197,94, 0.15); border: 1.5px solid rgba(34,197,94, 0.5); border-radius: 12px; margin-bottom: 14px; font-size: 13.5px; color: var(--green); font-weight: 800; box-shadow: 0 0 16px rgba(34,197,94,0.15); }
+        .guarantee-badge i { font-size: 20px; }
 
         .economy-badge { display: inline-block; background: rgba(34,197,94, 0.15); color: var(--green); font-size: 11px; font-weight: 800; padding: 3px 10px; border-radius: 6px; margin-left: 4px; }
 
@@ -1242,7 +1242,7 @@ async function fetchApiScore(id, dateRaw) {
                             <span class="price-label">unique</span>
                             <div class="economy-badge">-44% 🎉</div>
                         </div>
-                        <button class="pack-subscribe-btn pack-btn-pulse" style="background:var(--green);color:#fff;" onclick="openCheckout('journalier', 50)"><i class="fab fa-telegram-plane" style="margin-right:6px;"></i> Souscrire</button>
+                        <button class="pack-subscribe-btn pack-btn-pulse" style="background:var(--green);color:#fff;" onclick="openCheckout('journalier', 50)"><i class="fab fa-telegram-plane" style="margin-right:6px;"></i> J'adhère !</button>
                     </div>
                     <div class="payment-methods">
                         <span style="font-size:11px; color:var(--text-gray);">Paiement sécurisé</span>
@@ -1297,7 +1297,7 @@ async function fetchApiScore(id, dateRaw) {
                             <span class="price-label">unique • à vie</span>
                             <div class="economy-badge" style="background:rgba(255,193,7,0.15); color:#FFC107;">-44% 🔥</div>
                         </div>
-                        <button class="pack-subscribe-btn pack-btn-pulse" style="background:linear-gradient(135deg, #FFC107, #B8860B);color:#000; font-size:15px; padding:12px 28px;" onclick="openCheckout('vip', 99.99)"><i class="fab fa-telegram-plane" style="margin-right:6px;"></i> Souscrire</button>
+                        <button class="pack-subscribe-btn pack-btn-pulse" style="background:linear-gradient(135deg, #FFC107, #B8860B);color:#000; font-size:15px; padding:12px 28px;" onclick="openCheckout('vip', 99.99)"><i class="fab fa-telegram-plane" style="margin-right:6px;"></i> J'adhère !</button>
                     </div>
                     <div class="payment-methods">
                         <span style="font-size:11px; color:var(--text-gray);">Paiement sécurisé 🔒</span>
@@ -1341,7 +1341,7 @@ async function fetchApiScore(id, dateRaw) {
                             <span class="price-label">unique</span>
                             <div class="economy-badge" style="background:rgba(74,144,217,0.15); color:var(--blue);">-46% 💎</div>
                         </div>
-                        <button class="pack-subscribe-btn pack-btn-pulse" style="background:var(--blue);color:#fff;" onclick="openCheckout('hebdo', 69.99)"><i class="fab fa-telegram-plane" style="margin-right:6px;"></i> Souscrire</button>
+                        <button class="pack-subscribe-btn pack-btn-pulse" style="background:var(--blue);color:#fff;" onclick="openCheckout('hebdo', 69.99)"><i class="fab fa-telegram-plane" style="margin-right:6px;"></i> J'adhère !</button>
                     </div>
                     <div class="payment-methods">
                         <span style="font-size:11px; color:var(--text-gray);">Paiement sécurisé</span>
@@ -1920,8 +1920,9 @@ async function fetchApiScore(id, dateRaw) {
     <div style="background:var(--bg-card);padding:30px;border-radius:24px;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);position:relative;">
         <i class="fas fa-times" onclick="closeSubscribePopup()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
         <h3 style="font-size:18px;font-weight:800;margin-bottom:8px;color:#fff;font-family:'Montserrat',sans-serif;" id="subscribe-pack-title">Souscrire au pack</h3>
-        <p style="font-size:13px;color:var(--text-gray);margin-bottom:24px;line-height:1.5;font-family:'Inter',sans-serif;">Notre assistant Telegram t'accompagne pas à pas pour finaliser ton accès en quelques minutes ⚡</p>
-        <a id="subscribe-bot-link" href="#" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:#26A5E4;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;text-decoration:none;"><i class="fab fa-telegram-plane" style="font-size:18px;"></i> Démarrer avec notre assistant</a>
+        <p style="font-size:13px;color:var(--text-gray);margin-bottom:20px;line-height:1.5;font-family:'Inter',sans-serif;">Finalise ton accès en quelques minutes ⚡</p>
+        <a id="subscribe-bot-link" href="#" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:#26A5E4;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:10px;text-decoration:none;"><i class="fab fa-telegram-plane" style="font-size:18px;"></i> Démarrer avec notre assistant</a>
+        <a id="subscribe-whatsapp-link" href="#" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:#25D366;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;text-decoration:none;"><i class="fab fa-whatsapp" style="font-size:18px;"></i> Contacter via WhatsApp</a>
     </div>
 </div>
 
@@ -5841,7 +5842,7 @@ ${instaMatches}⏰ Début du premier match à ${earliestTime}
         var ctaBtn = (isHome && !isLocked && sc === 'en-cours') ? `<a href="${TELEGRAM_LINK}" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>` : '';
         if (isHome && isLocked && sc === 'en-cours') ctaBtn = `<button class="combined-cta-btn" style="background: var(--bg-input); color: var(--text-gray); cursor: not-allowed;"><i class="fas fa-lock"></i> Trop tard, match commencé !</button>`;
 
-        var cartBtnHome = (isHome && sc === 'en-cours') ? `<button class="add-to-cart-btn" style="margin-top:8px;" onclick="openCheckout('vip', 99.99)"><i class="fab fa-telegram-plane"></i> Souscrire</button>` : '';
+        var cartBtnHome = (isHome && sc === 'en-cours') ? `<button class="add-to-cart-btn" style="margin-top:8px;" onclick="openCheckout('vip', 99.99)"><i class="fab fa-telegram-plane"></i> J'adhère !</button>` : '';
 
         var vipRevealBtn = isVipObscured ? `<button id="reveal-btn-${c.id}" onclick="unblurVipCard('combined-card-vip-${c.id}', 'reveal-btn-${c.id}')" class="combined-cta-btn" style="background:linear-gradient(135deg, #FFC107, #B8860B); color:#000; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(255,193,7, 0.3);"><i class="fas fa-eye" style="margin-right:6px;"></i> Cliquer ici pour déflouter les scores</button>` : '';
 
@@ -6060,6 +6061,9 @@ ${instaMatches}⏰ Début du premier match à ${earliestTime}
         var packName = packNames[packType] || 'Pack Score Master';
         document.getElementById('subscribe-pack-title').textContent = 'Souscrire au ' + packName;
         document.getElementById('subscribe-bot-link').href = `https://t.me/${SALES_BOT_USERNAME}?start=pack_${packType}`;
+
+        var waMsg = `Bonjour ! Je suis intéressé(e) par le pack "${packName}"${price ? ` (${fmtC(price)})` : ''}. Pouvez-vous m'aider à finaliser mon accès ?`;
+        document.getElementById('subscribe-whatsapp-link').href = `https://wa.me/${WHATSAPP_ADMIN_NUMBER}?text=${encodeURIComponent(waMsg)}`;
 
         var popup = document.getElementById('subscribe-popup');
         popup.style.display = 'flex';
