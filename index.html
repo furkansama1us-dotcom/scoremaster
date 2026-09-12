@@ -5595,8 +5595,8 @@ function renderAdminHistory() {
                 let hasDetected = !!c.detected_scores;
                 let verifyBtn = hasDetected
                     ? `<button onclick="openValidationScreen('${c.id}')" style="background:var(--green); color:#000; font-weight:bold;"><i class="fas fa-eye"></i> Vérifier le score final</button>`
-                    : `<button disabled style="background:rgba(255,255,255,.06); color:var(--text-gray); cursor:not-allowed;"><i class="fas fa-hourglass-half"></i> Score pas encore dispo</button>`;
-                let btns = `${verifyBtn}<button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(244,63,94,0.15); color:var(--red); border:1px solid rgba(244,63,94,0.4);"><i class="fas fa-satellite-dish"></i> Score API</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(244,63,94,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
+                    : `<button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(244,63,94,0.15); color:var(--red); border:1px solid rgba(244,63,94,0.4); font-weight:bold;"><i class="fas fa-satellite-dish"></i> Vérifier maintenant</button>`;
+                let btns = `${verifyBtn}<button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(244,63,94,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
                 let detectionBadge = hasDetected
                     ? '<span style="color:var(--green); font-weight:bold;"><i class="fas fa-check-circle"></i> Score final disponible !</span>'
                     : '<span style="color:#FF9800; font-weight:bold;"><i class="fas fa-hourglass-half"></i> Scores finaux pas encore disponibles</span>';
