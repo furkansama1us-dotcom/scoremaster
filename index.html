@@ -1875,6 +1875,22 @@ async function fetchApiScore(id, dateRaw) {
     </div>
 </div>
 
+<!-- OVERLAY LIVE — combiné flouté + scores en direct -->
+<div id="combo-live-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:9999;flex-direction:column;opacity:0;transition:opacity 0.3s;">
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:calc(16px + var(--safe-top)) 20px 16px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span style="width:8px;height:8px;background:var(--red);border-radius:50%;animation:pulse 1.2s infinite;"></span>
+            <span style="font-weight:900; font-size:16px; color:#fff;">EN DIRECT</span>
+        </div>
+        <i class="fas fa-times" onclick="closeComboLiveView()" style="color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
+    </div>
+    <div style="flex:1; overflow-y:auto; padding:0 20px 30px;">
+        <div id="combo-live-card-container"></div>
+        <div style="margin:20px 0 10px; font-size:13px; font-weight:800; color:var(--text-gray); text-transform:uppercase; letter-spacing:0.5px;">Scores en direct</div>
+        <div id="combo-live-scores-container"></div>
+    </div>
+</div>
+
 <!-- AUTRES POPUPS -->
 <div id="vip-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
     <div style="background:var(--bg-card);padding:40px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);">
@@ -5808,10 +5824,11 @@ ${instaMatches}⏰ Début du premier match à ${earliestTime}
         var displayMise = isHomeObscured ? '***,** €' : fmtC(c.mise || 0);
         var displayTotalOdds = isHomeObscured ? '***.**' : (c.total_odds || 0).toFixed(2);
 
-        let isLocked = false; let timeMessage = '';
+        let isLocked = false; let timeMessage = ''; let isLive = false;
         if (sc === 'en-cours' && c.date && c.time) {
             const matchDateTime = new Date(`${c.date}T${c.time}:00`);
             const lockoutDateTime = new Date(matchDateTime.getTime() - 15 * 60000);
+            isLive = new Date() >= matchDateTime;
             if (new Date() >= lockoutDateTime) {
                 isLocked = true;
                 timeMessage = `<div style="color: var(--red); font-size: 13px; font-weight: 800; margin: 12px 16px; text-align: center; background: rgba(244,63,94,0.1); padding: 10px; border-radius: 8px;"><i class="fas fa-lock"></i> Les paris sont fermés (Match imminent)</div>`;
@@ -5832,11 +5849,12 @@ ${instaMatches}⏰ Début du premier match à ${earliestTime}
         var aiConfidences = matchesToDisplay.filter(function (m) { return m.ai_confidence; }).map(function (m) { return m.ai_confidence; });
         var aiAvgConfidence = aiConfidences.length ? Math.round(aiConfidences.reduce(function (a, b) { return a + b; }, 0) / aiConfidences.length) : null;
         var aiTag = aiAvgConfidence ? `<span class="ai-confidence-tag"><i class="fas fa-microchip"></i> Fiabilité totale IA ${aiAvgConfidence}%</span>` : '';
+        var liveBadge = isLive ? `<span onclick="openComboLiveView()" style="display:inline-flex; align-items:center; gap:4px; background:rgba(244,63,94,0.15); color:var(--red); border:1px solid rgba(244,63,94,0.4); padding:3px 9px; border-radius:20px; font-size:10px; font-weight:800; cursor:pointer; margin-left:6px;"><span style="width:6px;height:6px;background:var(--red);border-radius:50%;animation:pulse 1.2s infinite;"></span> LIVE</span>` : '';
 
         return `
         <div class="combined-card" id="combined-card-${isHome ? 'home' : 'vip'}-${c.id}" style="width:100%;">
             <div class="combined-header">
-                <div class="combined-status"><span class="status-badge ${sc}">${sl[sc]}</span><span class="combined-label">Combiné</span>${aiTag}</div>
+                <div class="combined-status"><span class="status-badge ${sc}">${sl[sc]}</span><span class="combined-label">Combiné</span>${aiTag}${liveBadge}</div>
                 <i class="fas fa-ellipsis-h combined-more"></i>
             </div>
             <div class="combined-progress"><div class="combined-progress-fill" style="width:${pw};${pc}"></div></div>
@@ -5864,6 +5882,91 @@ ${instaMatches}⏰ Début du premier match à ${earliestTime}
         let btn = document.getElementById(btnId);
         if(btn) btn.style.display = 'none';
     }
+
+    // ============================================================
+    // COMBO LIVE — aperçu flouté + scores en direct des matchs du combiné
+    // ============================================================
+    function normalizeTeamName(s) { return (s || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
+
+    function findLiveMatchFor(teamsStr, apiMatches) {
+        if (!teamsStr) return null;
+        var parts = teamsStr.split(/\s+-\s+/);
+        if (parts.length < 2) return null;
+        var a = normalizeTeamName(parts[0]), b = normalizeTeamName(parts[1]);
+        return apiMatches.find(function (m) {
+            var h = normalizeTeamName(m.homeTeam && m.homeTeam.name);
+            var w = normalizeTeamName(m.awayTeam && m.awayTeam.name);
+            var matchAB = (h.includes(a) || a.includes(h)) && (w.includes(b) || b.includes(w));
+            var matchBA = (h.includes(b) || b.includes(h)) && (w.includes(a) || a.includes(w));
+            return matchAB || matchBA;
+        }) || null;
+    }
+
+    async function openComboLiveView() {
+        if (!currentCombined) return;
+        var overlay = document.getElementById('combo-live-overlay');
+        overlay.style.display = 'flex';
+        setTimeout(function () { overlay.style.opacity = '1'; }, 10);
+
+        var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
+        var cardContainer = document.getElementById('combo-live-card-container');
+        if (cardContainer) cardContainer.innerHTML = buildCC(currentCombined, currentCombined.status, sl, '50%', true);
+
+        await refreshComboLiveScores();
+        if (window.comboLiveInterval) clearInterval(window.comboLiveInterval);
+        window.comboLiveInterval = setInterval(refreshComboLiveScores, 30000);
+    }
+
+    function closeComboLiveView() {
+        var overlay = document.getElementById('combo-live-overlay');
+        overlay.style.opacity = '0';
+        setTimeout(function () { overlay.style.display = 'none'; }, 300);
+        if (window.comboLiveInterval) { clearInterval(window.comboLiveInterval); window.comboLiveInterval = null; }
+    }
+
+    async function refreshComboLiveScores() {
+        var container = document.getElementById('combo-live-scores-container');
+        if (!container || !currentCombined || !currentCombined.date) return;
+        try {
+            var dateStr = currentCombined.date;
+            var dTo = new Date(dateStr); dTo.setDate(dTo.getDate() + 1);
+            var dateToStr = dTo.toISOString().slice(0, 10);
+            var res = await fetch(`/api/football?type=matches&dateFrom=${dateStr}&dateTo=${dateToStr}`);
+            if (!res.ok) throw new Error('Erreur API');
+            var data = await res.json();
+            var apiMatches = (data.matches || []).filter(function (m) { return m.utcDate && m.utcDate.slice(0, 10) === dateStr; });
+
+            var html = (currentCombined.matches || []).map(function (m) {
+                var live = findLiveMatchFor(m.teams, apiMatches);
+                var statusLabel = 'À venir';
+                var statusColor = 'var(--text-gray)';
+                var scoreDisplay = '-';
+                if (live) {
+                    var bucket = matchsStatusBucket(live.status);
+                    if (bucket === 'live') { statusLabel = '🔴 EN DIRECT' + (live.minute ? ` ${live.minute}'` : ''); statusColor = 'var(--red)'; }
+                    else if (bucket === 'finished') { statusLabel = 'Terminé'; statusColor = 'var(--green)'; }
+                    else { statusLabel = live.status === 'TIMED' || live.status === 'SCHEDULED' ? 'À venir' : live.status; }
+                    if (live.score && live.score.fullTime && live.score.fullTime.home !== null) {
+                        scoreDisplay = `${live.score.fullTime.home} - ${live.score.fullTime.away}`;
+                    }
+                }
+                return `
+                <div class="order-history-card" style="margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:13px; font-weight:700; color:#fff;">${m.teams || 'Équipes'}</span>
+                        <span style="font-size:11px; font-weight:800; color:${statusColor};">${statusLabel}</span>
+                    </div>
+                    <div style="font-size:20px; font-weight:900; color:#fff; margin-top:6px;">${scoreDisplay}</div>
+                </div>`;
+            }).join('');
+
+            container.innerHTML = html || '<div class="no-combined-message" style="padding:20px;"><i class="fas fa-futbol"></i>Aucune info en direct pour le moment.</div>';
+        } catch (e) {
+            console.error('Erreur scores live combiné:', e);
+            container.innerHTML = '<div class="no-combined-message" style="padding:20px;"><i class="fas fa-triangle-exclamation"></i>Erreur de chargement des scores.</div>';
+        }
+    }
+
     function showToast(msg, err) {
         err = err || false;
         var t = document.getElementById('toast');
