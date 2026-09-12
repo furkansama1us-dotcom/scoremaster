@@ -20,7 +20,7 @@ const PACKS = {
     hebdo: { label: 'SM Combiné Hebdo', price: 69.99, emoji: '🔥' }
 };
 
-const PCS_PURCHASE_LINK = 'https://dundle.com/fr/pcs/?utm_campaign=13356255550&utm_term=recharge%20pcs&gad_source=1&gad_campaignid=13356255550&gbraid=0AAAAABrDgro6K6eu7DHyRaiQTeSqltedl&gclid=Cj0KCQjw8JPVBhD-ARIsAO691sH_b20MDv_4mObUah9LqYYPQIrL41bRpz3ucffFUL21qdNKqueLwAwaAn30EALw_wcB';
+const PCS_PURCHASE_LINK = 'https://dundle.com/fr/pcs/';
 
 async function sbFetch(path, options) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, Object.assign({}, options, {
