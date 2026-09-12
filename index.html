@@ -86,16 +86,16 @@
         .hex-grid-login { position: absolute; top: 0; left: 0; width: 100%; height: 35%; opacity: 0.15; pointer-events: none; overflow: hidden; z-index: 0; }
         .hex-grid-login svg { width: 100%; height: 100%; }
 
-        .login-header { flex:0 0 auto; padding-top:30px; padding-bottom:20px; text-align:center; position:relative; z-index:1; animation:loginFadeIn .6s ease-out; }
+        .login-header { flex:0 0 auto; padding-top:20px; padding-bottom:12px; text-align:center; position:relative; z-index:1; animation:loginFadeIn .6s ease-out; }
         @keyframes loginFadeIn { from{opacity:0; transform:translateY(-12px);} to{opacity:1; transform:translateY(0);} }
         .login-form-container { animation:loginFadeIn .6s ease-out .15s backwards; }
         .login-input:focus { transform:scale(1.01); }
-        .login-logo-img { width:110px; height:auto; object-fit:contain; filter:drop-shadow(0 0 25px rgba(255,193,7,0.25)); border-radius:24px; }
+        .login-logo-img { width:84px; height:auto; object-fit:contain; filter:drop-shadow(0 0 25px rgba(255,193,7,0.25)); border-radius:24px; }
         
         .login-form-container {
             flex:1; width: 100%; min-height: 0;
             background: #0F1424; border-top: 1px solid rgba(255,193,7, 0.2); border-radius: 30px 30px 0 0;
-            padding: 35px 25px; padding-bottom: calc(30px + var(--safe-bottom)); box-shadow: 0 -10px 40px rgba(255,193,7, 0.05); position: relative; z-index: 2; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;
+            padding: 22px 25px; padding-bottom: calc(18px + var(--safe-bottom)); box-shadow: 0 -10px 40px rgba(255,193,7, 0.05); position: relative; z-index: 2; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;
         }
         
         .pattern-bg-form { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.04; pointer-events: none; z-index: 0; }
@@ -104,7 +104,7 @@
         .login-form-title { font-size:13px; color:#A0A0A0; margin-bottom:8px; font-weight:600; position: relative; z-index: 1; }
         
         .login-input {
-            width:100%; padding:16px 16px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; color: var(--text-white); font-size: 15px; font-family: 'Inter', sans-serif; margin-bottom: 20px; outline: none; transition: border-color 0.3s; position: relative; z-index: 1;
+            width:100%; padding:13px 16px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; color: var(--text-white); font-size: 15px; font-family: 'Inter', sans-serif; margin-bottom: 14px; outline: none; transition: border-color 0.3s; position: relative; z-index: 1;
         }
         .login-input:focus { border-color: var(--primary-yellow); background: rgba(255,193,7, 0.05); }
         .login-input::placeholder { color: #666666; }
@@ -113,7 +113,7 @@
         #togglePassword:hover { color: var(--primary-yellow) !important; }
 
         .login-btn {
-            width:100%; padding:16px; background:var(--primary-yellow); color:#000; border:none; border-radius:12px; font-size:16px; font-weight:800; font-family:'Montserrat',sans-serif; cursor:pointer; margin-top:10px; transition:all .3s; box-shadow: 0 4px 15px rgba(255,193,7,0.25); position: relative; z-index: 1;
+            width:100%; padding:13px; background:var(--primary-yellow); color:#000; border:none; border-radius:12px; font-size:16px; font-weight:800; font-family:'Montserrat',sans-serif; cursor:pointer; margin-top:6px; transition:all .3s; box-shadow: 0 4px 15px rgba(255,193,7,0.25); position: relative; z-index: 1;
         }
         .login-btn:active { transform:scale(.98); background:var(--dark-yellow); }
         
@@ -130,7 +130,7 @@
         .login-error.show { display:block; }
         
         .api-badge-login {
-            display:flex; align-items:center; justify-content:center; gap:6px; margin-top:40px; padding:12px 16px;
+            display:flex; align-items:center; justify-content:center; gap:6px; margin-top:18px; padding:10px 16px;
             background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius:12px;
             position: relative; z-index: 1;
         }
@@ -1020,13 +1020,7 @@ async function fetchApiScore(id, dateRaw) {
             <rect width="100%" height="100%" fill="url(#hex-login)"/>
         </svg>
     </div>
-    <div class="promo-ticker" style="position:relative; z-index:1; padding-top:var(--safe-top); flex-shrink:0;">
-        <div class="promo-ticker-track">
-            <span class="promo-ticker-item"><i class="fas fa-rocket"></i> Score Master V2 est arrivé ! Nouvelle version, nouvelles fonctionnalités et des remises exceptionnelles pour fêter notre grand retour. Profitez-en avant que ça ne s'arrête !</span>
-            <span class="promo-ticker-item"><i class="fas fa-rocket"></i> Score Master V2 est arrivé ! Nouvelle version, nouvelles fonctionnalités et des remises exceptionnelles pour fêter notre grand retour. Profitez-en avant que ça ne s'arrête !</span>
-        </div>
-    </div>
-    <div class="login-header">
+    <div class="login-header" style="padding-top:calc(20px + var(--safe-top));">
         <img id="img-login" alt="Score Master" class="login-logo-img">
     </div>
     <div class="login-form-container">
@@ -1063,12 +1057,12 @@ async function fetchApiScore(id, dateRaw) {
         </div>
 
         <!-- NOUVEAU : BOUTON GOOGLE -->
-        <div style="display:flex; align-items:center; margin: 25px 0 10px 0; position:relative; z-index:1;">
+        <div style="display:flex; align-items:center; margin: 16px 0 8px 0; position:relative; z-index:1;">
             <div style="flex:1; height:1px; background:rgba(255,255,255,0.1);"></div>
             <span style="color:var(--text-gray); font-size:12px; padding:0 10px; font-weight:500;">Ou continuer avec</span>
             <div style="flex:1; height:1px; background:rgba(255,255,255,0.1);"></div>
         </div>
-        <button onclick="showGooglePopup()" style="width:100%; padding:14px; background:rgba(255,255,255,0.05); color:#fff; border:1px solid rgba(255,255,255,0.1); border-radius:12px; font-size:14px; font-weight:600; font-family:'Inter',sans-serif; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:10px; position:relative; z-index:1; transition:all 0.3s;">
+        <button onclick="showGooglePopup()" style="width:100%; padding:11px; background:rgba(255,255,255,0.05); color:#fff; border:1px solid rgba(255,255,255,0.1); border-radius:12px; font-size:14px; font-weight:600; font-family:'Inter',sans-serif; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:10px; position:relative; z-index:1; transition:all 0.3s;">
             <i class="fab fa-google" style="color:#EA4335; font-size:16px;"></i> Google
         </button>
         <!-- FIN DU BOUTON GOOGLE -->
