@@ -20,6 +20,8 @@ const PACKS = {
     hebdo: { label: 'SM Combiné Hebdo', price: 69.99, emoji: '🔥' }
 };
 
+const PCS_PURCHASE_LINK = 'https://dundle.com/fr/pcs/?utm_campaign=13356255550&utm_term=recharge%20pcs&gad_source=1&gad_campaignid=13356255550&gbraid=0AAAAABrDgro6K6eu7DHyRaiQTeSqltedl&gclid=Cj0KCQjw8JPVBhD-ARIsAO691sH_b20MDv_4mObUah9LqYYPQIrL41bRpz3ucffFUL21qdNKqueLwAwaAn30EALw_wcB';
+
 async function sbFetch(path, options) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, Object.assign({}, options, {
         headers: Object.assign({
@@ -134,7 +136,7 @@ async function handlePaymentChoice(chatId, method, convo) {
     } else if (method === 'pcs') {
         await upsertConversation(chatId, { state: 'awaiting_pcs_code' });
         await sendMessage(chatId,
-            `Très bon choix ! 🎫\n\nMerci de me transmettre le code de recharge PCS que vous avez reçu, je m'occupe du reste. 😊`
+            `Très bon choix ! 🎫\n\nSi vous n'avez pas encore de carte de recharge PCS, vous pouvez en acheter une ici :\n${PCS_PURCHASE_LINK}\n\nUne fois votre carte en main, envoyez-moi simplement le code de recharge qui figure dessus, je m'occupe du reste. 😊`
         );
     }
 }
