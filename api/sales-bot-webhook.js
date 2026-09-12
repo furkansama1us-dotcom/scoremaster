@@ -157,7 +157,7 @@ async function handleStart(chatId, from, startParam) {
         await sendMessage(chatId, hypeMessage(PACKS[preselectedPack]), joinKeyboard());
     } else {
         await sendMessage(chatId,
-            `Bonjour et bienvenue chez <b>Score Master</b> ! 👋😊\n\nRavi de vous accueillir. Quel pack vous intéresse aujourd'hui ?`,
+            `Bonjour, ici Master Gon ! 👋😊 Et bienvenue chez <b>Score Master</b> !\n\nRavi de vous accueillir. Quel pack vous intéresse aujourd'hui ?`,
             packKeyboard()
         );
     }
