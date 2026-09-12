@@ -120,12 +120,13 @@ ${matchInfo ? `Combiné en cours (noms d'équipes uniquement, PAS de score) : ${
 Ne répète pas ces accroches/légendes déjà utilisées récemment :
 ${recentHistory.length ? recentHistory.map(h => `- ${h.slice(0, 120)}`).join('\n') : '(aucun historique)'}
 
-${forcedScene ? `STYLE VISUEL OBLIGATOIRE pour "image_prompt" : illustration digitale stylisée, contours sombres marqués, ink wash haute-contraste, style bande dessinée premium (PAS de photo réaliste, PAS de maquette d'écran/interface détaillée — les générateurs d'image rendent très mal le texte dense). Reprends cette scène en l'enrichissant de détails de composition/lumière, avec le monogramme "SM" + couronne dorée intégré discrètement dans le décor (jamais plus de 2-3 caractères visibles) :\n${forcedScene}` : `STYLE VISUEL OBLIGATOIRE pour "image_prompt" :
-- Illustration digitale stylisée, contours sombres marqués, ink wash haute-contraste, style bande dessinée premium (PAS de photo réaliste, PAS de maquette d'écran/interface détaillée — les générateurs d'image rendent très mal le texte dense ou les faux écrans d'app : ça donne un résultat illisible).
-- Une scène/personnage/objet simple et élégant (silhouette, montre, carte VIP, train, stade...) sur lequel apparaît discrètement le monogramme "SM" surmonté d'une couronne dorée — jamais plus de 2-3 caractères ou un mot très court à ce niveau.
+${forcedScene ? `STYLE VISUEL OBLIGATOIRE pour "image_prompt" : illustration digitale stylisée, contours sombres marqués, ink wash haute-contraste, style bande dessinée premium (PAS de photo réaliste, PAS de maquette d'écran/interface détaillée — les générateurs d'image rendent très mal le texte dense). INTERDIT : aucun téléphone/smartphone/iPhone, aucun écran, aucune tablette dans l'image. Reprends cette scène en l'enrichissant de détails de composition/lumière, avec le monogramme "SM" + couronne dorée intégré discrètement dans le décor (jamais plus de 2-3 caractères visibles) :\n${forcedScene}` : `STYLE VISUEL OBLIGATOIRE pour "image_prompt" :
+- Illustration digitale stylisée, contours sombres marqués, ink wash haute-contraste, style bande dessinée premium (PAS de photo réaliste, PAS de maquette d'écran/interface détaillée — les générateurs d'image rendent très mal le texte dense ou les faux écrans : ça donne un résultat illisible).
+- INTERDIT : aucun téléphone/smartphone/iPhone, aucun écran, aucune tablette, aucune interface d'app visible dans l'image, sous aucun prétexte.
+- Une scène/personnage/objet simple et élégant SANS écran (silhouette, montre, carte VIP, train, stade, porte, sablier...) sur lequel apparaît discrètement le monogramme "SM" surmonté d'une couronne dorée — jamais plus de 2-3 caractères ou un mot très court à ce niveau.
 - Si un texte principal doit apparaître sur l'affiche, UN SEUL élément, TRÈS COURT (2-4 mots maximum), à donner EXACTEMENT entre guillemets dans le prompt (ex: "SM VICTOIRE").
 - Palette bleu marine/noir profond avec touches dorées et néons discrets selon l'ambiance.
-- Qualité : rendu net et cohérent, jamais de texte long ni de fausse interface d'application à faire apparaître dans l'image.
+- Qualité : rendu net et cohérent, jamais de texte long ni d'écran/interface à faire apparaître dans l'image.
 
 Ton par type (caption ET ambiance de l'illustration) :
 - Promo Web App : lumineux, accueillant, évoque l'application mobile

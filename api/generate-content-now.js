@@ -75,6 +75,8 @@ async function draftWithClaude(type, recentHistory, combine) {
 
     const prompt = `Tu écris pour "Score Master" (SM), un service français de pronostics sportifs premium (packs payants + espace VIP+). Identité visuelle : bleu marine/noir profond + doré premium, couronne dorée, monogramme "SM". Jamais de vrais blasons de club (générique/stylisé), jamais de visage de personne réelle/célébrité.
 
+INTERDIT : n'invente JAMAIS de chiffre précis sur le nombre de membres/abonnés/pronostiqueurs/clients (ex: "47 000 pronostiqueurs", "+50k membres") — c'est faux et mensonger, on n'a pas cette audience. Pas de statistique chiffrée non vérifiable du tout. Reste sur la qualité de l'analyse, l'exclusivité, l'expertise.
+
 Type de contenu à produire aujourd'hui : "${type.label}".
 ${matchInfo ? `Combiné en cours (noms d'équipes uniquement, PAS de score) : ${matchInfo}` : "Aucun combiné en cours actuellement — reste générique (marque/app), sans référence à un match précis."}
 
@@ -82,11 +84,12 @@ Ne répète pas ces accroches/légendes déjà utilisées récemment :
 ${recentHistory.length ? recentHistory.map(h => `- ${h.slice(0, 120)}`).join('\n') : '(aucun historique)'}
 
 STYLE VISUEL OBLIGATOIRE pour "image_prompt" :
-- Illustration digitale stylisée, contours sombres marqués, ink wash haute-contraste, style bande dessinée premium (PAS de photo réaliste, PAS de maquette d'écran/interface détaillée — les générateurs d'image rendent très mal le texte dense ou les faux écrans d'app : ça donne un résultat illisible).
-- Une scène/personnage/objet simple et élégant (silhouette, montre, carte VIP, train, stade...) sur lequel apparaît discrètement le monogramme "SM" surmonté d'une couronne dorée — jamais plus de 2-3 caractères ou un mot très court à ce niveau.
+- Illustration digitale stylisée, contours sombres marqués, ink wash haute-contraste, style bande dessinée premium (PAS de photo réaliste, PAS de maquette d'écran/interface détaillée — les générateurs d'image rendent très mal le texte dense ou les faux écrans : ça donne un résultat illisible).
+- INTERDIT : aucun téléphone/smartphone/iPhone, aucun écran, aucune tablette, aucune interface d'app visible dans l'image, sous aucun prétexte.
+- Une scène/personnage/objet simple et élégant SANS écran (silhouette, montre, carte VIP, train, stade, porte, sablier...) sur lequel apparaît discrètement le monogramme "SM" surmonté d'une couronne dorée — jamais plus de 2-3 caractères ou un mot très court à ce niveau.
 - Si un texte principal doit apparaître sur l'affiche, UN SEUL élément, TRÈS COURT (2-4 mots maximum), à donner EXACTEMENT entre guillemets dans le prompt (ex: "SM VICTOIRE").
 - Palette bleu marine/noir profond avec touches dorées et néons discrets selon l'ambiance.
-- Qualité : rendu net et cohérent, jamais de texte long ni de fausse interface d'application à faire apparaître dans l'image.
+- Qualité : rendu net et cohérent, jamais de texte long ni d'écran/interface à faire apparaître dans l'image.
 
 Ton par type (caption ET ambiance de l'illustration) :
 - Promo Web App : lumineux, accueillant, évoque l'application mobile

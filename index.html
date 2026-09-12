@@ -5234,18 +5234,18 @@ function sendInstaPrompt(id) {
         });
     }
 
-    let aiPrompt = `A clean, professional mobile app marketing graphic, vertical 9:16 ratio, in the style of a modern sports-prediction app promo (App Store screenshot style, NOT a photorealistic stadium scene).
+    let aiPrompt = `A high-end stylized digital illustration, dark bold outlines, high-contrast ink wash, premium comic book art style, vertical 9:16 ratio. NO phone, NO screen, NO app interface anywhere in the image.
 
-Background: Deep navy-blue to black gradient with subtle gold accents, minimal geometric shapes, no crowd/stadium photo.
+Background: Spectacular low-angle view of a wet, reflective football pitch in a stadium at night, dramatic floodlights, golden confetti falling, illustrated (not photorealistic).
 
-Top: Bold minimal headline text, exact string: "Predicted. Nailed it." in white/gold, clean modern sans-serif typography.
+Top Center: A stylized gold crown resting above the monogram "SM", both rendered as clean illustrated line art. Below it, the exact short text "VICTOIRE" in bold gold lettering.
 
-Center: A realistic phone mockup showing the app's UI — a match result card with a green checkmark icon, the label "AI PREDICTION" in a small gold badge, and the exact score(s) clearly displayed:
+Center: The exact score(s) displayed as a clean illustrated scoreboard graphic:
 ${detailsMatchs}
 
-Bottom: A small gold crown "SM" monogram logo above the exact text "@scoremaster.fr", plus a subtle "✓ Verified by AI" badge.
+Bottom: The exact text "@scoremaster.fr" in clean white lettering.
 
-Style: Ultra-clean UI/UX marketing design, sharp typography, no more than 3 short text elements total, high-end fintech/app aesthetic, --ar 9:16`;
+Style: Photorealistic illustration, 8k, cinematic lighting, high contrast, gold and silver color palette, no more than 3 short text elements total, --ar 9:16`;
 
     // Uniquement le prompt formaté dans un bloc de code Telegram pour un tap-to-copy rapide
     let telegramText = `\`\`\`\n${aiPrompt}\n\`\`\``;
@@ -5285,7 +5285,7 @@ function sendPromoPrompt(id) {
 
     // PROMPT ULTRA OPTIMISÉ
     let aiPrompt = `
-Graphisme marketing d'application mobile professionnel et épuré, PAS une scène de stade photoréaliste (référence de style : les visuels Instagram de @sport.meridian).
+Illustration digitale stylisée premium (contours sombres, ink wash), PAS une photo réaliste, PAS de téléphone/écran/interface visible dans l'image.
 
 TEXTE PRINCIPAL (OBLIGATOIRE, COURT ET EXACT) :
 - "Combiné disponible." (typographie bold blanche/dorée, une seule ligne)
@@ -5295,12 +5295,12 @@ ARRIÈRE-PLAN :
 - Aucune photo de stade, foule ou scène narrative — uniquement du design graphique propre
 
 ZONE CENTRALE :
-- Une maquette de téléphone (mockup) réaliste montrant l'écran de l'app avec une carte de prédiction IA
+- Illustration digitale stylisée (contours sombres, ink wash), AUCUN téléphone/écran/interface visible
 - Afficher clairement les matchs suivants (texte net, lisible, pas de superposition) :
 ${detailsMatchs}
 
 STYLE VISUEL :
-- Design d'interface app premium, propre et net (type page marketing App Store)
+- Illustration premium, propre et nette, pas de photo réaliste
 - Typographie minimaliste, parfaitement lisible
 - Composition centrée et équilibrée
 - Maximum 3 éléments de texte au total sur l'affiche
@@ -5538,18 +5538,18 @@ function sendInstaPrompt(id) {
     }
 
     // On fusionne ton style "Premium" avec les données du match et ton branding
-    let aiPrompt = `A clean, professional mobile app marketing graphic, vertical 9:16 ratio, in the style of a modern sports-prediction app promo (App Store screenshot style, NOT a photorealistic stadium scene).
+    let aiPrompt = `A high-end stylized digital illustration, dark bold outlines, high-contrast ink wash, premium comic book art style, vertical 9:16 ratio. NO phone, NO screen, NO app interface anywhere in the image.
 
-Background: Deep navy-blue to black gradient with subtle gold accents, minimal geometric shapes, no crowd/stadium photo.
+Background: Spectacular low-angle view of a wet, reflective football pitch in a stadium at night, dramatic floodlights, golden confetti falling, illustrated (not photorealistic).
 
-Top: Bold minimal headline text, exact string: "Predicted. Nailed it." in white/gold, clean modern sans-serif typography.
+Top Center: A stylized gold crown resting above the monogram "SM", both rendered as clean illustrated line art. Below it, the exact short text "VICTOIRE" in bold gold lettering.
 
-Center: A realistic phone mockup showing the app's UI — a match result card with a green checkmark icon, the label "AI PREDICTION" in a small gold badge, and the exact score(s) clearly displayed:
+Center: The exact score(s) displayed as a clean illustrated scoreboard graphic:
 ${detailsMatchs}
 
-Bottom: A small gold crown "SM" monogram logo above the exact text "@scoremaster.fr", plus a subtle "✓ Verified by AI" badge.
+Bottom: The exact text "@scoremaster.fr" in clean white lettering.
 
-Style: Ultra-clean UI/UX marketing design, sharp typography, no more than 3 short text elements total, high-end fintech/app aesthetic, --ar 9:16`;
+Style: Photorealistic illustration, 8k, cinematic lighting, high contrast, gold and silver color palette, no more than 3 short text elements total, --ar 9:16`;
 
     let telegramText = `🎨 *TON PROMPT IA PRÊT À L'EMPLOI* 🎨
 
@@ -5588,7 +5588,7 @@ ${aiPrompt}
 
     // PROMPT ULTRA OPTIMISÉ
     let aiPrompt = `
-Graphisme marketing d'application mobile professionnel et épuré, PAS une scène de stade photoréaliste (référence de style : les visuels Instagram de @sport.meridian).
+Illustration digitale stylisée premium (contours sombres, ink wash), PAS une photo réaliste, PAS de téléphone/écran/interface visible dans l'image.
 
 TEXTE PRINCIPAL (OBLIGATOIRE, COURT ET EXACT) :
 - "Combiné disponible." (typographie bold blanche/dorée, une seule ligne)
@@ -5598,12 +5598,12 @@ ARRIÈRE-PLAN :
 - Aucune photo de stade, foule ou scène narrative — uniquement du design graphique propre
 
 ZONE CENTRALE :
-- Une maquette de téléphone (mockup) réaliste montrant l'écran de l'app avec une carte de prédiction IA
+- Illustration digitale stylisée (contours sombres, ink wash), AUCUN téléphone/écran/interface visible
 - Afficher clairement les matchs suivants (texte net, lisible, pas de superposition) :
 ${detailsMatchs}
 
 STYLE VISUEL :
-- Design d'interface app premium, propre et net (type page marketing App Store)
+- Illustration premium, propre et nette, pas de photo réaliste
 - Typographie minimaliste, parfaitement lisible
 - Composition centrée et équilibrée
 - Maximum 3 éléments de texte au total sur l'affiche
@@ -6142,14 +6142,14 @@ function renderPromoTelegramContent() {
         // On récupère tes 20 textes (j'ai condensé le tableau pour la longueur, ce sont exactement les mêmes)
         const styleHeader = "Detailed stylized digital illustration drawing with bold dark outlines, high-contrast ink wash and textured watercolor coloring, comic book art style.";
         var viralPromoContent = [
-            { label: "🏆 Story 1 — Flex : L'argent intelligent", color: "#8b5cf6", type: "flex", txt: "L'argent intelligent se place avant la masse 💸\n\nPendant que 95% des parieurs perdent en misant sur leurs émotions, notre cercle VIP+ encaisse grâce aux mathématiques.\n\nLes données ont déjà rendu leur verdict pour ce soir.\nRejoins l'élite 👑 👇\n👉 Lien en bio.", prompt: `ENGLISH PROMPT: ${styleHeader} A sharp-dressed, confident young man with dark curly hair smiles subtly in a stylized modern penthouse, looking at a glowing holographic sports data dashboard floating above his smartphone. A subtle luxury logo featuring the letters "SM" topped with a golden crown is engraved on his phone case. High contrast. --ar 1:1 --style raw --v 6` },
-            { label: "🏆 Story 2 — Flex : Vert sur vert", color: "#8b5cf6", type: "flex", txt: "📈 Vert sur vert.\n\nEncore une soirée où l'algorithme a fait le travail à notre place. L'historique ne ment pas.\n\nLe combiné data du jour est en ligne.\nNe reste pas sur le quai 🚂 👇\n👉 Accès au VIP+ en bio.", prompt: `ENGLISH PROMPT: ${styleHeader} A group of diverse friends in a high-end sports bar cheering enthusiastically, holding up a smartphone showing abstract glowing green ascending chart lines. A neon sign in the background wall displays the letters "SM" under a bright golden crown. Joy and celebration. --ar 1:1 --style raw --v 6` },
+            { label: "🏆 Story 1 — Flex : L'argent intelligent", color: "#8b5cf6", type: "flex", txt: "L'argent intelligent se place avant la masse 💸\n\nPendant que 95% des parieurs perdent en misant sur leurs émotions, notre cercle VIP+ encaisse grâce aux mathématiques.\n\nLes données ont déjà rendu leur verdict pour ce soir.\nRejoins l'élite 👑 👇\n👉 Lien en bio.", prompt: `ENGLISH PROMPT: ${styleHeader} A sharp-dressed, confident young man with dark curly hair smiles subtly in a stylized modern penthouse, a glowing holographic sports data dashboard floating in the air beside him. A subtle luxury logo featuring the letters "SM" topped with a golden crown is engraved on his cufflink. High contrast. --ar 1:1 --style raw --v 6` },
+            { label: "🏆 Story 2 — Flex : Vert sur vert", color: "#8b5cf6", type: "flex", txt: "📈 Vert sur vert.\n\nEncore une soirée où l'algorithme a fait le travail à notre place. L'historique ne ment pas.\n\nLe combiné data du jour est en ligne.\nNe reste pas sur le quai 🚂 👇\n👉 Accès au VIP+ en bio.", prompt: `ENGLISH PROMPT: ${styleHeader} A group of diverse friends in a high-end sports bar cheering enthusiastically, abstract glowing green ascending chart lines floating in the air above the table. A neon sign in the background wall displays the letters "SM" under a bright golden crown. Joy and celebration. --ar 1:1 --style raw --v 6` },
             { label: "🏆 Story 3 — Flex : La valeur de l'information", color: "#8b5cf6", type: "flex", txt: "💎 L'information a un prix. L'ignorance coûte plus cher.\n\nNos membres ont accès aux scores exacts générés par la plus grande base de données sportives.\n\nCe soir, l'opportunité est massive.\n👉 Rejoins le cercle maintenant.", prompt: `ENGLISH PROMPT: ${styleHeader} A close-up portrait of a sophisticated person in a dimly lit, exclusive VIP lounge, smiling knowingly while holding a sleek, glowing black VIP card. The card features a prominent golden crown logo directly above the letters "SM". Luxurious atmosphere, bold inking. --ar 1:1 --style raw --v 6` },
             { label: "🏆 Story 4 — Flex : Le hasard est mort", color: "#8b5cf6", type: "flex", txt: "Le hasard n'a pas sa place ici 🧬\n\nLe ticket du soir est une masterclass algorithmique. Tout est millimétré, rien n'est laissé à la chance.\n\n👉 Accède au combiné sécurisé via le lien en bio.", prompt: `ENGLISH PROMPT: ${styleHeader} An intelligent-looking man with curly hair in a modern dark office, surrounded by stylized floating holographic sports statistics. A stylish leather notebook on his desk is embossed with the letters "SM" and a golden crown. Inked contours, focused expression. --ar 1:1 --style raw --v 6` },
             { label: "🔬 Story 5 — Data : 0% Émotion", color: "#0ea5e9", type: "data", txt: "Data. 0% Émotion. 🧠\n\nNotre algorithme a analysé plus de 50 000 données historiques pour l'affiche d'aujourd'hui. Les scores exacts sont verrouillés 🏛️\n\nInvestis intelligemment avec les meilleurs outils data 👇\n👉 Lien en bio", prompt: `ENGLISH PROMPT: ${styleHeader} A focused data scientist with dark curly hair in a dark, high-tech control room, analyzing complex football statistics on transparent screens. The main screen prominently displays a glowing logo of the letters "SM" topped with a golden crown. Cool cyan lighting. --ar 1:1 --style raw --v 6` },
-            { label: "🔬 Story 6 — Data : Feeling vs Data", color: "#0ea5e9", type: "data", txt: "📊 Si tu paries au feeling, tu as déjà perdu.\n\nL'algorithme vient de détecter une anomalie massive sur les cotes de ce soir. La faille est exploitée, le ticket est prêt.\n\n👉 Récupère l'analyse complète dans le VIP+.", prompt: `ENGLISH PROMPT: ${styleHeader} Split screen digital illustration. Left side: a stressed person holding a losing betting ticket. Right side: a calm, confident person smiling at an advanced glowing AI sports dashboard on a tablet. The tablet's interface features a sleek "SM" logo with a golden crown. --ar 1:1 --style raw --v 6` },
+            { label: "🔬 Story 6 — Data : Feeling vs Data", color: "#0ea5e9", type: "data", txt: "📊 Si tu paries au feeling, tu as déjà perdu.\n\nL'algorithme vient de détecter une anomalie massive sur les cotes de ce soir. La faille est exploitée, le ticket est prêt.\n\n👉 Récupère l'analyse complète dans le VIP+.", prompt: `ENGLISH PROMPT: ${styleHeader} Split screen digital illustration. Left side: a stressed person holding a crumpled losing betting ticket. Right side: a calm, confident person smiling while holding a clean golden ticket embossed with a sleek "SM" logo and a golden crown. --ar 1:1 --style raw --v 6` },
             { label: "🔬 Story 7 — Data : Analyse au microscope", color: "#0ea5e9", type: "data", txt: "🔬 Analyse au microscope terminée.\n\nChaque blessure, chaque statistique, chaque historique a été digéré par notre IA. Le verdict est sans appel.\n\nLe ticket est validé.\n👉 Dispo dans l'espace membre.", prompt: `ENGLISH PROMPT: ${styleHeader} A macro close-up of a human eye with inked details reflecting glowing neon sports data and complex algorithms. Inside the pupil reflection, a tiny glowing golden crown above the letters "SM" is visible. Highly detailed analytical vibe. --ar 1:1 --style raw --v 6` },
-            { label: "🔬 Story 8 — Data : L'IA ne dort jamais", color: "#0ea5e9", type: "data", txt: "🤖 L'IA ne dort jamais.\n\nPendant que les bookmakers ajustent leurs lignes, notre système a déjà trouvé la value du jour.\n\nUn combiné en béton armé t'attend.\n👉 Clique sur le lien en bio.", prompt: `ENGLISH PROMPT: ${styleHeader} An over-the-shoulder shot of a person using a modern smartphone resting on a dark desk, projecting a glowing AI hologram of a football stadium. A luxury metallic pen holder on the desk features the engraved letters "SM" and a golden crown. High contrast ink wash. --ar 1:1 --style raw --v 6` },
+            { label: "🔬 Story 8 — Data : L'IA ne dort jamais", color: "#0ea5e9", type: "data", txt: "🤖 L'IA ne dort jamais.\n\nPendant que les bookmakers ajustent leurs lignes, notre système a déjà trouvé la value du jour.\n\nUn combiné en béton armé t'attend.\n👉 Clique sur le lien en bio.", prompt: `ENGLISH PROMPT: ${styleHeader} An over-the-shoulder shot of a person seated at a dark desk, a glowing AI hologram of a football stadium projected above the desk. A luxury metallic pen holder on the desk features the engraved letters "SM" and a golden crown. High contrast ink wash. --ar 1:1 --style raw --v 6` },
             { label: "⏳ Story 9 — Urgence : Tic-Tac", color: "#f97316", type: "fomo", txt: "⏳ Tic-tac. L'occasion ne se présente qu'une fois.\n\nFermeture imminente des accès VIP+ pour l'analyse du soir ! Le ticket est déjà entre les mains des membres 🎟️\n\n👉 Accède à l'espace avant qu'il ne soit trop tard.", prompt: `ENGLISH PROMPT: ${styleHeader} A close-up shot of a person's hand nervously checking a stylized luxury wristwatch in a dark, moody environment. The watch dial explicitly features the letters "SM" under a tiny, elegant golden crown. Tension, sketched contours, high contrast orange glow. --ar 1:1 --style raw --v 6` },
             { label: "⏳ Story 10 — Urgence : Plus que 30 min", color: "#f97316", type: "fomo", txt: "🚨 ALERTE : Le coup d'envoi approche !\n\nLes cotes risquent de s'effondrer d'une minute à l'autre. Le score exact a été publié.\n\n👉 Ne sois pas celui qui regarde les autres encaisser demain matin.", prompt: `ENGLISH PROMPT: ${styleHeader} A dynamic illustrative close-up of a person's hand pressing a glowing red "VALIDATE" button on a futuristic sports betting app interface. The top header of the app displays a sleek golden crown over the letters "SM". Dynamic outlines, neon red glow. --ar 1:1 --style raw --v 6` },
             { label: "⏳ Story 11 — Urgence : Les portes se ferment", color: "#f97316", type: "fomo", txt: "🚪 Les portes se ferment.\n\nNous limitons l'accès au VIP+ pour protéger les cotes de nos analyses. Le ticket du soir est exclusif.\n\n👉 Dernière chance d'entrer avant le match.", prompt: `ENGLISH PROMPT: ${styleHeader} A shot from behind a person walking urgently towards a massive, glowing illustrative VIP door that is slowly closing. The heavy metal door is decorated with a large golden crown and the initials "SM". Bright spilled golden light, exclusive atmosphere. --ar 1:1 --style raw --v 6` },
@@ -7268,18 +7268,18 @@ function sendInstaPrompt(id) {
         });
     }
 
-    let aiPrompt = `A clean, professional mobile app marketing graphic, vertical 9:16 ratio, in the style of a modern sports-prediction app promo (App Store screenshot style, NOT a photorealistic stadium scene).
+    let aiPrompt = `A high-end stylized digital illustration, dark bold outlines, high-contrast ink wash, premium comic book art style, vertical 9:16 ratio. NO phone, NO screen, NO app interface anywhere in the image.
 
-Background: Deep navy-blue to black gradient with subtle gold accents, minimal geometric shapes, no crowd/stadium photo.
+Background: Spectacular low-angle view of a wet, reflective football pitch in a stadium at night, dramatic floodlights, golden confetti falling, illustrated (not photorealistic).
 
-Top: Bold minimal headline text, exact string: "Predicted. Nailed it." in white/gold, clean modern sans-serif typography.
+Top Center: A stylized gold crown resting above the monogram "SM", both rendered as clean illustrated line art. Below it, the exact short text "VICTOIRE" in bold gold lettering.
 
-Center: A realistic phone mockup showing the app's UI — a match result card with a green checkmark icon, the label "AI PREDICTION" in a small gold badge, and the exact score(s) clearly displayed:
+Center: The exact score(s) displayed as a clean illustrated scoreboard graphic:
 ${detailsMatchs}
 
-Bottom: A small gold crown "SM" monogram logo above the exact text "@scoremaster.fr", plus a subtle "✓ Verified by AI" badge.
+Bottom: The exact text "@scoremaster.fr" in clean white lettering.
 
-Style: Ultra-clean UI/UX marketing design, sharp typography, no more than 3 short text elements total, high-end fintech/app aesthetic, --ar 9:16`;
+Style: Photorealistic illustration, 8k, cinematic lighting, high contrast, gold and silver color palette, no more than 3 short text elements total, --ar 9:16`;
 
     // Uniquement le prompt formaté dans un bloc de code Telegram pour un tap-to-copy rapide
     let telegramText = `\`\`\`\n${aiPrompt}\n\`\`\``;
