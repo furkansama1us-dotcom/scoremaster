@@ -1816,6 +1816,15 @@ async function fetchApiScore(id, dateRaw) {
         Messages de reprise après une longue pause, pour annoncer le retour à la communauté.
     </div>
 </div>
+            <div class="admin-card" style="padding:15px; border-left:4px solid #f97316; margin-bottom:10px; cursor:pointer; transition:all 0.2s;" onclick="openTeaserGenerator()">
+    <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff; display:flex; justify-content:space-between; align-items:center;">
+        <span><i class="fas fa-hourglass-half" style="color:#f97316; margin-right:5px;"></i> Teaser Prochain Combiné</span>
+        <i class="fas fa-chevron-right" style="color:var(--text-gray); font-size:12px;"></i>
+    </div>
+    <div style="font-size:12px; color:var(--text-gray);">
+        Messages pour faire patienter avant la publication du prochain combiné.
+    </div>
+</div>
             <div class="admin-card" style="padding:15px; border-left:4px solid #ec4899; margin-bottom:10px; cursor:pointer; transition:all 0.2s;" onclick="sendReferralReminder()">
     <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff; display:flex; justify-content:space-between; align-items:center;">
         <span><i class="fas fa-user-plus" style="color:#ec4899; margin-right:5px;"></i> Rappel Parrainage</span>
@@ -2425,6 +2434,119 @@ function publishComebackText(i) {
     if (confirm('Publier ce message de retour sur le groupe Telegram ?')) {
         sendGroupTelegram(text).then(function () {
             showToast('Message de retour publié sur le groupe ! 🔙');
+        }).catch(function () {
+            showToast('Erreur lors de la publication sur Telegram.', true);
+        });
+    }
+}
+
+function openTeaserGenerator() {
+    var overlay = document.getElementById('teaser-overlay');
+    if (overlay) {
+        overlay.style.display = 'flex';
+        setTimeout(() => overlay.style.opacity = "1", 10);
+        renderTeaserContent();
+    }
+}
+
+function closeTeaserGenerator() {
+    var overlay = document.getElementById('teaser-overlay');
+    if (overlay) {
+        overlay.style.opacity = "0";
+        setTimeout(() => overlay.style.display = 'none', 300);
+    }
+}
+
+function renderTeaserContent() {
+    var container = document.getElementById('teaser-content');
+    if (!container) return;
+
+    var signature = "\n\n🌐 Site Web : https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel";
+
+    // Pas de markdown (#, **) : Postiz ne l'interprète pas pour Telegram, ça
+    // s'affiche littéralement — l'emphase passe par les MAJUSCULES et les emojis déjà en place.
+    var messages = [
+        `👀 L'ÉQUIPE, ÇA SE PRÉPARE…\n\nLe prochain combiné est en cours de préparation. 🎯\n\nOn peaufine les derniers détails pour vous proposer une sélection travaillée et sérieuse.\n\n🔥 Encore un peu de patience…\n\nRestez bien connectés, ça arrive très bientôt. 🚀` + signature,
+
+        `🚨 LE PROCHAIN COMBINÉ APPROCHE !\n\nL'analyse est en cours et les derniers choix sont en train d'être finalisés. 🎯\n\n👀 Ne vous éloignez pas trop…\n\nLa publication arrive très bientôt. 🔥\n\n📲 Restez connectés à Score Master.` + signature,
+
+        `⚡ ÇA CHAUFFE CHEZ SCORE MASTER !\n\nLe prochain combiné prend forme. 🔥\n\n📊 Les matchs sont étudiés.\n🎯 Les choix sont affinés.\n💪 Les derniers détails sont en préparation.\n\nEncore un peu de patience…\n\nOn arrive très vite. 👀` + signature,
+
+        `🎯 DERNIERS RÉGLAGES EN COURS…\n\nLe prochain combiné est presque prêt. 👀\n\nOn prend le temps d'analyser les rencontres et de finaliser les derniers choix.\n\n🔥 Pas question de bâcler le travail.\n\nRestez connectés, la suite arrive très bientôt. 🚀` + signature,
+
+        `👊 L'ÉQUIPE, ON PRÉPARE LA SUITE !\n\nLe prochain combiné est actuellement en préparation. 🎯\n\n📊 Analyse en cours.\n🔥 Sélection en cours.\n🚀 Publication bientôt.\n\nEncore un peu de patience…\n\nGardez les notifications activées. 👀` + signature,
+
+        `🧨 LE PROCHAIN COMBINÉ SE PRÉPARE !\n\nL'équipe est au travail pour finaliser la sélection. 🎯\n\nOn analyse, on compare, on affine.\n\n💪 Chaque détail compte.\n\nLa publication arrive très bientôt.\n\n🔥 Restez à l'affût !` + signature,
+
+        `👀 VOUS ÊTES PRÊTS, L'ÉQUIPE ?\n\nLe prochain combiné est presque terminé. 🔥\n\nLes derniers choix sont en cours de finalisation. 🎯\n\n⏳ Encore un peu de patience…\n\n🚨 Ne ratez surtout pas la publication !` + signature,
+
+        `🏆 PROCHAIN OBJECTIF : EN PRÉPARATION.\n\nLe prochain combiné est actuellement entre les mains de l'équipe. 🎯\n\n📊 Analyse sérieuse.\n💪 Travail minutieux.\n🔥 Motivation maximale.\n\nOn finalise tout ça et on revient vers vous très rapidement.\n\nRestez connectés. 🚀` + signature,
+
+        `🚀 LE PROCHAIN COMBINÉ ARRIVE !\n\nIl est presque prêt. 👀\n\nL'équipe termine les analyses et affine les derniers choix.\n\n🎯 Encore quelques ajustements avant de vous le dévoiler.\n\nSoyez attentifs…\n\nÇa ne devrait plus tarder. 🔥` + signature,
+
+        `🔥 PENDANT QUE VOUS ATTENDEZ… NOUS ANALYSONS.\n\nLe prochain combiné est en préparation. 📊\n\nChaque rencontre est étudiée avec attention avant de finaliser la sélection. 🎯\n\n⏳ Encore un peu de patience.\n\nLe prochain rendez-vous Score Master arrive bientôt. 👊` + signature,
+
+        `📢 PETIT RAPPEL POUR L'ÉQUIPE !\n\nLe prochain combiné est actuellement en préparation. 🎯\n\n🔥 Les analyses avancent.\n📊 Les choix se précisent.\n👀 La publication approche.\n\nAlors restez bien connectés…\n\nVous ne voudrez pas passer à côté. 🚀` + signature,
+
+        `💥 ON Y EST PRESQUE !\n\nLe prochain combiné est quasiment prêt. 🎯\n\nL'équipe effectue les derniers ajustements avant de vous le présenter.\n\n💪 On préfère prendre quelques minutes de plus et faire les choses sérieusement.\n\n🔥 Encore un peu de patience, l'équipe.\n\nÇa arrive.` + signature,
+
+        `⚡ ALERTE : PROCHAIN COMBINÉ EN APPROCHE !\n\n👀 La sélection est en cours de finalisation.\n\n📊 Les matchs sont étudiés.\n🎯 Les choix sont affinés.\n🔥 La publication se rapproche.\n\nRestez attentifs…\n\nÇa arrive très bientôt. 🚨` + signature,
+
+        `🤝 L'ÉQUIPE, ON COMPTE SUR VOUS !\n\nLe prochain combiné est presque prêt. 🎯\n\nMerci pour votre patience et votre confiance.\n\nDe notre côté, on continue de travailler sur la sélection pour vous proposer une analyse sérieuse.\n\n🔥 Encore un petit peu de patience…\n\nOn revient très vite.` + signature,
+
+        `👑 SCORE MASTER AU TRAVAIL.\n\nLe prochain combiné se prépare actuellement. 🎯\n\nPas de précipitation : on prend le temps d'étudier les rencontres et de finaliser la sélection.\n\n📊 Analyse.\n💪 Discipline.\n🎯 Sélection.\n\nLe résultat arrive très bientôt.\n\nRestez connectés. 🔥` + signature,
+
+        `🕐 ENCORE UN PEU DE PATIENCE…\n\nLe prochain combiné est presque prêt. 👀\n\nLes derniers détails sont en train d'être finalisés.\n\n🔥 L'équipe est concentrée.\n🎯 La sélection avance.\n\nOn vous le dévoile très bientôt.\n\nRestez à l'affût ! 🚀` + signature,
+
+        `💣 LE PROCHAIN ARRIVE…\n\nL'équipe est actuellement sur la sélection du prochain combiné. 🎯\n\n📊 Les rencontres sont analysées une par une.\n\nOn finalise les derniers choix avant de vous présenter le ticket.\n\n👀 Gardez un œil sur le canal.\n\nLa suite arrive très vite. 🔥` + signature,
+
+        `🚨 NE BOUGEZ PAS, L'ÉQUIPE !\n\nLe prochain combiné est presque prêt. 🎯\n\nOn termine les derniers réglages et il sera bientôt temps de vous le dévoiler.\n\n🔥 Ça se rapproche.\n\nRestez connectés et gardez les notifications activées. 📲` + signature,
+
+        `🧠 PLACE À L'ANALYSE.\n\nLe prochain combiné est en pleine préparation. 🎯\n\nOn étudie les rencontres, on compare les informations et on affine progressivement la sélection.\n\n💪 Le sérieux avant la précipitation.\n\n🔥 Encore quelques instants et vous découvrirez le prochain combiné.\n\nRestez à l'affût. 👀` + signature,
+
+        `🚀 PROCHAIN RENDEZ-VOUS : TRÈS BIENTÔT.\n\nLe prochain combiné Score Master est actuellement en préparation. 🎯\n\nL'équipe est au travail pour finaliser la sélection.\n\n🔥 On avance.\n📊 On analyse.\n💪 On prépare.\n\nEt bientôt…\n\n👀 Vous aurez le combiné entre les mains.\n\nRestez connectés, l'équipe. 🤝` + signature
+    ];
+
+    var html = `
+        <div style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);border-radius:10px;padding:12px;color:#f97316;font-size:12px;margin-bottom:20px;">
+            <i class="fas fa-lightbulb"></i> 20 messages pour faire patienter avant la publication du prochain combiné. Copie celui qui te plaît, ou publie-le directement sur le groupe Telegram.
+        </div>`;
+
+    messages.forEach((msg, i) => {
+        html += `
+        <div style="background:rgba(17,24,39,0.8);border:1px solid rgba(249,115,22,0.2);border-radius:16px;padding:16px;margin-bottom:12px;">
+            <div style="font-size:13px;color:#f9fafb;line-height:1.7;white-space:pre-wrap;margin-bottom:12px;">${msg}</div>
+            <div style="display:flex; gap:8px;">
+                <button onclick="copyTeaserText(this, ${i})" data-text="${encodeURIComponent(msg)}" style="flex:1;padding:10px;border-radius:10px;border:none;background:rgba(255,255,255,.06);color:#fff;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                    <span>📋 Copier</span>
+                </button>
+                <button onclick="publishTeaserText(${i})" data-text="${encodeURIComponent(msg)}" style="flex:1;padding:10px;border-radius:10px;border:none;background:linear-gradient(135deg,#f97316,#c2410c);color:#fff;font-size:13px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                    <span>🚀 Publier</span>
+                </button>
+            </div>
+        </div>`;
+    });
+
+    container.innerHTML = html;
+}
+
+function copyTeaserText(btn, i) {
+    var text = decodeURIComponent(btn.getAttribute('data-text'));
+    navigator.clipboard.writeText(text).then(() => {
+        var oldText = btn.innerHTML;
+        btn.innerHTML = "✅ Copié !";
+        setTimeout(() => { btn.innerHTML = oldText; }, 2000);
+    });
+}
+
+function publishTeaserText(i) {
+    var container = document.getElementById('teaser-content');
+    var btn = container.querySelectorAll('[onclick^="publishTeaserText"]')[i];
+    var text = btn ? decodeURIComponent(btn.getAttribute('data-text')) : '';
+    if (!text) return;
+    if (confirm('Publier ce teaser sur le groupe Telegram ?')) {
+        sendGroupTelegram(text).then(function () {
+            showToast('Teaser publié sur le groupe ! ⏳');
         }).catch(function () {
             showToast('Erreur lors de la publication sur Telegram.', true);
         });
@@ -7937,6 +8059,17 @@ function sendInstaPrompt(id) {
         <button onclick="closeComebackGenerator()" style="margin-left:auto;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
     </div>
     <div id="comeback-content" style="flex:1; overflow-y:auto; padding:20px; padding-bottom:100px;"></div>
+</div>
+    <div id="teaser-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:99999;flex-direction:column;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(10px);">
+    <div style="border-bottom:1px solid rgba(249,115,22,0.3); background:#0a0a0a; padding:50px 20px 14px; display:flex; align-items:center; gap:14px; flex-shrink:0;">
+        <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#f97316,#c2410c);display:flex;align-items:center;justify-content:center;font-size:18px;">⏳</div>
+        <div>
+            <div style="font-size:17px;font-weight:900;color:#fff;">Teaser <span style="color:#f97316;">Prochain Combiné</span></div>
+            <div style="font-size:11px;color:#6b7280;">Messages pour faire patienter avant publication</div>
+        </div>
+        <button onclick="closeTeaserGenerator()" style="margin-left:auto;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+    <div id="teaser-content" style="flex:1; overflow-y:auto; padding:20px; padding-bottom:100px;"></div>
 </div>
 
 <style>
