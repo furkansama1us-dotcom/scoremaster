@@ -2836,7 +2836,7 @@ async function queueVictoryStoryPublication(id) {
         pollVictoryStoryGeneration(data.rows[0].id, data.statusUrl);
     } catch (error) {
         console.error('Erreur génération victory story:', error);
-        showToast('Erreur lors de la préparation de la story de victoire.', true);
+        showToast('Erreur story victoire : ' + (error && error.message ? error.message : 'inconnue'), true);
     }
 }
 
