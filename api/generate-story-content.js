@@ -156,7 +156,7 @@ module.exports = async function handler(req, res) {
             const recent = await sbFetch(`pending_publications?content_type=eq.Conseil IA&select=overlay_data&order=created_at.desc&limit=3`).catch(() => []);
             const recentHeadlines = (recent || []).map(r => r.overlay_data && r.overlay_data.headline).filter(Boolean);
             const conseil = pickConseil(recentHeadlines);
-            const statusUrl = await submitHiggsfield(buildConseilImagePrompt(conseil), '4:5');
+            const statusUrl = await submitHiggsfield(buildConseilImagePrompt(conseil), '3:4');
             const rows = await createPendingRow({
                 scheduled_for: today, content_type: 'Conseil IA', platform: 'instagram',
                 caption: buildConseilCaption(conseil), image_url: '', status: 'generating',
