@@ -2882,9 +2882,12 @@ async function finishVictoryStoryComposite(id, rawImageUrl) {
             var m = overlay.matches[i];
             var homeLogo = await fetchTeamLogo(m.homeTeam);
             var awayLogo = await fetchTeamLogo(m.awayTeam);
+            var homeDataUri = homeLogo ? (await adminApiCall('/api/image-bridge', { action: 'proxy', url: homeLogo })).dataUri : null;
+            var awayDataUri = awayLogo ? (await adminApiCall('/api/image-bridge', { action: 'proxy', url: awayLogo })).dataUri : null;
+            // ctx.drawImage() exige un élément Image chargé, pas une simple chaîne data URI
             logoUrls.push({
-                home: homeLogo ? (await adminApiCall('/api/image-bridge', { action: 'proxy', url: homeLogo })).dataUri : null,
-                away: awayLogo ? (await adminApiCall('/api/image-bridge', { action: 'proxy', url: awayLogo })).dataUri : null
+                home: homeDataUri ? await loadImg(homeDataUri) : null,
+                away: awayDataUri ? await loadImg(awayDataUri) : null
             });
         }
 

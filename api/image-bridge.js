@@ -75,6 +75,7 @@ async function handleUpload(req, res) {
     const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${objectPath}`, {
         method: 'POST',
         headers: {
+            'apikey': SUPABASE_SERVICE_ROLE_KEY,
             'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
             'Content-Type': contentType,
             'x-upsert': 'true'
