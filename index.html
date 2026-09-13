@@ -2793,7 +2793,7 @@ function compositeConseilImage(bgDataUri, overlay) {
                 ctx.stroke();
                 ctx.fillText(chipText, marginX + 20, y + 6);
 
-                resolve(canvas.toDataURL('image/jpeg', 0.9));
+                resolve(canvas.toDataURL('image/jpeg', 0.96));
             } catch (e) { reject(e); }
         };
         img.onerror = function () { reject(new Error('Impossible de charger le fond généré')); };
@@ -2922,10 +2922,15 @@ async function finishVictoryStoryComposite(id, rawImageUrl) {
             });
         }
 
-        var finalDataUri = await compositeVictoryStory(proxiedBg.dataUri, overlay, logoUrls);
-        await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: finalDataUri });
+        // Les deux formats sont générés à chaque fois : l'admin choisit ensuite,
+        // au moment d'approuver, de publier en Story, en Post, ou les deux.
+        var storyDataUri = await compositeVictoryStory(proxiedBg.dataUri, overlay, logoUrls, 'story');
+        var postDataUri = await compositeVictoryStory(proxiedBg.dataUri, overlay, logoUrls, 'post');
+        await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: storyDataUri, field: 'story' });
+        await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: postDataUri, field: 'post' });
+        await supabaseClient.from('pending_publications').update({ status: 'pending' }).eq('id', id);
 
-        showToast('Story de victoire prête ! Retrouve-la dans Publications pour validation. 🏆');
+        showToast('Story de victoire prête (Story + Post) ! Retrouve-la dans Publications pour validation. 🏆');
         loadAdminPublications();
     } catch (error) {
         console.error('Erreur habillage victory story:', error);
@@ -2979,7 +2984,7 @@ function drawProbBar(ctx, x, y, w, h, homeProb, drawProb, awayProb) {
     ctx.fillStyle = '#f43f5e'; ctx.fillRect(xC, y, w * awayProb / 100, h);
 }
 
-function compositeVictoryStory(bgDataUri, overlay, logoUrls) {
+function compositeVictoryStory(bgDataUri, overlay, logoUrls, format) {
     return new Promise(async function (resolve, reject) {
         try {
             var bg = await loadImg(bgDataUri);
@@ -2992,7 +2997,14 @@ function compositeVictoryStory(bgDataUri, overlay, logoUrls) {
                 document.fonts.load('400 18px Manrope')
             ]);
 
-            var W = 1080, H = 1920; // format 9:16
+            // format 'story' (9:16, plein écran Story) ou 'post' (4:5, feed Instagram —
+            // dimensions recommandées par Instagram pour un rendu net, non recadré).
+            var isPost = format === 'post';
+            var W = 1080, H = isPost ? 1350 : 1920;
+            // Tout le gabarit ci-dessous a été pensé pour du 1920px de haut : on
+            // réduit uniformément tailles de police et espacements pour le format
+            // post, plus court, au lieu de dupliquer toute la mise en page.
+            var SCALE = isPost ? 0.66 : 1;
             var canvas = document.createElement('canvas');
             canvas.width = W; canvas.height = H;
             var ctx = canvas.getContext('2d');
@@ -3009,23 +3021,25 @@ function compositeVictoryStory(bgDataUri, overlay, logoUrls) {
             ctx.fillStyle = SOLID_BG;
             ctx.fillRect(0, 0, W, H);
 
+            var S = function (px) { return Math.round(px * SCALE); };
+
             // Sceau centré : texte en cercle + logo au centre
-            var sealCx = W / 2, sealCy = 150, sealR = 92;
-            drawCircularText(ctx, 'SCORE MASTER • TICKET HONORÉ • ', sealCx, sealCy, sealR, '800 22px Manrope, sans-serif', '#f5f5f2', 5);
-            var logoSize = 74;
+            var sealCx = W / 2, sealCy = S(150), sealR = S(92);
+            drawCircularText(ctx, 'SCORE MASTER • TICKET HONORÉ • ', sealCx, sealCy, sealR, '800 ' + S(22) + 'px Manrope, sans-serif', '#f5f5f2', S(5));
+            var logoSize = S(74);
             ctx.drawImage(logo, sealCx - logoSize / 2, sealCy - logoSize / 2, logoSize, logoSize);
 
             // Matchs empilés
             var marginX = W * 0.09;
             var innerW = W - marginX * 2;
-            var y = 340;
-            var logoSz = 84;
+            var y = S(230) + sealCy;
+            var logoSz = S(84);
 
             overlay.matches.forEach(function (m, i) {
                 var logos = logoUrls[i] || {};
                 var rowY = y;
 
-                ctx.font = '400 68px Anton, Impact, sans-serif';
+                ctx.font = '400 ' + S(68) + 'px Anton, Impact, sans-serif';
                 ctx.fillStyle = '#e8b84b';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -3034,97 +3048,99 @@ function compositeVictoryStory(bgDataUri, overlay, logoUrls) {
                 if (logos.home) ctx.drawImage(logos.home, marginX, rowY, logoSz, logoSz);
                 if (logos.away) ctx.drawImage(logos.away, W - marginX - logoSz, rowY, logoSz, logoSz);
 
-                ctx.font = '800 24px Manrope, sans-serif';
+                ctx.font = '800 ' + S(24) + 'px Manrope, sans-serif';
                 ctx.fillStyle = '#f5f5f2';
                 ctx.textAlign = 'left';
-                wrapCanvasText(ctx, m.homeTeam, logoSz + 20).slice(0, 2).forEach(function (line, li) {
-                    ctx.fillText(line, marginX, rowY + logoSz + 30 + li * 28);
+                wrapCanvasText(ctx, m.homeTeam, logoSz + S(20)).slice(0, 2).forEach(function (line, li) {
+                    ctx.fillText(line, marginX, rowY + logoSz + S(30) + li * S(28));
                 });
                 ctx.textAlign = 'right';
-                wrapCanvasText(ctx, m.awayTeam, logoSz + 20).slice(0, 2).forEach(function (line, li) {
-                    ctx.fillText(line, W - marginX, rowY + logoSz + 30 + li * 28);
+                wrapCanvasText(ctx, m.awayTeam, logoSz + S(20)).slice(0, 2).forEach(function (line, li) {
+                    ctx.fillText(line, W - marginX, rowY + logoSz + S(30) + li * S(28));
                 });
                 ctx.textAlign = 'left';
 
-                var barY = rowY + logoSz + 92;
-                drawProbBar(ctx, marginX, barY, innerW, 12, m.homeProb, m.drawProb, m.awayProb);
+                var barY = rowY + logoSz + S(92);
+                drawProbBar(ctx, marginX, barY, innerW, S(12), m.homeProb, m.drawProb, m.awayProb);
 
-                ctx.font = '700 18px Manrope, sans-serif';
+                ctx.font = '700 ' + S(18) + 'px Manrope, sans-serif';
                 ctx.fillStyle = '#a9b0c4';
                 ctx.textAlign = 'left';
-                ctx.fillText(m.homeProb + '% ' + m.homeTeam, marginX, barY + 34);
+                ctx.fillText(m.homeProb + '% ' + m.homeTeam, marginX, barY + S(34));
                 ctx.textAlign = 'right';
                 ctx.fillStyle = m.winner === 'away' ? '#e8b84b' : '#a9b0c4';
-                ctx.fillText(m.awayProb + '% ' + m.awayTeam, W - marginX, barY + 34);
+                ctx.fillText(m.awayProb + '% ' + m.awayTeam, W - marginX, barY + S(34));
                 ctx.textAlign = 'center';
                 ctx.fillStyle = '#a9b0c4';
-                ctx.fillText(m.drawProb + '% Nul', W / 2, barY + 34);
+                ctx.fillText(m.drawProb + '% Nul', W / 2, barY + S(34));
                 ctx.textAlign = 'left';
 
-                y = barY + 90;
+                y = barY + S(130);
             });
 
             // Accroche
-            ctx.font = '800 30px Manrope, sans-serif';
+            ctx.font = '800 ' + S(30) + 'px Manrope, sans-serif';
             ctx.fillStyle = '#f5f5f2';
             ctx.textAlign = 'center';
             var taglineLines = wrapCanvasText(ctx, overlay.tagline, innerW);
             taglineLines.forEach(function (line, li) {
-                ctx.fillText(line, W / 2, y + li * 38);
+                ctx.fillText(line, W / 2, y + li * S(38));
             });
-            y += taglineLines.length * 38 + 30;
+            y += taglineLines.length * S(38) + S(50);
 
             // Ruban "TICKET HONORÉ"
             ctx.save();
-            ctx.translate(W / 2, y + 30);
+            ctx.translate(W / 2, y + S(30));
             ctx.rotate(-3 * Math.PI / 180);
-            ctx.font = '400 30px Anton, Impact, sans-serif';
+            ctx.font = '400 ' + S(30) + 'px Anton, Impact, sans-serif';
             var ribbonText = 'TICKET HONORÉ';
-            var ribbonW = ctx.measureText(ribbonText).width + 60;
+            var ribbonW = ctx.measureText(ribbonText).width + S(60);
             ctx.fillStyle = '#e8b84b';
-            if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(-ribbonW / 2, -30, ribbonW, 60, 8); ctx.fill(); }
-            else { ctx.fillRect(-ribbonW / 2, -30, ribbonW, 60); }
+            if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(-ribbonW / 2, -S(30), ribbonW, S(60), S(8)); ctx.fill(); }
+            else { ctx.fillRect(-ribbonW / 2, -S(30), ribbonW, S(60)); }
             ctx.fillStyle = '#0e1220';
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText(ribbonText, 0, 2);
             ctx.restore();
-            y += 110;
+            y += S(150);
 
             // Bloc "Fiabilité IA annoncée"
-            var boxH = 96;
+            var boxH = S(96);
             ctx.fillStyle = 'rgba(62,207,142,0.14)';
             ctx.strokeStyle = 'rgba(62,207,142,0.4)';
             ctx.lineWidth = 2;
             ctx.beginPath();
-            if (ctx.roundRect) ctx.roundRect(marginX, y, innerW, boxH, 14);
+            if (ctx.roundRect) ctx.roundRect(marginX, y, innerW, boxH, S(14));
             else ctx.rect(marginX, y, innerW, boxH);
             ctx.fill(); ctx.stroke();
 
-            ctx.font = '700 24px Manrope, sans-serif';
+            ctx.font = '700 ' + S(24) + 'px Manrope, sans-serif';
             ctx.fillStyle = '#eafaf1';
             ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-            ctx.fillText('Fiabilité IA annoncée', marginX + 28, y + boxH / 2);
-            ctx.font = '400 40px Anton, Impact, sans-serif';
+            ctx.fillText('Fiabilité IA annoncée', marginX + S(28), y + boxH / 2);
+            ctx.font = '400 ' + S(40) + 'px Anton, Impact, sans-serif';
             ctx.fillStyle = '#3ecf8e';
             ctx.textAlign = 'right';
-            ctx.fillText(overlay.confidence + '%', W - marginX - 28, y + boxH / 2 + 2);
+            ctx.fillText(overlay.confidence + '%', W - marginX - S(28), y + boxH / 2 + 2);
             ctx.textAlign = 'left';
-            y += boxH + 44;
+            y += boxH + S(60);
 
             // Lien
-            ctx.font = '700 26px Manrope, sans-serif';
+            ctx.font = '700 ' + S(26) + 'px Manrope, sans-serif';
             ctx.fillStyle = '#d4d7e2';
             ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
             ctx.fillText('🌐 scoremaster.fr   ·   📲 @ScoreMasterOfficiel', W / 2, y);
-            y += 50;
+            y += S(60);
 
             // Bandeau photo décoratif tout en bas, uniquement dans l'espace restant
-            // (jamais derrière du texte) — flou volontaire en plus pour détruire les
-            // derniers détails hallucinés (faux texte/badges) que l'IA pourrait avoir
-            // dessinés sur cette photo.
+            // (jamais derrière du texte) et plafonné à une hauteur raisonnable —
+            // s'il reste beaucoup plus de place que ça (peu de matchs, accroche
+            // courte), le surplus reste en aplat uni plutôt qu'en grande bande
+            // photo à moitié vide. Flou volontaire en plus pour détruire les
+            // derniers détails hallucinés (faux texte/badges) éventuels.
             var photoY = y;
-            var photoH = H - photoY;
-            if (photoH > 140) {
+            var photoH = Math.min(H - photoY, S(340));
+            if (photoH > 100) {
                 ctx.save();
                 ctx.beginPath(); ctx.rect(0, photoY, W, photoH); ctx.clip();
                 ctx.filter = 'blur(4px) saturate(0.85)';
@@ -3136,14 +3152,14 @@ function compositeVictoryStory(bgDataUri, overlay, logoUrls) {
                 ctx.fillRect(0, photoY, W, photoH);
                 ctx.restore();
 
-                var seamH = Math.min(90, photoH * 0.5);
+                var seamH = Math.min(S(90), photoH * 0.5);
                 var gradSeam = ctx.createLinearGradient(0, photoY, 0, photoY + seamH);
                 gradSeam.addColorStop(0, SOLID_BG);
                 gradSeam.addColorStop(1, 'rgba(10,14,26,0)');
                 ctx.fillStyle = gradSeam; ctx.fillRect(0, photoY, W, seamH);
             }
 
-            resolve(canvas.toDataURL('image/jpeg', 0.9));
+            resolve(canvas.toDataURL('image/jpeg', 0.96));
         } catch (e) { reject(e); }
     });
 }
@@ -3374,6 +3390,31 @@ var PLATFORM_LABELS = { instagram: { label: 'Instagram', icon: 'fab fa-instagram
 
 function renderPublicationCard(p) {
     var pf = PLATFORM_LABELS[p.platform] || { label: p.platform, icon: 'fas fa-share', color: 'var(--text-gray)' };
+    var hasDualFormat = !!(p.image_url_story || p.image_url_post);
+
+    if (!hasDualFormat) {
+        return `
+        <div class="order-history-card">
+            <div class="order-history-top">
+                <span style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:800; color:${pf.color};"><i class="${pf.icon}"></i> ${pf.label}</span>
+                <span class="order-history-date">${fmtD(p.created_at)}</span>
+            </div>
+            <div style="font-size:11px; color:var(--text-gray); margin:6px 0;">Type : ${p.content_type} · Prévu pour le ${p.scheduled_for}</div>
+            <img src="${p.image_url}" style="width:100%; border-radius:10px; margin-bottom:10px; display:block;" onerror="this.style.display='none'">
+            <div style="font-size:13px; color:#fff; line-height:1.5; white-space:pre-wrap; margin-bottom:12px;">${p.caption}</div>
+            <div style="display:flex; gap:8px;">
+                <a href="${p.image_url}" download="score-master.jpg" style="flex:1;padding:10px;background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;text-align:center;text-decoration:none;"><i class="fas fa-download"></i> Enregistrer</a>
+                <button onclick="approvePublication('${p.id}')" style="flex:1;padding:10px;background:linear-gradient(135deg,var(--green),#16A34A);color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-check"></i> Approuver</button>
+                <button onclick="rejectPublication('${p.id}')" style="flex:1;padding:10px;background:transparent;color:var(--red);border:1px solid rgba(244,63,94,.3);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-times"></i> Rejeter</button>
+            </div>
+        </div>`;
+    }
+
+    // Contenu généré en 2 formats (Story 9:16 + Post 4:5) : l'admin choisit lequel
+    // publier (ou les deux) avant d'approuver — dimensions natives pour chaque
+    // format, jamais un recadrage moche de l'un vers l'autre.
+    var storyChecked = p.publish_as_story !== false;
+    var postChecked = p.publish_as_post === true;
     return `
     <div class="order-history-card">
         <div class="order-history-top">
@@ -3381,7 +3422,22 @@ function renderPublicationCard(p) {
             <span class="order-history-date">${fmtD(p.created_at)}</span>
         </div>
         <div style="font-size:11px; color:var(--text-gray); margin:6px 0;">Type : ${p.content_type} · Prévu pour le ${p.scheduled_for}</div>
-        <img src="${p.image_url}" style="width:100%; border-radius:10px; margin-bottom:10px; display:block;" onerror="this.style.display='none'">
+        <div style="display:flex; gap:10px; margin-bottom:10px;">
+            <div style="flex:1;">
+                <img src="${p.image_url_story || ''}" style="width:100%; border-radius:10px; display:block; aspect-ratio:9/16; object-fit:cover; background:#0a0e1a;" onerror="this.style.display='none'">
+                <label style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-light-gray); margin-top:6px;">
+                    <input type="checkbox" id="pub-story-${p.id}" ${storyChecked ? 'checked' : ''} style="accent-color:var(--primary-yellow);"> Story
+                </label>
+                ${p.image_url_story ? `<a href="${p.image_url_story}" download="score-master-story.jpg" style="display:block; text-align:center; margin-top:4px; padding:6px; background:rgba(255,255,255,.06); color:#fff; border:1px solid rgba(255,255,255,.12); border-radius:7px; font-size:10px; font-weight:700; text-decoration:none;"><i class="fas fa-download"></i> Enregistrer</a>` : ''}
+            </div>
+            <div style="flex:1;">
+                <img src="${p.image_url_post || ''}" style="width:100%; border-radius:10px; display:block; aspect-ratio:4/5; object-fit:cover; background:#0a0e1a;" onerror="this.style.display='none'">
+                <label style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-light-gray); margin-top:6px;">
+                    <input type="checkbox" id="pub-post-${p.id}" ${postChecked ? 'checked' : ''} style="accent-color:var(--primary-yellow);"> Post (feed)
+                </label>
+                ${p.image_url_post ? `<a href="${p.image_url_post}" download="score-master-post.jpg" style="display:block; text-align:center; margin-top:4px; padding:6px; background:rgba(255,255,255,.06); color:#fff; border:1px solid rgba(255,255,255,.12); border-radius:7px; font-size:10px; font-weight:700; text-decoration:none;"><i class="fas fa-download"></i> Enregistrer</a>` : ''}
+            </div>
+        </div>
         <div style="font-size:13px; color:#fff; line-height:1.5; white-space:pre-wrap; margin-bottom:12px;">${p.caption}</div>
         <div style="display:flex; gap:8px;">
             <button onclick="approvePublication('${p.id}')" style="flex:1;padding:10px;background:linear-gradient(135deg,var(--green),#16A34A);color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-check"></i> Approuver</button>
@@ -3401,7 +3457,8 @@ function renderPublicationHistoryCard(p) {
     };
     var st = statusMap[p.status] || { label: p.status, color: 'var(--text-gray)' };
     var captionPreview = p.caption ? (p.caption.length > 140 ? p.caption.slice(0, 140) + '…' : p.caption) : '';
-    var thumbHtml = p.image_url ? `<img src="${p.image_url}" style="width:100%; border-radius:8px; margin-top:8px; display:block;" onerror="this.style.display='none'">` : '';
+    var thumbSrc = p.image_url || p.image_url_post || p.image_url_story;
+    var thumbHtml = thumbSrc ? `<img src="${thumbSrc}" style="width:100%; border-radius:8px; margin-top:8px; display:block;" onerror="this.style.display='none'">` : '';
     return `
     <div class="order-history-card">
         <div class="order-history-top">
@@ -3434,7 +3491,22 @@ async function publishNow(id) {
 
 async function approvePublication(id) {
     try {
-        const { error } = await supabaseClient.from('pending_publications').update({ status: 'approved', reviewed_at: new Date().toISOString() }).eq('id', id);
+        var patch = { status: 'approved', reviewed_at: new Date().toISOString() };
+        // Cases Story/Post présentes uniquement pour le contenu généré en double
+        // format (voir renderPublicationCard) — on fige le choix de l'admin au
+        // moment de l'approbation, publish.js s'en sert ensuite pour savoir quoi
+        // envoyer à Postiz.
+        var storyBox = document.getElementById('pub-story-' + id);
+        var postBox = document.getElementById('pub-post-' + id);
+        if (storyBox || postBox) {
+            patch.publish_as_story = storyBox ? storyBox.checked : false;
+            patch.publish_as_post = postBox ? postBox.checked : false;
+            if (!patch.publish_as_story && !patch.publish_as_post) {
+                showToast('Choisis au moins Story ou Post avant d\'approuver.', true);
+                return;
+            }
+        }
+        const { error } = await supabaseClient.from('pending_publications').update(patch).eq('id', id);
         if (error) throw error;
         showToast('Approuvé ! Publication en cours (via le cron, quelques minutes).');
         loadAdminPublications();

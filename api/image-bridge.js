@@ -60,7 +60,7 @@ async function handleProxy(req, res) {
 }
 
 async function handleUpload(req, res) {
-    const { id, imageDataUri } = req.body || {};
+    const { id, imageDataUri, field } = req.body || {};
     if (!id || !imageDataUri || !imageDataUri.startsWith('data:image/')) {
         return res.status(400).json({ error: 'id et imageDataUri (data:image/...) requis' });
     }
@@ -71,7 +71,12 @@ async function handleUpload(req, res) {
     const ext = contentType.split('/')[1] || 'png';
     const buf = Buffer.from(match[2], 'base64');
 
-    const objectPath = `conseil-ia/${id}.${ext}`;
+    // `field`: 'story' ou 'post' -> upload dans une colonne dédiée (une publication
+    // Instagram peut avoir les deux formats à choisir au moment d'approuver).
+    // Sans `field` (rétrocompatible : Conseil IA, Victoire classique Telegram) ->
+    // upload dans image_url comme avant, et passe la ligne en "pending".
+    const suffix = field === 'story' ? '-story' : field === 'post' ? '-post' : '';
+    const objectPath = `conseil-ia/${id}${suffix}.${ext}`;
     const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${objectPath}`, {
         method: 'POST',
         headers: {
@@ -86,10 +91,10 @@ async function handleUpload(req, res) {
 
     const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${objectPath}`;
 
-    await sbFetch(`pending_publications?id=eq.${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ image_url: publicUrl, status: 'pending' })
-    });
+    const patch = field === 'story' ? { image_url_story: publicUrl }
+        : field === 'post' ? { image_url_post: publicUrl }
+        : { image_url: publicUrl, status: 'pending' };
+    await sbFetch(`pending_publications?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify(patch) });
 
     res.status(200).json({ ok: true, imageUrl: publicUrl });
 }

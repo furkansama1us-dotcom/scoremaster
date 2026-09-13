@@ -62,21 +62,39 @@ async function postizFetch(path, options) {
     return data;
 }
 
+async function postizPublishInstagram(ig, item, imagePath, postType) {
+    await postizFetch('/posts', {
+        method: 'POST',
+        body: JSON.stringify({
+            type: 'now', date: new Date().toISOString(), shortLink: false, tags: [],
+            posts: [{
+                integration: { id: ig.id },
+                value: [{ content: item.caption, image: [{ id: item.id, path: imagePath }] }],
+                settings: { __type: 'instagram', post_type: postType }
+            }]
+        })
+    });
+}
+
 async function postizPublish(item, integrations) {
     if (item.platform === 'instagram') {
         const ig = (integrations || []).find(function (i) { return i.identifier && i.identifier.indexOf('instagram') !== -1; });
         if (!ig) throw new Error('Aucune intégration Instagram trouvée sur Postiz');
-        await postizFetch('/posts', {
-            method: 'POST',
-            body: JSON.stringify({
-                type: 'now', date: new Date().toISOString(), shortLink: false, tags: [],
-                posts: [{
-                    integration: { id: ig.id },
-                    value: [{ content: item.caption, image: [{ id: item.id, path: item.image_url }] }],
-                    settings: { __type: 'instagram', post_type: 'post' }
-                }]
-            })
-        });
+
+        // Contenu généré en double format (Story 9:16 + Post 4:5, voir
+        // image-bridge.js) : l'admin choisit au moment d'approuver lequel publier,
+        // potentiellement les deux (deux appels Postiz distincts, une image
+        // dédiée à chaque format plutôt qu'un recadrage).
+        if (item.image_url_story || item.image_url_post) {
+            const wantStory = item.publish_as_story !== false && item.image_url_story;
+            const wantPost = item.publish_as_post === true && item.image_url_post;
+            if (!wantStory && !wantPost) throw new Error('Aucun format sélectionné (Story/Post) pour cette publication');
+            if (wantStory) await postizPublishInstagram(ig, item, item.image_url_story, 'story');
+            if (wantPost) await postizPublishInstagram(ig, item, item.image_url_post, 'post');
+            return;
+        }
+
+        await postizPublishInstagram(ig, item, item.image_url, 'post');
     } else if (item.platform === 'telegram') {
         const tg = (integrations || []).find(function (i) { return i.identifier && i.identifier.indexOf('telegram') !== -1; });
         if (!tg) throw new Error('Aucune intégration Telegram trouvée sur Postiz');
