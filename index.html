@@ -18,7 +18,7 @@
     
     <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiU2NvcmUgTWVyaWRpYW4iLCJzaG9ydF9uYW1lIjoiU2NvcmUgTWVyaWRpYW4iLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBBMEUxRiIsInRoZW1lX2NvbG9yIjoiIzBBMEUxRiIsIm9yaWVudGF0aW9uIjoicG9ydHJhaXQiLCJpY29ucyI6W3sic3JjIjoibG9nby1kYXJrLnBuZyIsInNpemVzIjoiMTkyeDE5MiA1MTJ4NTEyIiwidHlwZSI6ImltYWdlL3BuZyIsInB1cnBvc2UiOiJhbnkgbWFza2FibGUifV19">
     
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Anton&family=Manrope:wght@400;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     
     <style>
@@ -1819,6 +1819,15 @@ async function fetchApiScore(id, dateRaw) {
         Messages de reprise après une longue pause, pour annoncer le retour à la communauté.
     </div>
 </div>
+            <div class="admin-card" id="conseil-ia-card" style="padding:15px; border-left:4px solid #e8b84b; margin-bottom:10px; cursor:pointer; transition:all 0.2s;" onclick="generateConseilNow()">
+    <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff; display:flex; justify-content:space-between; align-items:center;">
+        <span><i class="fas fa-lightbulb" style="color:#e8b84b; margin-right:5px;"></i> Conseil IA (visuel Instagram)</span>
+        <i class="fas fa-wand-magic-sparkles" style="color:var(--text-gray); font-size:12px;"></i>
+    </div>
+    <div id="conseil-ia-card-desc" style="font-size:12px; color:var(--text-gray);">
+        Génère un visuel "conseil" (fond Higgsfield + texte réel habillé), dépose le brouillon dans Publications pour validation.
+    </div>
+</div>
             <div class="admin-card" style="padding:15px; border-left:4px solid #f97316; margin-bottom:10px; cursor:pointer; transition:all 0.2s;" onclick="openTeaserGenerator()">
     <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff; display:flex; justify-content:space-between; align-items:center;">
         <span><i class="fas fa-hourglass-half" style="color:#f97316; margin-right:5px;"></i> Teaser Prochain Combiné</span>
@@ -2554,6 +2563,209 @@ function publishTeaserText(i) {
             showToast('Erreur lors de la publication sur Telegram.', true);
         });
     }
+}
+
+// ============================================================
+// CONSEIL IA — visuel Instagram avec texte réellement typographié
+// (fond Higgsfield SANS texte + habillage Canvas côté client, exactement
+// la méthode validée sur la maquette : jamais de texte demandé à l'IA
+// image, toujours posé par-dessus avec de vraies polices).
+// ============================================================
+function setConseilCardState(html, spinning) {
+    var card = document.getElementById('conseil-ia-card');
+    var desc = document.getElementById('conseil-ia-card-desc');
+    if (card) card.style.pointerEvents = spinning ? 'none' : 'auto';
+    if (card) card.style.opacity = spinning ? '0.7' : '1';
+    if (desc) desc.innerHTML = html;
+}
+
+var CONSEIL_DEFAULT_DESC = 'Génère un visuel "conseil" (fond Higgsfield + texte réel habillé), dépose le brouillon dans Publications pour validation.';
+
+async function generateConseilNow() {
+    setConseilCardState('<i class="fas fa-spinner fa-spin"></i> Génération du fond en cours (Higgsfield)...', true);
+    try {
+        var data = await adminApiCall('/api/generate-conseil-content', {});
+        var id = data.rows[0].id;
+        pollConseilGeneration(id, data.statusUrl);
+    } catch (error) {
+        console.error('Erreur génération conseil:', error);
+        setConseilCardState('Erreur : ' + (error && error.message ? error.message : 'inconnue'), false);
+        setTimeout(function () { setConseilCardState(CONSEIL_DEFAULT_DESC, false); }, 4000);
+    }
+}
+
+function pollConseilGeneration(id, statusUrl, attempt) {
+    attempt = attempt || 0;
+    setTimeout(async function () {
+        try {
+            var data = await adminApiCall('/api/check-generation-status', { statusUrl: statusUrl, rowIds: [id] });
+            if (data.failed) {
+                setConseilCardState('La génération du fond a échoué.', false);
+                setTimeout(function () { setConseilCardState(CONSEIL_DEFAULT_DESC, false); }, 4000);
+                return;
+            }
+            if (data.done) {
+                finishConseilComposite(id, data.imageUrl);
+                return;
+            }
+            if (attempt > 40) {
+                setConseilCardState('Délai dépassé, réessaie.', false);
+                setTimeout(function () { setConseilCardState(CONSEIL_DEFAULT_DESC, false); }, 4000);
+                return;
+            }
+            setConseilCardState('<i class="fas fa-spinner fa-spin"></i> Génération du fond en cours (Higgsfield)...', true);
+            pollConseilGeneration(id, statusUrl, attempt + 1);
+        } catch (error) {
+            console.error('Erreur suivi génération conseil:', error);
+            setConseilCardState('Erreur pendant la génération.', false);
+            setTimeout(function () { setConseilCardState(CONSEIL_DEFAULT_DESC, false); }, 4000);
+        }
+    }, 5000);
+}
+
+async function finishConseilComposite(id, rawImageUrl) {
+    try {
+        setConseilCardState('<i class="fas fa-spinner fa-spin"></i> Habillage du texte...', true);
+
+        var rowRes = await supabaseClient.from('pending_publications').select('overlay_data').eq('id', id).single();
+        if (rowRes.error) throw rowRes.error;
+        var overlay = rowRes.data.overlay_data;
+
+        var proxied = await adminApiCall('/api/proxy-image', { url: rawImageUrl });
+        var finalDataUri = await compositeConseilImage(proxied.dataUri, overlay);
+
+        setConseilCardState('<i class="fas fa-spinner fa-spin"></i> Envoi du visuel final...', true);
+        await adminApiCall('/api/upload-composited-image', { id: id, imageDataUri: finalDataUri });
+
+        showToast('Conseil IA prêt ! Retrouve-le dans Publications pour validation. 💡');
+        setConseilCardState(CONSEIL_DEFAULT_DESC, false);
+        loadAdminPublications();
+    } catch (error) {
+        console.error('Erreur habillage conseil:', error);
+        setConseilCardState('Erreur : ' + (error && error.message ? error.message : 'inconnue'), false);
+        setTimeout(function () { setConseilCardState(CONSEIL_DEFAULT_DESC, false); }, 4000);
+    }
+}
+
+function wrapCanvasText(ctx, text, maxWidth) {
+    var words = text.split(' ');
+    var lines = [];
+    var current = '';
+    words.forEach(function (w) {
+        var test = current ? current + ' ' + w : w;
+        if (ctx.measureText(test).width > maxWidth && current) {
+            lines.push(current);
+            current = w;
+        } else {
+            current = test;
+        }
+    });
+    if (current) lines.push(current);
+    return lines;
+}
+
+function compositeConseilImage(bgDataUri, overlay) {
+    return new Promise(function (resolve, reject) {
+        var img = new Image();
+        img.onload = async function () {
+            try {
+                await Promise.all([
+                    document.fonts.load('400 64px Anton'),
+                    document.fonts.load('800 26px Manrope'),
+                    document.fonts.load('700 34px Manrope'),
+                    document.fonts.load('400 30px Manrope')
+                ]);
+
+                var W = 1080, H = 1350; // format 4:5, safe pour un post Instagram
+                var canvas = document.createElement('canvas');
+                canvas.width = W; canvas.height = H;
+                var ctx = canvas.getContext('2d');
+
+                // Fond (cover crop)
+                var scale = Math.max(W / img.width, H / img.height);
+                var dw = img.width * scale, dh = img.height * scale;
+                ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+
+                // Voiles dégradés haut/bas pour garantir le contraste texte/fond
+                var gradTop = ctx.createLinearGradient(0, 0, 0, H * 0.32);
+                gradTop.addColorStop(0, 'rgba(6,8,16,0.85)');
+                gradTop.addColorStop(1, 'rgba(6,8,16,0)');
+                ctx.fillStyle = gradTop; ctx.fillRect(0, 0, W, H * 0.32);
+
+                var gradBottom = ctx.createLinearGradient(0, H * 0.52, 0, H);
+                gradBottom.addColorStop(0, 'rgba(6,8,16,0)');
+                gradBottom.addColorStop(1, 'rgba(6,8,16,0.92)');
+                ctx.fillStyle = gradBottom; ctx.fillRect(0, H * 0.52, W, H * 0.48);
+
+                var marginX = W * 0.08;
+
+                // Bloc de marque (couronne + "Score Master") en haut à gauche
+                var badgeY = 72;
+                ctx.fillStyle = '#e8b84b';
+                ctx.beginPath();
+                ctx.moveTo(marginX, badgeY + 14);
+                ctx.lineTo(marginX + 7, badgeY);
+                ctx.lineTo(marginX + 14, badgeY + 10);
+                ctx.lineTo(marginX + 21, badgeY - 4);
+                ctx.lineTo(marginX + 28, badgeY + 10);
+                ctx.lineTo(marginX + 35, badgeY);
+                ctx.lineTo(marginX + 42, badgeY + 14);
+                ctx.closePath();
+                ctx.fill();
+                ctx.font = '400 30px Anton, Impact, sans-serif';
+                ctx.textBaseline = 'alphabetic';
+                ctx.fillStyle = '#f5f5f2';
+                ctx.fillText('SCORE ', marginX + 54, badgeY + 20);
+                var scoreW = ctx.measureText('SCORE ').width;
+                ctx.fillStyle = '#e8b84b';
+                ctx.fillText('MASTER', marginX + 54 + scoreW, badgeY + 20);
+
+                // Bas de l'image : kicker / headline / sous-texte / lien
+                var y = H - 300;
+
+                ctx.fillStyle = '#e8b84b';
+                ctx.font = '800 25px Manrope, sans-serif';
+                ctx.fillText(overlay.kicker.toUpperCase(), marginX, y);
+                y += 46;
+
+                ctx.fillStyle = '#f5f5f2';
+                ctx.font = '400 62px Anton, Impact, sans-serif';
+                var headlineLines = (overlay.headline || '').split('\n');
+                headlineLines.forEach(function (line) {
+                    ctx.fillText(line, marginX, y);
+                    y += 64;
+                });
+                y += 14;
+
+                ctx.fillStyle = '#d4d7e2';
+                ctx.font = '400 30px Manrope, sans-serif';
+                var subLines = wrapCanvasText(ctx, overlay.sub || '', W - marginX * 2).slice(0, 4);
+                subLines.forEach(function (line) {
+                    ctx.fillText(line, marginX, y);
+                    y += 38;
+                });
+                y += 20;
+
+                // Lien
+                ctx.font = '700 28px Manrope, sans-serif';
+                ctx.fillStyle = '#f5f5f2';
+                var chipText = 'scoremaster.fr';
+                var chipW = ctx.measureText(chipText).width + 40;
+                var chipH = 52;
+                ctx.strokeStyle = 'rgba(245,245,242,0.4)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                if (ctx.roundRect) ctx.roundRect(marginX, y - chipH + 14, chipW, chipH, 999);
+                else ctx.rect(marginX, y - chipH + 14, chipW, chipH);
+                ctx.stroke();
+                ctx.fillText(chipText, marginX + 20, y + 6);
+
+                resolve(canvas.toDataURL('image/png'));
+            } catch (e) { reject(e); }
+        };
+        img.onerror = function () { reject(new Error('Impossible de charger le fond généré')); };
+        img.src = bgDataUri;
+    });
 }
 
 function copyRelanceText(btn, i) {

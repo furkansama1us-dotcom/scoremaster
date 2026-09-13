@@ -102,6 +102,22 @@ create table if not exists public.pending_publications (
 -- Migration (si la table existait déjà avant ces colonnes) :
 alter table public.pending_publications alter column image_url set default '';
 alter table public.pending_publications add column if not exists hf_status_url text;
+-- Textes du conseil (kicker/headline/sub/scène) habillés en Canvas côté client
+-- pour la fonctionnalité "Conseil IA" (visuels Instagram avec texte réel superposé).
+alter table public.pending_publications add column if not exists overlay_data jsonb;
+
+-- Bucket public pour héberger les visuels "Conseil IA" une fois le texte habillé
+-- (fond Higgsfield + typographie réelle composés en un seul PNG côté client).
+insert into storage.buckets (id, name, public)
+values ('content-images', 'content-images', true)
+on conflict (id) do nothing;
+
+-- Autorise la lecture publique du bucket (nécessaire pour que Postiz/Instagram
+-- puissent récupérer l'image via son URL publique).
+drop policy if exists "Public read content-images" on storage.objects;
+create policy "Public read content-images"
+  on storage.objects for select
+  using (bucket_id = 'content-images');
 
 alter table public.pending_publications enable row level security;
 
