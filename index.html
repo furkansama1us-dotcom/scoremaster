@@ -2888,13 +2888,18 @@ function buildVictoryStoryImagePrompt(c) {
     return buildVictoryImagePromptRaw(c);
 }
 
+var INSTAGRAM_HASHTAGS = '#ScoreMaster #PronosticsFootball #ParisSportifs #Football #IA';
+
 async function queueVictoryStoryPublication(id) {
     var c = allCombineds.find(x => x.id == id);
     if (!c || !c.matches || !c.matches.length) return;
     try {
         var overlay = buildVictoryStoryOverlay(c);
         var imagePrompt = buildVictoryStoryImagePrompt(c);
-        var caption = buildVictoryTelegramText(c);
+        // Hashtags uniquement pour Instagram (référencement) — le message Telegram
+        // classique (buildVictoryTelegramText, envoyé ailleurs tel quel) n'en a pas
+        // besoin et n'est pas modifié par cet ajout.
+        var caption = buildVictoryTelegramText(c) + '\n\n' + INSTAGRAM_HASHTAGS;
         var data = await adminApiCall('/api/generate-story-content', { type: 'victory-story', caption: caption, imagePrompt: imagePrompt, dateStr: c.date, overlayData: overlay });
         pollVictoryStoryGeneration(data.rows[0].id, data.statusUrl);
     } catch (error) {

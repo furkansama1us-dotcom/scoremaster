@@ -124,9 +124,11 @@ If the scene includes a stadium, its advertising boards, perimeter hoardings, sc
 Style: cinematic, moody, premium illustrated aesthetic, generous empty negative space in the top third and bottom third of the frame for a text overlay to be added afterward.`;
 }
 
+const INSTAGRAM_HASHTAGS = '#ScoreMaster #PronosticsFootball #ParisSportifs #Football #IA';
+
 function buildConseilCaption(conseil) {
     const headlinePlain = conseil.headline.replace(/\n/g, ' ');
-    return `${conseil.kicker.toUpperCase()} 📊\n\n${headlinePlain}\n\n${conseil.sub}\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel`;
+    return `${conseil.kicker.toUpperCase()} 📊\n\n${headlinePlain}\n\n${conseil.sub}\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`;
 }
 
 async function createPendingRow(row) {
