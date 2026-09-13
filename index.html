@@ -2699,26 +2699,18 @@ function compositeConseilImage(bgDataUri, overlay) {
 
                 var marginX = W * 0.08;
 
-                // Bloc de marque (couronne + "Score Master") en haut à gauche
+                // Bloc de marque : vrai logo (jamais redessiné par l'IA) + "Score Master"
                 var badgeY = 72;
-                ctx.fillStyle = '#e8b84b';
-                ctx.beginPath();
-                ctx.moveTo(marginX, badgeY + 14);
-                ctx.lineTo(marginX + 7, badgeY);
-                ctx.lineTo(marginX + 14, badgeY + 10);
-                ctx.lineTo(marginX + 21, badgeY - 4);
-                ctx.lineTo(marginX + 28, badgeY + 10);
-                ctx.lineTo(marginX + 35, badgeY);
-                ctx.lineTo(marginX + 42, badgeY + 14);
-                ctx.closePath();
-                ctx.fill();
+                var logo = await loadImg('logo-dark.png'); // asset local, même origine : jamais de CORS taint
+                var logoSize = 46;
+                ctx.drawImage(logo, marginX, badgeY - 20, logoSize, logoSize);
                 ctx.font = '400 30px Anton, Impact, sans-serif';
                 ctx.textBaseline = 'alphabetic';
                 ctx.fillStyle = '#f5f5f2';
-                ctx.fillText('SCORE ', marginX + 54, badgeY + 20);
+                ctx.fillText('SCORE ', marginX + logoSize + 16, badgeY + 20);
                 var scoreW = ctx.measureText('SCORE ').width;
                 ctx.fillStyle = '#e8b84b';
-                ctx.fillText('MASTER', marginX + 54 + scoreW, badgeY + 20);
+                ctx.fillText('MASTER', marginX + logoSize + 16 + scoreW, badgeY + 20);
 
                 // Bas de l'image : kicker / headline / sous-texte / lien
                 var y = H - 300;
