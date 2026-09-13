@@ -2761,12 +2761,16 @@ function compositeConseilImage(bgDataUri, overlay) {
                 ctx.font = '400 30px Manrope, sans-serif';
                 var subLines = wrapCanvasText(ctx, overlay.sub || '', W - marginX * 2).slice(0, 4);
 
-                var y = H - 144 - headlineLines.length * 64 - subLines.length * 38;
+                // Espace kicker -> titre volontairement large (72px) : la police
+                // Anton a une hauteur de capitale très haute, un gap de 46px la
+                // faisait quasiment toucher le kicker au-dessus (lu comme du texte
+                // "superposé" alors que c'est en réalité juste trop serré).
+                var y = H - 170 - headlineLines.length * 64 - subLines.length * 38;
 
                 ctx.fillStyle = '#e8b84b';
                 ctx.font = '800 25px Manrope, sans-serif';
                 ctx.fillText(overlay.kicker.toUpperCase(), marginX, y);
-                y += 46;
+                y += 72;
 
                 ctx.fillStyle = '#f5f5f2';
                 ctx.font = '400 62px Anton, Impact, sans-serif';
