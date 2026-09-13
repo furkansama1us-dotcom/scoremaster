@@ -3150,14 +3150,12 @@ function compositeVictoryStory(bgDataUri, overlay, logoUrls, format) {
             ctx.fillText('🌐 scoremaster.fr   ·   📲 @ScoreMasterOfficiel', W / 2, y);
             y += S(60);
 
-            // Bandeau photo décoratif tout en bas, uniquement dans l'espace restant
-            // (jamais derrière du texte) et plafonné à une hauteur raisonnable —
-            // s'il reste beaucoup plus de place que ça (peu de matchs, accroche
-            // courte), le surplus reste en aplat uni plutôt qu'en grande bande
-            // photo à moitié vide. Flou volontaire en plus pour détruire les
-            // derniers détails hallucinés (faux texte/badges) éventuels.
-            var photoY = y;
-            var photoH = Math.min(H - photoY, S(340));
+            // Bandeau photo décoratif tout en bas, plafonné à une hauteur
+            // raisonnable (peu de matchs/accroche courte = surplus en aplat uni
+            // AVANT le bandeau, jamais après) — collé au bord bas du cadre pour ne
+            // jamais laisser de vide plat entre le bandeau et le bord de l'image.
+            var photoH = Math.min(H - y - 20, S(340));
+            var photoY = H - photoH;
             if (photoH > 100) {
                 ctx.save();
                 ctx.beginPath(); ctx.rect(0, photoY, W, photoH); ctx.clip();

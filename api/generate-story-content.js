@@ -20,49 +20,49 @@ const CONSEILS = [
     {
         kicker: 'Conseil du jour',
         headline: "L'IA ne devine pas.\nElle recoupe.",
-        sub: "Forme récente, historique des confrontations, contexte du match : c'est la combinaison des données qui fait un pronostic sérieux — pas le hasard.",
+        sub: "Forme récente, historique des confrontations, contexte du match : c'est la combinaison des données qui fait un pronostic sérieux. C'est cette méthode que Score Master applique à chaque ticket.",
         scene: 'a large ornate magnifying glass hovering above an empty football pitch at night, casting a warm golden glow on the grass below, dramatic floodlights, low-angle cinematic view'
     },
     {
         kicker: 'Méthode',
         headline: "Un bon prono commence\navant le coup d'envoi.",
-        sub: "Composition probable, enjeux du match, fatigue accumulée : l'analyse se construit des heures avant, jamais dans la précipitation.",
+        sub: "Composition probable, enjeux du match, fatigue accumulée : l'analyse se construit des heures avant, jamais dans la précipitation. C'est comme ça que Score Master construit chaque pronostic.",
         scene: "a chess board mid-game on a coach's wooden desk illuminated by a warm lamp, dramatic dark stadium tunnel background, moody cinematic lighting"
     },
     {
         kicker: 'Discipline',
         headline: 'La régularité bat\nla chance à long terme.',
-        sub: "Un ticket gagné isolé ne prouve rien. C'est la constance de la méthode qui fait la différence sur la durée.",
+        sub: "Un ticket gagné isolé ne prouve rien. C'est la constance de la méthode qui fait la différence sur la durée — la vraie signature de Score Master.",
         scene: 'an hourglass with golden sand slowly falling, placed on a stadium ledge overlooking a floodlit pitch at dusk, moody cinematic lighting'
     },
     {
         kicker: 'Données',
         headline: 'Chaque cote\nraconte une histoire.',
-        sub: "Une cote qui bouge signale un mouvement de marché — encore faut-il savoir le lire avant de miser.",
+        sub: "Une cote qui bouge signale un mouvement de marché — encore faut-il savoir le lire. C'est ce que Score Master analyse avant chaque publication.",
         scene: 'an antique brass compass and a stack of gold coins resting on a dark wooden table, dramatic stadium floodlights glowing softly in the background, moody cinematic lighting'
     },
     {
         kicker: 'Analyse',
         headline: "Le score exact n'est\njamais un pari au hasard.",
-        sub: "C'est le croisement de dizaines de variables qui permet d'isoler les scénarios les plus probables.",
+        sub: "C'est le croisement de dizaines de variables qui permet d'isoler les scénarios les plus probables — le travail que fait l'IA de Score Master avant chaque combiné.",
         scene: 'a low-angle view of an empty stadium pitch at night, dozens of thin glowing golden light threads converging toward a single point above the center circle, dramatic floodlights'
     },
     {
         kicker: "État d'esprit",
         headline: "Mieux vaut rater un match\nque brûler sa bankroll.",
-        sub: "La gestion de la mise compte autant que l'analyse elle-même. Pas d'exception à la règle.",
+        sub: "La gestion de la mise compte autant que l'analyse elle-même. Score Master le rappelle à chaque ticket publié.",
         scene: 'a golden vault door slightly ajar with a warm light glowing from within, dark moody stadium corridor background, sparks of golden light dust in the air'
     },
     {
         kicker: 'Expertise',
         headline: "L'IA analyse.\nL'expérience décide.",
-        sub: "Nos modèles traitent la donnée brute, mais chaque ticket final passe par un œil humain avant publication.",
+        sub: "Les modèles de Score Master traitent la donnée brute, mais chaque ticket final passe par un œil humain avant publication.",
         scene: 'a silhouette standing at a stadium tunnel entrance looking out onto a glowing floodlit pitch, warm golden light rays streaming past them, moody cinematic lighting'
     },
     {
         kicker: 'Patience',
         headline: 'Le bon moment compte\nautant que le bon match.',
-        sub: 'Certaines rencontres ne valent tout simplement pas l\'analyse. Savoir passer son tour, ça fait aussi partie de la rigueur.',
+        sub: 'Certaines rencontres ne valent tout simplement pas l\'analyse. Savoir passer son tour, ça fait aussi partie de la rigueur Score Master.',
         scene: 'an antique pocket watch resting on a dark wooden stadium bench, out-of-focus floodlit pitch glowing softly in the background'
     }
 ];
