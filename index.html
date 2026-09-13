@@ -6978,6 +6978,7 @@ function renderAdminHistory() {
                 let btns = `
                     <button onclick="sendPromoPrompt('${c.id}')" style="background:linear-gradient(135deg, #FF9800, #F57C00); color:#fff; font-weight:bold; padding:6px 10px;" title="Prompt Promo IA"><i class="fas fa-ad"></i> Promo</button>
                     <button onclick="sendTelegramReminder('${c.id}')" style="background:var(--primary-yellow); color:#000; font-weight:bold; padding:6px 10px;"><i class="fas fa-bell"></i></button>
+                    <button onclick="queueComboTeaserPublication('${c.id}')" title="Générer le visuel Instagram (Story + Post)" style="background:rgba(230,66,140,0.15); color:#e6428c; border:1px solid rgba(230,66,140,0.4); padding:6px 10px;"><i class="fab fa-instagram"></i></button>
                     <button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue); padding:6px 10px;"><i class="fas fa-edit"></i></button>
                     <button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(244,63,94,0.2); color:var(--red); padding:6px 10px;"><i class="fas fa-trash"></i></button>`;
                 htmlActive += cardBaseHtml(displayStatus, btns);
