@@ -6163,7 +6163,7 @@ function renderAdminHistory() {
             let btns = `
             <button onclick="sendTelegramWin('${c.id}')" style="background:var(--green); color:#000; font-weight:bold; padding:6px 10px;" title="Envoyer sur Telegram"><i class="fab fa-telegram-plane"></i> Gagné</button>
             <button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue); padding:6px 10px;" title="Éditer"><i class="fas fa-edit"></i></button>
-            <button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(244,63,94,0.15); color:var(--red); border:1px solid rgba(244,63,94,0.4); padding:6px 10px;" title="Score API"><i class="fas fa-satellite-dish"></i></button>
+            <button onclick="queueVictoryStoryPublication('${c.id}')" style="background:rgba(255,193,7,0.15); color:var(--primary-yellow); border:1px solid rgba(255,193,7,0.4); padding:6px 10px;" title="Régénérer la story de victoire"><i class="fas fa-wand-magic-sparkles"></i></button>
             <button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(244,63,94,0.2); color:var(--red); padding:6px 10px;" title="Supprimer"><i class="fas fa-trash"></i></button>`;
             htmlPast += cardBaseHtml(displayStatus, btns);
         }
@@ -6453,7 +6453,7 @@ function renderAdminHistory() {
             <button onclick="sendTelegramWin('${c.id}')" style="background:var(--green); color:#000; font-weight:bold; padding:6px 10px;" title="Envoyer sur Telegram"><i class="fab fa-telegram-plane"></i> Gagné</button>
             <button onclick="sendInstaPrompt('${c.id}')" style="background:linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color:#fff; font-weight:bold; padding:6px 10px;" title="Prompt Insta IA"><i class="fab fa-instagram"></i> IA</button>
             <button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue); padding:6px 10px;" title="Éditer"><i class="fas fa-edit"></i></button>
-            <button onclick="fetchApiScore('${c.id}', '${c.date}')" style="background:rgba(244,63,94,0.15); color:var(--red); border:1px solid rgba(244,63,94,0.4); padding:6px 10px;" title="Score API"><i class="fas fa-satellite-dish"></i></button>
+            <button onclick="queueVictoryStoryPublication('${c.id}')" style="background:rgba(255,193,7,0.15); color:var(--primary-yellow); border:1px solid rgba(255,193,7,0.4); padding:6px 10px;" title="Régénérer la story de victoire"><i class="fas fa-wand-magic-sparkles"></i></button>
             <button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(244,63,94,0.2); color:var(--red); padding:6px 10px;" title="Supprimer"><i class="fas fa-trash"></i></button>`;
             htmlPast += cardBaseHtml(displayStatus, btns);
         }
