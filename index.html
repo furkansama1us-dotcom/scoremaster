@@ -2598,7 +2598,7 @@ function pollConseilGeneration(id, statusUrl, attempt) {
     attempt = attempt || 0;
     setTimeout(async function () {
         try {
-            var data = await adminApiCall('/api/check-generation-status', { statusUrl: statusUrl, rowIds: [id] });
+            var data = await adminApiCall('/api/check-generation-status', { statusUrl: statusUrl, rowIds: [id], deferPending: true });
             if (data.failed) {
                 setConseilCardState('La génération du fond a échoué.', false);
                 setTimeout(function () { setConseilCardState(CONSEIL_DEFAULT_DESC, false); }, 4000);
@@ -2644,7 +2644,21 @@ async function finishConseilComposite(id, rawImageUrl) {
         console.error('Erreur habillage conseil:', error);
         setConseilCardState('Erreur : ' + (error && error.message ? error.message : 'inconnue'), false);
         setTimeout(function () { setConseilCardState(CONSEIL_DEFAULT_DESC, false); }, 4000);
+        await markPublicationFailed(id, error);
     }
+}
+
+// Si l'habillage Canvas échoue après la génération du fond (Higgsfield ok mais
+// la suite plante), on marque la fiche "failed" au lieu de la laisser bloquée
+// indéfiniment sur "generating" — visible et actionnable dans l'historique.
+async function markPublicationFailed(id, error) {
+    try {
+        await supabaseClient.from('pending_publications').update({
+            status: 'failed',
+            error: String(error && error.message ? error.message : error)
+        }).eq('id', id);
+        loadAdminPublications();
+    } catch (e) { console.error('Erreur marquage échec publication:', e); }
 }
 
 function wrapCanvasText(ctx, text, maxWidth) {
@@ -2844,7 +2858,7 @@ function pollVictoryStoryGeneration(id, statusUrl, attempt) {
     attempt = attempt || 0;
     setTimeout(async function () {
         try {
-            var data = await adminApiCall('/api/check-generation-status', { statusUrl: statusUrl, rowIds: [id] });
+            var data = await adminApiCall('/api/check-generation-status', { statusUrl: statusUrl, rowIds: [id], deferPending: true });
             if (data.failed) { showToast('La génération du fond de la story a échoué.', true); return; }
             if (data.done) { finishVictoryStoryComposite(id, data.imageUrl); return; }
             if (attempt > 40) { showToast('Délai dépassé pour la story de victoire.', true); return; }
@@ -2882,6 +2896,7 @@ async function finishVictoryStoryComposite(id, rawImageUrl) {
     } catch (error) {
         console.error('Erreur habillage victory story:', error);
         showToast('Erreur : ' + (error && error.message ? error.message : 'inconnue'), true);
+        await markPublicationFailed(id, error);
     }
 }
 

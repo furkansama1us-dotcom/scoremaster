@@ -48,7 +48,7 @@ module.exports = async function handler(req, res) {
         const isAdmin = await verifyAdmin(accessToken);
         if (!isAdmin) return res.status(403).json({ error: 'Accès refusé' });
 
-        const { statusUrl, rowIds } = req.body || {};
+        const { statusUrl, rowIds, deferPending } = req.body || {};
         if (!statusUrl || !Array.isArray(rowIds) || !rowIds.length) {
             return res.status(400).json({ error: 'statusUrl et rowIds requis' });
         }
@@ -61,11 +61,19 @@ module.exports = async function handler(req, res) {
             const url = statusData.images?.[0]?.url || statusData.result?.url || statusData.output?.[0]?.url || statusData.url;
             if (!url) throw new Error('Higgsfield: génération terminée mais URL introuvable.');
 
-            for (const id of rowIds) {
-                await sbFetch(`pending_publications?id=eq.${id}`, {
-                    method: 'PATCH',
-                    body: JSON.stringify({ image_url: url, status: 'pending' })
-                });
+            // `deferPending`: utilisé par les flux qui habillent le texte en Canvas
+            // côté client (Conseil IA, story de victoire) — on ne marque PAS la
+            // publication "pending" (prête à approuver) tant que l'habillage n'a
+            // pas réussi et uploadé l'image finale via /api/image-bridge. Sinon,
+            // si l'habillage échoue après coup, la fiche resterait "prête à
+            // approuver" avec le fond brut jamais habillé, sans que l'admin le sache.
+            if (!deferPending) {
+                for (const id of rowIds) {
+                    await sbFetch(`pending_publications?id=eq.${id}`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({ image_url: url, status: 'pending' })
+                    });
+                }
             }
             return res.status(200).json({ done: true, imageUrl: url });
         }
