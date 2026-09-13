@@ -117,7 +117,7 @@ ABSOLUTE RULE: NO text, NO numbers, NO typography or lettering of any kind anywh
 
 Scene: ${conseil.scene}. Deep navy and black color palette with warm gold accent lighting.
 
-Brand mark (the ONLY graphic emblem allowed, no accompanying text): a small, elegant gold crown resting above a bold shield-shaped monogram "SM" emblem, integrated subtly into the scene (engraved, embossed, or softly lit in the background) — always small and secondary, never the main focus.
+ABSOLUTE RULE: NO crest, NO shield, NO crown, NO emblem, NO logo, NO monogram of any kind anywhere in the image — the real brand logo is added separately afterward, never attempt to draw one.
 
 Style: cinematic, moody, premium illustrated aesthetic, generous empty negative space in the top third and bottom third of the frame for a text overlay to be added afterward.`;
 }
