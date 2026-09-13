@@ -2827,9 +2827,13 @@ function buildVictoryStoryOverlay(c) {
         };
     });
 
+    var aiConfidences = (c.matches || []).filter(function (m) { return m.ai_confidence; }).map(function (m) { return m.ai_confidence; });
+    var aiAvgConfidence = aiConfidences.length ? Math.round(aiConfidences.reduce(function (a, b) { return a + b; }, 0) / aiConfidences.length) : 97;
+
     return {
         matches: matches,
-        tagline: VICTORY_STORY_TAGLINES[Math.floor(Math.random() * VICTORY_STORY_TAGLINES.length)]
+        tagline: VICTORY_STORY_TAGLINES[Math.floor(Math.random() * VICTORY_STORY_TAGLINES.length)],
+        confidence: aiAvgConfidence
     };
 }
 
@@ -3056,12 +3060,34 @@ function compositeVictoryStory(bgDataUri, overlay, logoUrls) {
             ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText(ribbonText, 0, 2);
             ctx.restore();
+            y += 110;
+
+            // Bloc "Fiabilité IA annoncée"
+            var boxH = 96;
+            ctx.fillStyle = 'rgba(62,207,142,0.14)';
+            ctx.strokeStyle = 'rgba(62,207,142,0.4)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(marginX, y, innerW, boxH, 14);
+            else ctx.rect(marginX, y, innerW, boxH);
+            ctx.fill(); ctx.stroke();
+
+            ctx.font = '700 24px Manrope, sans-serif';
+            ctx.fillStyle = '#eafaf1';
+            ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+            ctx.fillText('Fiabilité IA annoncée', marginX + 28, y + boxH / 2);
+            ctx.font = '400 40px Anton, Impact, sans-serif';
+            ctx.fillStyle = '#3ecf8e';
+            ctx.textAlign = 'right';
+            ctx.fillText(overlay.confidence + '%', W - marginX - 28, y + boxH / 2 + 2);
+            ctx.textAlign = 'left';
+            y += boxH + 44;
 
             // Lien
             ctx.font = '700 26px Manrope, sans-serif';
             ctx.fillStyle = '#d4d7e2';
-            ctx.textAlign = 'center';
-            ctx.fillText('🌐 scoremaster.fr   ·   📲 @ScoreMasterOfficiel', W / 2, H - 60);
+            ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+            ctx.fillText('🌐 scoremaster.fr   ·   📲 @ScoreMasterOfficiel', W / 2, y);
 
             resolve(canvas.toDataURL('image/jpeg', 0.9));
         } catch (e) { reject(e); }
