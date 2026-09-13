@@ -2695,10 +2695,21 @@ function compositeConseilImage(bgDataUri, overlay) {
                 canvas.width = W; canvas.height = H;
                 var ctx = canvas.getContext('2d');
 
-                // Fond (cover crop)
+                // Fond (cover crop) — léger flou volontaire : l'IA de fond hallucine
+                // parfois du faux texte/logos illisibles (voir markPublicationFailed
+                // ci-dessous et l'historique des générations Conseil IA) ; un flou
+                // détruit ces détails fins sans abîmer les formes/lumières générales.
+                ctx.filter = 'blur(3px) saturate(0.9)';
                 var scale = Math.max(W / img.width, H / img.height);
                 var dw = img.width * scale, dh = img.height * scale;
                 ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+                ctx.filter = 'none';
+
+                // Voile sombre sur toute l'image, en plus des dégradés ciblés
+                // ci-dessous : réduit encore le contraste d'un éventuel faux texte
+                // résiduel au centre du cadre (zone non couverte par les dégradés).
+                ctx.fillStyle = 'rgba(6,8,16,0.22)';
+                ctx.fillRect(0, 0, W, H);
 
                 // Voiles dégradés haut/bas pour garantir le contraste texte/fond
                 var gradTop = ctx.createLinearGradient(0, 0, 0, H * 0.32);
@@ -2970,9 +2981,18 @@ function compositeVictoryStory(bgDataUri, overlay, logoUrls) {
             canvas.width = W; canvas.height = H;
             var ctx = canvas.getContext('2d');
 
+            // Léger flou volontaire : détruit le faux texte/logo illisible que
+            // l'IA de fond hallucine parfois, sans abîmer les formes/lumières.
+            ctx.filter = 'blur(3px) saturate(0.9)';
             var scale = Math.max(W / bg.width, H / bg.height);
             var dw = bg.width * scale, dh = bg.height * scale;
             ctx.drawImage(bg, (W - dw) / 2, (H - dh) / 2, dw, dh);
+            ctx.filter = 'none';
+
+            // Voile sombre sur toute l'image : réduit le contraste d'un éventuel
+            // faux texte résiduel au centre du cadre, non couvert par les dégradés.
+            ctx.fillStyle = 'rgba(6,8,16,0.22)';
+            ctx.fillRect(0, 0, W, H);
 
             var gradTop = ctx.createLinearGradient(0, 0, 0, H * 0.28);
             gradTop.addColorStop(0, 'rgba(6,8,16,0.75)'); gradTop.addColorStop(1, 'rgba(6,8,16,0)');
