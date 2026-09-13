@@ -182,6 +182,19 @@ module.exports = async function handler(req, res) {
             return res.status(200).json({ rows, statusUrl });
         }
 
+        if (type === 'combo-teaser') {
+            const { caption, imagePrompt, dateStr, overlayData } = req.body;
+            if (!caption || !imagePrompt || !overlayData) {
+                return res.status(400).json({ error: 'caption, imagePrompt et overlayData requis' });
+            }
+            const statusUrl = await submitHiggsfield(imagePrompt, '9:16');
+            const rows = await createPendingRow({
+                scheduled_for: dateStr || today, content_type: 'Combiné du jour', platform: 'instagram',
+                caption: caption, image_url: '', status: 'generating', hf_status_url: statusUrl, overlay_data: overlayData
+            });
+            return res.status(200).json({ rows, statusUrl });
+        }
+
         // 'victory-classic' (par défaut, rétrocompatible avec les anciens appels sans `type`)
         const { caption, imagePrompt, dateStr } = req.body;
         if (!caption || !imagePrompt) {

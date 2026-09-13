@@ -2890,6 +2890,268 @@ function buildVictoryStoryImagePrompt(c) {
 
 var INSTAGRAM_HASHTAGS = '#ScoreMaster #PronosticsFootball #ParisSportifs #Football #IA';
 
+// ============================================================
+// VISUEL "COMBINÉ DU JOUR" — même principe que la Story de victoire
+// (double format Story/Post, vrais écussons TheSportsDB, fond Higgsfield
+// SANS TEXTE), mais AVANT résultat : pas de score, pas de barre de
+// probabilité, juste les affiches du jour + heure de coup d'envoi, avec un
+// appel à l'action clair vers scoremaster.fr pour l'analyse complète.
+// ============================================================
+var COMBO_TEASER_TAGLINES = [
+    "Le combiné du jour est en ligne ! Analyse complète sur scoremaster.fr 🔥",
+    "Nouvelle sélection IA disponible dès maintenant. Rejoignez-nous ! ⚡",
+    "L'analyse du jour est prête. Découvrez le combiné sur scoremaster.fr 🎯",
+    "Chaque jour, une sélection passée au crible par l'IA. À vous de jouer. 🤝",
+    "Le combiné du jour vient de tomber. L'analyse complète vous attend. 🚀"
+];
+
+function buildComboTeaserOverlay(c) {
+    var matches = (c.matches || []).map(function (m) {
+        var teamsParts = (m.teams || '').split(' - ');
+        var timeMatch = m.time ? m.time.match(/\d{2}:\d{2}/) : null;
+        return {
+            homeTeam: (teamsParts[0] || '').trim(),
+            awayTeam: (teamsParts[1] || '').trim(),
+            time: timeMatch ? timeMatch[0] : ''
+        };
+    });
+    return {
+        matches: matches,
+        tagline: COMBO_TEASER_TAGLINES[Math.floor(Math.random() * COMBO_TEASER_TAGLINES.length)]
+    };
+}
+
+function buildComboTeaserImagePromptRaw(c) {
+    var countries = extractLeagueCountries(c);
+    var flagLine = countries.length
+        ? `You may subtly incorporate the national flag(s) of ${countries.join(' and ')} as a color/pattern motif somewhere in the scene (e.g. on a banner, a scarf, a ribbon) — purely as color/graphic motifs, with NO text or lettering on them.`
+        : '';
+
+    return `A stylized, hand-drawn illustrated football scene, dark bold ink outlines, high-contrast ink wash, premium comic book / graphic novel art style. NOT photorealistic, NOT 3D render, NOT a photo. Square 1:1 ratio composition.
+
+Scene: A tense, anticipatory low-angle view of a football stadium pitch shortly before kickoff, floodlights slowly illuminating an empty green pitch, a crowd silhouette filling the stands — illustrated, not photorealistic.
+
+ABSOLUTE RULE: NO crest, NO shield, NO crown, NO emblem, NO badge, NO seal, NO coat of arms, NO circular medallion, NO logo, NO monogram of any kind anywhere in the image — the real brand logo and the real team crests are added separately afterward, never attempt to draw one, not even a generic or blank-looking one.
+
+The stadium's advertising boards, perimeter hoardings, scoreboards, screens and any signage must all be completely PLAIN and BLANK (solid color only) — never display any sponsor names, brand marks, numbers or text on them, even blurry or out of focus ones.
+
+${flagLine}
+
+Style: flat vibrant illustrated ink-wash / graphic novel style, bold dark outlines, dramatic cinematic lighting, deep navy/black background with gold accent lighting, painterly texture, absolutely no readable text, letters or digits anywhere in the composition.`;
+}
+
+function buildComboTeaserCaption(c) {
+    var matchLines = '';
+    (c.matches || []).forEach(function (m) { matchLines += '⚽️ ' + (m.teams || '') + '\n'; });
+    return `🏆 LE COMBINÉ DU JOUR EST DISPONIBLE !\n\n${matchLines}\nAnalyse complète disponible dès maintenant sur notre site.\n\n🌐 scoremaster.fr\n📲 Telegram : @ScoreMasterOfficiel`;
+}
+
+async function queueComboTeaserPublication(id) {
+    var c = allCombineds.find(x => x.id == id);
+    if (!c || !c.matches || !c.matches.length) return;
+    try {
+        var overlay = buildComboTeaserOverlay(c);
+        var imagePrompt = buildComboTeaserImagePromptRaw(c);
+        var caption = buildComboTeaserCaption(c) + '\n\n' + INSTAGRAM_HASHTAGS;
+        var data = await adminApiCall('/api/generate-story-content', { type: 'combo-teaser', caption: caption, imagePrompt: imagePrompt, dateStr: c.date, overlayData: overlay });
+        pollComboTeaserGeneration(data.rows[0].id, data.statusUrl);
+        showToast('Génération du visuel Instagram en cours... 🎨');
+    } catch (error) {
+        console.error('Erreur génération visuel combiné:', error);
+        showToast('Erreur visuel combiné : ' + (error && error.message ? error.message : 'inconnue'), true);
+    }
+}
+
+function pollComboTeaserGeneration(id, statusUrl, attempt) {
+    attempt = attempt || 0;
+    setTimeout(async function () {
+        try {
+            var data = await adminApiCall('/api/check-generation-status', { statusUrl: statusUrl, rowIds: [id], deferPending: true });
+            if (data.failed) { showToast('La génération du fond a échoué.', true); return; }
+            if (data.done) { finishComboTeaserComposite(id, data.imageUrl); return; }
+            if (attempt > 40) { showToast('Délai dépassé pour le visuel du combiné.', true); return; }
+            pollComboTeaserGeneration(id, statusUrl, attempt + 1);
+        } catch (error) {
+            console.error('Erreur suivi génération visuel combiné:', error);
+        }
+    }, 5000);
+}
+
+async function finishComboTeaserComposite(id, rawImageUrl) {
+    try {
+        var rowRes = await supabaseClient.from('pending_publications').select('overlay_data').eq('id', id).single();
+        if (rowRes.error) throw rowRes.error;
+        var overlay = rowRes.data.overlay_data;
+
+        var proxiedBg = await adminApiCall('/api/image-bridge', { action: 'proxy', url: rawImageUrl });
+
+        var logoUrls = [];
+        for (var i = 0; i < overlay.matches.length; i++) {
+            var m = overlay.matches[i];
+            var homeLogo = await fetchTeamLogo(m.homeTeam);
+            var awayLogo = await fetchTeamLogo(m.awayTeam);
+            var homeDataUri = homeLogo ? (await adminApiCall('/api/image-bridge', { action: 'proxy', url: homeLogo })).dataUri : null;
+            var awayDataUri = awayLogo ? (await adminApiCall('/api/image-bridge', { action: 'proxy', url: awayLogo })).dataUri : null;
+            logoUrls.push({
+                home: homeDataUri ? await loadImg(homeDataUri) : null,
+                away: awayDataUri ? await loadImg(awayDataUri) : null
+            });
+        }
+
+        var storyDataUri = await compositeComboTeaser(proxiedBg.dataUri, overlay, logoUrls, 'story');
+        var postDataUri = await compositeComboTeaser(proxiedBg.dataUri, overlay, logoUrls, 'post');
+        await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: storyDataUri, field: 'story' });
+        await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: postDataUri, field: 'post' });
+        await supabaseClient.from('pending_publications').update({ status: 'pending' }).eq('id', id);
+
+        showToast('Visuel du combiné du jour prêt (Story + Post) ! 🎨');
+        loadAdminPublications();
+    } catch (error) {
+        console.error('Erreur habillage visuel combiné:', error);
+        showToast('Erreur : ' + (error && error.message ? error.message : 'inconnue'), true);
+        await markPublicationFailed(id, error);
+    }
+}
+
+function compositeComboTeaser(bgDataUri, overlay, logoUrls, format) {
+    return new Promise(async function (resolve, reject) {
+        try {
+            var bg = await loadImg(bgDataUri);
+            var logo = await loadImg('logo-dark.png'); // asset local, même origine : jamais de CORS taint
+
+            await Promise.all([
+                document.fonts.load('400 40px Anton'),
+                document.fonts.load('800 20px Manrope'),
+                document.fonts.load('700 24px Manrope'),
+                document.fonts.load('400 18px Manrope')
+            ]);
+
+            var isPost = format === 'post';
+            var W = 1080, H = isPost ? 1350 : 1920;
+            var canvas = document.createElement('canvas');
+            canvas.width = W; canvas.height = H;
+            var ctx = canvas.getContext('2d');
+
+            var SCALE = 1;
+            if (isPost) {
+                ctx.font = '800 30px Manrope, sans-serif';
+                var taglineLinesEstimate = wrapCanvasText(ctx, overlay.tagline, W - (W * 0.09) * 2).length;
+                var naturalContentH = 380 + overlay.matches.length * 240 + taglineLinesEstimate * 38 + 300;
+                SCALE = Math.max(0.55, Math.min(1, (H - 150) / naturalContentH));
+            }
+            var S = function (px) { return Math.round(px * SCALE); };
+
+            // Fond navy uni : le sceau, les matchs (vrais écussons) et le CTA sont
+            // dessinés directement dessus — voir compositeVictoryStory pour le
+            // raisonnement complet (lisibilité jamais dépendante de l'IA).
+            var SOLID_BG = '#0a0e1a';
+            ctx.fillStyle = SOLID_BG;
+            ctx.fillRect(0, 0, W, H);
+
+            var sealCx = W / 2, sealCy = S(150), sealR = S(92);
+            drawCircularText(ctx, 'SCORE MASTER • COMBINÉ DU JOUR • ', sealCx, sealCy, sealR, '800 ' + S(22) + 'px Manrope, sans-serif', '#f5f5f2', S(5));
+            var logoSize = S(74);
+            ctx.drawImage(logo, sealCx - logoSize / 2, sealCy - logoSize / 2, logoSize, logoSize);
+
+            var marginX = W * 0.09;
+            var innerW = W - marginX * 2;
+            var y = S(230) + sealCy;
+            var logoSz = S(84);
+
+            overlay.matches.forEach(function (m, i) {
+                var logos = logoUrls[i] || {};
+                var rowY = y;
+
+                ctx.font = '400 ' + S(34) + 'px Anton, Impact, sans-serif';
+                ctx.fillStyle = '#e8b84b';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(m.time || 'VS', W / 2, rowY + logoSz / 2);
+
+                if (logos.home) ctx.drawImage(logos.home, marginX, rowY, logoSz, logoSz);
+                if (logos.away) ctx.drawImage(logos.away, W - marginX - logoSz, rowY, logoSz, logoSz);
+
+                ctx.font = '800 ' + S(24) + 'px Manrope, sans-serif';
+                ctx.fillStyle = '#f5f5f2';
+                ctx.textAlign = 'left';
+                wrapCanvasText(ctx, m.homeTeam, logoSz + S(20)).slice(0, 2).forEach(function (line, li) {
+                    ctx.fillText(line, marginX, rowY + logoSz + S(30) + li * S(28));
+                });
+                ctx.textAlign = 'right';
+                wrapCanvasText(ctx, m.awayTeam, logoSz + S(20)).slice(0, 2).forEach(function (line, li) {
+                    ctx.fillText(line, W - marginX, rowY + logoSz + S(30) + li * S(28));
+                });
+                ctx.textAlign = 'left';
+
+                y = rowY + logoSz + S(70);
+            });
+
+            y += S(30);
+
+            // Accroche
+            ctx.font = '800 ' + S(30) + 'px Manrope, sans-serif';
+            ctx.fillStyle = '#f5f5f2';
+            ctx.textAlign = 'center';
+            var taglineLines = wrapCanvasText(ctx, overlay.tagline, innerW);
+            taglineLines.forEach(function (line, li) {
+                ctx.fillText(line, W / 2, y + li * S(38));
+            });
+            y += taglineLines.length * S(38) + S(50);
+
+            // Ruban d'appel à l'action
+            ctx.save();
+            ctx.translate(W / 2, y + S(30));
+            ctx.rotate(-3 * Math.PI / 180);
+            ctx.font = '400 ' + S(26) + 'px Anton, Impact, sans-serif';
+            var ribbonText = "VOIR L'ANALYSE COMPLÈTE";
+            var ribbonW = ctx.measureText(ribbonText).width + S(60);
+            ctx.fillStyle = '#e8b84b';
+            if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(-ribbonW / 2, -S(30), ribbonW, S(60), S(8)); ctx.fill(); }
+            else { ctx.fillRect(-ribbonW / 2, -S(30), ribbonW, S(60)); }
+            ctx.fillStyle = '#0e1220';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(ribbonText, 0, 2);
+            ctx.restore();
+            y += S(150);
+
+            // Lien — l'appel à l'action principal de ce visuel (redirection site)
+            ctx.font = '700 ' + S(30) + 'px Manrope, sans-serif';
+            ctx.fillStyle = '#3ecf8e';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+            ctx.fillText('🌐 scoremaster.fr', W / 2, y);
+            y += S(38);
+            ctx.font = '700 ' + S(22) + 'px Manrope, sans-serif';
+            ctx.fillStyle = '#d4d7e2';
+            ctx.fillText('📲 @ScoreMasterOfficiel', W / 2, y);
+            y += S(60);
+
+            // Bandeau photo décoratif collé au bord bas, plafonné en hauteur
+            var photoH = Math.min(H - y - 20, S(340));
+            var photoY = H - photoH;
+            if (photoH > 100) {
+                ctx.save();
+                ctx.beginPath(); ctx.rect(0, photoY, W, photoH); ctx.clip();
+                ctx.filter = 'saturate(0.8)';
+                var pScale = Math.max(W / bg.width, photoH / bg.height);
+                var pdw = bg.width * pScale, pdh = bg.height * pScale;
+                ctx.drawImage(bg, (W - pdw) / 2, photoY + (photoH - pdh) / 2, pdw, pdh);
+                ctx.filter = 'none';
+                ctx.fillStyle = 'rgba(6,8,16,0.5)';
+                ctx.fillRect(0, photoY, W, photoH);
+                ctx.restore();
+
+                var seamH = Math.min(S(90), photoH * 0.5);
+                var gradSeam = ctx.createLinearGradient(0, photoY, 0, photoY + seamH);
+                gradSeam.addColorStop(0, SOLID_BG);
+                gradSeam.addColorStop(1, 'rgba(10,14,26,0)');
+                ctx.fillStyle = gradSeam; ctx.fillRect(0, photoY, W, seamH);
+            }
+
+            resolve(canvas.toDataURL('image/jpeg', 0.98));
+        } catch (e) { reject(e); }
+    });
+}
+
 async function queueVictoryStoryPublication(id) {
     var c = allCombineds.find(x => x.id == id);
     if (!c || !c.matches || !c.matches.length) return;
@@ -6347,7 +6609,7 @@ function renderAdminHistory() {
                 htmlPending += cardBaseHtml('<span style="color:#FF9800; font-weight:bold;">À vérifier ⚠️</span>', btns);
             } else {
                 // EN COURS
-                let btns = `<button onclick="sendTelegramReminder('${c.id}')" style="background:var(--primary-yellow); color:#000; font-weight:bold;"><i class="fas fa-bell"></i> Relancer</button><button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(244,63,94,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
+                let btns = `<button onclick="sendTelegramReminder('${c.id}')" style="background:var(--primary-yellow); color:#000; font-weight:bold;"><i class="fas fa-bell"></i> Relancer</button><button onclick="queueComboTeaserPublication('${c.id}')" title="Générer le visuel Instagram (Story + Post)" style="background:rgba(230,66,140,0.15); color:#e6428c; border:1px solid rgba(230,66,140,0.4);"><i class="fab fa-instagram"></i></button><button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue);"><i class="fas fa-edit"></i> Éditer</button><button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(244,63,94,0.2); color:var(--red);"><i class="fas fa-trash"></i></button>`;
                 htmlActive += cardBaseHtml(displayStatus, btns);
             }
         } else {
