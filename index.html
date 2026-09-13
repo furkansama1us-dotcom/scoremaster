@@ -2708,22 +2708,20 @@ function compositeConseilImage(bgDataUri, overlay) {
                 var photoH = H * 0.5;
                 ctx.save();
                 ctx.beginPath(); ctx.rect(0, 0, W, photoH); ctx.clip();
-                // Flou renforcé : un flou léger ne suffit pas à effacer un panneau
-                // large avec du texte en gras dessus (contrairement au texte fin,
-                // ça survit à un flou de 3-4px) — vu en pratique sur un panneau
-                // jaune avec de fausses lettres, encore lisible malgré le 1er flou.
-                ctx.filter = 'blur(7px) saturate(0.75)';
+                // Pas de flou (demande explicite) : on compte uniquement sur
+                // l'assombrissement ci-dessous pour casser le contraste d'un
+                // éventuel faux texte/panneau — le flou abîmait le rendu visuel de
+                // l'image sans être plus fiable qu'un fort assombrissement.
+                ctx.filter = 'saturate(0.8)';
                 var scale = Math.max(W / img.width, photoH / img.height);
                 var dw = img.width * scale, dh = img.height * scale;
                 ctx.drawImage(img, (W - dw) / 2, (photoH - dh) / 2, dw, dh);
                 ctx.filter = 'none';
                 ctx.restore();
 
-                // Voile sombre bien plus marqué sur la zone photo : le flou seul ne
-                // suffit pas toujours, un fort assombrissement casse le contraste
-                // de façon beaucoup plus fiable, quelle que soit la taille de l'objet
-                // halluciné.
-                ctx.fillStyle = 'rgba(6,8,16,0.45)';
+                // Voile sombre marqué sur la zone photo : casse le contraste d'un
+                // éventuel faux texte/panneau halluciné, sans flouter l'image.
+                ctx.fillStyle = 'rgba(6,8,16,0.5)';
                 ctx.fillRect(0, 0, W, photoH);
 
                 // Dégradé en haut (lisibilité du logo) + raccord doux photo -> aplat uni
@@ -2800,7 +2798,7 @@ function compositeConseilImage(bgDataUri, overlay) {
                 ctx.stroke();
                 ctx.fillText(chipText, marginX + 20, y + 6);
 
-                resolve(canvas.toDataURL('image/jpeg', 0.96));
+                resolve(canvas.toDataURL('image/jpeg', 0.98));
             } catch (e) { reject(e); }
         };
         img.onerror = function () { reject(new Error('Impossible de charger le fond généré')); };
@@ -3008,13 +3006,24 @@ function compositeVictoryStory(bgDataUri, overlay, logoUrls, format) {
             // dimensions recommandées par Instagram pour un rendu net, non recadré).
             var isPost = format === 'post';
             var W = 1080, H = isPost ? 1350 : 1920;
-            // Tout le gabarit ci-dessous a été pensé pour du 1920px de haut : on
-            // réduit uniformément tailles de police et espacements pour le format
-            // post, plus court, au lieu de dupliquer toute la mise en page.
-            var SCALE = isPost ? 0.66 : 1;
             var canvas = document.createElement('canvas');
             canvas.width = W; canvas.height = H;
             var ctx = canvas.getContext('2d');
+
+            // Tout le gabarit a été pensé pour du 1920px de haut (format Story) : pour
+            // le format post (4:5, bien plus court), on réduit uniformément tailles de
+            // police et espacements via une échelle calculée à partir de la hauteur
+            // réelle du contenu (nombre de matchs + longueur de l'accroche), plutôt
+            // qu'une constante fixe qui laissait une grande zone vide en bas du visuel
+            // quand le contenu était court.
+            var SCALE = 1;
+            if (isPost) {
+                ctx.font = '800 30px Manrope, sans-serif';
+                var taglineLinesEstimate = wrapCanvasText(ctx, overlay.tagline, W - (W * 0.09) * 2).length;
+                var naturalContentH = 380 + overlay.matches.length * 306 + taglineLinesEstimate * 38 + 416;
+                SCALE = Math.max(0.55, Math.min(1, (H - 150) / naturalContentH));
+            }
+            var S = function (px) { return Math.round(px * SCALE); };
 
             // Fond navy uni sur tout le cadre — la photo IA n'est plus utilisée en
             // fond plein cadre : le sceau, les matchs (vrais écussons), l'accroche,
@@ -3027,8 +3036,6 @@ function compositeVictoryStory(bgDataUri, overlay, logoUrls, format) {
             var SOLID_BG = '#0a0e1a';
             ctx.fillStyle = SOLID_BG;
             ctx.fillRect(0, 0, W, H);
-
-            var S = function (px) { return Math.round(px * SCALE); };
 
             // Sceau centré : texte en cercle + logo au centre
             var sealCx = W / 2, sealCy = S(150), sealR = S(92);
@@ -3166,7 +3173,7 @@ function compositeVictoryStory(bgDataUri, overlay, logoUrls, format) {
                 ctx.fillStyle = gradSeam; ctx.fillRect(0, photoY, W, seamH);
             }
 
-            resolve(canvas.toDataURL('image/jpeg', 0.96));
+            resolve(canvas.toDataURL('image/jpeg', 0.98));
         } catch (e) { reject(e); }
     });
 }
