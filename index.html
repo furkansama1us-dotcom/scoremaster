@@ -2949,6 +2949,14 @@ function buildComboTeaserCaption(c) {
 async function queueComboTeaserPublication(id) {
     var c = allCombineds.find(x => x.id == id);
     if (!c || !c.matches || !c.matches.length) return;
+    return queueComboTeaserForCombo(c);
+}
+
+// Coeur de la génération, séparé de queueComboTeaserPublication(id) pour pouvoir
+// être appelé juste après la création d'un combiné (publishAISuggestions), avant
+// même que ce combiné n'existe dans allCombineds (rechargé seulement ensuite).
+async function queueComboTeaserForCombo(c) {
+    if (!c || !c.matches || !c.matches.length) return;
     try {
         var overlay = buildComboTeaserOverlay(c);
         var imagePrompt = buildComboTeaserImagePromptRaw(c);
@@ -4500,6 +4508,10 @@ async function fetchMatchesFromAPI() {
             sendGroupTelegram(telegramAIMsg).catch(function () {
                 showToast("Combiné publié, mais erreur lors de la notification Telegram.", true);
             });
+
+            // Génère aussi le visuel Instagram (Story + Post) du combiné du jour —
+            // il atterrit dans Publications, à valider séparément avant envoi.
+            queueComboTeaserForCombo({ id: pubRes.data.id, date: date, matches: matches }).catch(function () {});
 
             window.currentAISuggestions = [];
             document.getElementById('ai-suggest-container').innerHTML = '';
