@@ -1,17 +1,14 @@
-// Déclenché depuis le bouton "Conseil IA" du Panel Admin (onglet Notifs).
+// Endpoint unifié pour les 3 générateurs de contenu "sur demande" (Conseil IA,
+// message+photo de victoire classique, story de victoire Instagram) — fusionnés
+// dans un seul fichier pour rester sous la limite de 12 fonctions serverless
+// du plan Vercel Hobby (ces trois endpoints étaient auparavant séparés :
+// generate-conseil-content.js, generate-victory-content.js,
+// generate-victory-story.js).
 //
-// Choisit un conseil (banque fixe, anti-répétition sur les dernières
-// publications), soumet un fond illustré SANS TEXTE à Higgsfield (même
-// règle que le reste de l'app : les générateurs d'image rendent le texte
-// illisible, donc aucune lettre n'est jamais demandée dans le prompt) et
-// dépose un brouillon "generating" dans pending_publications avec les
-// textes du conseil dans `overlay_data`.
-//
-// Le texte est ensuite habillé sur l'image CÔTÉ CLIENT (Canvas, vraie
-// typographie Google Fonts) une fois le fond prêt — voir
-// compositeConseilImage()/uploadCompositedConseil() dans index.html — puis
-// uploadé via /api/upload-composited-image avant de passer "pending"
-// (prêt à approuver dans Publications).
+// Chacun soumet un fond SANS AUCUN TEXTE à Higgsfield (le texte est toujours
+// habillé à part, en vraie typographie, côté client) et dépose un brouillon
+// "generating" dans pending_publications. Rien n'est publié sans validation
+// admin dans l'onglet Publications.
 
 const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
@@ -95,13 +92,25 @@ async function verifyAdmin(accessToken) {
     return !!(rows && rows[0] && rows[0].is_admin);
 }
 
+async function submitHiggsfield(prompt, aspect) {
+    const res = await fetch('https://api.higgsfield.ai/higgsfield-ai/soul/v2/standard', {
+        method: 'POST',
+        headers: { Authorization: `Key ${HF_KEY_ID}:${HF_KEY_SECRET}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, aspect_ratio: aspect })
+    });
+    if (!res.ok) throw new Error(`Higgsfield submit -> ${res.status}: ${await res.text()}`);
+    const data = await res.json();
+    if (!data.status_url) throw new Error('Higgsfield: pas de status_url dans la réponse: ' + JSON.stringify(data));
+    return data.status_url;
+}
+
 function pickConseil(recentHeadlines) {
     const candidates = CONSEILS.filter(c => recentHeadlines.indexOf(c.headline) === -1);
     const pool = candidates.length ? candidates : CONSEILS;
     return pool[Math.floor(Math.random() * pool.length)];
 }
 
-function buildImagePrompt(conseil) {
+function buildConseilImagePrompt(conseil) {
     return `A stylized, hand-drawn illustrated scene, dark bold ink outlines, high-contrast ink wash, premium comic book / graphic novel art style. NOT photorealistic, NOT 3D render, NOT a photo.
 
 ABSOLUTE RULE: NO text, NO numbers, NO typography or lettering of any kind anywhere in the image, under any circumstance. NO phone, NO screen, NO tablet, NO app interface anywhere.
@@ -113,21 +122,18 @@ Brand mark (the ONLY graphic emblem allowed, no accompanying text): a small, ele
 Style: cinematic, moody, premium illustrated aesthetic, generous empty negative space in the top third and bottom third of the frame for a text overlay to be added afterward.`;
 }
 
-function buildCaption(conseil) {
+function buildConseilCaption(conseil) {
     const headlinePlain = conseil.headline.replace(/\n/g, ' ');
     return `${conseil.kicker.toUpperCase()} 📊\n\n${headlinePlain}\n\n${conseil.sub}\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel`;
 }
 
-async function submitHiggsfield(prompt, aspect) {
-    const res = await fetch('https://api.higgsfield.ai/higgsfield-ai/soul/v2/standard', {
+async function createPendingRow(row) {
+    const rows = await sbFetch('pending_publications', {
         method: 'POST',
-        headers: { Authorization: `Key ${HF_KEY_ID}:${HF_KEY_SECRET}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, aspect_ratio: aspect })
+        headers: { Prefer: 'return=representation' },
+        body: JSON.stringify([row])
     });
-    if (!res.ok) throw new Error(`Higgsfield submit -> ${res.status}: ${await res.text()}`);
-    const data = await res.json();
-    if (!data.status_url) throw new Error('Higgsfield: pas de status_url dans la réponse: ' + JSON.stringify(data));
-    return data.status_url;
+    return (rows || []).map(r => ({ id: r.id, platform: r.platform }));
 }
 
 module.exports = async function handler(req, res) {
@@ -143,28 +149,46 @@ module.exports = async function handler(req, res) {
         const isAdmin = await verifyAdmin(accessToken);
         if (!isAdmin) return res.status(403).json({ error: 'Accès refusé' });
 
-        const recent = await sbFetch(`pending_publications?content_type=eq.Conseil IA&select=overlay_data&order=created_at.desc&limit=3`).catch(() => []);
-        const recentHeadlines = (recent || []).map(r => r.overlay_data && r.overlay_data.headline).filter(Boolean);
+        const { type } = req.body || {};
+        const today = new Date().toISOString().slice(0, 10);
 
-        const conseil = pickConseil(recentHeadlines);
-        const statusUrl = await submitHiggsfield(buildImagePrompt(conseil), '4:5');
+        if (type === 'conseil') {
+            const recent = await sbFetch(`pending_publications?content_type=eq.Conseil IA&select=overlay_data&order=created_at.desc&limit=3`).catch(() => []);
+            const recentHeadlines = (recent || []).map(r => r.overlay_data && r.overlay_data.headline).filter(Boolean);
+            const conseil = pickConseil(recentHeadlines);
+            const statusUrl = await submitHiggsfield(buildConseilImagePrompt(conseil), '4:5');
+            const rows = await createPendingRow({
+                scheduled_for: today, content_type: 'Conseil IA', platform: 'instagram',
+                caption: buildConseilCaption(conseil), image_url: '', status: 'generating',
+                hf_status_url: statusUrl, overlay_data: conseil
+            });
+            return res.status(200).json({ rows, statusUrl });
+        }
 
-        const rows = await sbFetch('pending_publications', {
-            method: 'POST',
-            headers: { Prefer: 'return=representation' },
-            body: JSON.stringify([{
-                scheduled_for: new Date().toISOString().slice(0, 10),
-                content_type: 'Conseil IA',
-                platform: 'instagram',
-                caption: buildCaption(conseil),
-                image_url: '',
-                status: 'generating',
-                hf_status_url: statusUrl,
-                overlay_data: conseil
-            }])
+        if (type === 'victory-story') {
+            const { caption, imagePrompt, dateStr, overlayData } = req.body;
+            if (!caption || !imagePrompt || !overlayData) {
+                return res.status(400).json({ error: 'caption, imagePrompt et overlayData requis' });
+            }
+            const statusUrl = await submitHiggsfield(imagePrompt, '9:16');
+            const rows = await createPendingRow({
+                scheduled_for: dateStr || today, content_type: 'Victoire Story', platform: 'instagram',
+                caption: caption, image_url: '', status: 'generating', hf_status_url: statusUrl, overlay_data: overlayData
+            });
+            return res.status(200).json({ rows, statusUrl });
+        }
+
+        // 'victory-classic' (par défaut, rétrocompatible avec les anciens appels sans `type`)
+        const { caption, imagePrompt, dateStr } = req.body;
+        if (!caption || !imagePrompt) {
+            return res.status(400).json({ error: 'caption et imagePrompt requis' });
+        }
+        const statusUrl = await submitHiggsfield(imagePrompt, '1:1');
+        const rows = await createPendingRow({
+            scheduled_for: dateStr || today, content_type: 'Victoire', platform: 'telegram',
+            caption: caption, image_url: '', status: 'generating', hf_status_url: statusUrl
         });
-
-        res.status(200).json({ rows: (rows || []).map(r => ({ id: r.id, platform: r.platform })), statusUrl });
+        res.status(200).json({ rows, statusUrl });
     } catch (error) {
         res.status(500).json({ error: String(error) });
     }

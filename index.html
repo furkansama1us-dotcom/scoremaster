@@ -2584,7 +2584,7 @@ var CONSEIL_DEFAULT_DESC = 'Génère un visuel "conseil" (fond Higgsfield + text
 async function generateConseilNow() {
     setConseilCardState('<i class="fas fa-spinner fa-spin"></i> Génération du fond en cours (Higgsfield)...', true);
     try {
-        var data = await adminApiCall('/api/generate-conseil-content', {});
+        var data = await adminApiCall('/api/generate-story-content', { type: 'conseil' });
         var id = data.rows[0].id;
         pollConseilGeneration(id, data.statusUrl);
     } catch (error) {
@@ -2631,11 +2631,11 @@ async function finishConseilComposite(id, rawImageUrl) {
         if (rowRes.error) throw rowRes.error;
         var overlay = rowRes.data.overlay_data;
 
-        var proxied = await adminApiCall('/api/proxy-image', { url: rawImageUrl });
+        var proxied = await adminApiCall('/api/image-bridge', { action: 'proxy', url: rawImageUrl });
         var finalDataUri = await compositeConseilImage(proxied.dataUri, overlay);
 
         setConseilCardState('<i class="fas fa-spinner fa-spin"></i> Envoi du visuel final...', true);
-        await adminApiCall('/api/upload-composited-image', { id: id, imageDataUri: finalDataUri });
+        await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: finalDataUri });
 
         showToast('Conseil IA prêt ! Retrouve-le dans Publications pour validation. 💡');
         setConseilCardState(CONSEIL_DEFAULT_DESC, false);
@@ -2840,7 +2840,7 @@ async function queueVictoryStoryPublication(id) {
         var overlay = buildVictoryStoryOverlay(c);
         var imagePrompt = buildVictoryStoryImagePrompt(c);
         var caption = buildVictoryTelegramText(c);
-        var data = await adminApiCall('/api/generate-victory-story', { caption: caption, imagePrompt: imagePrompt, dateStr: c.date, overlayData: overlay });
+        var data = await adminApiCall('/api/generate-story-content', { type: 'victory-story', caption: caption, imagePrompt: imagePrompt, dateStr: c.date, overlayData: overlay });
         pollVictoryStoryGeneration(data.rows[0].id, data.statusUrl);
     } catch (error) {
         console.error('Erreur génération victory story:', error);
@@ -2869,7 +2869,7 @@ async function finishVictoryStoryComposite(id, rawImageUrl) {
         if (rowRes.error) throw rowRes.error;
         var overlay = rowRes.data.overlay_data;
 
-        var proxiedBg = await adminApiCall('/api/proxy-image', { url: rawImageUrl });
+        var proxiedBg = await adminApiCall('/api/image-bridge', { action: 'proxy', url: rawImageUrl });
 
         var logoUrls = [];
         for (var i = 0; i < overlay.matches.length; i++) {
@@ -2877,13 +2877,13 @@ async function finishVictoryStoryComposite(id, rawImageUrl) {
             var homeLogo = await fetchTeamLogo(m.homeTeam);
             var awayLogo = await fetchTeamLogo(m.awayTeam);
             logoUrls.push({
-                home: homeLogo ? (await adminApiCall('/api/proxy-image', { url: homeLogo })).dataUri : null,
-                away: awayLogo ? (await adminApiCall('/api/proxy-image', { url: awayLogo })).dataUri : null
+                home: homeLogo ? (await adminApiCall('/api/image-bridge', { action: 'proxy', url: homeLogo })).dataUri : null,
+                away: awayLogo ? (await adminApiCall('/api/image-bridge', { action: 'proxy', url: awayLogo })).dataUri : null
             });
         }
 
         var finalDataUri = await compositeVictoryStory(proxiedBg.dataUri, overlay, logoUrls);
-        await adminApiCall('/api/upload-composited-image', { id: id, imageDataUri: finalDataUri });
+        await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: finalDataUri });
 
         showToast('Story de victoire prête ! Retrouve-la dans Publications pour validation. 🏆');
         loadAdminPublications();
@@ -3332,7 +3332,7 @@ async function publishNow(id) {
     var btn = document.getElementById('publish-now-' + id);
     if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publication en cours...'; }
     try {
-        await adminApiCall('/api/publish-now', { id: id });
+        await adminApiCall('/api/publish', { id: id });
         showToast('Publié immédiatement ! 🚀');
         loadAdminPublications();
     } catch (error) {
@@ -6614,7 +6614,7 @@ async function queueVictoryPublication(id) {
     try {
         var caption = buildVictoryTelegramText(c);
         var imagePrompt = buildVictoryImagePromptRaw(c);
-        var data = await adminApiCall('/api/generate-victory-content', { caption: caption, imagePrompt: imagePrompt, dateStr: c.date });
+        var data = await adminApiCall('/api/generate-story-content', { type: 'victory-classic', caption: caption, imagePrompt: imagePrompt, dateStr: c.date });
         showToast('Victoire en préparation : Higgsfield génère la photo, tu la retrouveras dans Publications pour validation. 🎨');
         startGenerationPolling(data.rows.map(function (r) { return r.id; }), data.statusUrl);
         loadAdminPublications();
