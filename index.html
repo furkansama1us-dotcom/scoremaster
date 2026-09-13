@@ -2695,32 +2695,41 @@ function compositeConseilImage(bgDataUri, overlay) {
                 canvas.width = W; canvas.height = H;
                 var ctx = canvas.getContext('2d');
 
-                // Fond (cover crop) — léger flou volontaire : l'IA de fond hallucine
-                // parfois du faux texte/logos illisibles (voir markPublicationFailed
-                // ci-dessous et l'historique des générations Conseil IA) ; un flou
-                // détruit ces détails fins sans abîmer les formes/lumières générales.
-                ctx.filter = 'blur(3px) saturate(0.9)';
-                var scale = Math.max(W / img.width, H / img.height);
-                var dw = img.width * scale, dh = img.height * scale;
-                ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
-                ctx.filter = 'none';
-
-                // Voile sombre sur toute l'image, en plus des dégradés ciblés
-                // ci-dessous : réduit encore le contraste d'un éventuel faux texte
-                // résiduel au centre du cadre (zone non couverte par les dégradés).
-                ctx.fillStyle = 'rgba(6,8,16,0.22)';
+                // Fond navy uni sur tout le cadre : c'est LUI la base, pas la photo IA.
+                var SOLID_BG = '#0a0e1a';
+                ctx.fillStyle = SOLID_BG;
                 ctx.fillRect(0, 0, W, H);
 
-                // Voiles dégradés haut/bas pour garantir le contraste texte/fond
-                var gradTop = ctx.createLinearGradient(0, 0, 0, H * 0.32);
+                // La photo/illustration IA n'occupe que la moitié haute du cadre — le
+                // reste (bloc de texte) est en aplat uni : plus l'IA hallucine du faux
+                // texte/logo illisible sur ses images, moins on lui laisse de place, et
+                // la lisibilité du texte n'en dépend plus du tout. Léger flou volontaire
+                // en prime pour détruire les derniers détails fins hallucinés.
+                var photoH = H * 0.56;
+                ctx.save();
+                ctx.beginPath(); ctx.rect(0, 0, W, photoH); ctx.clip();
+                ctx.filter = 'blur(4px) saturate(0.9)';
+                var scale = Math.max(W / img.width, photoH / img.height);
+                var dw = img.width * scale, dh = img.height * scale;
+                ctx.drawImage(img, (W - dw) / 2, (photoH - dh) / 2, dw, dh);
+                ctx.filter = 'none';
+                ctx.restore();
+
+                // Voile sombre sur la zone photo, en plus du dégradé de raccord ci-dessous
+                ctx.fillStyle = 'rgba(6,8,16,0.22)';
+                ctx.fillRect(0, 0, W, photoH);
+
+                // Dégradé en haut (lisibilité du logo) + raccord doux photo -> aplat uni
+                var gradTop = ctx.createLinearGradient(0, 0, 0, H * 0.22);
                 gradTop.addColorStop(0, 'rgba(6,8,16,0.85)');
                 gradTop.addColorStop(1, 'rgba(6,8,16,0)');
-                ctx.fillStyle = gradTop; ctx.fillRect(0, 0, W, H * 0.32);
+                ctx.fillStyle = gradTop; ctx.fillRect(0, 0, W, H * 0.22);
 
-                var gradBottom = ctx.createLinearGradient(0, H * 0.52, 0, H);
-                gradBottom.addColorStop(0, 'rgba(6,8,16,0)');
-                gradBottom.addColorStop(1, 'rgba(6,8,16,0.92)');
-                ctx.fillStyle = gradBottom; ctx.fillRect(0, H * 0.52, W, H * 0.48);
+                var seamH = 130;
+                var gradSeam = ctx.createLinearGradient(0, photoH - seamH, 0, photoH);
+                gradSeam.addColorStop(0, 'rgba(10,14,26,0)');
+                gradSeam.addColorStop(1, SOLID_BG);
+                ctx.fillStyle = gradSeam; ctx.fillRect(0, photoH - seamH, W, seamH);
 
                 var marginX = W * 0.08;
 
@@ -2737,8 +2746,17 @@ function compositeConseilImage(bgDataUri, overlay) {
                 ctx.fillStyle = '#e8b84b';
                 ctx.fillText('MASTER', marginX + logoSize + 16 + scoreW, badgeY + 20);
 
-                // Bas de l'image : kicker / headline / sous-texte / lien
-                var y = H - 300;
+                // Bas de l'image : kicker / headline / sous-texte / lien — hauteur
+                // calculée à l'avance (pas un offset fixe) pour ne jamais dessiner de
+                // contenu hors-cadre quand le texte est plus long que la moyenne (le
+                // chip lien se retrouvait hors canvas et disparaissait purement et
+                // simplement dans ce cas).
+                ctx.font = '400 62px Anton, Impact, sans-serif';
+                var headlineLines = (overlay.headline || '').split('\n');
+                ctx.font = '400 30px Manrope, sans-serif';
+                var subLines = wrapCanvasText(ctx, overlay.sub || '', W - marginX * 2).slice(0, 4);
+
+                var y = H - 144 - headlineLines.length * 64 - subLines.length * 38;
 
                 ctx.fillStyle = '#e8b84b';
                 ctx.font = '800 25px Manrope, sans-serif';
@@ -2747,7 +2765,6 @@ function compositeConseilImage(bgDataUri, overlay) {
 
                 ctx.fillStyle = '#f5f5f2';
                 ctx.font = '400 62px Anton, Impact, sans-serif';
-                var headlineLines = (overlay.headline || '').split('\n');
                 headlineLines.forEach(function (line) {
                     ctx.fillText(line, marginX, y);
                     y += 64;
@@ -2756,7 +2773,6 @@ function compositeConseilImage(bgDataUri, overlay) {
 
                 ctx.fillStyle = '#d4d7e2';
                 ctx.font = '400 30px Manrope, sans-serif';
-                var subLines = wrapCanvasText(ctx, overlay.sub || '', W - marginX * 2).slice(0, 4);
                 subLines.forEach(function (line) {
                     ctx.fillText(line, marginX, y);
                     y += 38;
@@ -2981,25 +2997,17 @@ function compositeVictoryStory(bgDataUri, overlay, logoUrls) {
             canvas.width = W; canvas.height = H;
             var ctx = canvas.getContext('2d');
 
-            // Léger flou volontaire : détruit le faux texte/logo illisible que
-            // l'IA de fond hallucine parfois, sans abîmer les formes/lumières.
-            ctx.filter = 'blur(3px) saturate(0.9)';
-            var scale = Math.max(W / bg.width, H / bg.height);
-            var dw = bg.width * scale, dh = bg.height * scale;
-            ctx.drawImage(bg, (W - dw) / 2, (H - dh) / 2, dw, dh);
-            ctx.filter = 'none';
-
-            // Voile sombre sur toute l'image : réduit le contraste d'un éventuel
-            // faux texte résiduel au centre du cadre, non couvert par les dégradés.
-            ctx.fillStyle = 'rgba(6,8,16,0.22)';
+            // Fond navy uni sur tout le cadre — la photo IA n'est plus utilisée en
+            // fond plein cadre : le sceau, les matchs (vrais écussons), l'accroche,
+            // le ruban et le bloc fiabilité sont tous dessinés directement sur cet
+            // aplat, donc leur lisibilité ne dépend plus jamais de ce que l'IA a pu
+            // halluciner (faux texte, faux badges, confettis en forme de cartes...).
+            // La photo générée n'est utilisée que comme bandeau décoratif tout en
+            // bas du visuel, une fois qu'on sait où le contenu s'arrête (voir plus
+            // bas), à la manière de la maquette approuvée.
+            var SOLID_BG = '#0a0e1a';
+            ctx.fillStyle = SOLID_BG;
             ctx.fillRect(0, 0, W, H);
-
-            var gradTop = ctx.createLinearGradient(0, 0, 0, H * 0.28);
-            gradTop.addColorStop(0, 'rgba(6,8,16,0.75)'); gradTop.addColorStop(1, 'rgba(6,8,16,0)');
-            ctx.fillStyle = gradTop; ctx.fillRect(0, 0, W, H * 0.28);
-            var gradBottom = ctx.createLinearGradient(0, H * 0.4, 0, H);
-            gradBottom.addColorStop(0, 'rgba(6,8,16,0)'); gradBottom.addColorStop(1, 'rgba(6,8,16,0.95)');
-            ctx.fillStyle = gradBottom; ctx.fillRect(0, H * 0.4, W, H * 0.6);
 
             // Sceau centré : texte en cercle + logo au centre
             var sealCx = W / 2, sealCy = 150, sealR = 92;
@@ -3108,6 +3116,32 @@ function compositeVictoryStory(bgDataUri, overlay, logoUrls) {
             ctx.fillStyle = '#d4d7e2';
             ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
             ctx.fillText('🌐 scoremaster.fr   ·   📲 @ScoreMasterOfficiel', W / 2, y);
+            y += 50;
+
+            // Bandeau photo décoratif tout en bas, uniquement dans l'espace restant
+            // (jamais derrière du texte) — flou volontaire en plus pour détruire les
+            // derniers détails hallucinés (faux texte/badges) que l'IA pourrait avoir
+            // dessinés sur cette photo.
+            var photoY = y;
+            var photoH = H - photoY;
+            if (photoH > 140) {
+                ctx.save();
+                ctx.beginPath(); ctx.rect(0, photoY, W, photoH); ctx.clip();
+                ctx.filter = 'blur(4px) saturate(0.85)';
+                var pScale = Math.max(W / bg.width, photoH / bg.height);
+                var pdw = bg.width * pScale, pdh = bg.height * pScale;
+                ctx.drawImage(bg, (W - pdw) / 2, photoY + (photoH - pdh) / 2, pdw, pdh);
+                ctx.filter = 'none';
+                ctx.fillStyle = 'rgba(6,8,16,0.3)';
+                ctx.fillRect(0, photoY, W, photoH);
+                ctx.restore();
+
+                var seamH = Math.min(90, photoH * 0.5);
+                var gradSeam = ctx.createLinearGradient(0, photoY, 0, photoY + seamH);
+                gradSeam.addColorStop(0, SOLID_BG);
+                gradSeam.addColorStop(1, 'rgba(10,14,26,0)');
+                ctx.fillStyle = gradSeam; ctx.fillRect(0, photoY, W, seamH);
+            }
 
             resolve(canvas.toDataURL('image/jpeg', 0.9));
         } catch (e) { reject(e); }
@@ -8496,6 +8530,8 @@ Scene: A triumphant, celebratory low-angle view of a football stadium pitch at n
 ABSOLUTE RULE: NO crest, NO shield, NO crown, NO emblem, NO badge, NO seal, NO coat of arms, NO circular medallion, NO logo, NO monogram of any kind anywhere in the image — the real brand logo is added separately afterward, never attempt to draw one, not even a generic or blank-looking one.
 
 The stadium's advertising boards, perimeter hoardings, scoreboards, screens and any signage must all be completely PLAIN and BLANK (solid color only) — never display any sponsor names, brand marks, numbers or text on them, even blurry or out of focus ones.
+
+The confetti pieces must be simple abstract shapes only — small dots, thin strips, tiny triangles or circles of gold/color. NEVER draw the confetti as photographs, playing cards, tickets, certificates, documents, picture frames, signs, or any small rectangular panel — no confetti piece may contain any mark resembling text, a face, a logo or an illustration inside it.
 
 ${flagLine}
 
