@@ -2705,18 +2705,25 @@ function compositeConseilImage(bgDataUri, overlay) {
                 // texte/logo illisible sur ses images, moins on lui laisse de place, et
                 // la lisibilité du texte n'en dépend plus du tout. Léger flou volontaire
                 // en prime pour détruire les derniers détails fins hallucinés.
-                var photoH = H * 0.56;
+                var photoH = H * 0.5;
                 ctx.save();
                 ctx.beginPath(); ctx.rect(0, 0, W, photoH); ctx.clip();
-                ctx.filter = 'blur(4px) saturate(0.9)';
+                // Flou renforcé : un flou léger ne suffit pas à effacer un panneau
+                // large avec du texte en gras dessus (contrairement au texte fin,
+                // ça survit à un flou de 3-4px) — vu en pratique sur un panneau
+                // jaune avec de fausses lettres, encore lisible malgré le 1er flou.
+                ctx.filter = 'blur(7px) saturate(0.75)';
                 var scale = Math.max(W / img.width, photoH / img.height);
                 var dw = img.width * scale, dh = img.height * scale;
                 ctx.drawImage(img, (W - dw) / 2, (photoH - dh) / 2, dw, dh);
                 ctx.filter = 'none';
                 ctx.restore();
 
-                // Voile sombre sur la zone photo, en plus du dégradé de raccord ci-dessous
-                ctx.fillStyle = 'rgba(6,8,16,0.22)';
+                // Voile sombre bien plus marqué sur la zone photo : le flou seul ne
+                // suffit pas toujours, un fort assombrissement casse le contraste
+                // de façon beaucoup plus fiable, quelle que soit la taille de l'objet
+                // halluciné.
+                ctx.fillStyle = 'rgba(6,8,16,0.45)';
                 ctx.fillRect(0, 0, W, photoH);
 
                 // Dégradé en haut (lisibilité du logo) + raccord doux photo -> aplat uni
@@ -3143,12 +3150,12 @@ function compositeVictoryStory(bgDataUri, overlay, logoUrls, format) {
             if (photoH > 100) {
                 ctx.save();
                 ctx.beginPath(); ctx.rect(0, photoY, W, photoH); ctx.clip();
-                ctx.filter = 'blur(4px) saturate(0.85)';
+                ctx.filter = 'blur(7px) saturate(0.75)';
                 var pScale = Math.max(W / bg.width, photoH / bg.height);
                 var pdw = bg.width * pScale, pdh = bg.height * pScale;
                 ctx.drawImage(bg, (W - pdw) / 2, photoY + (photoH - pdh) / 2, pdw, pdh);
                 ctx.filter = 'none';
-                ctx.fillStyle = 'rgba(6,8,16,0.3)';
+                ctx.fillStyle = 'rgba(6,8,16,0.45)';
                 ctx.fillRect(0, photoY, W, photoH);
                 ctx.restore();
 
