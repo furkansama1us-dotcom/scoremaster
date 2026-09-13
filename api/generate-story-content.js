@@ -21,13 +21,13 @@ const CONSEILS = [
         kicker: 'Conseil du jour',
         headline: "L'IA ne devine pas.\nElle recoupe.",
         sub: "Forme récente, historique des confrontations, contexte du match : c'est la combinaison des données qui fait un pronostic sérieux — pas le hasard.",
-        scene: 'a football pitch at night under dramatic floodlights, with a glowing holographic neural-network / data grid overlay hovering above the pitch like a scoreboard hologram'
+        scene: 'a large ornate magnifying glass hovering above an empty football pitch at night, casting a warm golden glow on the grass below, dramatic floodlights, low-angle cinematic view'
     },
     {
         kicker: 'Méthode',
         headline: "Un bon prono commence\navant le coup d'envoi.",
         sub: "Composition probable, enjeux du match, fatigue accumulée : l'analyse se construit des heures avant, jamais dans la précipitation.",
-        scene: "a coach's tactics desk illuminated by a warm lamp, a glowing tactical board with abstract light-trail formations hovering above it, dramatic dark stadium tunnel background"
+        scene: "a chess board mid-game on a coach's wooden desk illuminated by a warm lamp, dramatic dark stadium tunnel background, moody cinematic lighting"
     },
     {
         kicker: 'Discipline',
@@ -39,13 +39,13 @@ const CONSEILS = [
         kicker: 'Données',
         headline: 'Chaque cote\nraconte une histoire.',
         sub: "Une cote qui bouge signale un mouvement de marché — encore faut-il savoir le lire avant de miser.",
-        scene: 'an elegant hand holding a glowing translucent data chart in mid-air above a dark stadium seating background, abstract rising and falling light-line graphs'
+        scene: 'an antique brass compass and a stack of gold coins resting on a dark wooden table, dramatic stadium floodlights glowing softly in the background, moody cinematic lighting'
     },
     {
         kicker: 'Analyse',
         headline: "Le score exact n'est\njamais un pari au hasard.",
         sub: "C'est le croisement de dizaines de variables qui permet d'isoler les scénarios les plus probables.",
-        scene: 'a low-angle view of an empty stadium pitch at night, dozens of thin glowing light threads converging toward a single point above the center circle, dramatic floodlights'
+        scene: 'a low-angle view of an empty stadium pitch at night, dozens of thin glowing golden light threads converging toward a single point above the center circle, dramatic floodlights'
     },
     {
         kicker: "État d'esprit",
@@ -57,7 +57,7 @@ const CONSEILS = [
         kicker: 'Expertise',
         headline: "L'IA analyse.\nL'expérience décide.",
         sub: "Nos modèles traitent la donnée brute, mais chaque ticket final passe par un œil humain avant publication.",
-        scene: 'a silhouette standing at a stadium tunnel entrance looking out onto a glowing floodlit pitch, one hand touching a translucent holographic data panel floating beside them'
+        scene: 'a silhouette standing at a stadium tunnel entrance looking out onto a glowing floodlit pitch, warm golden light rays streaming past them, moody cinematic lighting'
     },
     {
         kicker: 'Patience',
@@ -117,7 +117,9 @@ ABSOLUTE RULE: NO text, NO numbers, NO letters, NO typography, NO lettering, NO 
 
 Scene: ${conseil.scene}. Deep navy and black color palette with warm gold accent lighting.
 
-ABSOLUTE RULE: NO crest, NO shield, NO crown, NO emblem, NO logo, NO monogram of any kind anywhere in the image — the real brand logo is added separately afterward, never attempt to draw one.
+ABSOLUTE RULE: NO crest, NO shield, NO crown, NO emblem, NO badge, NO seal, NO coat of arms, NO circular medallion, NO logo, NO monogram of any kind anywhere in the image — the real brand logo is added separately afterward, never attempt to draw one, not even a generic or blank-looking one.
+
+If the scene includes a stadium, its advertising boards, perimeter hoardings, scoreboards, screens and any signage must all be completely PLAIN and BLANK (solid color only) — never display any sponsor names, brand marks, numbers or text on them, even blurry or out of focus ones.
 
 Style: cinematic, moody, premium illustrated aesthetic, generous empty negative space in the top third and bottom third of the frame for a text overlay to be added afterward.`;
 }
