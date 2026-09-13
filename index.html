@@ -2765,7 +2765,16 @@ function compositeConseilImage(bgDataUri, overlay) {
                 // Anton a une hauteur de capitale très haute, un gap de 46px la
                 // faisait quasiment toucher le kicker au-dessus (lu comme du texte
                 // "superposé" alors que c'est en réalité juste trop serré).
-                var y = H - 170 - headlineLines.length * 64 - subLines.length * 38;
+                //
+                // Position du bloc : on le colle juste sous la photo (raccord + une
+                // petite marge) plutôt que de le caler systématiquement tout en bas
+                // du cadre — ça laissait un grand espace vide entre la photo et le
+                // texte quand le conseil était court. Le calcul "ancré en bas" reste
+                // en filet de sécurité (jamais dépassé, donc jamais de débordement),
+                // on prend le plus petit des deux, donc toujours le plus haut possible.
+                var yNearPhoto = photoH + 90;
+                var yBottomAnchored = H - 170 - headlineLines.length * 64 - subLines.length * 38;
+                var y = Math.min(yNearPhoto, yBottomAnchored);
 
                 ctx.fillStyle = '#e8b84b';
                 ctx.font = '800 25px Manrope, sans-serif';
