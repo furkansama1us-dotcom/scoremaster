@@ -2766,7 +2766,7 @@ function compositeConseilImage(bgDataUri, overlay) {
                 ctx.stroke();
                 ctx.fillText(chipText, marginX + 20, y + 6);
 
-                resolve(canvas.toDataURL('image/png'));
+                resolve(canvas.toDataURL('image/jpeg', 0.9));
             } catch (e) { reject(e); }
         };
         img.onerror = function () { reject(new Error('Impossible de charger le fond généré')); };
@@ -3063,7 +3063,7 @@ function compositeVictoryStory(bgDataUri, overlay, logoUrls) {
             ctx.textAlign = 'center';
             ctx.fillText('🌐 scoremaster.fr   ·   📲 @ScoreMasterOfficiel', W / 2, H - 60);
 
-            resolve(canvas.toDataURL('image/png'));
+            resolve(canvas.toDataURL('image/jpeg', 0.9));
         } catch (e) { reject(e); }
     });
 }
@@ -8443,7 +8443,7 @@ function buildVictoryImagePromptRaw(c) {
 
     return `A stylized, hand-drawn illustrated football scene, dark bold ink outlines, high-contrast ink wash, premium comic book / graphic novel art style. NOT photorealistic, NOT 3D render, NOT a photo. Square 1:1 ratio composition.
 
-ABSOLUTE RULE: NO text, NO numbers, NO score, NO scoreboard, NO typography or lettering of any kind anywhere in the image, under any circumstance — image generators render text as garbled/illegible, so the composition must rely purely on imagery, never on written characters. NO phone, NO screen, NO tablet, NO app interface anywhere.
+ABSOLUTE RULE: NO text, NO numbers, NO letters, NO score, NO scoreboard, NO typography, NO lettering, NO writing, NO signage, NO labels, NO watermark, NO logo, NO illegible or gibberish scribbles that could be mistaken for text — anywhere in the image, on any surface (screens, panels, walls, objects), under any circumstance — image generators render text as garbled/illegible, so the composition must rely purely on imagery, never on written characters. If in doubt, leave the surface blank rather than adding any mark resembling text. NO phone, NO screen, NO tablet, NO app interface anywhere.
 
 Scene: A triumphant, celebratory low-angle view of a football stadium pitch at night, dramatic floodlights, golden confetti falling, an euphoric crowd silhouette in the stands — illustrated, not photorealistic.
 

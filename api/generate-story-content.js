@@ -113,7 +113,7 @@ function pickConseil(recentHeadlines) {
 function buildConseilImagePrompt(conseil) {
     return `A stylized, hand-drawn illustrated scene, dark bold ink outlines, high-contrast ink wash, premium comic book / graphic novel art style. NOT photorealistic, NOT 3D render, NOT a photo.
 
-ABSOLUTE RULE: NO text, NO numbers, NO typography or lettering of any kind anywhere in the image, under any circumstance. NO phone, NO screen, NO tablet, NO app interface anywhere.
+ABSOLUTE RULE: NO text, NO numbers, NO letters, NO typography, NO lettering, NO writing, NO signage, NO labels, NO watermark, NO logo, NO illegible or gibberish scribbles that could be mistaken for text — anywhere in the image, on any surface (screens, panels, walls, objects), under any circumstance. If in doubt, leave the surface blank rather than adding any mark resembling text. NO phone, NO screen, NO tablet, NO app interface anywhere.
 
 Scene: ${conseil.scene}. Deep navy and black color palette with warm gold accent lighting.
 
