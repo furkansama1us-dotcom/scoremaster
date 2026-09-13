@@ -2985,6 +2985,81 @@ function pollComboTeaserGeneration(id, statusUrl, attempt) {
     }, 5000);
 }
 
+// Variante Telegram : photo "post" (format unique, pas de choix Story/Post) — le
+// message texte automatique a été retiré, tout passe désormais par Publications :
+// l'admin valide, et c'est cette validation qui déclenche l'envoi sur Telegram
+// (via l'intégration Telegram de Postiz), plus aucun envoi sans accord.
+function buildComboTeaserTelegramCaption(c, earliestTime) {
+    var matchLines = '';
+    (c.matches || []).forEach(function (m) { matchLines += '🏆 ' + (m.teams || '') + (m.time ? ' (' + m.time + ')' : '') + '\n'; });
+    return `🏆 LE COMBINÉ DU JOUR EST DISPONIBLE !\n\nVoici les affiches retenues :\n${matchLines}\n⏰ Coup d'envoi à ${earliestTime}.\n\nComme toujours, l'analyse complète est disponible dès maintenant dans votre espace VIP+ Score Master. 🙌\n\n🌐 Site Web : https://scoremaster.fr/\n➡️ Telegram : @ScoreMasterOfficiel`;
+}
+
+async function queueComboTeaserTelegramForCombo(c) {
+    if (!c || !c.matches || !c.matches.length) return;
+    try {
+        var overlay = buildComboTeaserOverlay(c);
+        var imagePrompt = buildComboTeaserImagePromptRaw(c);
+        var earliestTime = (c.matches[0] && c.matches[0].time) || '';
+        var caption = buildComboTeaserTelegramCaption(c, earliestTime);
+        var data = await adminApiCall('/api/generate-story-content', { type: 'combo-teaser', platform: 'telegram', caption: caption, imagePrompt: imagePrompt, dateStr: c.date, overlayData: overlay });
+        pollComboTeaserTelegramGeneration(data.rows[0].id, data.statusUrl);
+    } catch (error) {
+        console.error('Erreur génération visuel combiné (Telegram):', error);
+        showToast('Erreur visuel combiné Telegram : ' + (error && error.message ? error.message : 'inconnue'), true);
+    }
+}
+
+function pollComboTeaserTelegramGeneration(id, statusUrl, attempt) {
+    attempt = attempt || 0;
+    setTimeout(async function () {
+        try {
+            var data = await adminApiCall('/api/check-generation-status', { statusUrl: statusUrl, rowIds: [id], deferPending: true });
+            if (data.failed) { showToast('La génération du visuel Telegram a échoué.', true); return; }
+            if (data.done) { finishComboTeaserTelegramComposite(id, data.imageUrl); return; }
+            if (attempt > 40) { showToast('Délai dépassé pour le visuel Telegram du combiné.', true); return; }
+            pollComboTeaserTelegramGeneration(id, statusUrl, attempt + 1);
+        } catch (error) {
+            console.error('Erreur suivi génération visuel combiné (Telegram):', error);
+        }
+    }, 5000);
+}
+
+async function finishComboTeaserTelegramComposite(id, rawImageUrl) {
+    try {
+        var rowRes = await supabaseClient.from('pending_publications').select('overlay_data').eq('id', id).single();
+        if (rowRes.error) throw rowRes.error;
+        var overlay = rowRes.data.overlay_data;
+
+        var proxiedBg = await adminApiCall('/api/image-bridge', { action: 'proxy', url: rawImageUrl });
+
+        var logoUrls = [];
+        for (var i = 0; i < overlay.matches.length; i++) {
+            var m = overlay.matches[i];
+            var homeLogo = await fetchTeamLogo(m.homeTeam);
+            var awayLogo = await fetchTeamLogo(m.awayTeam);
+            var homeDataUri = homeLogo ? (await adminApiCall('/api/image-bridge', { action: 'proxy', url: homeLogo })).dataUri : null;
+            var awayDataUri = awayLogo ? (await adminApiCall('/api/image-bridge', { action: 'proxy', url: awayLogo })).dataUri : null;
+            logoUrls.push({
+                home: homeDataUri ? await loadImg(homeDataUri) : null,
+                away: awayDataUri ? await loadImg(awayDataUri) : null
+            });
+        }
+
+        // Un seul format ici (post 4:5) : upload sans `field`, comme le flux
+        // Conseil IA -> passe la ligne en "pending" directement.
+        var postDataUri = await compositeComboTeaser(proxiedBg.dataUri, overlay, logoUrls, 'post');
+        await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: postDataUri });
+
+        showToast('Visuel du combiné prêt pour Telegram ! Retrouve-le dans Publications pour validation. 📸');
+        loadAdminPublications();
+    } catch (error) {
+        console.error('Erreur habillage visuel combiné (Telegram):', error);
+        showToast('Erreur : ' + (error && error.message ? error.message : 'inconnue'), true);
+        await markPublicationFailed(id, error);
+    }
+}
+
 async function finishComboTeaserComposite(id, rawImageUrl) {
     try {
         var rowRes = await supabaseClient.from('pending_publications').select('overlay_data').eq('id', id).single();
@@ -4494,24 +4569,17 @@ async function fetchMatchesFromAPI() {
             var vipRes = await supabaseClient.from('combineds_vip').insert([{ id: pubRes.data.id, matches: matches, mise: mise, gains: gains, total_odds: tot }]);
             if (vipRes.error) throw vipRes.error;
 
-            showToast('Combiné IA publié ! Visible immédiatement par les membres SM VIP+.');
+            showToast('Combiné IA publié ! Visible immédiatement par les membres SM VIP+. Génération des visuels...');
 
-            var dayLabel = (window.currentAISuggestionsOffset || 0) === 0 ? "aujourd'hui" : 'demain';
-            var matchLinesAI = suggestions.map(function (s) { return `🏆 ${s.teams} (${s.time})`; }).join('\n');
-            var telegramAIMsg =
-                `🏆 *Le combiné du jour est disponible !*\n\n` +
-                `Ici Maître Gon 👋 Voici les affiches retenues pour ${dayLabel} :\n${matchLinesAI}\n\n` +
-                `⏰ Coup d'envoi à *${earliestTime}*.\n\n` +
-                `Comme toujours, l'analyse complète est disponible dès maintenant dans votre espace VIP+ Score Master. 🙌\n\n` +
-                `🌐 Site Web : https://scoremaster.fr/\n` +
-                `➡️ Telegram : @ScoreMasterOfficiel`;
-            sendGroupTelegram(telegramAIMsg).catch(function () {
-                showToast("Combiné publié, mais erreur lors de la notification Telegram.", true);
-            });
-
+            // Plus d'envoi Telegram automatique ici : la photo "post" (écussons des
+            // matchs concernés, sans score) part dans Publications pour validation,
+            // et c'est cette validation qui déclenche l'envoi réel sur Telegram (via
+            // l'intégration Telegram de Postiz) — jamais sans l'accord de l'admin.
+            var comboForVisuals = { id: pubRes.data.id, date: date, matches: matches };
+            queueComboTeaserTelegramForCombo(comboForVisuals).catch(function () {});
             // Génère aussi le visuel Instagram (Story + Post) du combiné du jour —
-            // il atterrit dans Publications, à valider séparément avant envoi.
-            queueComboTeaserForCombo({ id: pubRes.data.id, date: date, matches: matches }).catch(function () {});
+            // il atterrit également dans Publications, à valider séparément.
+            queueComboTeaserForCombo(comboForVisuals).catch(function () {});
 
             window.currentAISuggestions = [];
             document.getElementById('ai-suggest-container').innerHTML = '';

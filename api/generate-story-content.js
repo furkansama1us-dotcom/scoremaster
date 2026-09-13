@@ -183,13 +183,16 @@ module.exports = async function handler(req, res) {
         }
 
         if (type === 'combo-teaser') {
-            const { caption, imagePrompt, dateStr, overlayData } = req.body;
+            const { caption, imagePrompt, dateStr, overlayData, platform } = req.body;
             if (!caption || !imagePrompt || !overlayData) {
                 return res.status(400).json({ error: 'caption, imagePrompt et overlayData requis' });
             }
+            // `platform`: 'instagram' (défaut, double format Story+Post) ou 'telegram'
+            // (photo unique format post, envoyée via l'intégration Telegram de Postiz
+            // une fois approuvée dans Publications — plus d'envoi Telegram automatique).
             const statusUrl = await submitHiggsfield(imagePrompt, '9:16');
             const rows = await createPendingRow({
-                scheduled_for: dateStr || today, content_type: 'Combiné du jour', platform: 'instagram',
+                scheduled_for: dateStr || today, content_type: 'Combiné du jour', platform: platform === 'telegram' ? 'telegram' : 'instagram',
                 caption: caption, image_url: '', status: 'generating', hf_status_url: statusUrl, overlay_data: overlayData
             });
             return res.status(200).json({ rows, statusUrl });
