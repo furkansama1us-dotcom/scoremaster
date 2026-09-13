@@ -2768,6 +2768,296 @@ function compositeConseilImage(bgDataUri, overlay) {
     });
 }
 
+// ============================================================
+// VICTOIRE STORY — visuel Instagram avec écussons réels (TheSportsDB),
+// score, barres de probabilité et sceau "Score Master" habillés en Canvas
+// sur un fond Higgsfield SANS TEXTE. Déclenché automatiquement en plus du
+// message + photo de victoire déjà en place (Telegram), spécifiquement
+// pour la page Instagram.
+// ============================================================
+var VICTORY_STORY_TAGLINES = [
+    "On vous l'avait dit l'équipe ! L'IA de Score Master parle d'elle-même. 🔥",
+    "La rigueur paie, encore une fois. Score Master, toujours au rendez-vous. 🏆",
+    "Pas de hasard, juste de l'analyse sérieuse. Merci de nous faire confiance. 🤝",
+    "Un ticket de plus, une méthode qui ne change pas. Score Master. 💪",
+    "L'analyse parle, les résultats suivent. On continue ensemble. ⚽",
+    "La régularité, notre vraie signature. Merci à toute la communauté. ❤️"
+];
+
+function parseMatchScore(scoreStr) {
+    var parts = (scoreStr || '').split('-').map(function (s) { return parseInt(s.trim(), 10); });
+    if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return null;
+    return { home: parts[0], away: parts[1] };
+}
+
+function buildVictoryStoryOverlay(c) {
+    var matches = (c.matches || []).map(function (m) {
+        var teamsParts = (m.teams || '').split(' - ');
+        var homeTeam = (teamsParts[0] || '').trim();
+        var awayTeam = (teamsParts[1] || '').trim();
+        var parsed = parseMatchScore(m.score);
+        var seed = homeTeam + '|' + awayTeam + '|' + (c.date || '') + '#story';
+
+        var winner = 'home';
+        if (parsed) {
+            if (parsed.away > parsed.home) winner = 'away';
+            else if (parsed.away === parsed.home) winner = 'draw';
+        }
+
+        var winProb = Math.round(51 + seededScore(seed) * 22); // 51-73%, cohérent avec Pronostics AI
+        var remaining = 100 - winProb;
+        var splitSeed = seededScore(seed + '#split');
+        var otherA = Math.round(remaining * (0.3 + splitSeed * 0.4));
+        var otherB = remaining - otherA;
+
+        var homeProb, drawProb, awayProb;
+        if (winner === 'home') { homeProb = winProb; drawProb = otherA; awayProb = otherB; }
+        else if (winner === 'away') { awayProb = winProb; drawProb = otherA; homeProb = otherB; }
+        else { drawProb = winProb; homeProb = otherA; awayProb = otherB; }
+
+        return {
+            homeTeam: homeTeam, awayTeam: awayTeam, score: m.score,
+            homeProb: homeProb, drawProb: drawProb, awayProb: awayProb, winner: winner
+        };
+    });
+
+    return {
+        matches: matches,
+        tagline: VICTORY_STORY_TAGLINES[Math.floor(Math.random() * VICTORY_STORY_TAGLINES.length)]
+    };
+}
+
+function buildVictoryStoryImagePrompt(c) {
+    // Réutilise le fond "victoire" déjà validé (stade illuminé, confettis dorés,
+    // couronne + écusson SM discret), sans jamais demander de texte à l'IA.
+    return buildVictoryImagePromptRaw(c);
+}
+
+async function queueVictoryStoryPublication(id) {
+    var c = allCombineds.find(x => x.id == id);
+    if (!c || !c.matches || !c.matches.length) return;
+    try {
+        var overlay = buildVictoryStoryOverlay(c);
+        var imagePrompt = buildVictoryStoryImagePrompt(c);
+        var caption = buildVictoryTelegramText(c);
+        var data = await adminApiCall('/api/generate-victory-story', { caption: caption, imagePrompt: imagePrompt, dateStr: c.date, overlayData: overlay });
+        pollVictoryStoryGeneration(data.rows[0].id, data.statusUrl);
+    } catch (error) {
+        console.error('Erreur génération victory story:', error);
+        showToast('Erreur lors de la préparation de la story de victoire.', true);
+    }
+}
+
+function pollVictoryStoryGeneration(id, statusUrl, attempt) {
+    attempt = attempt || 0;
+    setTimeout(async function () {
+        try {
+            var data = await adminApiCall('/api/check-generation-status', { statusUrl: statusUrl, rowIds: [id] });
+            if (data.failed) { showToast('La génération du fond de la story a échoué.', true); return; }
+            if (data.done) { finishVictoryStoryComposite(id, data.imageUrl); return; }
+            if (attempt > 40) { showToast('Délai dépassé pour la story de victoire.', true); return; }
+            pollVictoryStoryGeneration(id, statusUrl, attempt + 1);
+        } catch (error) {
+            console.error('Erreur suivi génération victory story:', error);
+        }
+    }, 5000);
+}
+
+async function finishVictoryStoryComposite(id, rawImageUrl) {
+    try {
+        var rowRes = await supabaseClient.from('pending_publications').select('overlay_data').eq('id', id).single();
+        if (rowRes.error) throw rowRes.error;
+        var overlay = rowRes.data.overlay_data;
+
+        var proxiedBg = await adminApiCall('/api/proxy-image', { url: rawImageUrl });
+
+        var logoUrls = [];
+        for (var i = 0; i < overlay.matches.length; i++) {
+            var m = overlay.matches[i];
+            var homeLogo = await fetchTeamLogo(m.homeTeam);
+            var awayLogo = await fetchTeamLogo(m.awayTeam);
+            logoUrls.push({
+                home: homeLogo ? (await adminApiCall('/api/proxy-image', { url: homeLogo })).dataUri : null,
+                away: awayLogo ? (await adminApiCall('/api/proxy-image', { url: awayLogo })).dataUri : null
+            });
+        }
+
+        var finalDataUri = await compositeVictoryStory(proxiedBg.dataUri, overlay, logoUrls);
+        await adminApiCall('/api/upload-composited-image', { id: id, imageDataUri: finalDataUri });
+
+        showToast('Story de victoire prête ! Retrouve-la dans Publications pour validation. 🏆');
+        loadAdminPublications();
+    } catch (error) {
+        console.error('Erreur habillage victory story:', error);
+        showToast('Erreur : ' + (error && error.message ? error.message : 'inconnue'), true);
+    }
+}
+
+function loadImg(src) {
+    return new Promise(function (resolve, reject) {
+        var img = new Image();
+        img.onload = function () { resolve(img); };
+        img.onerror = function () { reject(new Error('Image introuvable: ' + src)); };
+        img.src = src;
+    });
+}
+
+function drawCircularText(ctx, text, cx, cy, radius, font, color, letterSpacing) {
+    ctx.save();
+    ctx.font = font;
+    ctx.fillStyle = color;
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+
+    var widths = [];
+    var totalAngle = 0;
+    for (var i = 0; i < text.length; i++) {
+        var w = ctx.measureText(text[i]).width + letterSpacing;
+        widths.push(w);
+        totalAngle += w / radius;
+    }
+
+    var angle = -Math.PI / 2 - totalAngle / 2;
+    for (var j = 0; j < text.length; j++) {
+        var half = (widths[j] / radius) / 2;
+        angle += half;
+        ctx.save();
+        ctx.translate(cx + radius * Math.cos(angle), cy + radius * Math.sin(angle));
+        ctx.rotate(angle + Math.PI / 2);
+        ctx.fillText(text[j], 0, 0);
+        ctx.restore();
+        angle += half;
+    }
+    ctx.restore();
+}
+
+function drawProbBar(ctx, x, y, w, h, homeProb, drawProb, awayProb) {
+    var xC = x;
+    ctx.fillStyle = '#8ab4f8'; ctx.fillRect(xC, y, w * homeProb / 100, h); xC += w * homeProb / 100;
+    ctx.fillStyle = '#e8b84b'; ctx.fillRect(xC, y, w * drawProb / 100, h); xC += w * drawProb / 100;
+    ctx.fillStyle = '#f43f5e'; ctx.fillRect(xC, y, w * awayProb / 100, h);
+}
+
+function compositeVictoryStory(bgDataUri, overlay, logoUrls) {
+    return new Promise(async function (resolve, reject) {
+        try {
+            var bg = await loadImg(bgDataUri);
+            var logo = await loadImg('logo-dark.png'); // asset local, même origine : jamais de CORS taint
+
+            await Promise.all([
+                document.fonts.load('400 40px Anton'),
+                document.fonts.load('800 20px Manrope'),
+                document.fonts.load('700 24px Manrope'),
+                document.fonts.load('400 18px Manrope')
+            ]);
+
+            var W = 1080, H = 1920; // format 9:16
+            var canvas = document.createElement('canvas');
+            canvas.width = W; canvas.height = H;
+            var ctx = canvas.getContext('2d');
+
+            var scale = Math.max(W / bg.width, H / bg.height);
+            var dw = bg.width * scale, dh = bg.height * scale;
+            ctx.drawImage(bg, (W - dw) / 2, (H - dh) / 2, dw, dh);
+
+            var gradTop = ctx.createLinearGradient(0, 0, 0, H * 0.28);
+            gradTop.addColorStop(0, 'rgba(6,8,16,0.75)'); gradTop.addColorStop(1, 'rgba(6,8,16,0)');
+            ctx.fillStyle = gradTop; ctx.fillRect(0, 0, W, H * 0.28);
+            var gradBottom = ctx.createLinearGradient(0, H * 0.4, 0, H);
+            gradBottom.addColorStop(0, 'rgba(6,8,16,0)'); gradBottom.addColorStop(1, 'rgba(6,8,16,0.95)');
+            ctx.fillStyle = gradBottom; ctx.fillRect(0, H * 0.4, W, H * 0.6);
+
+            // Sceau centré : texte en cercle + logo au centre
+            var sealCx = W / 2, sealCy = 150, sealR = 92;
+            drawCircularText(ctx, 'SCORE MASTER • TICKET HONORÉ • ', sealCx, sealCy, sealR, '800 22px Manrope, sans-serif', '#f5f5f2', 5);
+            var logoSize = 74;
+            ctx.drawImage(logo, sealCx - logoSize / 2, sealCy - logoSize / 2, logoSize, logoSize);
+
+            // Matchs empilés
+            var marginX = W * 0.09;
+            var innerW = W - marginX * 2;
+            var y = 340;
+            var logoSz = 84;
+
+            overlay.matches.forEach(function (m, i) {
+                var logos = logoUrls[i] || {};
+                var rowY = y;
+
+                ctx.font = '400 68px Anton, Impact, sans-serif';
+                ctx.fillStyle = '#e8b84b';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(m.score.replace('-', ' – '), W / 2, rowY + logoSz / 2);
+
+                if (logos.home) ctx.drawImage(logos.home, marginX, rowY, logoSz, logoSz);
+                if (logos.away) ctx.drawImage(logos.away, W - marginX - logoSz, rowY, logoSz, logoSz);
+
+                ctx.font = '800 24px Manrope, sans-serif';
+                ctx.fillStyle = '#f5f5f2';
+                ctx.textAlign = 'left';
+                wrapCanvasText(ctx, m.homeTeam, logoSz + 20).slice(0, 2).forEach(function (line, li) {
+                    ctx.fillText(line, marginX, rowY + logoSz + 30 + li * 28);
+                });
+                ctx.textAlign = 'right';
+                wrapCanvasText(ctx, m.awayTeam, logoSz + 20).slice(0, 2).forEach(function (line, li) {
+                    ctx.fillText(line, W - marginX, rowY + logoSz + 30 + li * 28);
+                });
+                ctx.textAlign = 'left';
+
+                var barY = rowY + logoSz + 92;
+                drawProbBar(ctx, marginX, barY, innerW, 12, m.homeProb, m.drawProb, m.awayProb);
+
+                ctx.font = '700 18px Manrope, sans-serif';
+                ctx.fillStyle = '#a9b0c4';
+                ctx.textAlign = 'left';
+                ctx.fillText(m.homeProb + '% ' + m.homeTeam, marginX, barY + 34);
+                ctx.textAlign = 'right';
+                ctx.fillStyle = m.winner === 'away' ? '#e8b84b' : '#a9b0c4';
+                ctx.fillText(m.awayProb + '% ' + m.awayTeam, W - marginX, barY + 34);
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#a9b0c4';
+                ctx.fillText(m.drawProb + '% Nul', W / 2, barY + 34);
+                ctx.textAlign = 'left';
+
+                y = barY + 90;
+            });
+
+            // Accroche
+            ctx.font = '800 30px Manrope, sans-serif';
+            ctx.fillStyle = '#f5f5f2';
+            ctx.textAlign = 'center';
+            var taglineLines = wrapCanvasText(ctx, overlay.tagline, innerW);
+            taglineLines.forEach(function (line, li) {
+                ctx.fillText(line, W / 2, y + li * 38);
+            });
+            y += taglineLines.length * 38 + 30;
+
+            // Ruban "TICKET HONORÉ"
+            ctx.save();
+            ctx.translate(W / 2, y + 30);
+            ctx.rotate(-3 * Math.PI / 180);
+            ctx.font = '400 30px Anton, Impact, sans-serif';
+            var ribbonText = 'TICKET HONORÉ';
+            var ribbonW = ctx.measureText(ribbonText).width + 60;
+            ctx.fillStyle = '#e8b84b';
+            if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(-ribbonW / 2, -30, ribbonW, 60, 8); ctx.fill(); }
+            else { ctx.fillRect(-ribbonW / 2, -30, ribbonW, 60); }
+            ctx.fillStyle = '#0e1220';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            ctx.fillText(ribbonText, 0, 2);
+            ctx.restore();
+
+            // Lien
+            ctx.font = '700 26px Manrope, sans-serif';
+            ctx.fillStyle = '#d4d7e2';
+            ctx.textAlign = 'center';
+            ctx.fillText('🌐 scoremaster.fr   ·   📲 @ScoreMasterOfficiel', W / 2, H - 60);
+
+            resolve(canvas.toDataURL('image/png'));
+        } catch (e) { reject(e); }
+    });
+}
+
 function copyRelanceText(btn, i) {
     var text = decodeURIComponent(btn.getAttribute('data-text'));
     navigator.clipboard.writeText(text).then(() => {
@@ -5115,8 +5405,8 @@ async function fetchTeamLogo(teamName) {
         let cleanName = teamName.split('(')[0].trim(); 
         const response = await fetch(`https://www.thesportsdb.com/api/v1/json/123/searchteams.php?t=${encodeURIComponent(cleanName)}`);
         const data = await response.json();
-        if (data.teams && data.teams.length > 0 && data.teams[0].strTeamBadge) {
-            const badgeUrl = data.teams[0].strTeamBadge;
+        if (data.teams && data.teams.length > 0 && data.teams[0].strBadge) {
+            const badgeUrl = data.teams[0].strBadge;
             logosCache[teamName] = badgeUrl;
             return badgeUrl;
         } else {
@@ -5382,6 +5672,7 @@ async function autoFetchFinalScores(combined) {
             // ça atterrit dans Publications pour validation manuelle avant envoi Telegram.
             if (finalStatus === 'termine') {
                 queueVictoryPublication(idJustValidated);
+                queueVictoryStoryPublication(idJustValidated);
             }
 
         } catch (e) {
@@ -6338,8 +6629,9 @@ function sendTelegramWin(id) {
     var c = allCombineds.find(x => x.id == id);
     if (!c) { showToast("Combiné introuvable", true); return; }
 
-    if (confirm("Préparer le message de VICTOIRE (+ photo) pour validation dans Publications ?")) {
+    if (confirm("Préparer le message de VICTOIRE (+ photo + story Instagram) pour validation dans Publications ?")) {
         queueVictoryPublication(id);
+        queueVictoryStoryPublication(id);
     }
     // ============================================================
 // GÉNÉRATION DU PROMPT IA PREMIUM (FORMAT 9:16 + LOGO SM)
