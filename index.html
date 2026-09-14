@@ -1981,55 +1981,59 @@ async function fetchApiScore(id, dateRaw) {
 <!-- CONTENT PLANNER — vue calendrier de toutes les publications générées
      (Conseil IA, Combiné du jour, Carrousel Story, Victoire), branchée sur
      les vraies données pending_publications (pas de données d'exemple). -->
-<div id="content-planner-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0b0d13;z-index:10003;flex-direction:column;opacity:0;transition:opacity 0.3s;">
+<div id="content-planner-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#f7f3ec;z-index:10003;flex-direction:column;opacity:0;transition:opacity 0.3s;">
     <style>
-        #content-planner-overlay{font-family:'Manrope',sans-serif;color:#f0f1f4;}
-        #content-planner-overlay .cp-eyebrow{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#5e6478;font-weight:800;margin:0 2px 10px;}
+        /* Thème clair, propre à cette page uniquement (le reste de l'admin
+           reste en thème sombre) — inspiré du planner de référence "studio". */
+        #content-planner-overlay{font-family:'Manrope',sans-serif;color:#2a2430;}
+        #content-planner-overlay .cp-eyebrow{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#8a8290;font-weight:800;margin:0 2px 10px;}
         #content-planner-overlay .cp-sec{margin-bottom:22px;}
-        #content-planner-overlay .cp-hero{background:linear-gradient(155deg,#141826,#1b2033);border:1px solid #232838;border-radius:18px;padding:20px 18px;position:relative;overflow:hidden;}
-        #content-planner-overlay .cp-hero::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(232,184,75,.16),transparent 70%);}
+        #content-planner-overlay .cp-hero{background:linear-gradient(155deg,#332b3c,#4a3f55);color:#f5f1ea;border:1px solid #e7e0d5;border-radius:18px;padding:20px 18px;position:relative;overflow:hidden;}
+        #content-planner-overlay .cp-hero::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(232,184,75,.28),transparent 70%);}
         #content-planner-overlay .cp-lbl{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#f2cf7c;font-weight:800;display:flex;align-items:center;gap:7px;position:relative;}
         #content-planner-overlay .cp-count{font-family:Anton,Impact,sans-serif;font-size:32px;line-height:1;margin:8px 0 2px;position:relative;}
-        #content-planner-overlay .cp-when{font-size:12.5px;color:#8b91a3;position:relative;}
-        #content-planner-overlay .cp-hero-body{margin-top:14px;padding-top:14px;border-top:1px solid #232838;position:relative;}
+        #content-planner-overlay .cp-when{font-size:12.5px;color:#cdc4d6;position:relative;}
+        #content-planner-overlay .cp-hero-body{margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.14);position:relative;}
         #content-planner-overlay .cp-hero-title{font-family:Anton,Impact,sans-serif;font-size:18px;margin-bottom:6px;}
-        #content-planner-overlay .cp-hero-desc{font-size:12.5px;color:#8b91a3;line-height:1.5;white-space:pre-wrap;}
+        #content-planner-overlay .cp-hero-desc{font-size:12.5px;color:#cdc4d6;line-height:1.5;white-space:pre-wrap;}
         #content-planner-overlay .cp-quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-        #content-planner-overlay .cp-quick-card{text-align:left;background:#12151f;border:1px solid #232838;border-radius:12px;padding:14px;cursor:pointer;}
+        #content-planner-overlay .cp-quick-card{text-align:left;background:#ffffff;border:1px solid #e7e0d5;border-radius:12px;padding:14px;cursor:pointer;box-shadow:0 2px 10px rgba(42,36,48,.05);}
         #content-planner-overlay .cp-quick-ic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:9px;}
-        #content-planner-overlay .cp-quick-name{font-family:Anton,Impact,sans-serif;font-size:14px;}
-        #content-planner-overlay .cp-quick-sub{font-size:11px;color:#5e6478;margin-top:2px;}
+        #content-planner-overlay .cp-quick-name{font-family:Anton,Impact,sans-serif;font-size:14px;color:#2a2430;}
+        #content-planner-overlay .cp-quick-sub{font-size:11px;color:#8a8290;margin-top:2px;}
         #content-planner-overlay .cp-chip{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:.03em;padding:4px 9px;border-radius:999px;text-transform:uppercase;}
         #content-planner-overlay .cp-chip .cp-d{width:6px;height:6px;border-radius:50%;background:currentColor;}
         #content-planner-overlay .cp-tl{display:flex;flex-direction:column;gap:9px;}
-        #content-planner-overlay .cp-slot{background:#12151f;border:1px solid #232838;border-radius:12px;padding:12px 13px;display:flex;align-items:center;gap:11px;text-align:left;width:100%;cursor:pointer;color:inherit;}
-        #content-planner-overlay .cp-slot .cp-time{font-size:12.5px;font-weight:800;width:44px;flex:none;}
+        #content-planner-overlay .cp-slot{background:#ffffff;border:1px solid #e7e0d5;border-radius:12px;padding:12px 13px;display:flex;align-items:center;gap:11px;text-align:left;width:100%;cursor:pointer;color:inherit;box-shadow:0 2px 10px rgba(42,36,48,.05);}
+        #content-planner-overlay .cp-slot:hover{border-color:#d8cfc0;}
+        #content-planner-overlay .cp-slot .cp-time{font-size:12.5px;font-weight:800;width:44px;flex:none;color:#2a2430;}
         #content-planner-overlay .cp-slot .cp-mid{flex:1;min-width:0;}
         #content-planner-overlay .cp-slot .cp-top{display:flex;align-items:center;gap:7px;margin-bottom:3px;flex-wrap:wrap;}
-        #content-planner-overlay .cp-slot .cp-ttl{font-size:12.5px;color:#c6cad6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700;}
+        #content-planner-overlay .cp-slot .cp-ttl{font-size:12.5px;color:#5a5262;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700;}
         #content-planner-overlay .cp-slot.cp-done{opacity:.5;}
         #content-planner-overlay .cp-slot .cp-status{flex:none;font-size:14px;}
-        #content-planner-overlay .cp-mini{background:#12151f;border:1px solid #232838;border-radius:18px;padding:15px;}
+        #content-planner-overlay .cp-mini{background:#ffffff;border:1px solid #e7e0d5;border-radius:18px;padding:15px;box-shadow:0 2px 10px rgba(42,36,48,.05);}
         #content-planner-overlay .cp-mini-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;}
-        #content-planner-overlay .cp-mini-head b{font-family:Anton,Impact,sans-serif;font-size:14.5px;}
+        #content-planner-overlay .cp-mini-head b{font-family:Anton,Impact,sans-serif;font-size:14.5px;color:#2a2430;}
         #content-planner-overlay .cp-mini-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
-        #content-planner-overlay .cp-dow{font-size:9.5px;color:#5e6478;text-align:center;font-weight:800;padding-bottom:4px;}
-        #content-planner-overlay .cp-cell{aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11.5px;color:#c6cad6;cursor:pointer;}
+        #content-planner-overlay .cp-dow{font-size:9.5px;color:#8a8290;text-align:center;font-weight:800;padding-bottom:4px;}
+        #content-planner-overlay .cp-cell{aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11.5px;color:#5a5262;cursor:pointer;}
+        #content-planner-overlay .cp-cell:hover{background:#f1eadf;}
         #content-planner-overlay .cp-cell.cp-empty{visibility:hidden;cursor:default;}
-        #content-planner-overlay .cp-cell.cp-today{background:#e8b84b;color:#141821;font-weight:800;}
+        #content-planner-overlay .cp-cell.cp-today{background:#c8963c;color:#fff;font-weight:800;}
         #content-planner-overlay .cp-dots{display:flex;gap:2px;height:5px;}
         #content-planner-overlay .cp-dots i{width:4px;height:4px;border-radius:50%;}
-        #content-planner-overlay .cp-back{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:#8b91a3;margin-bottom:12px;background:none;border:none;cursor:pointer;}
-        #content-planner-overlay .cp-txt-box{background:#12151f;border:1px solid #232838;border-radius:11px;padding:12px 13px;font-size:13px;color:#c6cad6;line-height:1.55;white-space:pre-wrap;}
+        #content-planner-overlay .cp-back{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;color:#5a5262;margin-bottom:12px;background:none;border:none;cursor:pointer;}
+        #content-planner-overlay .cp-txt-box{background:#efe9df;border:1px solid #e7e0d5;border-radius:11px;padding:12px 13px;font-size:13px;color:#5a5262;line-height:1.55;white-space:pre-wrap;}
         #content-planner-overlay .cp-thumb-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;}
-        #content-planner-overlay .cp-thumb{flex:0 0 auto;width:90px;height:112px;border-radius:9px;object-fit:cover;border:1px solid #232838;}
+        #content-planner-overlay .cp-thumb{flex:0 0 auto;width:90px;height:112px;border-radius:9px;object-fit:cover;border:1px solid #e7e0d5;}
         #content-planner-overlay .cp-statusline{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;padding:10px 12px;border-radius:10px;}
         #content-planner-overlay .cp-view{display:none;}
         #content-planner-overlay .cp-view.active{display:block;}
     </style>
-    <div style="display:flex; align-items:center; justify-content:space-between; padding:calc(16px + var(--safe-top)) 20px 16px; border-bottom:1px solid #232838;">
-        <span style="font-weight:900; font-size:16px; color:#fff;"><i class="fas fa-calendar-days" style="color:#e8b84b;margin-right:8px;"></i>Content Planner</span>
-        <i class="fas fa-times" onclick="closeContentPlanner()" style="color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:calc(16px + var(--safe-top)) 20px 16px; border-bottom:1px solid #e7e0d5;">
+        <span style="font-weight:900; font-size:16px; color:#2a2430;"><i class="fas fa-calendar-days" style="color:#c8963c;margin-right:8px;"></i>Content Planner</span>
+        <i class="fas fa-times" onclick="closeContentPlanner()" style="color:#8a8290; font-size:20px; cursor:pointer;"></i>
     </div>
     <div style="flex:1; overflow-y:auto; padding:18px 16px 30px;">
         <div class="cp-view active" id="cp-view-home">
@@ -4582,6 +4586,14 @@ function cpSlotHtml(row) {
     '</button>';
 }
 
+function cpTimeToMinutes(t) {
+    var m = /(\d{1,2})h(\d{2})/.exec(t || '');
+    return m ? (parseInt(m[1], 10) * 60 + parseInt(m[2], 10)) : -1;
+}
+function cpSortByTimeDesc(rows) {
+    return rows.slice().sort(function (a, b) { return cpTimeToMinutes(b._cpTime) - cpTimeToMinutes(a._cpTime); });
+}
+
 function cpRenderHome() {
     var rows = window._cpRows || [];
     var todayStr = cpDstr(new Date());
@@ -4605,11 +4617,11 @@ function cpRenderHome() {
         heroEl.innerHTML = '<div class="cp-hero-desc">Rien en attente pour le moment — tout est publié ! 🎉</div>';
     }
 
-    // Aujourd'hui (par date de création, faute d'heure de publication exacte)
-    var todayRows = rows.filter(function (r) { return (r.created_at || '').slice(0, 10) === todayStr; });
+    // Aujourd'hui, trié par horaire de planning décroissant.
+    var todayRows = cpSortByTimeDesc(rows.filter(function (r) { return (r.created_at || '').slice(0, 10) === todayStr; }));
     document.getElementById('cpTodayTl').innerHTML = todayRows.length
         ? todayRows.map(cpSlotHtml).join('')
-        : '<div class="cp-txt-box" style="text-align:center;color:#5e6478;">Rien généré aujourd\'hui.</div>';
+        : '<div class="cp-txt-box" style="text-align:center;color:#8a8290;">Rien généré aujourd\'hui.</div>';
 
     cpRenderMiniCal();
 }
@@ -4644,16 +4656,16 @@ function cpRenderMiniCal() {
 }
 
 function cpOpenDay(ds) {
-    var rows = (window._cpRows || []).filter(function (r) { return (r.created_at || '').slice(0, 10) === ds; });
+    var rows = cpSortByTimeDesc((window._cpRows || []).filter(function (r) { return (r.created_at || '').slice(0, 10) === ds; }));
     document.getElementById('cpDayLabel').textContent = cpFmtDayLabel(new Date(ds + 'T00:00:00'));
-    document.getElementById('cpDayTl').innerHTML = rows.length ? rows.map(cpSlotHtml).join('') : '<div class="cp-txt-box" style="text-align:center;color:#5e6478;">Rien généré ce jour-là.</div>';
+    document.getElementById('cpDayTl').innerHTML = rows.length ? rows.map(cpSlotHtml).join('') : '<div class="cp-txt-box" style="text-align:center;color:#8a8290;">Rien généré ce jour-là.</div>';
     cpGo('day');
 }
 
 function cpFilterType(typeKey) {
-    var rows = (window._cpRows || []).filter(function (r) { return cpTypeKey(r.content_type) === typeKey; });
+    var rows = cpSortByTimeDesc((window._cpRows || []).filter(function (r) { return cpTypeKey(r.content_type) === typeKey; }));
     document.getElementById('cpTypeLabel').textContent = CP_TYPES[typeKey].label + ' — historique';
-    document.getElementById('cpTypeTl').innerHTML = rows.length ? rows.map(cpSlotHtml).join('') : '<div class="cp-txt-box" style="text-align:center;color:#5e6478;">Aucun élément pour ce format.</div>';
+    document.getElementById('cpTypeTl').innerHTML = rows.length ? rows.map(cpSlotHtml).join('') : '<div class="cp-txt-box" style="text-align:center;color:#8a8290;">Aucun élément pour ce format.</div>';
     cpGo('type');
 }
 
