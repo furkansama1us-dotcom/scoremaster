@@ -3206,7 +3206,7 @@ async function generateCarouselStoryNow() {
     }
 }
 
-async function queueCarouselStoryPublication() {
+async function queueCarouselStoryPublication(origin) {
     try {
         showToast('Génération du carrousel en cours (5 fonds à générer)... 🎨');
         var recentTitles = await recentCarouselNarrativeTitles();
@@ -3214,7 +3214,8 @@ async function queueCarouselStoryPublication() {
         var data = await adminApiCall('/api/generate-story-content', {
             type: 'carousel-story',
             caption: buildCarouselStoryCaption(),
-            slides: slides.map(function (s) { return { kicker: s.kicker, headline: s.headline, scene: s.scene }; })
+            slides: slides.map(function (s) { return { kicker: s.kicker, headline: s.headline, scene: s.scene }; }),
+            origin: origin || undefined
         });
         pollCarouselStoryGeneration(data.rows[0].id, data.statusUrls, new Array(data.statusUrls.length).fill(false));
     } catch (error) {
@@ -4400,12 +4401,17 @@ async function loadAdminPublications() {
     if (!pendingEl || !historyEl) return;
 
     try {
-        const { data, error } = await supabaseClient
+        const { data: rawData, error } = await supabaseClient
             .from('pending_publications')
             .select('*')
             .order('created_at', { ascending: false })
-            .limit(30);
+            .limit(40);
         if (error) throw error;
+
+        // Exclut uniquement les générations lancées via "Planifier les prochains
+        // jours" (Content Planner) — tout ce qui est généré manuellement depuis
+        // Notifs (ou ailleurs) reste visible ici comme avant.
+        var data = (rawData || []).filter(function (p) { return !(p.overlay_data && p.overlay_data.origin === 'planner'); }).slice(0, 30);
 
         resumeOrphanedGenerations(data);
         window.adminPublicationsCache = {};
@@ -4526,16 +4532,19 @@ async function cpPlanAhead(conseilCount, carouselCount) {
     try {
         for (var i = 0; i < conseilCount; i++) {
             try {
-                var data = await adminApiCall('/api/generate-story-content', { type: 'conseil' });
+                // origin:'planner' -> n'apparaît jamais dans Publications, cette
+                // génération reste exclusive au Content Planner (contrairement à
+                // un clic manuel sur la carte Conseil IA de l'onglet Notifs).
+                var data = await adminApiCall('/api/generate-story-content', { type: 'conseil', origin: 'planner' });
                 pollConseilGeneration(data.rows[0].id, data.statusUrl);
             } catch (e) { console.error('Erreur planification Conseil IA:', e); }
             await new Promise(function (r) { setTimeout(r, 4000); });
         }
         for (var j = 0; j < carouselCount; j++) {
-            await queueCarouselStoryPublication();
+            await queueCarouselStoryPublication('planner');
             await new Promise(function (r) { setTimeout(r, 4000); });
         }
-        showToast('Planifié ! Les contenus arriveront dans Publications au fur et à mesure. 🎨');
+        showToast('Planifié ! Retrouve les contenus dans le Content Planner au fur et à mesure. 🎨');
     } finally {
         if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Planifier les prochains jours'; }
     }

@@ -182,10 +182,15 @@ module.exports = async function handler(req, res) {
             // Post, comme Combiné du jour et la Story de victoire) plutôt que
             // 3:4 — un seul fond généré, deux habillages différents.
             const statusUrl = await submitHiggsfield(buildConseilImagePrompt(conseil), '9:16');
+            // `origin: 'planner'` marque les générations lancées par le bouton
+            // "Planifier les prochains jours" du Content Planner, pour les
+            // distinguer de celles lancées manuellement depuis la carte de
+            // l'onglet Notifs (ces dernières restent visibles dans Publications,
+            // les premières n'y apparaissent pas).
             const rows = await createPendingRow({
                 scheduled_for: today, content_type: 'Conseil IA', platform: 'instagram',
                 caption: buildConseilCaption(conseil), image_url: '', status: 'generating',
-                hf_status_url: statusUrl, overlay_data: conseil
+                hf_status_url: statusUrl, overlay_data: Object.assign({}, conseil, req.body.origin ? { origin: req.body.origin } : {})
             });
             return res.status(200).json({ rows, statusUrl });
         }
@@ -230,7 +235,7 @@ module.exports = async function handler(req, res) {
             const rows = await createPendingRow({
                 scheduled_for: dateStr || today, content_type: 'Carrousel Story', platform: 'instagram',
                 caption: caption, image_url: '', status: 'generating',
-                overlay_data: { slides, statusUrls }
+                overlay_data: Object.assign({ slides, statusUrls }, req.body.origin ? { origin: req.body.origin } : {})
             });
             return res.status(200).json({ rows, statusUrls });
         }
