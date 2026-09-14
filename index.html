@@ -642,6 +642,8 @@
             width: 100%; max-width: 380px; border: 1px solid #2d2d4e;
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
             transform: scale(0.9); transition: transform 0.3s;
+            max-height: calc(100vh - 40px); overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
         .profile-modal-overlay.visible .profile-modal-box { transform: scale(1); }
         .profile-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
@@ -7080,25 +7082,19 @@ async function fetchMatchesFromAPI() {
         if (!code) { showToast('Entre ton code de déblocage.', true); return; }
         if (!window.currentAuthUser) return;
 
-        // 1) Codes pack (Journalier/Hebdo/VIP+) générés depuis Panel Admin >
-        // Commandes : à usage unique, ils changent le rôle du compte au lieu
-        // de débloquer un combiné précis.
-        try {
-            const { data: packCode, error: packError } = await supabaseClient
-                .from('vip_access_codes')
-                .select('*')
-                .eq('code', code)
-                .eq('used', false)
-                .maybeSingle();
-            if (packError) throw packError;
-
-            if (packCode) {
-                await redeemVipPackCode(packCode);
-                return;
+        // 1) Codes pack (Journalier/Hebdo/VIP+, préfixes SMJ/SMH/SMV) générés
+        // depuis Panel Admin > Commandes : à usage unique, ils changent le rôle
+        // du compte. La rédemption passe par le serveur (clé service_role) —
+        // jamais d'écriture directe de is_vip/vip_pack_type depuis le client,
+        // sinon n'importe qui pourrait se l'auto-accorder via les devtools.
+        if (/^SM[JHV]-/.test(code)) {
+            try {
+                var packResult = await adminApiCall('/api/redeem-code', { code: code });
+                applyRedeemedPack(packResult);
+            } catch (error) {
+                console.error('Erreur activation code pack:', error);
+                showToast(error.message || "Erreur lors de l'activation de l'accès.", true);
             }
-        } catch (error) {
-            console.error('Erreur vérification code pack:', error);
-            showToast("Erreur lors de la vérification du code.", true);
             return;
         }
 
@@ -7135,49 +7131,26 @@ async function fetchMatchesFromAPI() {
         }
     }
 
-    // Applique un code pack : passe le compte en VIP (avec expiration si
-    // Journalier/Hebdo, à vie si VIP+), marque le code comme utilisé (à usage
-    // unique) et met à jour l'affichage du rôle immédiatement.
-    async function redeemVipPackCode(packCode) {
-        var info = VIP_PACK_INFO[packCode.pack_type] || { label: packCode.pack_type, durationDays: packCode.duration_days };
-        var expiresAt = packCode.duration_days
-            ? new Date(Date.now() + packCode.duration_days * 24 * 60 * 60 * 1000).toISOString()
-            : null;
-
-        try {
-            const { error: profileError } = await supabaseClient.from('profiles').update({
-                is_vip: true,
-                vip_expires_at: expiresAt,
-                vip_pack_type: packCode.pack_type
-            }).eq('id', window.currentAuthUser.id);
-            if (profileError) throw profileError;
-
-            const { error: codeError } = await supabaseClient.from('vip_access_codes').update({
-                used: true,
-                used_by: window.currentAuthUser.id,
-                used_at: new Date().toISOString()
-            }).eq('id', packCode.id).eq('used', false);
-            if (codeError) throw codeError;
-        } catch (error) {
-            console.error('Erreur activation code pack:', error);
-            showToast("Erreur lors de l'activation de l'accès.", true);
-            return;
-        }
+    // Met à jour l'affichage local une fois qu'/api/redeem-code a confirmé
+    // (côté serveur) l'activation du pack — la validation is_vip/vip_pack_type
+    // a déjà eu lieu en base, ici on ne fait que refléter le résultat à l'écran.
+    function applyRedeemedPack(packResult) {
+        var info = VIP_PACK_INFO[packResult.pack_type] || { label: packResult.pack_type };
 
         window.isUserVip = true;
-        window.userVipPackType = packCode.pack_type;
+        window.userVipPackType = packResult.pack_type;
         // Un compte admin reste "Administrateur" (accès total déjà inclus) —
         // is_vip est bien enregistré en base, mais l'affichage du rôle ne
         // doit pas basculer en VIP+ pour ce compte, sinon ça donne l'impression
         // trompeuse d'avoir "perdu" l'admin au prochain rafraîchissement.
         if (!window.isAdmin) {
-            if (window.currentUserProfile) window.currentUserProfile.role = packCode.pack_type;
-            applyRoleDisplay(packCode.pack_type);
+            if (window.currentUserProfile) window.currentUserProfile.role = packResult.pack_type;
+            applyRoleDisplay(packResult.pack_type);
         }
 
         var input = document.getElementById('unlock-code-input');
         if (input) input.value = '';
-        showToast(`${info.label} activé ! Ton accès VIP+ est débloqué${packCode.duration_days ? ' pour ' + packCode.duration_days + ' jour(s)' : ' à vie'}.`);
+        showToast(`${info.label} activé ! Ton accès VIP+ est débloqué${packResult.duration_days ? ' pour ' + packResult.duration_days + ' jour(s)' : ' à vie'}.`);
     }
 
     function getComboKickoffTime(snapshot) {

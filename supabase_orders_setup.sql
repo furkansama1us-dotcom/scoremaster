@@ -287,3 +287,19 @@ alter table public.profiles
 
 alter table public.profiles
   add column if not exists avatar_key text;
+
+-- ============================================================
+-- Verrouillage colonne par colonne de public.profiles (defense-in-depth).
+--
+-- Peu importe les policies RLS existantes (qui autorisent une ligne, pas une
+-- colonne précise), un utilisateur connecté avec la clé anon pourrait sinon
+-- appeler directement l'API REST Supabase (hors de l'app) et faire
+-- `update profiles set is_vip=true, is_admin=true where id=auth.uid()` —
+-- s'auto-accorder le VIP+ ou les droits admin gratuitement, sans code ni
+-- validation. Ici on retire le droit UPDATE générique du rôle "authenticated"
+-- puis on ne le redonne que sur les colonnes strictement cosmétiques que le
+-- client doit pouvoir modifier lui-même. is_vip/vip_expires_at/vip_pack_type/
+-- is_admin ne sont modifiables que par le service_role (Panel Admin, et
+-- /api/redeem-code.js pour la rédemption de code), qui contourne toujours RLS.
+revoke update on public.profiles from authenticated;
+grant update (username, avatar_key, email_confirmed) on public.profiles to authenticated;
