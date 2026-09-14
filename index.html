@@ -1664,7 +1664,18 @@ async function fetchApiScore(id, dateRaw) {
     <!-- ONGLET COMMANDES -->
     <div class="admin-tab-content" id="admin-tab-orders">
         <div class="admin-section">
-            <button onclick="adminGenerateTestUnlockCode()" style="width:100%;padding:13px;margin-bottom:16px;background:rgba(255,215,0,.08);color:var(--primary-yellow);border:1px dashed rgba(255,215,0,.4);border-radius:12px;font-size:13px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+            <div class="admin-section-title" style="color:var(--primary-yellow);"><i class="fas fa-key"></i> Générer un code d'accès (vente manuelle)</div>
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <select id="vip-code-pack-select" class="admin-input" style="flex:1;background:var(--bg-input); border:1px solid var(--border-color); color:#fff; padding:12px; border-radius:10px;">
+                    <option value="journalier">Pack Journalier (1 jour)</option>
+                    <option value="hebdo">Pack Hebdo (7 jours)</option>
+                    <option value="vip">SM VIP+ (à vie)</option>
+                </select>
+                <button onclick="adminGeneratePackCode()" style="padding:0 18px;background:var(--primary-yellow);color:#000;border:none;border-radius:10px;font-size:13px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;white-space:nowrap;"><i class="fas fa-bolt"></i> Générer</button>
+            </div>
+            <div id="admin-vip-codes-list" style="margin-bottom:20px;"></div>
+
+            <button onclick="adminGenerateTestUnlockCode()" style="width:100%;padding:13px;margin-bottom:20px;background:rgba(255,215,0,.08);color:var(--primary-yellow);border:1px dashed rgba(255,215,0,.4);border-radius:12px;font-size:13px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
                 <i class="fas fa-flask"></i> Générer un code de test (débloque ton propre compte)
             </button>
             <div class="admin-section-title" style="color:#FF9800;"><i class="fas fa-clock"></i> En attente de validation</div>
@@ -5519,7 +5530,7 @@ async function clearAllPublicationHistory() {
         document.querySelectorAll('.admin-tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById('admin-tab-' + tabName).classList.add('active');
         document.getElementById('btn-tab-' + tabName).classList.add('active');
-        if (tabName === 'orders') loadAdminOrders();
+        if (tabName === 'orders') { loadAdminOrders(); loadAdminVipCodes(); }
         if (tabName === 'calendar') renderAdminCalendar();
         if (tabName === 'publications') loadAdminPublications();
     }
@@ -6679,6 +6690,83 @@ async function fetchMatchesFromAPI() {
     // ============================================================
     window.adminOrdersCache = {};
 
+    // ============================================================
+    // ADMIN — Codes d'accès pack (vente manuelle, hors circuit panier)
+    // ============================================================
+    var VIP_PACK_INFO = {
+        journalier: { label: 'Pack Journalier', durationDays: 1, prefix: 'SMJ' },
+        hebdo:      { label: 'Pack Hebdo',       durationDays: 7, prefix: 'SMH' },
+        vip:        { label: 'SM VIP+ (à vie)',  durationDays: null, prefix: 'SMV' }
+    };
+
+    async function adminGeneratePackCode() {
+        var select = document.getElementById('vip-code-pack-select');
+        var packType = select ? select.value : 'journalier';
+        var info = VIP_PACK_INFO[packType];
+        if (!info) return;
+
+        var code = generateOrderCode(info.prefix);
+        try {
+            const { error } = await supabaseClient.from('vip_access_codes').insert([{
+                pack_type: packType,
+                code: code,
+                duration_days: info.durationDays
+            }]);
+            if (error) throw error;
+            showToast(`Code généré : ${code} — à transmettre manuellement au client.`);
+            loadAdminVipCodes();
+        } catch (error) {
+            console.error('Erreur génération code pack:', error);
+            var detail = (error && (error.message || error.details)) ? (' (' + (error.message || error.details) + ')') : '';
+            showToast("Erreur lors de la génération du code" + detail + ". Vérifie que la table 'vip_access_codes' existe bien dans Supabase.", true);
+        }
+    }
+
+    async function loadAdminVipCodes() {
+        if (!window.isAdmin) return;
+        var container = document.getElementById('admin-vip-codes-list');
+        if (!container) return;
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('vip_access_codes')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(15);
+            if (error) throw error;
+
+            if (!data || !data.length) {
+                container.innerHTML = '';
+                return;
+            }
+
+            container.innerHTML = data.map(function (c) {
+                var info = VIP_PACK_INFO[c.pack_type] || { label: c.pack_type };
+                var statusHtml = c.used
+                    ? '<span style="color:var(--text-gray);"><i class="fas fa-check-circle"></i> Utilisé</span>'
+                    : '<span style="color:var(--green);"><i class="fas fa-circle" style="font-size:8px;"></i> Disponible</span>';
+                return `
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:rgba(255,255,255,.04);border:1px solid var(--border-color);border-radius:9px;margin-bottom:8px;">
+                    <div>
+                        <div style="font-size:13px;font-weight:800;color:#fff;font-family:'Montserrat',sans-serif;letter-spacing:.5px;">${c.code}</div>
+                        <div style="font-size:11px;color:var(--text-gray);margin-top:2px;">${info.label} &nbsp;•&nbsp; ${statusHtml}</div>
+                    </div>
+                    ${c.used ? '' : `<button onclick="copyVipCode('${c.code}')" style="padding:8px 12px;background:rgba(255,215,0,.1);color:var(--primary-yellow);border:1px solid rgba(255,215,0,.3);border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;"><i class="fas fa-copy"></i> Copier</button>`}
+                </div>`;
+            }).join('');
+        } catch (error) {
+            console.error('Erreur chargement codes pack:', error);
+        }
+    }
+
+    function copyVipCode(code) {
+        navigator.clipboard.writeText(code).then(function () {
+            showToast('Code copié : ' + code);
+        }).catch(function () {
+            showToast(code, false);
+        });
+    }
+
     async function loadAdminOrders() {
         if (!window.isAdmin) return;
         var pendingEl = document.getElementById('admin-orders-pending');
@@ -6877,6 +6965,30 @@ async function fetchMatchesFromAPI() {
         if (!code) { showToast('Entre ton code de déblocage.', true); return; }
         if (!window.currentAuthUser) return;
 
+        // 1) Codes pack (Journalier/Hebdo/VIP+) générés depuis Panel Admin >
+        // Commandes : à usage unique, ils changent le rôle du compte au lieu
+        // de débloquer un combiné précis.
+        try {
+            const { data: packCode, error: packError } = await supabaseClient
+                .from('vip_access_codes')
+                .select('*')
+                .eq('code', code)
+                .eq('used', false)
+                .maybeSingle();
+            if (packError) throw packError;
+
+            if (packCode) {
+                await redeemVipPackCode(packCode);
+                return;
+            }
+        } catch (error) {
+            console.error('Erreur vérification code pack:', error);
+            showToast("Erreur lors de la vérification du code.", true);
+            return;
+        }
+
+        // 2) Sinon, code de déblocage temporaire (3h) d'un combiné précis,
+        // généré via le circuit panier classique.
         try {
             const { data, error } = await supabaseClient
                 .from('orders')
@@ -6906,6 +7018,47 @@ async function fetchMatchesFromAPI() {
             console.error('Erreur déblocage:', error);
             showToast("Erreur lors de la vérification du code.", true);
         }
+    }
+
+    // Applique un code pack : passe le compte en VIP (avec expiration si
+    // Journalier/Hebdo, à vie si VIP+), marque le code comme utilisé (à usage
+    // unique) et met à jour l'affichage du rôle immédiatement.
+    async function redeemVipPackCode(packCode) {
+        var info = VIP_PACK_INFO[packCode.pack_type] || { label: packCode.pack_type, durationDays: packCode.duration_days };
+        var expiresAt = packCode.duration_days
+            ? new Date(Date.now() + packCode.duration_days * 24 * 60 * 60 * 1000).toISOString()
+            : null;
+
+        try {
+            const { error: profileError } = await supabaseClient.from('profiles').update({
+                is_vip: true,
+                vip_expires_at: expiresAt
+            }).eq('id', window.currentAuthUser.id);
+            if (profileError) throw profileError;
+
+            const { error: codeError } = await supabaseClient.from('vip_access_codes').update({
+                used: true,
+                used_by: window.currentAuthUser.id,
+                used_at: new Date().toISOString()
+            }).eq('id', packCode.id).eq('used', false);
+            if (codeError) throw codeError;
+        } catch (error) {
+            console.error('Erreur activation code pack:', error);
+            showToast("Erreur lors de l'activation de l'accès.", true);
+            return;
+        }
+
+        window.isUserVip = true;
+        if (window.currentUserProfile) window.currentUserProfile.role = 'vip';
+        var roleHtml = '<span style="color:var(--red);">SM VIP+</span>';
+        var roleHomeEl = document.getElementById('role-home'); if (roleHomeEl) roleHomeEl.innerHTML = roleHtml;
+        var roleVipEl = document.getElementById('role-vip'); if (roleVipEl) roleVipEl.innerHTML = roleHtml;
+        var badge = document.getElementById('profile-role-badge');
+        if (badge) { badge.textContent = '🔥 VIP+'; badge.style.background = 'rgba(244,63,94,0.2)'; badge.style.color = '#F43F5E'; badge.style.border = '1px solid #F43F5E44'; }
+
+        var input = document.getElementById('unlock-code-input');
+        if (input) input.value = '';
+        showToast(`${info.label} activé ! Ton accès VIP+ est débloqué${packCode.duration_days ? ' pour ' + packCode.duration_days + ' jour(s)' : ' à vie'}.`);
     }
 
     function getComboKickoffTime(snapshot) {
@@ -7071,12 +7224,19 @@ async function fetchMatchesFromAPI() {
         window.currentAuthUser = user;
         var profile = null;
         try {
-            var profileRes = await supabaseClient.from('profiles').select('is_vip, is_admin, username').eq('id', user.id).single();
+            var profileRes = await supabaseClient.from('profiles').select('is_vip, is_admin, username, vip_expires_at').eq('id', user.id).single();
             profile = profileRes.data;
         } catch(e) {}
 
         window.isUserVip  = profile ? profile.is_vip  : false;
         window.isAdmin    = profile ? profile.is_admin : false;
+
+        // Accès pack Journalier/Hebdo expiré : revient automatiquement en Visiteur.
+        if (window.isUserVip && profile && profile.vip_expires_at && new Date(profile.vip_expires_at).getTime() <= Date.now()) {
+            window.isUserVip = false;
+            supabaseClient.from('profiles').update({ is_vip: false, vip_expires_at: null }).eq('id', user.id).then(function () {}).catch(function () {});
+        }
+
         if (window.isAdmin) window.isUserVip = true;
 
         var finalUsername = (profile && profile.username) ? profile.username : 'Utilisateur';

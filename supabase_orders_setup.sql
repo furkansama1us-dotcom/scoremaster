@@ -209,3 +209,46 @@ alter table public.bot_conversations add column if not exists betting_sport text
 alter table public.bot_conversations add column if not exists betting_experience text;
 alter table public.bot_conversations add column if not exists betting_luck text;
 alter table public.bot_conversations enable row level security;
+
+-- ============================================================
+-- Codes d'accès pack (Journalier / Hebdo / SM VIP+) — générés
+-- manuellement par l'admin depuis Panel Admin > Commandes, puis
+-- transmis à la main (WhatsApp, en personne, etc.) au client.
+-- Un code est à usage unique : une fois saisi dans "Débloquer mon
+-- accès", il change le rôle du compte (is_vip) pour la durée du pack,
+-- et se marque comme utilisé pour ne plus jamais être réutilisable.
+-- ============================================================
+
+alter table public.profiles
+  add column if not exists vip_expires_at timestamptz;
+
+create table if not exists public.vip_access_codes (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz not null default now(),
+  pack_type text not null,
+  code text not null unique,
+  duration_days integer,
+  used boolean not null default false,
+  used_by uuid references auth.users(id),
+  used_at timestamptz
+);
+alter table public.vip_access_codes enable row level security;
+
+drop policy if exists "Admins can manage vip access codes" on public.vip_access_codes;
+create policy "Admins can manage vip access codes"
+  on public.vip_access_codes for all
+  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));
+
+-- Nécessaire pour que n'importe quel utilisateur connecté puisse vérifier
+-- un code saisi dans "Débloquer mon accès" (le code lui a été transmis à
+-- la main, il n'est jamais affiché dans l'app pour un autre utilisateur).
+drop policy if exists "Users can look up an unused code to redeem it" on public.vip_access_codes;
+create policy "Users can look up an unused code to redeem it"
+  on public.vip_access_codes for select
+  using (used = false or used_by = auth.uid());
+
+drop policy if exists "Users can redeem an unused code" on public.vip_access_codes;
+create policy "Users can redeem an unused code"
+  on public.vip_access_codes for update
+  using (used = false)
+  with check (used_by = auth.uid() and used = true);
