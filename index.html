@@ -2042,6 +2042,9 @@ async function fetchApiScore(id, dateRaw) {
                     <i class="fas fa-wand-magic-sparkles"></i> Planifier les prochains jours
                 </button>
                 <div style="font-size:11px;color:#5e6478;margin-top:7px;text-align:center;">Génère automatiquement 3 Conseil IA + 1 Carrousel Story (thèmes choisis pour toi, jamais de répétition). Laisse cet onglet ouvert le temps que ça se termine.</div>
+                <button onclick="cpOpenMultiSelect()" style="width:100%;margin-top:10px;padding:12px;border-radius:12px;border:1.5px solid #c8963c;background:#fff;color:#8a5a13;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                    <i class="fas fa-calendar-check"></i> Générer sur plusieurs jours
+                </button>
             </div>
             <div class="cp-sec"><div class="cp-eyebrow">Prochain contenu</div><div class="cp-hero" id="cpHeroNext"></div></div>
             <div class="cp-sec">
@@ -2068,13 +2071,25 @@ async function fetchApiScore(id, dateRaw) {
         </div>
         <div class="cp-view" id="cp-view-day">
             <button class="cp-back" onclick="cpGo('home')">‹ Retour</button>
-            <div class="cp-eyebrow" id="cpDayLabel">—</div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                <div class="cp-eyebrow" id="cpDayLabel" style="margin-bottom:0;">—</div>
+                <button id="cpDayGenAllBtn" onclick="cpGenerateAllForOpenDay()" style="padding:7px 12px;border-radius:10px;border:1.5px solid #c8963c;background:none;color:#8a5a13;font-size:11.5px;font-weight:800;cursor:pointer;white-space:nowrap;"><i class="fas fa-wand-magic-sparkles"></i> Générer tout</button>
+            </div>
             <div class="cp-tl" id="cpDayTl"></div>
         </div>
         <div class="cp-view" id="cp-view-type">
             <button class="cp-back" onclick="cpGo('home')">‹ Retour</button>
             <div class="cp-eyebrow" id="cpTypeLabel">—</div>
             <div class="cp-tl" id="cpTypeTl"></div>
+        </div>
+        <div class="cp-view" id="cp-view-multiselect">
+            <button class="cp-back" onclick="cpGo('home')">‹ Retour</button>
+            <div class="cp-eyebrow">Choisis les jours à préparer (Conseil IA + Carrousel)</div>
+            <div class="cp-mini" id="cpMultiCal" style="margin-bottom:14px;"></div>
+            <div id="cpMultiSelectedCount" style="font-size:12.5px;color:#5a5262;text-align:center;margin-bottom:12px;">Aucun jour sélectionné</div>
+            <button id="cpMultiGenBtn" onclick="cpGenerateMultiSelect()" disabled style="width:100%;padding:13px;border-radius:13px;border:none;background:linear-gradient(135deg,#a855f7,#e8b84b);color:#141821;font-weight:800;font-size:14px;cursor:pointer;opacity:.5;">
+                <i class="fas fa-wand-magic-sparkles"></i> Générer
+            </button>
         </div>
     </div>
 </div>
@@ -4593,9 +4608,10 @@ var _cpNextDayPoll = null;
 // pour demain — un simple "des lignes existent et aucune n'est en cours"
 // donnait un faux "prêt" dès que le Conseil IA seul était complet, sans
 // jamais remarquer que le Carrousel n'avait même pas démarré.
-function cpNextDayMissing() {
-    var tomorrow = dateStrOffset(1);
-    var rows = (window._cpRows || []).filter(function (r) { return r.scheduled_for === tomorrow; });
+// Version générique (n'importe quel jour, même lointain) — cpNextDayMissing()
+// n'est plus qu'un raccourci vers celle-ci pour "demain".
+function cpMissingForDay(dayStr) {
+    var rows = (window._cpRows || []).filter(function (r) { return r.scheduled_for === dayStr; });
     var byType = {};
     rows.forEach(function (r) { var tk = cpTypeKey(r.content_type); (byType[tk] = byType[tk] || []).push(r); });
 
@@ -4606,7 +4622,33 @@ function cpNextDayMissing() {
         var usable = have.filter(function (r) { return r.status !== 'failed'; }).length;
         if (usable < want) missing[tk] = want - usable;
     });
-    return { tomorrow: tomorrow, missing: missing, byType: byType };
+    return { day: dayStr, missing: missing, byType: byType };
+}
+
+function cpNextDayMissing() {
+    var info = cpMissingForDay(dateStrOffset(1));
+    return { tomorrow: info.day, missing: info.missing, byType: info.byType };
+}
+
+// Génère ce qui manque (Conseil IA + Carrousel, jamais les Joker) pour UN
+// jour précis, même lointain — utilisé par le bouton "Générer tout" de
+// chaque page de planning et par la génération multi-jours.
+async function cpGenerateForDay(dayStr) {
+    var info = cpMissingForDay(dayStr);
+    var i, j;
+    for (i = 0; i < (info.missing.conseil || 0); i++) {
+        try {
+            var data = await adminApiCall('/api/generate-story-content', { type: 'conseil', origin: 'planner', dateStr: dayStr });
+            pollConseilGeneration(data.rows[0].id, data.statusUrl);
+        } catch (e) { console.error('Erreur génération (Conseil IA) pour ' + dayStr + ':', e); }
+        await new Promise(function (r) { setTimeout(r, 4000); });
+    }
+    for (j = 0; j < (info.missing.carousel || 0); j++) {
+        try {
+            await queueCarouselStoryPublication('planner', dayStr);
+        } catch (e) { console.error('Erreur génération (Carrousel) pour ' + dayStr + ':', e); }
+        await new Promise(function (r) { setTimeout(r, 4000); });
+    }
 }
 
 function cpNextDayStatus() {
@@ -4645,31 +4687,13 @@ function cpRenderNextDayBanner() {
 async function cpGenerateNextDayContent() {
     var st = cpNextDayStatus();
     if (st.state !== 'none') return; // déjà en cours ou déjà complet, rien à faire
-    var info = cpNextDayMissing();
-    var tomorrow = info.tomorrow;
 
     // Affiche l'état "en cours" tout de suite (avant même la 1ère réponse
     // serveur) pour un retour immédiat.
     var el = document.getElementById('cpNextDayBanner');
     if (el) el.innerHTML = '<div class="cp-statusline" style="color:#c8963c;background:#f6ecd6;justify-content:center;">⏳ En cours de génération pour le J+1...</div>';
 
-    // Ne génère QUE ce qui manque réellement (comptage par type) — sinon une
-    // 2e génération dupliquait le Conseil IA déjà complet en plus de rattraper
-    // le Carrousel manquant.
-    var i, j;
-    for (i = 0; i < (info.missing.conseil || 0); i++) {
-        try {
-            var data = await adminApiCall('/api/generate-story-content', { type: 'conseil', origin: 'planner', dateStr: tomorrow });
-            pollConseilGeneration(data.rows[0].id, data.statusUrl);
-        } catch (e) { console.error('Erreur génération J+1 (Conseil IA):', e); }
-        await new Promise(function (r) { setTimeout(r, 4000); });
-    }
-    for (j = 0; j < (info.missing.carousel || 0); j++) {
-        try {
-            await queueCarouselStoryPublication('planner', tomorrow);
-        } catch (e) { console.error('Erreur génération J+1 (Carrousel):', e); }
-        await new Promise(function (r) { setTimeout(r, 4000); });
-    }
+    await cpGenerateForDay(dateStrOffset(1));
     await cpFetchRows();
     cpRenderNextDayBanner();
 }
@@ -4902,11 +4926,123 @@ function cpRenderMiniCal() {
     document.getElementById('cpMiniCal').innerHTML = html;
 }
 
+// ============================================================
+// SÉLECTION MULTIPLE DE JOURS — calendrier avec navigation mensuelle où
+// chaque case bascule sa sélection au lieu d'ouvrir le jour, puis un seul
+// bouton "Générer" lance la préparation (Conseil IA + Carrousel, jamais les
+// Joker) pour tous les jours cochés, même lointains.
+// ============================================================
+window._cpSelectedDays = [];
+window._cpMultiCalDate = null;
+
+function cpOpenMultiSelect() {
+    window._cpSelectedDays = [];
+    window._cpMultiCalDate = new Date();
+    cpRenderMultiCal();
+    cpGo('multiselect');
+}
+
+function cpMultiCalShiftMonth(delta) {
+    var d = window._cpMultiCalDate;
+    window._cpMultiCalDate = new Date(d.getFullYear(), d.getMonth() + delta, 1);
+    cpRenderMultiCal();
+}
+
+function cpToggleDaySelection(ds) {
+    var idx = window._cpSelectedDays.indexOf(ds);
+    if (idx === -1) window._cpSelectedDays.push(ds); else window._cpSelectedDays.splice(idx, 1);
+    cpRenderMultiCal();
+}
+
+function cpRenderMultiCal() {
+    var ref = window._cpMultiCalDate || new Date();
+    var y = ref.getFullYear(), m = ref.getMonth();
+    var first = new Date(y, m, 1);
+    var startOffset = (first.getDay() + 6) % 7;
+    var daysInMonth = new Date(y, m + 1, 0).getDate();
+    var todayStr = cpDstr(new Date());
+
+    var html = '<div class="cp-mini-head">' +
+        '<button onclick="cpMultiCalShiftMonth(-1)" style="border:none;background:none;color:#8a8290;font-size:16px;cursor:pointer;padding:2px 8px;">‹</button>' +
+        '<b>' + ref.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }) + '</b>' +
+        '<button onclick="cpMultiCalShiftMonth(1)" style="border:none;background:none;color:#8a8290;font-size:16px;cursor:pointer;padding:2px 8px;">›</button>' +
+        '</div><div class="cp-mini-grid">';
+    ['L', 'M', 'M', 'J', 'V', 'S', 'D'].forEach(function (d) { html += '<div class="cp-dow">' + d + '</div>'; });
+    for (var i = 0; i < startOffset; i++) html += '<div class="cp-cell cp-empty"></div>';
+    for (var day = 1; day <= daysInMonth; day++) {
+        var ds = cpDstr(new Date(y, m, day));
+        var selected = window._cpSelectedDays.indexOf(ds) !== -1;
+        var isPast = ds < todayStr;
+        var style = selected ? 'background:#c8963c;color:#fff;font-weight:800;' : (isPast ? 'opacity:.35;' : '');
+        html += '<div class="cp-cell' + (ds === todayStr ? ' cp-today' : '') + '" style="' + style + '" onclick="' + (isPast ? '' : 'cpToggleDaySelection(\'' + ds + '\')') + '"><span>' + day + '</span></div>';
+    }
+    html += '</div>';
+    document.getElementById('cpMultiCal').innerHTML = html;
+
+    var count = window._cpSelectedDays.length;
+    document.getElementById('cpMultiSelectedCount').textContent = count
+        ? count + ' jour' + (count > 1 ? 's' : '') + ' sélectionné' + (count > 1 ? 's' : '')
+        : 'Aucun jour sélectionné';
+    var genBtn = document.getElementById('cpMultiGenBtn');
+    genBtn.disabled = !count;
+    genBtn.style.opacity = count ? '1' : '.5';
+}
+
+async function cpGenerateMultiSelect() {
+    var days = window._cpSelectedDays.slice();
+    if (!days.length) return;
+    var btn = document.getElementById('cpMultiGenBtn');
+    btn.disabled = true;
+    showToast('Génération pour ' + days.length + ' jour(s) en cours... 🎨');
+    for (var i = 0; i < days.length; i++) {
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (i + 1) + ' / ' + days.length + '...';
+        await cpGenerateForDay(days[i]);
+        await cpFetchRows();
+    }
+    showToast('Contenu généré pour ' + days.length + ' jour(s) ! Retrouve-le dans le planning. 🎉');
+    window._cpSelectedDays = [];
+    cpGo('home');
+    cpRenderHome();
+}
+
+window._cpOpenDayStr = null;
 function cpOpenDay(ds) {
+    window._cpOpenDayStr = ds;
     var rows = cpDayWithPlaceholders((window._cpRows || []).filter(function (r) { return cpRowDay(r) === ds; }));
     document.getElementById('cpDayLabel').textContent = cpFmtDayLabel(new Date(ds + 'T00:00:00'));
     document.getElementById('cpDayTl').innerHTML = rows.length ? rows.map(cpSlotHtml).join('') : '<div class="cp-txt-box" style="text-align:center;color:#8a8290;">Rien généré ce jour-là.</div>';
+    cpUpdateDayGenAllBtn();
     cpGo('day');
+}
+
+function cpUpdateDayGenAllBtn() {
+    var btn = document.getElementById('cpDayGenAllBtn');
+    if (!btn || !window._cpOpenDayStr) return;
+    var info = cpMissingForDay(window._cpOpenDayStr);
+    var anyGenerating = Object.keys(info.byType).some(function (tk) {
+        return info.byType[tk].some(function (r) { return r.status === 'generating'; });
+    });
+    if (anyGenerating) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Génération...';
+    } else if (!Object.keys(info.missing).length) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-check"></i> Complet';
+    } else {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Générer tout';
+    }
+}
+
+async function cpGenerateAllForOpenDay() {
+    var ds = window._cpOpenDayStr;
+    if (!ds) return;
+    var btn = document.getElementById('cpDayGenAllBtn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Génération...'; }
+    showToast('Génération du contenu pour le ' + ds + '...');
+    await cpGenerateForDay(ds);
+    await cpFetchRows();
+    if (window._cpOpenDayStr === ds) cpOpenDay(ds); // ré-affiche le jour avec les nouvelles lignes
 }
 
 function cpFilterType(typeKey) {
