@@ -2625,9 +2625,16 @@ function pollConseilGeneration(id, statusUrl, attempt) {
             setConseilCardState('<i class="fas fa-spinner fa-spin"></i> Génération du fond en cours (Higgsfield)...', true);
             pollConseilGeneration(id, statusUrl, attempt + 1);
         } catch (error) {
-            console.error('Erreur suivi génération conseil:', error);
-            setConseilCardState('Erreur pendant la génération.', false);
-            setTimeout(function () { setConseilCardState(CONSEIL_DEFAULT_DESC, false); }, 4000);
+            // Erreur réseau ponctuelle : on continue d'essayer plutôt que
+            // d'abandonner en silence (sinon la génération reste bloquée
+            // indéfiniment sans qu'aucune erreur ne soit jamais montrée).
+            console.error('Erreur suivi génération conseil (nouvelle tentative) :', error);
+            if (attempt > 40) {
+                setConseilCardState('Délai dépassé, réessaie.', false);
+                setTimeout(function () { setConseilCardState(CONSEIL_DEFAULT_DESC, false); }, 4000);
+                return;
+            }
+            pollConseilGeneration(id, statusUrl, attempt + 1);
         }
     }, 5000);
 }
@@ -2986,10 +2993,16 @@ function pollCarouselStoryGeneration(id, statusUrls, done, attempt) {
                 if (data.done) { done[i] = data.imageUrl; } else { allDone = false; }
             }
             if (allDone) { finishCarouselStoryComposite(id, done); return; }
-            if (attempt > 60) { showToast('Délai dépassé pour le carrousel.', true); return; }
+            if (attempt > 90) { showToast('Délai dépassé pour le carrousel.', true); return; }
             pollCarouselStoryGeneration(id, statusUrls, done, attempt + 1);
         } catch (error) {
-            console.error('Erreur suivi génération carrousel:', error);
+            // Erreur réseau ponctuelle sur UN des 5 contrôles : on continue
+            // d'essayer plutôt que d'abandonner en silence (avec 5 vérifications
+            // par cycle au lieu d'une, le risque qu'une seule échoue est bien
+            // plus élevé — c'était très probablement la cause du blocage vu).
+            console.error('Erreur suivi génération carrousel (nouvelle tentative) :', error);
+            if (attempt > 90) { showToast('Délai dépassé pour le carrousel.', true); return; }
+            pollCarouselStoryGeneration(id, statusUrls, done, attempt + 1);
         }
     }, 5000);
 }
@@ -3327,7 +3340,9 @@ function pollComboTeaserGeneration(id, statusUrl, attempt) {
             if (attempt > 40) { showToast('Délai dépassé pour le visuel du combiné.', true); return; }
             pollComboTeaserGeneration(id, statusUrl, attempt + 1);
         } catch (error) {
-            console.error('Erreur suivi génération visuel combiné:', error);
+            console.error('Erreur suivi génération visuel combiné (nouvelle tentative) :', error);
+            if (attempt > 40) { showToast('Délai dépassé pour le visuel du combiné.', true); return; }
+            pollComboTeaserGeneration(id, statusUrl, attempt + 1);
         }
     }, 5000);
 }
@@ -3367,7 +3382,9 @@ function pollComboTeaserTelegramGeneration(id, statusUrl, attempt) {
             if (attempt > 40) { showToast('Délai dépassé pour le visuel Telegram du combiné.', true); return; }
             pollComboTeaserTelegramGeneration(id, statusUrl, attempt + 1);
         } catch (error) {
-            console.error('Erreur suivi génération visuel combiné (Telegram):', error);
+            console.error('Erreur suivi génération visuel combiné Telegram (nouvelle tentative) :', error);
+            if (attempt > 40) { showToast('Délai dépassé pour le visuel Telegram du combiné.', true); return; }
+            pollComboTeaserTelegramGeneration(id, statusUrl, attempt + 1);
         }
     }, 5000);
 }
@@ -3610,7 +3627,9 @@ function pollVictoryStoryGeneration(id, statusUrl, attempt) {
             if (attempt > 40) { showToast('Délai dépassé pour la story de victoire.', true); return; }
             pollVictoryStoryGeneration(id, statusUrl, attempt + 1);
         } catch (error) {
-            console.error('Erreur suivi génération victory story:', error);
+            console.error('Erreur suivi génération victory story (nouvelle tentative) :', error);
+            if (attempt > 40) { showToast('Délai dépassé pour la story de victoire.', true); return; }
+            pollVictoryStoryGeneration(id, statusUrl, attempt + 1);
         }
     }, 5000);
 }
