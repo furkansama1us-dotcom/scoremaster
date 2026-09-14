@@ -3207,7 +3207,7 @@ async function generateCarouselStoryNow() {
     }
 }
 
-async function queueCarouselStoryPublication(origin) {
+async function queueCarouselStoryPublication(origin, dateStr) {
     try {
         showToast('Génération du carrousel en cours (5 fonds à générer)... 🎨');
         var recentTitles = await recentCarouselNarrativeTitles();
@@ -3216,7 +3216,8 @@ async function queueCarouselStoryPublication(origin) {
             type: 'carousel-story',
             caption: buildCarouselStoryCaption(),
             slides: slides.map(function (s) { return { kicker: s.kicker, headline: s.headline, scene: s.scene }; }),
-            origin: origin || undefined
+            origin: origin || undefined,
+            dateStr: dateStr || undefined
         });
         pollCarouselStoryGeneration(data.rows[0].id, data.statusUrls, new Array(data.statusUrls.length).fill(false));
     } catch (error) {
@@ -4472,7 +4473,11 @@ var CP_DAILY_TIMES = {
     carousel: ['13h00', '17h00', '21h00'],
     victory:  ['22h30']
 };
-var CP_JOKER_TYPES = { combo: true, carousel: true, victory: true };
+// Joker = uniquement ce qui dépend d'un match réel (pas encore connu à
+// l'avance) : le combiné à venir et le résultat de sa victoire le soir.
+// Conseil IA et Carrousel Story sont du contenu "classique", générable à
+// l'avance comme n'importe quel autre créneau planifié.
+var CP_JOKER_TYPES = { combo: true, victory: true };
 
 // Assigne à chaque ligne un horaire "planning" plutôt que l'heure brute de
 // génération — sinon tout ce qui a été planifié d'un coup affiche la même
@@ -4532,20 +4537,23 @@ async function openContentPlanner() {
 // ============================================================
 // GÉNÉRATION J+1 — prépare le contenu du lendemain dès que l'admin ouvre
 // l'application, pour ne jamais dépendre d'une génération lancée au dernier
-// moment (risque d'interruption). Ne concerne que les formats NON-Joker
-// (Conseil IA aujourd'hui — les Joker restent toujours une décision de
-// l'admin, jamais anticipés automatiquement).
+// moment (risque d'interruption). Ne concerne que les formats NON-Joker :
+// Conseil IA et Carrousel Story (contenu "classique", indépendant des
+// matchs). Le Combiné à venir et la Victoire restent toujours une décision
+// de l'admin le jour même, jamais anticipés — ils dépendent de matchs pas
+// encore connus / joués à l'avance.
 // ============================================================
+var CP_NEXT_DAY_TYPES = ['conseil', 'carousel'];
 var _cpNextDayPoll = null;
 
 function cpNextDayStatus() {
     var tomorrow = dateStrOffset(1);
     var rows = (window._cpRows || []).filter(function (r) {
-        return r.scheduled_for === tomorrow && cpTypeKey(r.content_type) === 'conseil' && !CP_JOKER_TYPES[cpTypeKey(r.content_type)];
+        return r.scheduled_for === tomorrow && CP_NEXT_DAY_TYPES.indexOf(cpTypeKey(r.content_type)) !== -1;
     });
     if (!rows.length) return { state: 'none', tomorrow: tomorrow };
     if (rows.some(function (r) { return r.status === 'generating'; })) return { state: 'generating', tomorrow: tomorrow };
-    if (rows.some(function (r) { return r.status === 'failed'; }) && !rows.some(function (r) { return r.status !== 'failed'; })) return { state: 'none', tomorrow: tomorrow };
+    if (rows.every(function (r) { return r.status === 'failed'; })) return { state: 'none', tomorrow: tomorrow };
     return { state: 'ready', tomorrow: tomorrow };
 }
 
@@ -4576,18 +4584,25 @@ async function cpGenerateNextDayContent() {
     var st = cpNextDayStatus();
     if (st.state !== 'none') return; // déjà en cours ou déjà prêt, rien à faire
     var tomorrow = st.tomorrow;
-    var slotsCount = (CP_DAILY_TIMES.conseil || []).length || 3;
+    var conseilCount = (CP_DAILY_TIMES.conseil || []).length || 3;
+    var carouselCount = (CP_DAILY_TIMES.carousel || []).length || 3;
 
     // Affiche l'état "en cours" tout de suite (avant même la 1ère réponse
     // serveur) pour un retour immédiat.
     var el = document.getElementById('cpNextDayBanner');
     if (el) el.innerHTML = '<div class="cp-statusline" style="color:#c8963c;background:#f6ecd6;justify-content:center;">⏳ En cours de génération pour le J+1...</div>';
 
-    for (var i = 0; i < slotsCount; i++) {
+    for (var i = 0; i < conseilCount; i++) {
         try {
             var data = await adminApiCall('/api/generate-story-content', { type: 'conseil', origin: 'planner', dateStr: tomorrow });
             pollConseilGeneration(data.rows[0].id, data.statusUrl);
-        } catch (e) { console.error('Erreur génération J+1:', e); }
+        } catch (e) { console.error('Erreur génération J+1 (Conseil IA):', e); }
+        await new Promise(function (r) { setTimeout(r, 4000); });
+    }
+    for (var j = 0; j < carouselCount; j++) {
+        try {
+            await queueCarouselStoryPublication('planner', tomorrow);
+        } catch (e) { console.error('Erreur génération J+1 (Carrousel):', e); }
         await new Promise(function (r) { setTimeout(r, 4000); });
     }
     await cpFetchRows();
@@ -4821,9 +4836,12 @@ function cpOpenSheet(id) {
     // double format, même prévisualisation carrousel) — la validation se fait
     // maintenant ici, plus besoin de renvoyer vers Publications.
     var jokerNote = row._cpJoker
-        ? '<div class="cp-statusline" style="margin-bottom:10px;color:#f2cf7c;background:rgba(232,184,75,.12);">🃏 Publication manuelle — c\'est toi qui choisis le moment et qui postes.' + (typeKey === 'carousel' ? ' À convertir en Reel via l\'app (dimensions déjà en 9:16).' : '') + '</div>'
+        ? '<div class="cp-statusline" style="margin-bottom:10px;color:#f2cf7c;background:rgba(232,184,75,.12);">🃏 Lié à un match réel — c\'est toi qui valides et postes le moment venu.</div>'
         : '';
-    document.getElementById('cpSheetBody').innerHTML = jokerNote + (row.status === 'pending' ? renderPublicationCard(row) : renderPublicationHistoryCard(row));
+    var reelNote = typeKey === 'carousel'
+        ? '<div class="cp-statusline" style="margin-bottom:10px;color:#8a5a13;background:#f6ecd6;">🎬 À convertir en Reel manuellement via l\'app (dimensions déjà en 9:16).</div>'
+        : '';
+    document.getElementById('cpSheetBody').innerHTML = jokerNote + reelNote + (row.status === 'pending' ? renderPublicationCard(row) : renderPublicationHistoryCard(row));
 
     document.getElementById('cp-sheet-overlay').style.opacity = '1';
     document.getElementById('cp-sheet-overlay').style.pointerEvents = 'auto';
