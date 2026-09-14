@@ -4746,7 +4746,7 @@ function cpSlotHtml(row) {
         '<div class="cp-time mono">' + cpRowTime(row) + '</div>' +
         '<div class="cp-mid">' +
             '<div class="cp-top">' + cpChipHtml(typeKey, row._cpJoker) + '</div>' +
-            '<div class="cp-ttl">' + cpRowTitle(row) + '</div>' +
+            '<div class="cp-ttl">' + cpRowTitle(row) + (row.status === 'generating' ? ' <span style="color:#c8963c;font-weight:800;">(en cours de génération)</span>' : '') + '</div>' +
         '</div>' +
         cpRowStatusIcon(row) +
     '</button>';
