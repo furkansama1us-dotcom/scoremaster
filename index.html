@@ -1881,7 +1881,6 @@ async function fetchApiScore(id, dateRaw) {
             </div>
             <p style="font-size:13px; color:var(--text-gray); margin-bottom:20px; line-height:1.5;">
                 Contenu généré automatiquement chaque soir (Claude + Higgsfield). Rien n'est publié sans ta validation — approuve pour publier sur Instagram (via Postiz) ou Telegram, ou rejette.
-                <br><br><i class="fas fa-calendar-days" style="color:#e8b84b;"></i> Conseil IA, Combiné du jour, Carrousel Story et Victoire ne sont plus ici — retrouve-les dans le <b>Content Planner</b> (bouton doré en haut du Panel Admin).
             </p>
             <div id="admin-publications-pending" style="margin-bottom:24px;">
                 <div class="no-combined-message" style="padding:20px;"><i class="fas fa-inbox"></i>Aucune publication en attente.</div>
@@ -4404,7 +4403,6 @@ async function loadAdminPublications() {
         const { data, error } = await supabaseClient
             .from('pending_publications')
             .select('*')
-            .not('content_type', 'in', '(' + CP_CONTENT_TYPES.map(function (t) { return '"' + t + '"'; }).join(',') + ')')
             .order('created_at', { ascending: false })
             .limit(30);
         if (error) throw error;
