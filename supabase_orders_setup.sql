@@ -253,3 +253,19 @@ create policy "Users can redeem an unused code"
   on public.vip_access_codes for update
   using (used = false)
   with check (used_by = auth.uid() and used = true);
+
+-- ============================================================
+-- Date de création du compte, directement sur profiles (jusqu'ici
+-- uniquement dans auth.users, pas consultable facilement depuis le
+-- Table Editor). Rétro-remplie depuis auth.users pour les comptes
+-- déjà existants ; les nouveaux comptes prennent la valeur par défaut.
+-- ============================================================
+
+alter table public.profiles
+  add column if not exists created_at timestamptz not null default now();
+
+update public.profiles p
+set created_at = u.created_at
+from auth.users u
+where u.id = p.id
+  and p.created_at is distinct from u.created_at;
