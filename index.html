@@ -1881,6 +1881,7 @@ async function fetchApiScore(id, dateRaw) {
             </div>
             <p style="font-size:13px; color:var(--text-gray); margin-bottom:20px; line-height:1.5;">
                 Contenu généré automatiquement chaque soir (Claude + Higgsfield). Rien n'est publié sans ta validation — approuve pour publier sur Instagram (via Postiz) ou Telegram, ou rejette.
+                <br><br><i class="fas fa-calendar-days" style="color:#e8b84b;"></i> Conseil IA, Combiné du jour, Carrousel Story et Victoire ne sont plus ici — retrouve-les dans le <b>Content Planner</b> (bouton doré en haut du Panel Admin).
             </p>
             <div id="admin-publications-pending" style="margin-bottom:24px;">
                 <div class="no-combined-message" style="padding:20px;"><i class="fas fa-inbox"></i>Aucune publication en attente.</div>
@@ -4349,6 +4350,13 @@ async function approveCalendarRows(typeKey, dayOffset) {
     }
 }
 
+// Formats gérés par le Content Planner (Conseil IA, Combiné du jour,
+// Carrousel Story, Victoire) : pour ne pas mélanger avec le Calendrier de
+// contenu historique, ces types n'apparaissent plus dans l'onglet
+// Publications — leur validation se fait exclusivement depuis le Content
+// Planner (bouton dédié dans l'en-tête du Panel Admin).
+var CP_CONTENT_TYPES = ['Conseil IA', 'Combiné du jour', 'Carrousel Story', 'Victoire', 'Victoire Story'];
+
 // ============================================================
 // PUBLICATIONS — validation des brouillons générés par le script VPS
 // (Claude + Higgsfield), publication via Postiz (Instagram) ou telegram_queue
@@ -4384,6 +4392,7 @@ async function loadAdminPublications() {
         const { data, error } = await supabaseClient
             .from('pending_publications')
             .select('*')
+            .not('content_type', 'in', '(' + CP_CONTENT_TYPES.map(function (t) { return '"' + t + '"'; }).join(',') + ')')
             .order('created_at', { ascending: false })
             .limit(30);
         if (error) throw error;
@@ -4477,6 +4486,7 @@ async function openContentPlanner() {
         const { data, error } = await supabaseClient
             .from('pending_publications')
             .select('*')
+            .in('content_type', CP_CONTENT_TYPES)
             .order('created_at', { ascending: false })
             .limit(60);
         if (error) throw error;
@@ -4590,7 +4600,7 @@ function cpRenderHome() {
                 '<div class="cp-hero-title">' + next.content_type + '</div>' +
                 '<div class="cp-hero-desc">' + cpRowTitle(next) + '</div>' +
             '</div>' +
-            '<button onclick="closeContentPlanner();switchAdminTab(\'publications\');" style="margin-top:14px;width:100%;padding:11px;border-radius:11px;background:#e8b84b;color:#141821;font-weight:800;font-size:13px;border:none;cursor:pointer;">Ouvrir dans Publications</button>';
+            '<button onclick="cpOpenSheet(\'' + next.id + '\')" style="margin-top:14px;width:100%;padding:11px;border-radius:11px;background:#e8b84b;color:#141821;font-weight:800;font-size:13px;border:none;cursor:pointer;">Voir le détail</button>';
     } else {
         heroEl.innerHTML = '<div class="cp-hero-desc">Rien en attente pour le moment — tout est publié ! 🎉</div>';
     }
@@ -4651,29 +4661,35 @@ function cpOpenSheet(id) {
     var row = (window._cpRows || []).find(function (r) { return String(r.id) === String(id); });
     if (!row) return;
     var typeKey = cpTypeKey(row.content_type);
-    var statusMap = { published: ['✓ Publié', '#3ecf8e', 'rgba(62,207,142,.14)'], failed: ['✕ Échec', 'var(--red,#f43f5e)', 'rgba(244,63,94,.14)'] };
-    var st = statusMap[row.status] || ['⏳ En attente de validation', '#f2cf7c', 'rgba(232,184,75,.12)'];
 
     document.getElementById('cpSheetHead').innerHTML =
         cpChipHtml(typeKey, row._cpJoker) +
         '<span style="font-weight:800;font-size:14px;">' + cpRowTime(row) + '</span>' +
         '<button onclick="cpCloseSheet()" style="margin-left:auto;width:30px;height:30px;border-radius:50%;background:#161a26;border:none;color:#8b91a3;cursor:pointer;">✕</button>';
 
-    var thumbs = [];
-    if (Array.isArray(row.carousel_images)) thumbs = row.carousel_images.filter(Boolean);
-    else { var single = cpRowThumb(row); if (single) thumbs = [single]; }
-
-    document.getElementById('cpSheetBody').innerHTML =
-        '<div class="cp-statusline" style="color:' + st[1] + ';background:' + st[2] + ';">' + st[0] + '</div>' +
-        (row._cpJoker ? '<div class="cp-statusline" style="margin-top:8px;color:#f2cf7c;background:rgba(232,184,75,.12);">🃏 Publication manuelle — c\'est toi qui choisis le moment et qui postes.' + (typeKey === 'carousel' ? ' À convertir en Reel via l\'app (dimensions déjà en 9:16).' : '') + '</div>' : '') +
-        '<div style="margin-top:14px;"><div class="cp-eyebrow" style="margin-bottom:7px;">Prévu pour le ' + (row.scheduled_for || '—') + '</div><div class="cp-txt-box">' + (row.caption || '(pas de légende)') + '</div></div>' +
-        (thumbs.length ? '<div style="margin-top:14px;"><div class="cp-eyebrow" style="margin-bottom:7px;">Aperçu</div><div class="cp-thumb-row">' + thumbs.map(function (u) { return '<img class="cp-thumb" src="' + u + '" onerror="this.style.display=\'none\'">'; }).join('') + '</div></div>' : '') +
-        (row.error ? '<div class="cp-txt-box" style="margin-top:14px;color:var(--red,#f43f5e);">' + row.error + '</div>' : '') +
-        '<button onclick="closeContentPlanner();switchAdminTab(\'publications\');" style="margin-top:16px;width:100%;padding:12px;border-radius:11px;background:#e8b84b;color:#141821;font-weight:800;font-size:13.5px;border:none;cursor:pointer;">Ouvrir dans Publications</button>';
+    // Réutilise directement les vraies cartes de l'onglet Publications (mêmes
+    // boutons Approuver/Rejeter/Enregistrer, mêmes cases Story/Post pour le
+    // double format, même prévisualisation carrousel) — la validation se fait
+    // maintenant ici, plus besoin de renvoyer vers Publications.
+    var jokerNote = row._cpJoker
+        ? '<div class="cp-statusline" style="margin-bottom:10px;color:#f2cf7c;background:rgba(232,184,75,.12);">🃏 Publication manuelle — c\'est toi qui choisis le moment et qui postes.' + (typeKey === 'carousel' ? ' À convertir en Reel via l\'app (dimensions déjà en 9:16).' : '') + '</div>'
+        : '';
+    document.getElementById('cpSheetBody').innerHTML = jokerNote + (row.status === 'pending' ? renderPublicationCard(row) : renderPublicationHistoryCard(row));
 
     document.getElementById('cp-sheet-overlay').style.opacity = '1';
     document.getElementById('cp-sheet-overlay').style.pointerEvents = 'auto';
     document.getElementById('cp-sheet').style.transform = 'translateX(-50%) translateY(0)';
+}
+
+// Rafraîchit le Content Planner après une action (Approuver/Rejeter/Publier
+// maintenant/Supprimer) si l'admin l'a ouvert — sinon ne fait rien, coûte
+// une requête inutile sinon.
+function cpRefreshIfOpen() {
+    var overlay = document.getElementById('content-planner-overlay');
+    if (overlay && overlay.style.display === 'flex') {
+        cpCloseSheet();
+        openContentPlanner();
+    }
 }
 
 function cpCloseSheet() {
@@ -4803,6 +4819,7 @@ async function publishNow(id) {
         await adminApiCall('/api/publish', { id: id });
         showToast('Publié immédiatement ! 🚀');
         loadAdminPublications();
+        cpRefreshIfOpen();
     } catch (error) {
         console.error('Erreur publication immédiate:', error);
         showToast('Erreur : ' + (error && error.message ? error.message : 'inconnue'), true);
@@ -4831,6 +4848,7 @@ async function approvePublication(id) {
         if (error) throw error;
         showToast('Approuvé ! Publication en cours (via le cron, quelques minutes).');
         loadAdminPublications();
+        cpRefreshIfOpen();
     } catch (error) {
         console.error('Erreur approbation publication:', error);
         showToast("Erreur lors de l'approbation.", true);
@@ -4843,6 +4861,7 @@ async function rejectPublication(id) {
         if (error) throw error;
         showToast('Publication rejetée.');
         loadAdminPublications();
+        cpRefreshIfOpen();
     } catch (error) {
         console.error('Erreur rejet publication:', error);
         showToast('Erreur lors du rejet.', true);
@@ -4856,6 +4875,7 @@ async function deletePublicationRow(id) {
         if (error) throw error;
         showToast('Entrée supprimée.');
         loadAdminPublications();
+        cpRefreshIfOpen();
     } catch (error) {
         console.error('Erreur suppression publication:', error);
         showToast('Erreur lors de la suppression.', true);
