@@ -3276,7 +3276,10 @@ function compositeCarouselSlide(bgDataUri, slide, index, total) {
                     document.fonts.load('700 34px Manrope')
                 ]);
 
-                var W = 1080, H = 1350;
+                // Format 9:16 (dimensions Reel/Story) : le Joker convertit ce
+                // carrousel en Reel manuellement via l'app, les proportions
+                // doivent donc être conformes dès la génération.
+                var W = 1080, H = 1920;
                 var canvas = document.createElement('canvas');
                 canvas.width = W; canvas.height = H;
                 var ctx = canvas.getContext('2d');
@@ -3384,7 +3387,8 @@ async function compositeCarouselCtaSlide(index, total) {
         document.fonts.load('700 24px Manrope')
     ]);
 
-    var W = 1080, H = 1350;
+    // Format 9:16 (dimensions Reel/Story), voir compositeCarouselSlide.
+    var W = 1080, H = 1920;
     var canvas = document.createElement('canvas');
     canvas.width = W; canvas.height = H;
     var ctx = canvas.getContext('2d');
@@ -3394,11 +3398,15 @@ async function compositeCarouselCtaSlide(index, total) {
 
     var logo = await loadImg('logo-dark.png');
     var logoSize = 96;
-    ctx.drawImage(logo, W / 2 - logoSize / 2, 200, logoSize, logoSize);
+    // Contenu centré verticalement plutôt que collé en haut — sur un cadre
+    // 9:16 plus haut que le 4:5 d'origine, un ancrage fixe en haut laissait
+    // une grande zone vide en bas.
+    var topY = 500;
+    ctx.drawImage(logo, W / 2 - logoSize / 2, topY, logoSize, logoSize);
 
     var marginX = W * 0.1;
     var innerW = W - marginX * 2;
-    var y = 200 + logoSize + 90;
+    var y = topY + logoSize + 90;
 
     ctx.font = '400 46px Anton, Impact, sans-serif';
     ctx.fillStyle = '#f5f5f2';
@@ -4404,9 +4412,43 @@ function cpTypeKey(contentType) {
     return 'other';
 }
 
-function cpChipHtml(typeKey) {
+function cpChipHtml(typeKey, joker) {
     var t = CP_TYPES[typeKey];
-    return '<span class="cp-chip" style="background:' + t.chipBg + ';color:' + t.chipFg + ';"><span class="cp-d"></span>' + t.label + '</span>';
+    return '<span class="cp-chip" style="background:' + t.chipBg + ';color:' + t.chipFg + ';"><span class="cp-d"></span>' + t.label + '</span>' +
+        (joker ? '<span class="cp-chip" style="background:rgba(232,184,75,.16);color:#f2cf7c;">🃏 Joker</span>' : '');
+}
+
+// Horaires cibles d'une journée-type : Combiné du jour en tout premier (une
+// fois le combiné du lendemain généré), Conseil IA réparti dans la journée
+// pour alimenter les stories, 3 Carrousels/Reels (convertis manuellement par
+// le Joker), Victoire en fin de soirée une fois le combiné validé gagnant.
+// "Joker" = publication qui reste manuelle : c'est toi qui postes, jamais
+// d'envoi automatique — seule la génération se fait à l'avance.
+var CP_DAILY_TIMES = {
+    combo:    ['08h00'],
+    conseil:  ['11h00', '15h00', '19h00'],
+    carousel: ['13h00', '17h00', '21h00'],
+    victory:  ['22h30']
+};
+var CP_JOKER_TYPES = { combo: true, carousel: true, victory: true };
+
+// Assigne à chaque ligne un horaire "planning" plutôt que l'heure brute de
+// génération — sinon tout ce qui a été planifié d'un coup affiche la même
+// heure (ex: plusieurs publications à 22h20), illisible pour se projeter
+// dans une vraie journée de publication.
+function cpAssignScheduleTimes(rows) {
+    var byDayType = {};
+    var sorted = (rows || []).slice().sort(function (a, b) { return new Date(a.created_at) - new Date(b.created_at); });
+    sorted.forEach(function (r) {
+        var day = r.scheduled_for || (r.created_at || '').slice(0, 10);
+        var typeKey = cpTypeKey(r.content_type);
+        var key = day + '|' + typeKey;
+        byDayType[key] = byDayType[key] || 0;
+        var slots = CP_DAILY_TIMES[typeKey];
+        r._cpTime = slots ? slots[byDayType[key] % slots.length] : (r.created_at ? new Date(r.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h') : '--h--');
+        r._cpJoker = !!CP_JOKER_TYPES[typeKey];
+        byDayType[key]++;
+    });
 }
 
 window._cpRows = [];
@@ -4425,6 +4467,7 @@ async function openContentPlanner() {
             .limit(60);
         if (error) throw error;
         resumeOrphanedGenerations(data);
+        cpAssignScheduleTimes(data);
         window._cpRows = data || [];
     } catch (error) {
         console.error('Erreur chargement Content Planner:', error);
@@ -4483,6 +4526,7 @@ function cpFmtDayLabel(d) {
 function cpDstr(d) { return d.toISOString().slice(0, 10); }
 
 function cpRowTime(row) {
+    if (row._cpTime) return row._cpTime;
     var d = row.created_at ? new Date(row.created_at) : null;
     return d ? d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h') : '--h--';
 }
@@ -4507,7 +4551,7 @@ function cpSlotHtml(row) {
     return '<button class="cp-slot' + (row.status === 'published' ? ' cp-done' : '') + '" onclick="cpOpenSheet(\'' + row.id + '\')">' +
         '<div class="cp-time mono">' + cpRowTime(row) + '</div>' +
         '<div class="cp-mid">' +
-            '<div class="cp-top">' + cpChipHtml(typeKey) + '</div>' +
+            '<div class="cp-top">' + cpChipHtml(typeKey, row._cpJoker) + '</div>' +
             '<div class="cp-ttl">' + cpRowTitle(row) + '</div>' +
         '</div>' +
         cpRowStatusIcon(row) +
@@ -4525,7 +4569,7 @@ function cpRenderHome() {
     if (next) {
         var t = CP_TYPES[cpTypeKey(next.content_type)];
         heroEl.innerHTML =
-            '<div class="cp-lbl">' + cpChipHtml(cpTypeKey(next.content_type)) + '</div>' +
+            '<div class="cp-lbl">' + cpChipHtml(cpTypeKey(next.content_type), next._cpJoker) + '</div>' +
             '<div class="cp-count">' + (next.status === 'generating' ? 'En génération' : 'Prêt à valider') + '</div>' +
             '<div class="cp-when">Prévu pour le ' + (next.scheduled_for || '—') + '</div>' +
             '<div class="cp-hero-body">' +
@@ -4597,7 +4641,7 @@ function cpOpenSheet(id) {
     var st = statusMap[row.status] || ['⏳ En attente de validation', '#f2cf7c', 'rgba(232,184,75,.12)'];
 
     document.getElementById('cpSheetHead').innerHTML =
-        cpChipHtml(typeKey) +
+        cpChipHtml(typeKey, row._cpJoker) +
         '<span style="font-weight:800;font-size:14px;">' + cpRowTime(row) + '</span>' +
         '<button onclick="cpCloseSheet()" style="margin-left:auto;width:30px;height:30px;border-radius:50%;background:#161a26;border:none;color:#8b91a3;cursor:pointer;">✕</button>';
 
@@ -4607,6 +4651,7 @@ function cpOpenSheet(id) {
 
     document.getElementById('cpSheetBody').innerHTML =
         '<div class="cp-statusline" style="color:' + st[1] + ';background:' + st[2] + ';">' + st[0] + '</div>' +
+        (row._cpJoker ? '<div class="cp-statusline" style="margin-top:8px;color:#f2cf7c;background:rgba(232,184,75,.12);">🃏 Publication manuelle — c\'est toi qui choisis le moment et qui postes.' + (typeKey === 'carousel' ? ' À convertir en Reel via l\'app (dimensions déjà en 9:16).' : '') + '</div>' : '') +
         '<div style="margin-top:14px;"><div class="cp-eyebrow" style="margin-bottom:7px;">Prévu pour le ' + (row.scheduled_for || '—') + '</div><div class="cp-txt-box">' + (row.caption || '(pas de légende)') + '</div></div>' +
         (thumbs.length ? '<div style="margin-top:14px;"><div class="cp-eyebrow" style="margin-bottom:7px;">Aperçu</div><div class="cp-thumb-row">' + thumbs.map(function (u) { return '<img class="cp-thumb" src="' + u + '" onerror="this.style.display=\'none\'">'; }).join('') + '</div></div>' : '') +
         (row.error ? '<div class="cp-txt-box" style="margin-top:14px;color:var(--red,#f43f5e);">' + row.error + '</div>' : '') +
