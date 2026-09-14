@@ -4546,15 +4546,34 @@ async function openContentPlanner() {
 var CP_NEXT_DAY_TYPES = ['conseil', 'carousel'];
 var _cpNextDayPoll = null;
 
-function cpNextDayStatus() {
+// Vérifie que CHAQUE type (Conseil IA ET Carrousel) a bien son quota complet
+// pour demain — un simple "des lignes existent et aucune n'est en cours"
+// donnait un faux "prêt" dès que le Conseil IA seul était complet, sans
+// jamais remarquer que le Carrousel n'avait même pas démarré.
+function cpNextDayMissing() {
     var tomorrow = dateStrOffset(1);
-    var rows = (window._cpRows || []).filter(function (r) {
-        return r.scheduled_for === tomorrow && CP_NEXT_DAY_TYPES.indexOf(cpTypeKey(r.content_type)) !== -1;
+    var rows = (window._cpRows || []).filter(function (r) { return r.scheduled_for === tomorrow; });
+    var byType = {};
+    rows.forEach(function (r) { var tk = cpTypeKey(r.content_type); (byType[tk] = byType[tk] || []).push(r); });
+
+    var missing = {};
+    CP_NEXT_DAY_TYPES.forEach(function (tk) {
+        var want = (CP_DAILY_TIMES[tk] || []).length || 1;
+        var have = byType[tk] || [];
+        var usable = have.filter(function (r) { return r.status !== 'failed'; }).length;
+        if (usable < want) missing[tk] = want - usable;
     });
-    if (!rows.length) return { state: 'none', tomorrow: tomorrow };
-    if (rows.some(function (r) { return r.status === 'generating'; })) return { state: 'generating', tomorrow: tomorrow };
-    if (rows.every(function (r) { return r.status === 'failed'; })) return { state: 'none', tomorrow: tomorrow };
-    return { state: 'ready', tomorrow: tomorrow };
+    return { tomorrow: tomorrow, missing: missing, byType: byType };
+}
+
+function cpNextDayStatus() {
+    var info = cpNextDayMissing();
+    var anyGenerating = Object.keys(info.byType).some(function (tk) {
+        return info.byType[tk].some(function (r) { return r.status === 'generating'; });
+    });
+    if (anyGenerating) return { state: 'generating', tomorrow: info.tomorrow };
+    if (Object.keys(info.missing).length) return { state: 'none', tomorrow: info.tomorrow };
+    return { state: 'ready', tomorrow: info.tomorrow };
 }
 
 function cpRenderNextDayBanner() {
@@ -4582,24 +4601,27 @@ function cpRenderNextDayBanner() {
 
 async function cpGenerateNextDayContent() {
     var st = cpNextDayStatus();
-    if (st.state !== 'none') return; // déjà en cours ou déjà prêt, rien à faire
-    var tomorrow = st.tomorrow;
-    var conseilCount = (CP_DAILY_TIMES.conseil || []).length || 3;
-    var carouselCount = (CP_DAILY_TIMES.carousel || []).length || 3;
+    if (st.state !== 'none') return; // déjà en cours ou déjà complet, rien à faire
+    var info = cpNextDayMissing();
+    var tomorrow = info.tomorrow;
 
     // Affiche l'état "en cours" tout de suite (avant même la 1ère réponse
     // serveur) pour un retour immédiat.
     var el = document.getElementById('cpNextDayBanner');
     if (el) el.innerHTML = '<div class="cp-statusline" style="color:#c8963c;background:#f6ecd6;justify-content:center;">⏳ En cours de génération pour le J+1...</div>';
 
-    for (var i = 0; i < conseilCount; i++) {
+    // Ne génère QUE ce qui manque réellement (comptage par type) — sinon une
+    // 2e génération dupliquait le Conseil IA déjà complet en plus de rattraper
+    // le Carrousel manquant.
+    var i, j;
+    for (i = 0; i < (info.missing.conseil || 0); i++) {
         try {
             var data = await adminApiCall('/api/generate-story-content', { type: 'conseil', origin: 'planner', dateStr: tomorrow });
             pollConseilGeneration(data.rows[0].id, data.statusUrl);
         } catch (e) { console.error('Erreur génération J+1 (Conseil IA):', e); }
         await new Promise(function (r) { setTimeout(r, 4000); });
     }
-    for (var j = 0; j < carouselCount; j++) {
+    for (j = 0; j < (info.missing.carousel || 0); j++) {
         try {
             await queueCarouselStoryPublication('planner', tomorrow);
         } catch (e) { console.error('Erreur génération J+1 (Carrousel):', e); }
