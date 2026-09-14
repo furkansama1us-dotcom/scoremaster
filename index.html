@@ -4219,8 +4219,10 @@ async function adminApiCall(endpoint, body) {
 }
 
 function dateStrOffset(offset) {
+    // Format local (pas toISOString, qui convertit en UTC et peut décaler la
+    // date d'un jour pour un fuseau en avance sur UTC comme la France).
     var d = new Date(); d.setDate(d.getDate() + offset);
-    return d.toISOString().slice(0, 10);
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 }
 
 async function renderAdminCalendar() {
@@ -4648,7 +4650,12 @@ function cpGo(view) {
 function cpFmtDayLabel(d) {
     return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 }
-function cpDstr(d) { return d.toISOString().slice(0, 10); }
+// toISOString() convertit en UTC : pour un fuseau en avance sur UTC (France),
+// minuit local devient la veille en UTC, décalant la date d'un jour — d'où le
+// bug "je clique sur le 14 et je tombe sur le 13". On formate en local ici.
+function cpDstr(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
 // Jour "planning" d'une publication : la date prévue (scheduled_for), pas la
 // date de génération (created_at) — sinon tout ce qui est préparé en avance
 // pour demain se retrouvait rangé sous aujourd'hui dans le calendrier.
