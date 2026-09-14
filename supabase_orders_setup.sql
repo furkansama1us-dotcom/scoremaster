@@ -269,3 +269,21 @@ set created_at = u.created_at
 from auth.users u
 where u.id = p.id
   and p.created_at is distinct from u.created_at;
+
+-- ============================================================
+-- Confirmation d'adresse mail (Visiteur -> Membre SM) — vérifiée via un
+-- code OTP envoyé par email (indépendant de la connexion par mot de passe,
+-- qui reste inchangée). Voir sendEmailConfirmationCode/verifyEmailConfirmationCode.
+-- ============================================================
+
+alter table public.profiles
+  add column if not exists email_confirmed boolean not null default false;
+
+-- ============================================================
+-- Avatar de profil — réservé au logo SM pour les admins ; les comptes
+-- normaux reçoivent un animal aléatoire à l'inscription et peuvent en
+-- changer depuis les paramètres du profil.
+-- ============================================================
+
+alter table public.profiles
+  add column if not exists avatar_key text;

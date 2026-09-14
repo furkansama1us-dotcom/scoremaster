@@ -742,6 +742,75 @@
     // Profil utilisateur global (chargé après login)
     window.currentUserProfile = null;
 
+    // Avatars animaux — réservés aux comptes non-admin (le logo SM est
+    // réservé aux admins). Assigné aléatoirement à l'inscription, modifiable
+    // ensuite depuis les paramètres du profil.
+    var ANIMAL_AVATARS = [
+        { key: 'monkey',   emoji: '🐒', bg: '#8D6E63' },
+        { key: 'elephant', emoji: '🐘', bg: '#78909C' },
+        { key: 'lion',     emoji: '🦁', bg: '#F9A825' },
+        { key: 'fox',      emoji: '🦊', bg: '#E65100' },
+        { key: 'panda',    emoji: '🐼', bg: '#37474F' },
+        { key: 'tiger',    emoji: '🐯', bg: '#EF6C00' },
+        { key: 'koala',    emoji: '🐨', bg: '#607D8B' },
+        { key: 'penguin',  emoji: '🐧', bg: '#263238' },
+        { key: 'owl',      emoji: '🦉', bg: '#6D4C41' },
+        { key: 'wolf',     emoji: '🐺', bg: '#455A64' },
+        { key: 'bear',     emoji: '🐻', bg: '#5D4037' },
+        { key: 'zebra',    emoji: '🦓', bg: '#424242' }
+    ];
+
+    function pickRandomAvatarKey() {
+        return ANIMAL_AVATARS[Math.floor(Math.random() * ANIMAL_AVATARS.length)].key;
+    }
+
+    function getAvatarInfo(key) {
+        return ANIMAL_AVATARS.find(function (a) { return a.key === key; }) || ANIMAL_AVATARS[0];
+    }
+
+    // Applique l'avatar au header home/vip + à la modale profil : logo SM
+    // pour un admin, animal choisi (ou assigné au hasard) pour tout le monde.
+    function renderUserAvatar() {
+        var homeEl = document.getElementById('avatar-home');
+        var vipEl = document.getElementById('avatar-vip');
+        var profileEl = document.getElementById('profile-avatar-letter');
+
+        if (window.isAdmin) {
+            if (homeEl) homeEl.innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+            if (vipEl) vipEl.innerHTML = '<img src="' + LOGO_DARK + '" alt="SM">';
+            if (profileEl) { profileEl.style.background = ''; profileEl.textContent = ''; profileEl.innerHTML = '<img src="' + LOGO_DARK + '" alt="SM" style="width:100%;height:100%;object-fit:cover;">'; }
+            return;
+        }
+
+        var info = getAvatarInfo(window.userAvatarKey || pickRandomAvatarKey());
+        if (homeEl) { homeEl.innerHTML = info.emoji; homeEl.style.background = info.bg; homeEl.style.fontSize = '22px'; }
+        if (vipEl) { vipEl.innerHTML = info.emoji; vipEl.style.background = info.bg; vipEl.style.fontSize = '28px'; }
+        if (profileEl) { profileEl.innerHTML = info.emoji; profileEl.style.background = info.bg; profileEl.style.fontSize = '28px'; }
+    }
+
+    async function setUserAvatar(key) {
+        if (!window.currentAuthUser || window.isAdmin) return;
+        window.userAvatarKey = key;
+        renderUserAvatar();
+        renderAvatarPicker();
+        try {
+            const { error } = await supabaseClient.from('profiles').update({ avatar_key: key }).eq('id', window.currentAuthUser.id);
+            if (error) throw error;
+        } catch (error) {
+            console.error('Erreur sauvegarde avatar:', error);
+            showToast("Erreur lors de la sauvegarde de l'avatar.", true);
+        }
+    }
+
+    function renderAvatarPicker() {
+        var container = document.getElementById('avatar-picker-grid');
+        if (!container) return;
+        container.innerHTML = ANIMAL_AVATARS.map(function (a) {
+            var selected = a.key === window.userAvatarKey;
+            return `<div onclick="setUserAvatar('${a.key}')" style="width:44px;height:44px;border-radius:50%;background:${a.bg};display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;border:2px solid ${selected ? '#FFD700' : 'transparent'};">${a.emoji}</div>`;
+        }).join('');
+    }
+
     function setLogos() {
         document.getElementById('img-splash').src = LOGO_SPLASH;
         document.getElementById('img-login').src = LOGO_DARK;
@@ -1926,6 +1995,10 @@ async function fetchApiScore(id, dateRaw) {
                 <div class="profile-avatar-email" id="profile-display-email">—</div>
             </div>
         </div>
+        <div id="avatar-picker-section" style="display:none; margin-bottom:16px;">
+            <span class="profile-info-label" style="display:block; margin-bottom:8px;">Mon avatar</span>
+            <div id="avatar-picker-grid" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+        </div>
         <div class="profile-info-row">
             <span class="profile-info-label">Rôle</span>
             <span class="profile-role-badge" id="profile-role-badge">Visiteur</span>
@@ -1938,6 +2011,20 @@ async function fetchApiScore(id, dateRaw) {
             <span class="profile-info-label">Statut</span>
             <span style="color:#10b981; font-size:0.88rem; font-weight:600;">● Actif</span>
         </div>
+
+        <div id="email-confirm-section" style="display:none; margin-bottom:16px; padding:16px; background:rgba(59,130,246,0.08); border:1px solid rgba(59,130,246,0.25); border-radius:14px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                <i class="fas fa-envelope-circle-check" style="color:#3B82F6;"></i>
+                <span style="font-weight:800; font-size:14px; color:#fff;">Confirmer mon adresse mail</span>
+            </div>
+            <p style="font-size:12px; color:var(--text-gray); line-height:1.5; margin-bottom:10px;">Confirme ton adresse mail pour passer de <b>Visiteur</b> à <b>Membre SM</b>. On t'envoie un code à 6 chiffres par email.</p>
+            <button id="email-confirm-send-btn" onclick="sendEmailConfirmationCode()" style="width:100%; padding:11px; background:linear-gradient(135deg,#3B82F6,#1D4ED8); color:#fff; border:none; border-radius:10px; font-size:13px; font-weight:800; font-family:'Montserrat',sans-serif; cursor:pointer;"><i class="fas fa-paper-plane"></i> Recevoir mon code par email</button>
+            <div id="email-confirm-code-box" style="display:none; gap:8px; margin-top:10px;">
+                <input id="email-confirm-code-input" placeholder="Code reçu (6 chiffres)" maxlength="6" style="flex:1; padding:11px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:8px; color:#fff; font-size:13px; letter-spacing:2px;">
+                <button onclick="verifyEmailConfirmationCode()" style="padding:0 16px; background:#3B82F6; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; white-space:nowrap;">Valider</button>
+            </div>
+        </div>
+
         <div class="profile-platform-section">
             <span class="profile-platform-label"><i class="fas fa-gamepad" style="color:var(--primary-yellow); margin-right:5px;"></i> Plateforme de paris favorite</span>
             <select class="profile-platform-select" id="profile-platform-select">
@@ -5316,8 +5403,7 @@ async function clearAllPublicationHistory() {
     function openProfileModal() {
         var p = window.currentUserProfile;
         if (!p) return;
-        var letter = (p.pseudo || p.email || 'U')[0].toUpperCase();
-        document.getElementById('profile-avatar-letter').textContent = letter;
+        renderUserAvatar();
         document.getElementById('profile-display-name').textContent = p.pseudo || 'Utilisateur';
         document.getElementById('profile-display-email').textContent = p.email || '—';
         var memberSince = p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
@@ -5327,7 +5413,7 @@ async function clearAllPublicationHistory() {
             'vip':        { label: '🔥 VIP+',             bg: 'rgba(244,63,94,0.2)',  color: '#F43F5E' },
             'journalier': { label: '⏱ Pack Journalier',  bg: 'rgba(34,197,94,0.2)',  color: '#22C55E' },
             'hebdo':      { label: '📅 Pack Hebdo',       bg: 'rgba(139,92,246,0.2)', color: '#8B5CF6' },
-            'membre':     { label: '💙 Membre',           bg: 'rgba(74,144,217,0.2)', color: '#3B82F6' },
+            'membre':     { label: '💙 Membre SM',        bg: 'rgba(74,144,217,0.2)', color: '#3B82F6' },
             'visiteur':   { label: '👁 Visiteur',         bg: 'rgba(138,138,138,0.2)', color: '#8A93A8' },
         };
         var role = p.role || 'visiteur';
@@ -5338,6 +5424,20 @@ async function clearAllPublicationHistory() {
         badge.style.color = roleInfo.color;
         badge.style.border = '1px solid ' + roleInfo.color + '44';
         document.getElementById('profile-platform-select').value = userPlatform;
+
+        // Le rappel de confirmation d'email ne sert qu'aux Visiteurs — un rôle
+        // supérieur (Membre SM, pack, VIP+, admin) implique déjà un email confirmé.
+        var confirmSection = document.getElementById('email-confirm-section');
+        if (confirmSection) confirmSection.style.display = (role === 'visiteur') ? 'block' : 'none';
+        var codeBox = document.getElementById('email-confirm-code-box');
+        if (codeBox) codeBox.style.display = 'none';
+
+        // Le choix d'avatar (animaux) n'a de sens que pour un compte normal —
+        // un admin garde toujours le logo SM, pas de picker à lui proposer.
+        var avatarSection = document.getElementById('avatar-picker-section');
+        if (avatarSection) avatarSection.style.display = window.isAdmin ? 'none' : 'block';
+        renderAvatarPicker();
+
         var modal = document.getElementById('profile-modal');
         modal.style.display = 'flex';
         setTimeout(function() { modal.classList.add('visible'); }, 10);
@@ -7243,13 +7343,23 @@ async function fetchMatchesFromAPI() {
         window.currentAuthUser = user;
         var profile = null;
         try {
-            var profileRes = await supabaseClient.from('profiles').select('is_vip, is_admin, username, vip_expires_at, vip_pack_type').eq('id', user.id).single();
+            var profileRes = await supabaseClient.from('profiles').select('is_vip, is_admin, username, vip_expires_at, vip_pack_type, email_confirmed, avatar_key').eq('id', user.id).single();
             profile = profileRes.data;
         } catch(e) {}
 
         window.isUserVip  = profile ? profile.is_vip  : false;
         window.isAdmin    = profile ? profile.is_admin : false;
         window.userVipPackType = profile ? profile.vip_pack_type : null;
+        window.isEmailConfirmed = profile ? !!profile.email_confirmed : false;
+
+        // Avatar animal (non-admin uniquement) — assigné au hasard une seule
+        // fois puis conservé en base, sauf changement volontaire par l'utilisateur.
+        window.userAvatarKey = profile ? profile.avatar_key : null;
+        if (!window.isAdmin && profile && !profile.avatar_key) {
+            window.userAvatarKey = pickRandomAvatarKey();
+            supabaseClient.from('profiles').update({ avatar_key: window.userAvatarKey }).eq('id', user.id).then(function () {}).catch(function () {});
+        }
+        renderUserAvatar();
 
         // Accès pack Journalier/Hebdo expiré : revient strictement en Visiteur
         // (l'expiration est réelle, pas juste cosmétique).
@@ -7264,7 +7374,8 @@ async function fetchMatchesFromAPI() {
         var finalUsername = (profile && profile.username) ? profile.username : 'Utilisateur';
         // Le rôle affiché reflète le pack exact (journalier/hebdo/vip), pas
         // un "VIP+" générique — sauf pour un admin, qui garde son propre badge.
-        var role = window.isAdmin ? 'admin' : (window.isUserVip ? (window.userVipPackType || 'vip') : 'visiteur');
+        // Un Visiteur qui a confirmé son email passe Membre SM (sans VIP).
+        var role = window.isAdmin ? 'admin' : (window.isUserVip ? (window.userVipPackType || 'vip') : (window.isEmailConfirmed ? 'membre' : 'visiteur'));
 
         window.currentUserProfile = {
             pseudo:     finalUsername,
@@ -7282,6 +7393,10 @@ async function fetchMatchesFromAPI() {
             document.getElementById('role-vip').innerHTML  = roleHtml;
         } else if (window.isUserVip) {
             applyRoleDisplay(window.userVipPackType || 'vip');
+        } else if (window.isEmailConfirmed) {
+            var membreHtml = '<span style="color:#3B82F6;">Membre SM</span>';
+            document.getElementById('role-home').innerHTML = membreHtml;
+            document.getElementById('role-vip').innerHTML  = membreHtml;
         } else {
             document.getElementById('role-home').innerHTML = '<span style="color:var(--blue);">Visiteur</span>';
             document.getElementById('role-vip').innerHTML  = '<span style="color:var(--blue);">Visiteur</span>';
@@ -7345,7 +7460,7 @@ async function fetchMatchesFromAPI() {
             if (isSignUpMode) {
                 result = await supabaseClient.auth.signUp({ email, password });
                 if (result.error) throw result.error;
-                await supabaseClient.from('profiles').insert([{ id: result.data.user.id, email: email, username: username, is_vip: false, is_admin: false }]);
+                await supabaseClient.from('profiles').insert([{ id: result.data.user.id, email: email, username: username, is_vip: false, is_admin: false, avatar_key: pickRandomAvatarKey() }]);
                 showToast('Compte créé ! Connectez-vous.'); toggleAuthMode(); return;
             } else {
                 result = await supabaseClient.auth.signInWithPassword({ email, password });
@@ -7389,6 +7504,67 @@ async function fetchMatchesFromAPI() {
             showToast('Email de réinitialisation envoyé ! Vérifie ta boîte mail. 📩');
         } catch (err) {
             showToast(err.message || "Erreur lors de l'envoi de l'email.", true);
+        }
+    }
+
+    // ============================================================
+    // Confirmation d'adresse mail (Visiteur -> Membre SM) — n'affecte pas
+    // la connexion par mot de passe habituelle, c'est une vérification à
+    // part faite via un code OTP envoyé par email (mécanisme natif Supabase).
+    // ============================================================
+    async function sendEmailConfirmationCode() {
+        if (!window.currentAuthUser) return;
+        var btn = document.getElementById('email-confirm-send-btn');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; }
+        try {
+            var result = await supabaseClient.auth.signInWithOtp({
+                email: window.currentAuthUser.email,
+                options: { shouldCreateUser: false }
+            });
+            if (result.error) throw result.error;
+            var codeBox = document.getElementById('email-confirm-code-box');
+            if (codeBox) codeBox.style.display = 'flex';
+            showToast('Code envoyé ! Vérifie ta boîte mail. 📩');
+        } catch (err) {
+            showToast(err.message || "Erreur lors de l'envoi du code.", true);
+        } finally {
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Recevoir mon code par email'; }
+        }
+    }
+
+    async function verifyEmailConfirmationCode() {
+        if (!window.currentAuthUser) return;
+        var input = document.getElementById('email-confirm-code-input');
+        var code = input ? input.value.trim() : '';
+        if (!code) { showToast('Entre le code reçu par email.', true); return; }
+
+        try {
+            var result = await supabaseClient.auth.verifyOtp({
+                email: window.currentAuthUser.email,
+                token: code,
+                type: 'email'
+            });
+            if (result.error) throw result.error;
+
+            const { error: profileError } = await supabaseClient.from('profiles').update({ email_confirmed: true }).eq('id', window.currentAuthUser.id);
+            if (profileError) throw profileError;
+
+            window.isEmailConfirmed = true;
+            if (window.currentUserProfile && window.currentUserProfile.role === 'visiteur') window.currentUserProfile.role = 'membre';
+            if (!window.isAdmin && !window.isUserVip) {
+                var membreHtml = '<span style="color:#3B82F6;">Membre SM</span>';
+                document.getElementById('role-home').innerHTML = membreHtml;
+                document.getElementById('role-vip').innerHTML  = membreHtml;
+            }
+            var confirmSection = document.getElementById('email-confirm-section');
+            if (confirmSection) confirmSection.style.display = 'none';
+            var badge = document.getElementById('profile-role-badge');
+            if (badge && !window.isAdmin && !window.isUserVip) {
+                badge.textContent = '💙 Membre SM'; badge.style.background = 'rgba(74,144,217,0.2)'; badge.style.color = '#3B82F6'; badge.style.border = '1px solid #3B82F644';
+            }
+            showToast('Email confirmé ! Tu es maintenant Membre SM. 🎉');
+        } catch (err) {
+            showToast(err.message || 'Code invalide ou expiré.', true);
         }
     }
 
