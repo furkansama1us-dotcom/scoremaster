@@ -1664,6 +1664,9 @@ async function fetchApiScore(id, dateRaw) {
     <!-- ONGLET COMMANDES -->
     <div class="admin-tab-content" id="admin-tab-orders">
         <div class="admin-section">
+            <button onclick="adminGenerateTestUnlockCode()" style="width:100%;padding:13px;margin-bottom:16px;background:rgba(255,215,0,.08);color:var(--primary-yellow);border:1px dashed rgba(255,215,0,.4);border-radius:12px;font-size:13px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                <i class="fas fa-flask"></i> Générer un code de test (débloque ton propre compte)
+            </button>
             <div class="admin-section-title" style="color:#FF9800;"><i class="fas fa-clock"></i> En attente de validation</div>
             <div id="admin-orders-pending" style="margin-bottom:20px;">
                 <div class="no-combined-message" style="padding:20px;"><i class="fas fa-inbox"></i>Aucune commande en attente.</div>
@@ -6796,6 +6799,53 @@ async function fetchMatchesFromAPI() {
 
     async function resendAdminOrder(orderId) {
         await runOrderValidation(orderId);
+    }
+
+    // Raccourci admin : génère un code de déblocage instantané sur le compte
+    // admin lui-même, sans passer par le circuit panier -> validation manuelle
+    // -> WhatsApp. Utile uniquement pour tester le combiné débloqué.
+    async function adminGenerateTestUnlockCode() {
+        if (!window.currentAuthUser) { showToast('Tu dois être connecté.', true); return; }
+        if (!currentCombined || !currentCombined.matches || !currentCombined.matches.length) {
+            showToast("Aucun combiné VIP+ en cours à débloquer pour le moment.", true);
+            return;
+        }
+
+        var snapshot = {
+            date: currentCombined.date,
+            time: currentCombined.time,
+            matches: currentCombined.matches,
+            total_odds: currentCombined.total_odds,
+            mise: currentCombined.mise,
+            gains: currentCombined.gains
+        };
+
+        var reference = generateOrderCode('TEST');
+        var unlockCode = generateOrderCode('SME');
+        var expiresAt = new Date(Date.now() + 3 * 60 * 60 * 1000);
+
+        try {
+            const { error } = await supabaseClient.from('orders').insert([{
+                user_id: window.currentAuthUser.id,
+                reference: reference,
+                items: [{ name: 'Code de test (admin)', price: 0 }],
+                total: 0,
+                status: 'confirmee',
+                unlock_code: unlockCode,
+                unlock_expires_at: expiresAt.toISOString(),
+                unlock_content: JSON.stringify(snapshot)
+            }]);
+            if (error) throw error;
+        } catch (error) {
+            console.error('Erreur génération code de test:', error);
+            showToast("Erreur lors de la génération du code de test.", true);
+            return;
+        }
+
+        var input = document.getElementById('unlock-code-input');
+        if (input) input.value = unlockCode;
+        showToast('Code de test généré : ' + unlockCode);
+        await submitUnlockCode();
     }
 
     async function deleteAdminOrder(orderId) {
