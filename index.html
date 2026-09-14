@@ -7049,12 +7049,18 @@ async function fetchMatchesFromAPI() {
         }
 
         window.isUserVip = true;
-        if (window.currentUserProfile) window.currentUserProfile.role = 'vip';
-        var roleHtml = '<span style="color:var(--red);">SM VIP+</span>';
-        var roleHomeEl = document.getElementById('role-home'); if (roleHomeEl) roleHomeEl.innerHTML = roleHtml;
-        var roleVipEl = document.getElementById('role-vip'); if (roleVipEl) roleVipEl.innerHTML = roleHtml;
-        var badge = document.getElementById('profile-role-badge');
-        if (badge) { badge.textContent = '🔥 VIP+'; badge.style.background = 'rgba(244,63,94,0.2)'; badge.style.color = '#F43F5E'; badge.style.border = '1px solid #F43F5E44'; }
+        // Un compte admin reste "Administrateur" (accès total déjà inclus) —
+        // is_vip est bien enregistré en base, mais l'affichage du rôle ne
+        // doit pas basculer en VIP+ pour ce compte, sinon ça donne l'impression
+        // trompeuse d'avoir "perdu" l'admin au prochain rafraîchissement.
+        if (!window.isAdmin) {
+            if (window.currentUserProfile) window.currentUserProfile.role = 'vip';
+            var roleHtml = '<span style="color:var(--red);">SM VIP+</span>';
+            var roleHomeEl = document.getElementById('role-home'); if (roleHomeEl) roleHomeEl.innerHTML = roleHtml;
+            var roleVipEl = document.getElementById('role-vip'); if (roleVipEl) roleVipEl.innerHTML = roleHtml;
+            var badge = document.getElementById('profile-role-badge');
+            if (badge) { badge.textContent = '🔥 VIP+'; badge.style.background = 'rgba(244,63,94,0.2)'; badge.style.color = '#F43F5E'; badge.style.border = '1px solid #F43F5E44'; }
+        }
 
         var input = document.getElementById('unlock-code-input');
         if (input) input.value = '';
