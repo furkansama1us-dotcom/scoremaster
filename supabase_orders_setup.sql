@@ -120,6 +120,13 @@ alter table public.pending_publications add column if not exists publish_as_post
 -- (plusieurs images dans un seul post, swipeables).
 alter table public.pending_publications add column if not exists carousel_images jsonb;
 
+-- Heure de publication prévue (ex: "11:00"), assignée à la génération selon
+-- le planning-type du Content Planner. Le cron ne publie une ligne
+-- "approved" qu'une fois cette heure atteinte (heure de Paris) -- sans ça,
+-- approuver à l'avance publiait immédiatement au prochain passage du cron,
+-- quelle que soit l'heure affichée dans le planning.
+alter table public.pending_publications add column if not exists scheduled_time text;
+
 -- Bucket public pour héberger les visuels "Conseil IA" une fois le texte habillé
 -- (fond Higgsfield + typographie réelle composés en un seul PNG côté client).
 insert into storage.buckets (id, name, public)

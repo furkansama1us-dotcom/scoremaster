@@ -134,13 +134,36 @@ async function postizPublish(item, integrations) {
     }
 }
 
+// Heure/date "maintenant" à Paris (pas le fuseau du serveur Vercel, qui
+// tourne en UTC) — comparée à scheduled_for/scheduled_time pour ne publier
+// une ligne "approved" qu'une fois son créneau réellement atteint.
+function parisNowParts() {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+    }).formatToParts(new Date());
+    const get = (t) => parts.find(p => p.type === t).value;
+    return { dateStr: `${get('year')}-${get('month')}-${get('day')}`, minutes: parseInt(get('hour'), 10) * 60 + parseInt(get('minute'), 10) };
+}
+
+function isDue(item, now) {
+    if (!item.scheduled_time || !item.scheduled_for) return true; // rétrocompatible : pas d'heure assignée -> publie dès approbation, comme avant
+    if (item.scheduled_for < now.dateStr) return true; // date passée : rattrapage, publie
+    if (item.scheduled_for > now.dateStr) return false; // date future : pas encore
+    const [h, m] = item.scheduled_time.split(':').map(Number);
+    return now.minutes >= (h * 60 + m);
+}
+
 async function handleCronSweep(req, res) {
     if (!CRON_SECRET) return res.status(500).json({ error: 'Variable d\'environnement manquante (CRON_SECRET).' });
     if ((req.query.secret || '') !== CRON_SECRET) return res.status(401).json({ error: 'Secret invalide' });
 
-    const summary = { checked: 0, published: [], errors: [] };
-    const approved = await sbFetch(`pending_publications?status=eq.approved&select=*`);
+    const summary = { checked: 0, published: [], waiting: [], errors: [] };
+    const approvedAll = await sbFetch(`pending_publications?status=eq.approved&select=*`);
+    const now = parisNowParts();
+    const approved = approvedAll.filter(item => isDue(item, now));
     summary.checked = approved.length;
+    summary.waiting = approvedAll.filter(item => !isDue(item, now)).map(item => ({ id: item.id, scheduled_for: item.scheduled_for, scheduled_time: item.scheduled_time }));
 
     let integrationsCache = null;
     async function getIntegrations() {

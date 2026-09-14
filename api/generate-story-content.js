@@ -16,6 +16,26 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const HF_KEY_ID = process.env.HF_KEY_ID;
 const HF_KEY_SECRET = process.env.HF_KEY_SECRET;
 
+// Planning-type journalier (mêmes horaires que le Content Planner) : chaque
+// contenu généré se voit assigner l'heure suivante disponible pour son
+// créneau, à tour de rôle selon combien de lignes existent déjà ce jour-là
+// pour ce type. publish.js n'autorise la publication qu'une fois cette heure
+// atteinte (heure de Paris).
+const DAILY_TIMES = {
+    'Combiné du jour': ['08:00'],
+    'Conseil IA': ['11:00', '15:00', '19:00'],
+    'Carrousel Story': ['13:00', '17:00', '21:00'],
+    'Victoire Story': ['22:30'],
+    'Victoire': ['22:30']
+};
+
+async function nextScheduledTime(label, dateStr) {
+    const times = DAILY_TIMES[label];
+    if (!times || !times.length) return null;
+    const rows = await sbFetch(`pending_publications?scheduled_for=eq.${dateStr}&content_type=eq.${encodeURIComponent(label)}&select=id`).catch(() => []);
+    return times[(rows || []).length % times.length];
+}
+
 const CONSEILS = [
     {
         kicker: 'Conseil du jour',
@@ -182,13 +202,15 @@ module.exports = async function handler(req, res) {
             // Post, comme Combiné du jour et la Story de victoire) plutôt que
             // 3:4 — un seul fond généré, deux habillages différents.
             const statusUrl = await submitHiggsfield(buildConseilImagePrompt(conseil), '9:16');
+            const conseilDateStr = req.body.dateStr || today;
+            const conseilScheduledTime = await nextScheduledTime('Conseil IA', conseilDateStr);
             // `origin: 'planner'` marque les générations lancées par le bouton
             // "Planifier les prochains jours" du Content Planner, pour les
             // distinguer de celles lancées manuellement depuis la carte de
             // l'onglet Notifs (ces dernières restent visibles dans Publications,
             // les premières n'y apparaissent pas).
             const rows = await createPendingRow({
-                scheduled_for: req.body.dateStr || today, content_type: 'Conseil IA', platform: 'instagram',
+                scheduled_for: conseilDateStr, scheduled_time: conseilScheduledTime, content_type: 'Conseil IA', platform: 'instagram',
                 caption: buildConseilCaption(conseil), image_url: '', status: 'generating',
                 hf_status_url: statusUrl, overlay_data: Object.assign({}, conseil, req.body.origin ? { origin: req.body.origin } : {})
             });
@@ -201,8 +223,10 @@ module.exports = async function handler(req, res) {
                 return res.status(400).json({ error: 'caption, imagePrompt et overlayData requis' });
             }
             const statusUrl = await submitHiggsfield(imagePrompt, '9:16');
+            const vsDateStr = dateStr || today;
+            const vsScheduledTime = await nextScheduledTime('Victoire Story', vsDateStr);
             const rows = await createPendingRow({
-                scheduled_for: dateStr || today, content_type: 'Victoire Story', platform: 'instagram',
+                scheduled_for: vsDateStr, scheduled_time: vsScheduledTime, content_type: 'Victoire Story', platform: 'instagram',
                 caption: caption, image_url: '', status: 'generating', hf_status_url: statusUrl, overlay_data: overlayData
             });
             return res.status(200).json({ rows, statusUrl });
@@ -217,8 +241,10 @@ module.exports = async function handler(req, res) {
             // (photo unique format post, envoyée via l'intégration Telegram de Postiz
             // une fois approuvée dans Publications — plus d'envoi Telegram automatique).
             const statusUrl = await submitHiggsfield(imagePrompt, '9:16');
+            const comboDateStr = dateStr || today;
+            const comboScheduledTime = await nextScheduledTime('Combiné du jour', comboDateStr);
             const rows = await createPendingRow({
-                scheduled_for: dateStr || today, content_type: 'Combiné du jour', platform: platform === 'telegram' ? 'telegram' : 'instagram',
+                scheduled_for: comboDateStr, scheduled_time: comboScheduledTime, content_type: 'Combiné du jour', platform: platform === 'telegram' ? 'telegram' : 'instagram',
                 caption: caption, image_url: '', status: 'generating', hf_status_url: statusUrl, overlay_data: overlayData
             });
             return res.status(200).json({ rows, statusUrl });
@@ -232,8 +258,10 @@ module.exports = async function handler(req, res) {
             // Une image Higgsfield par slide illustrée (pas la slide CTA finale,
             // qui reste en aplat noir côté client, sans photo).
             const statusUrls = await Promise.all(slides.map(s => submitHiggsfield(buildCarouselSlidePrompt(s.scene), '3:4')));
+            const csDateStr = dateStr || today;
+            const csScheduledTime = await nextScheduledTime('Carrousel Story', csDateStr);
             const rows = await createPendingRow({
-                scheduled_for: dateStr || today, content_type: 'Carrousel Story', platform: 'instagram',
+                scheduled_for: csDateStr, scheduled_time: csScheduledTime, content_type: 'Carrousel Story', platform: 'instagram',
                 caption: caption, image_url: '', status: 'generating',
                 overlay_data: Object.assign({ slides, statusUrls }, req.body.origin ? { origin: req.body.origin } : {})
             });
@@ -246,8 +274,10 @@ module.exports = async function handler(req, res) {
             return res.status(400).json({ error: 'caption et imagePrompt requis' });
         }
         const statusUrl = await submitHiggsfield(imagePrompt, '1:1');
+        const vDateStr = dateStr || today;
+        const vScheduledTime = await nextScheduledTime('Victoire', vDateStr);
         const rows = await createPendingRow({
-            scheduled_for: dateStr || today, content_type: 'Victoire', platform: 'telegram',
+            scheduled_for: vDateStr, scheduled_time: vScheduledTime, content_type: 'Victoire', platform: 'telegram',
             caption: caption, image_url: '', status: 'generating', hf_status_url: statusUrl
         });
         res.status(200).json({ rows, statusUrl });
