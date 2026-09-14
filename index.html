@@ -4683,6 +4683,17 @@ function cpRowStatusIcon(row) {
 }
 
 function cpSlotHtml(row) {
+    if (row._placeholder) {
+        var pTypeKey = row._typeKey;
+        return '<div class="cp-slot" style="opacity:.55;cursor:default;border-style:dashed;">' +
+            '<div class="cp-time mono">' + row._cpTime + '</div>' +
+            '<div class="cp-mid">' +
+                '<div class="cp-top">' + cpChipHtml(pTypeKey, row._cpJoker) + '</div>' +
+                '<div class="cp-ttl">' + (row._cpJoker ? 'À générer manuellement (Joker)' : 'Pas encore généré') + '</div>' +
+            '</div>' +
+            '<span class="cp-status" style="color:#b8ae9c;">–</span>' +
+        '</div>';
+    }
     var typeKey = cpTypeKey(row.content_type);
     return '<button class="cp-slot' + (row.status === 'published' ? ' cp-done' : '') + '" onclick="cpOpenSheet(\'' + row.id + '\')">' +
         '<div class="cp-time mono">' + cpRowTime(row) + '</div>' +
@@ -4700,6 +4711,24 @@ function cpTimeToMinutes(t) {
 }
 function cpSortByTime(rows) {
     return rows.slice().sort(function (a, b) { return cpTimeToMinutes(a._cpTime) - cpTimeToMinutes(b._cpTime); });
+}
+
+// Complète les créneaux du planning-type qui n'ont pas encore de contenu réel
+// ce jour-là (surtout les Joker, jamais générés à l'avance) — sinon la
+// journée de demain semblait "vide" alors qu'elle a en fait 6 créneaux
+// prévus, juste pas tous générés.
+function cpDayWithPlaceholders(dayRows) {
+    var countByType = {};
+    dayRows.forEach(function (r) { var tk = cpTypeKey(r.content_type); countByType[tk] = (countByType[tk] || 0) + 1; });
+    var placeholders = [];
+    Object.keys(CP_DAILY_TIMES).forEach(function (tk) {
+        var slots = CP_DAILY_TIMES[tk];
+        var have = countByType[tk] || 0;
+        for (var i = have; i < slots.length; i++) {
+            placeholders.push({ _placeholder: true, _cpTime: slots[i], _cpJoker: !!CP_JOKER_TYPES[tk], _typeKey: tk });
+        }
+    });
+    return cpSortByTime(dayRows.concat(placeholders));
 }
 
 function cpRenderHome() {
@@ -4726,7 +4755,7 @@ function cpRenderHome() {
     }
 
     // Aujourd'hui, trié par horaire de planning décroissant.
-    var todayRows = cpSortByTime(rows.filter(function (r) { return cpRowDay(r) === todayStr; }));
+    var todayRows = cpDayWithPlaceholders(rows.filter(function (r) { return cpRowDay(r) === todayStr; }));
     document.getElementById('cpTodayTl').innerHTML = todayRows.length
         ? todayRows.map(cpSlotHtml).join('')
         : '<div class="cp-txt-box" style="text-align:center;color:#8a8290;">Rien généré aujourd\'hui.</div>';
@@ -4764,7 +4793,7 @@ function cpRenderMiniCal() {
 }
 
 function cpOpenDay(ds) {
-    var rows = cpSortByTime((window._cpRows || []).filter(function (r) { return cpRowDay(r) === ds; }));
+    var rows = cpDayWithPlaceholders((window._cpRows || []).filter(function (r) { return cpRowDay(r) === ds; }));
     document.getElementById('cpDayLabel').textContent = cpFmtDayLabel(new Date(ds + 'T00:00:00'));
     document.getElementById('cpDayTl').innerHTML = rows.length ? rows.map(cpSlotHtml).join('') : '<div class="cp-txt-box" style="text-align:center;color:#8a8290;">Rien généré ce jour-là.</div>';
     cpGo('day');
