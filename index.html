@@ -4394,19 +4394,52 @@ window.adminPublicationsCache = {};
 // qu'une génération planifiée à l'avance tourne la laisserait bloquée pour
 // toujours (le suivi ne vit que dans la mémoire JS de l'onglet qui l'a lancé).
 var _resumedGenerations = {};
+// Rattache le suivi (polling) d'UNE ligne "generating" selon son type —
+// utilisé à la fois par la reprise automatique au chargement et par le
+// bouton "Relancer" manuel (qui doit pouvoir re-tenter même si une reprise
+// automatique a déjà été tentée, d'où le paramètre séparé de la garde).
+function resumeOneGeneration(r) {
+    if (r.content_type === 'Carrousel Story' && r.overlay_data && Array.isArray(r.overlay_data.statusUrls)) {
+        pollCarouselStoryGeneration(r.id, r.overlay_data.statusUrls, new Array(r.overlay_data.statusUrls.length).fill(false));
+        return true;
+    }
+    if (r.hf_status_url) {
+        if (r.content_type === 'Conseil IA') { pollConseilGeneration(r.id, r.hf_status_url); return true; }
+        if (r.content_type === 'Victoire Story') { pollVictoryStoryGeneration(r.id, r.hf_status_url); return true; }
+        if (r.content_type === 'Combiné du jour' && r.platform === 'telegram') { pollComboTeaserTelegramGeneration(r.id, r.hf_status_url); return true; }
+        if (r.content_type === 'Combiné du jour') { pollComboTeaserGeneration(r.id, r.hf_status_url); return true; }
+    }
+    return false;
+}
+
 function resumeOrphanedGenerations(rows) {
     (rows || []).forEach(function (r) {
         if (r.status !== 'generating' || _resumedGenerations[r.id]) return;
         _resumedGenerations[r.id] = true;
-        if (r.content_type === 'Carrousel Story' && r.overlay_data && Array.isArray(r.overlay_data.statusUrls)) {
-            pollCarouselStoryGeneration(r.id, r.overlay_data.statusUrls, new Array(r.overlay_data.statusUrls.length).fill(false));
-        } else if (r.hf_status_url) {
-            if (r.content_type === 'Conseil IA') pollConseilGeneration(r.id, r.hf_status_url);
-            else if (r.content_type === 'Victoire Story') pollVictoryStoryGeneration(r.id, r.hf_status_url);
-            else if (r.content_type === 'Combiné du jour' && r.platform === 'telegram') pollComboTeaserTelegramGeneration(r.id, r.hf_status_url);
-            else if (r.content_type === 'Combiné du jour') pollComboTeaserGeneration(r.id, r.hf_status_url);
-        }
+        resumeOneGeneration(r);
     });
+}
+
+// Une génération "generating" depuis plus de 10 minutes est très probablement
+// bloquée (onglet fermé/rafraîchi pendant que ça tournait) plutôt que
+// réellement encore en train de tourner — Higgsfield répond normalement en
+// quelques dizaines de secondes à quelques minutes.
+var CP_STUCK_THRESHOLD_MS = 10 * 60 * 1000;
+function isStuckGenerating(row) {
+    if (row.status !== 'generating' || !row.created_at) return false;
+    return (Date.now() - new Date(row.created_at).getTime()) > CP_STUCK_THRESHOLD_MS;
+}
+
+// Bouton "Relancer" manuel : re-tente le suivi de CETTE ligne précisément
+// (ne relance pas une nouvelle génération Higgsfield à zéro — si le job a
+// bien fini de son côté pendant l'interruption, ça le détecte immédiatement ;
+// s'il a réellement échoué, l'erreur remonte normalement via le suivi repris).
+async function retryGeneration(id) {
+    var row = (window.adminPublicationsCache && window.adminPublicationsCache[id])
+        || (window._cpRows || []).find(function (r) { return String(r.id) === String(id); });
+    if (!row) { showToast('Publication introuvable — recharge la page.', true); return; }
+    showToast('Reprise de la génération... ⏳');
+    resumeOneGeneration(row);
 }
 
 async function loadAdminPublications() {
@@ -4742,14 +4775,23 @@ function cpSlotHtml(row) {
         '</div>';
     }
     var typeKey = cpTypeKey(row.content_type);
-    return '<button class="cp-slot' + (row.status === 'published' ? ' cp-done' : '') + '" onclick="cpOpenSheet(\'' + row.id + '\')">' +
+    var stuck = isStuckGenerating(row);
+    var titleSuffix = '';
+    if (stuck) titleSuffix = ' <span style="color:var(--red,#f43f5e);font-weight:800;">(⚠️ interrompue ?)</span>';
+    else if (row.status === 'generating') titleSuffix = ' <span style="color:#c8963c;font-weight:800;">(en cours de génération)</span>';
+    var rightHtml = stuck
+        ? '<button onclick="event.stopPropagation(); retryGeneration(\'' + row.id + '\')" style="flex:none;padding:6px 10px;border-radius:8px;border:1px solid #c8963c;background:#fff;color:#8a5a13;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;"><i class="fas fa-rotate-right"></i> Relancer</button>'
+        : cpRowStatusIcon(row);
+    // Div (pas button) pour pouvoir imbriquer un vrai <button> "Relancer" sans
+    // enfreindre le HTML (un bouton ne peut pas en contenir un autre).
+    return '<div class="cp-slot' + (row.status === 'published' ? ' cp-done' : '') + '" style="cursor:pointer;" onclick="cpOpenSheet(\'' + row.id + '\')">' +
         '<div class="cp-time mono">' + cpRowTime(row) + '</div>' +
         '<div class="cp-mid">' +
             '<div class="cp-top">' + cpChipHtml(typeKey, row._cpJoker) + '</div>' +
-            '<div class="cp-ttl">' + cpRowTitle(row) + (row.status === 'generating' ? ' <span style="color:#c8963c;font-weight:800;">(en cours de génération)</span>' : '') + '</div>' +
+            '<div class="cp-ttl">' + cpRowTitle(row) + titleSuffix + '</div>' +
         '</div>' +
-        cpRowStatusIcon(row) +
-    '</button>';
+        rightHtml +
+    '</div>';
 }
 
 function cpTimeToMinutes(t) {
@@ -5010,7 +5052,8 @@ function renderPublicationHistoryCard(p) {
         approved: { label: 'En cours de publication...', color: 'var(--primary-yellow)' },
         generating: { label: 'Génération en cours (Higgsfield)...', color: 'var(--primary-yellow)' }
     };
-    var st = statusMap[p.status] || { label: p.status, color: 'var(--text-gray)' };
+    var stuck = isStuckGenerating(p);
+    var st = stuck ? { label: 'Génération possiblement interrompue ⚠️', color: 'var(--red)' } : (statusMap[p.status] || { label: p.status, color: 'var(--text-gray)' });
     var captionPreview = p.caption ? (p.caption.length > 140 ? p.caption.slice(0, 140) + '…' : p.caption) : '';
     var thumbSrc = p.image_url || p.image_url_post || p.image_url_story || (Array.isArray(p.carousel_images) && p.carousel_images[0]);
     var thumbHtml = thumbSrc ? `<img src="${thumbSrc}" style="width:100%; border-radius:8px; margin-top:8px; display:block;" onerror="this.style.display='none'">` : '';
@@ -5025,6 +5068,7 @@ function renderPublicationHistoryCard(p) {
         ${captionPreview ? `<div style="font-size:12px; color:var(--text-light-gray); margin-top:6px; line-height:1.4; white-space:pre-wrap;">${captionPreview}</div>` : ''}
         ${thumbHtml}
         ${p.error ? `<div style="font-size:10px; color:var(--red); margin-top:4px; word-break:break-all;">${p.error}</div>` : ''}
+        ${stuck ? `<button onclick="retryGeneration('${p.id}')" style="margin-top:8px; width:100%; padding:9px; background:transparent; color:#c8963c; border:1px solid rgba(200,150,60,.5); border-radius:8px; font-size:12px; font-weight:800; cursor:pointer;"><i class="fas fa-rotate-right"></i> Relancer la génération</button>` : ''}
         ${p.status === 'approved' ? `<button id="publish-now-${p.id}" onclick="publishNow('${p.id}')" style="margin-top:8px; width:100%; padding:9px; background:linear-gradient(135deg,var(--primary-yellow),#B8860B); color:#000; border:none; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer;"><i class="fas fa-bolt"></i> Publier maintenant (ne pas attendre le cron)</button>` : ''}
         <button onclick="deletePublicationRow('${p.id}')" style="margin-top:8px; width:100%; padding:7px; background:transparent; color:var(--red); border:1px solid rgba(244,63,94,.3); border-radius:8px; font-size:11px; font-weight:700; cursor:pointer;"><i class="fas fa-trash"></i> Supprimer de l'historique</button>
     </div>`;
