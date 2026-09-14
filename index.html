@@ -2053,7 +2053,17 @@ async function fetchApiScore(id, dateRaw) {
                     <button class="cp-quick-card" onclick="cpFilterType('victory')"><div class="cp-quick-ic" style="background:rgba(62,207,142,.14);color:#3ecf8e;">✅</div><div class="cp-quick-name">Victoire</div><div class="cp-quick-sub">Résultat confirmé</div></button>
                 </div>
             </div>
-            <div class="cp-sec"><div class="cp-eyebrow">Aujourd'hui</div><div class="cp-tl" id="cpTodayTl"></div></div>
+            <div class="cp-sec">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+                    <div class="cp-eyebrow" id="cpTodayLabel" style="margin-bottom:0;">Aujourd'hui</div>
+                    <div style="display:flex; gap:6px;">
+                        <button id="cpDayFilter0" onclick="cpSetHomeDayOffset(0)" style="padding:5px 10px;border-radius:999px;border:1px solid #e7e0d5;background:#fff;color:#5a5262;font-size:11px;font-weight:800;cursor:pointer;">Aujourd'hui</button>
+                        <button id="cpDayFilter1" onclick="cpSetHomeDayOffset(1)" style="padding:5px 10px;border-radius:999px;border:1px solid #e7e0d5;background:#fff;color:#5a5262;font-size:11px;font-weight:800;cursor:pointer;">J+1</button>
+                        <button id="cpDayFilter2" onclick="cpSetHomeDayOffset(2)" style="padding:5px 10px;border-radius:999px;border:1px solid #e7e0d5;background:#fff;color:#5a5262;font-size:11px;font-weight:800;cursor:pointer;">J+2</button>
+                    </div>
+                </div>
+                <div class="cp-tl" id="cpTodayTl"></div>
+            </div>
             <div class="cp-sec"><div class="cp-eyebrow">Ce mois-ci</div><div class="cp-mini" id="cpMiniCal"></div></div>
         </div>
         <div class="cp-view" id="cp-view-day">
@@ -4768,9 +4778,28 @@ function cpDayWithPlaceholders(dayRows) {
     return cpSortByTime(dayRows.concat(placeholders));
 }
 
+window._cpHomeDayOffset = 0;
+function cpSetHomeDayOffset(offset) {
+    window._cpHomeDayOffset = offset;
+    cpRenderHome();
+}
+
 function cpRenderHome() {
     var rows = window._cpRows || [];
-    var todayStr = cpDstr(new Date());
+    var offset = window._cpHomeDayOffset || 0;
+    var dayStr = dateStrOffset(offset);
+    var dayLabels = ["Aujourd'hui", 'Demain (J+1)', 'Après-demain (J+2)'];
+
+    [0, 1, 2].forEach(function (o) {
+        var btn = document.getElementById('cpDayFilter' + o);
+        if (!btn) return;
+        var active = o === offset;
+        btn.style.background = active ? '#c8963c' : '#fff';
+        btn.style.color = active ? '#fff' : '#5a5262';
+        btn.style.borderColor = active ? '#c8963c' : '#e7e0d5';
+    });
+    var labelEl = document.getElementById('cpTodayLabel');
+    if (labelEl) labelEl.textContent = dayLabels[offset] || dayLabels[0];
 
     // Prochain contenu : la plus récente ligne pas encore publiée.
     var next = rows.filter(function (r) { return r.status !== 'published'; })
@@ -4791,11 +4820,11 @@ function cpRenderHome() {
         heroEl.innerHTML = '<div class="cp-hero-desc">Rien en attente pour le moment — tout est publié ! 🎉</div>';
     }
 
-    // Aujourd'hui, trié par horaire de planning décroissant.
-    var todayRows = cpDayWithPlaceholders(rows.filter(function (r) { return cpRowDay(r) === todayStr; }));
-    document.getElementById('cpTodayTl').innerHTML = todayRows.length
-        ? todayRows.map(cpSlotHtml).join('')
-        : '<div class="cp-txt-box" style="text-align:center;color:#8a8290;">Rien généré aujourd\'hui.</div>';
+    // Jour sélectionné (Aujourd'hui / J+1 / J+2), trié par horaire croissant.
+    var dayRows = cpDayWithPlaceholders(rows.filter(function (r) { return cpRowDay(r) === dayStr; }));
+    document.getElementById('cpTodayTl').innerHTML = dayRows.length
+        ? dayRows.map(cpSlotHtml).join('')
+        : '<div class="cp-txt-box" style="text-align:center;color:#8a8290;">Rien généré ce jour-là.</div>';
 
     cpRenderMiniCal();
 }
