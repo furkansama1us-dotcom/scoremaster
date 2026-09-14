@@ -3335,7 +3335,12 @@ function compositeCarouselSlide(bgDataUri, slide, index, total) {
                 gradSeam.addColorStop(1, SOLID_BG);
                 ctx.fillStyle = gradSeam; ctx.fillRect(0, photoH - seamH, W, seamH);
 
-                var marginX = W * 0.08;
+                // Marge de sécurité large (13%, pas 8%) : ce carrousel est converti
+                // en Reel via l'app, et l'éditeur Reels recadre l'image pour remplir
+                // l'écran du téléphone (~19.5:9), plus étroit que le 9:16 standard —
+                // ça rogne ~9-10% de chaque côté. Sans cette marge, le logo et le
+                // texte se retrouvaient coupés sur les bords.
+                var marginX = W * 0.13;
 
                 // Bloc de marque : vrai logo + "Score Master"
                 var badgeY = 72;
@@ -3423,7 +3428,10 @@ async function compositeCarouselCtaSlide(index, total) {
     var topY = 500;
     ctx.drawImage(logo, W / 2 - logoSize / 2, topY, logoSize, logoSize);
 
-    var marginX = W * 0.1;
+    // Même marge de sécurité que compositeCarouselSlide (13%) pour que le
+    // badge d'index en haut à droite ne soit jamais coupé par le recadrage
+    // de l'éditeur Reels.
+    var marginX = W * 0.13;
     var innerW = W - marginX * 2;
     var y = topY + logoSize + 90;
 
