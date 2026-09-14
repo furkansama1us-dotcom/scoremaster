@@ -188,7 +188,7 @@ module.exports = async function handler(req, res) {
             // l'onglet Notifs (ces dernières restent visibles dans Publications,
             // les premières n'y apparaissent pas).
             const rows = await createPendingRow({
-                scheduled_for: today, content_type: 'Conseil IA', platform: 'instagram',
+                scheduled_for: req.body.dateStr || today, content_type: 'Conseil IA', platform: 'instagram',
                 caption: buildConseilCaption(conseil), image_url: '', status: 'generating',
                 hf_status_url: statusUrl, overlay_data: Object.assign({}, conseil, req.body.origin ? { origin: req.body.origin } : {})
             });
