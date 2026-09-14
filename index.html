@@ -4649,6 +4649,10 @@ function cpFmtDayLabel(d) {
     return d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 }
 function cpDstr(d) { return d.toISOString().slice(0, 10); }
+// Jour "planning" d'une publication : la date prévue (scheduled_for), pas la
+// date de génération (created_at) — sinon tout ce qui est préparé en avance
+// pour demain se retrouvait rangé sous aujourd'hui dans le calendrier.
+function cpRowDay(r) { return r.scheduled_for || (r.created_at || '').slice(0, 10); }
 
 function cpRowTime(row) {
     if (row._cpTime) return row._cpTime;
@@ -4715,7 +4719,7 @@ function cpRenderHome() {
     }
 
     // Aujourd'hui, trié par horaire de planning décroissant.
-    var todayRows = cpSortByTime(rows.filter(function (r) { return (r.created_at || '').slice(0, 10) === todayStr; }));
+    var todayRows = cpSortByTime(rows.filter(function (r) { return cpRowDay(r) === todayStr; }));
     document.getElementById('cpTodayTl').innerHTML = todayRows.length
         ? todayRows.map(cpSlotHtml).join('')
         : '<div class="cp-txt-box" style="text-align:center;color:#8a8290;">Rien généré aujourd\'hui.</div>';
@@ -4734,7 +4738,7 @@ function cpRenderMiniCal() {
 
     var byDay = {};
     rows.forEach(function (r) {
-        var ds = (r.created_at || '').slice(0, 10);
+        var ds = cpRowDay(r);
         if (!ds) return;
         (byDay[ds] = byDay[ds] || []).push(r);
     });
@@ -4753,7 +4757,7 @@ function cpRenderMiniCal() {
 }
 
 function cpOpenDay(ds) {
-    var rows = cpSortByTime((window._cpRows || []).filter(function (r) { return (r.created_at || '').slice(0, 10) === ds; }));
+    var rows = cpSortByTime((window._cpRows || []).filter(function (r) { return cpRowDay(r) === ds; }));
     document.getElementById('cpDayLabel').textContent = cpFmtDayLabel(new Date(ds + 'T00:00:00'));
     document.getElementById('cpDayTl').innerHTML = rows.length ? rows.map(cpSlotHtml).join('') : '<div class="cp-txt-box" style="text-align:center;color:#8a8290;">Rien généré ce jour-là.</div>';
     cpGo('day');
