@@ -5323,10 +5323,12 @@ async function clearAllPublicationHistory() {
         var memberSince = p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
         document.getElementById('profile-member-since').textContent = memberSince;
         var roleMap = {
-            'admin':    { label: '👑 Admin',      bg: 'rgba(255,193,7,0.2)',  color: '#FFC107' },
-            'vip':      { label: '🔥 VIP+',        bg: 'rgba(244,63,94,0.2)',  color: '#F43F5E' },
-            'membre':   { label: '💙 Membre',      bg: 'rgba(74,144,217,0.2)', color: '#3B82F6' },
-            'visiteur': { label: '👁 Visiteur',    bg: 'rgba(138,138,138,0.2)', color: '#8A93A8' },
+            'admin':      { label: '👑 Admin',           bg: 'rgba(255,193,7,0.2)',  color: '#FFC107' },
+            'vip':        { label: '🔥 VIP+',             bg: 'rgba(244,63,94,0.2)',  color: '#F43F5E' },
+            'journalier': { label: '⏱ Pack Journalier',  bg: 'rgba(34,197,94,0.2)',  color: '#22C55E' },
+            'hebdo':      { label: '📅 Pack Hebdo',       bg: 'rgba(139,92,246,0.2)', color: '#8B5CF6' },
+            'membre':     { label: '💙 Membre',           bg: 'rgba(74,144,217,0.2)', color: '#3B82F6' },
+            'visiteur':   { label: '👁 Visiteur',         bg: 'rgba(138,138,138,0.2)', color: '#8A93A8' },
         };
         var role = p.role || 'visiteur';
         var roleInfo = roleMap[role] || roleMap['visiteur'];
@@ -6693,11 +6695,24 @@ async function fetchMatchesFromAPI() {
     // ============================================================
     // ADMIN — Codes d'accès pack (vente manuelle, hors circuit panier)
     // ============================================================
+    // Une seule source de vérité pour le libellé + la couleur de chaque pack,
+    // réutilisée partout où le rôle est affiché (home, espace VIP+, profil)
+    // pour que "Pack Hebdo" ne s'affiche jamais comme "SM VIP+" générique.
     var VIP_PACK_INFO = {
-        journalier: { label: 'Pack Journalier', durationDays: 1, prefix: 'SMJ' },
-        hebdo:      { label: 'Pack Hebdo',       durationDays: 7, prefix: 'SMH' },
-        vip:        { label: 'SM VIP+ (à vie)',  durationDays: null, prefix: 'SMV' }
+        journalier: { label: 'Pack Journalier', badgeLabel: '⏱ Pack Journalier', durationDays: 1, prefix: 'SMJ', color: '#22C55E' },
+        hebdo:      { label: 'Pack Hebdo',       badgeLabel: '📅 Pack Hebdo',      durationDays: 7, prefix: 'SMH', color: '#8B5CF6' },
+        vip:        { label: 'SM VIP+ (à vie)',  badgeLabel: '🔥 VIP+',            durationDays: null, prefix: 'SMV', color: '#F43F5E' }
     };
+
+    function applyRoleDisplay(packType) {
+        var info = VIP_PACK_INFO[packType];
+        if (!info) return;
+        var roleHtml = `<span style="color:${info.color};">${info.label}</span>`;
+        var roleHomeEl = document.getElementById('role-home'); if (roleHomeEl) roleHomeEl.innerHTML = roleHtml;
+        var roleVipEl = document.getElementById('role-vip'); if (roleVipEl) roleVipEl.innerHTML = roleHtml;
+        var badge = document.getElementById('profile-role-badge');
+        if (badge) { badge.textContent = info.badgeLabel; badge.style.background = info.color + '33'; badge.style.color = info.color; badge.style.border = '1px solid ' + info.color + '44'; }
+    }
 
     async function adminGeneratePackCode() {
         var select = document.getElementById('vip-code-pack-select');
@@ -7032,7 +7047,8 @@ async function fetchMatchesFromAPI() {
         try {
             const { error: profileError } = await supabaseClient.from('profiles').update({
                 is_vip: true,
-                vip_expires_at: expiresAt
+                vip_expires_at: expiresAt,
+                vip_pack_type: packCode.pack_type
             }).eq('id', window.currentAuthUser.id);
             if (profileError) throw profileError;
 
@@ -7049,17 +7065,14 @@ async function fetchMatchesFromAPI() {
         }
 
         window.isUserVip = true;
+        window.userVipPackType = packCode.pack_type;
         // Un compte admin reste "Administrateur" (accès total déjà inclus) —
         // is_vip est bien enregistré en base, mais l'affichage du rôle ne
         // doit pas basculer en VIP+ pour ce compte, sinon ça donne l'impression
         // trompeuse d'avoir "perdu" l'admin au prochain rafraîchissement.
         if (!window.isAdmin) {
-            if (window.currentUserProfile) window.currentUserProfile.role = 'vip';
-            var roleHtml = '<span style="color:var(--red);">SM VIP+</span>';
-            var roleHomeEl = document.getElementById('role-home'); if (roleHomeEl) roleHomeEl.innerHTML = roleHtml;
-            var roleVipEl = document.getElementById('role-vip'); if (roleVipEl) roleVipEl.innerHTML = roleHtml;
-            var badge = document.getElementById('profile-role-badge');
-            if (badge) { badge.textContent = '🔥 VIP+'; badge.style.background = 'rgba(244,63,94,0.2)'; badge.style.color = '#F43F5E'; badge.style.border = '1px solid #F43F5E44'; }
+            if (window.currentUserProfile) window.currentUserProfile.role = packCode.pack_type;
+            applyRoleDisplay(packCode.pack_type);
         }
 
         var input = document.getElementById('unlock-code-input');
@@ -7230,23 +7243,28 @@ async function fetchMatchesFromAPI() {
         window.currentAuthUser = user;
         var profile = null;
         try {
-            var profileRes = await supabaseClient.from('profiles').select('is_vip, is_admin, username, vip_expires_at').eq('id', user.id).single();
+            var profileRes = await supabaseClient.from('profiles').select('is_vip, is_admin, username, vip_expires_at, vip_pack_type').eq('id', user.id).single();
             profile = profileRes.data;
         } catch(e) {}
 
         window.isUserVip  = profile ? profile.is_vip  : false;
         window.isAdmin    = profile ? profile.is_admin : false;
+        window.userVipPackType = profile ? profile.vip_pack_type : null;
 
-        // Accès pack Journalier/Hebdo expiré : revient automatiquement en Visiteur.
+        // Accès pack Journalier/Hebdo expiré : revient strictement en Visiteur
+        // (l'expiration est réelle, pas juste cosmétique).
         if (window.isUserVip && profile && profile.vip_expires_at && new Date(profile.vip_expires_at).getTime() <= Date.now()) {
             window.isUserVip = false;
-            supabaseClient.from('profiles').update({ is_vip: false, vip_expires_at: null }).eq('id', user.id).then(function () {}).catch(function () {});
+            window.userVipPackType = null;
+            supabaseClient.from('profiles').update({ is_vip: false, vip_expires_at: null, vip_pack_type: null }).eq('id', user.id).then(function () {}).catch(function () {});
         }
 
         if (window.isAdmin) window.isUserVip = true;
 
         var finalUsername = (profile && profile.username) ? profile.username : 'Utilisateur';
-        var role = window.isAdmin ? 'admin' : (window.isUserVip ? 'vip' : 'visiteur');
+        // Le rôle affiché reflète le pack exact (journalier/hebdo/vip), pas
+        // un "VIP+" générique — sauf pour un admin, qui garde son propre badge.
+        var role = window.isAdmin ? 'admin' : (window.isUserVip ? (window.userVipPackType || 'vip') : 'visiteur');
 
         window.currentUserProfile = {
             pseudo:     finalUsername,
@@ -7258,11 +7276,16 @@ async function fetchMatchesFromAPI() {
         var homeName = document.querySelector('.home-username-text'); if (homeName) homeName.textContent = finalUsername;
         var vipName  = document.querySelector('.vip-username-text');  if (vipName)  vipName.textContent  = finalUsername;
 
-        var roleText  = window.isAdmin ? 'Administrateur' : (window.isUserVip ? 'SM VIP+' : 'Visiteur');
-        var roleColor = window.isAdmin ? 'var(--primary-yellow)' : (window.isUserVip ? 'var(--red)' : 'var(--blue)');
-        var roleHtml  = `<span style="color:${roleColor};">${roleText}</span>`;
-        document.getElementById('role-home').innerHTML = roleHtml;
-        document.getElementById('role-vip').innerHTML  = roleHtml;
+        if (window.isAdmin) {
+            var roleHtml = '<span style="color:var(--primary-yellow);">Administrateur</span>';
+            document.getElementById('role-home').innerHTML = roleHtml;
+            document.getElementById('role-vip').innerHTML  = roleHtml;
+        } else if (window.isUserVip) {
+            applyRoleDisplay(window.userVipPackType || 'vip');
+        } else {
+            document.getElementById('role-home').innerHTML = '<span style="color:var(--blue);">Visiteur</span>';
+            document.getElementById('role-vip').innerHTML  = '<span style="color:var(--blue);">Visiteur</span>';
+        }
 
         var adminBtn = document.getElementById('admin-panel-btn');
         if (adminBtn) adminBtn.style.display = window.isAdmin ? 'flex' : 'none';

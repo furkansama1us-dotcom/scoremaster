@@ -220,7 +220,8 @@ alter table public.bot_conversations enable row level security;
 -- ============================================================
 
 alter table public.profiles
-  add column if not exists vip_expires_at timestamptz;
+  add column if not exists vip_expires_at timestamptz,
+  add column if not exists vip_pack_type text;
 
 create table if not exists public.vip_access_codes (
   id uuid primary key default gen_random_uuid(),
