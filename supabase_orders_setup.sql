@@ -114,6 +114,12 @@ alter table public.pending_publications add column if not exists image_url_post 
 alter table public.pending_publications add column if not exists publish_as_story boolean;
 alter table public.pending_publications add column if not exists publish_as_post boolean;
 
+-- Carrousel Instagram "Story Time" (6 slides swipeables, texte réel sur bande
+-- unie, fonds Higgsfield SANS TEXTE) : tableau des URLs des slides composées,
+-- dans l'ordre (l'index 0 = slide 1). Publié comme un carrousel via Postiz
+-- (plusieurs images dans un seul post, swipeables).
+alter table public.pending_publications add column if not exists carousel_images jsonb;
+
 -- Bucket public pour héberger les visuels "Conseil IA" une fois le texte habillé
 -- (fond Higgsfield + typographie réelle composés en un seul PNG côté client).
 insert into storage.buckets (id, name, public)

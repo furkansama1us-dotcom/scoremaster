@@ -81,6 +81,26 @@ async function postizPublish(item, integrations) {
         const ig = (integrations || []).find(function (i) { return i.identifier && i.identifier.indexOf('instagram') !== -1; });
         if (!ig) throw new Error('Aucune intégration Instagram trouvée sur Postiz');
 
+        // Carrousel Story Time (plusieurs slides, voir image-bridge.js) : publié
+        // comme un seul post multi-images, swipeable sur Instagram.
+        if (Array.isArray(item.carousel_images) && item.carousel_images.length) {
+            await postizFetch('/posts', {
+                method: 'POST',
+                body: JSON.stringify({
+                    type: 'now', date: new Date().toISOString(), shortLink: false, tags: [],
+                    posts: [{
+                        integration: { id: ig.id },
+                        value: [{
+                            content: item.caption,
+                            image: item.carousel_images.map(function (url, i) { return { id: item.id + '-' + i, path: url }; })
+                        }],
+                        settings: { __type: 'instagram', post_type: 'post' }
+                    }]
+                })
+            });
+            return;
+        }
+
         // Contenu généré en double format (Story 9:16 + Post 4:5, voir
         // image-bridge.js) : l'admin choisit au moment d'approuver lequel publier,
         // potentiellement les deux (deux appels Postiz distincts, une image

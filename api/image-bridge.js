@@ -73,9 +73,13 @@ async function handleUpload(req, res) {
 
     // `field`: 'story' ou 'post' -> upload dans une colonne dédiée (une publication
     // Instagram peut avoir les deux formats à choisir au moment d'approuver).
+    // 'carousel:<index>' -> upload dans une case du tableau carousel_images
+    // (carrousel Story Time, une image par slide, publiée comme un seul post
+    // multi-images via Postiz une fois toutes les slides prêtes).
     // Sans `field` (rétrocompatible : Conseil IA, Victoire classique Telegram) ->
     // upload dans image_url comme avant, et passe la ligne en "pending".
-    const suffix = field === 'story' ? '-story' : field === 'post' ? '-post' : '';
+    const carouselMatch = typeof field === 'string' && field.match(/^carousel:(\d+)$/);
+    const suffix = field === 'story' ? '-story' : field === 'post' ? '-post' : carouselMatch ? `-slide${carouselMatch[1]}` : '';
     const objectPath = `conseil-ia/${id}${suffix}.${ext}`;
     const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/${BUCKET}/${objectPath}`, {
         method: 'POST',
@@ -91,9 +95,19 @@ async function handleUpload(req, res) {
 
     const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${objectPath}`;
 
-    const patch = field === 'story' ? { image_url_story: publicUrl }
-        : field === 'post' ? { image_url_post: publicUrl }
-        : { image_url: publicUrl, status: 'pending' };
+    let patch;
+    if (field === 'story') patch = { image_url_story: publicUrl };
+    else if (field === 'post') patch = { image_url_post: publicUrl };
+    else if (carouselMatch) {
+        const idx = parseInt(carouselMatch[1], 10);
+        const rowRes = await sbFetch(`pending_publications?id=eq.${id}&select=carousel_images`);
+        const current = (rowRes && rowRes[0] && Array.isArray(rowRes[0].carousel_images)) ? rowRes[0].carousel_images.slice() : [];
+        while (current.length <= idx) current.push(null);
+        current[idx] = publicUrl;
+        patch = { carousel_images: current };
+    } else {
+        patch = { image_url: publicUrl, status: 'pending' };
+    }
     await sbFetch(`pending_publications?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify(patch) });
 
     res.status(200).json({ ok: true, imageUrl: publicUrl });

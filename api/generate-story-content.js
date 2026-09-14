@@ -126,6 +126,24 @@ Style: cinematic, moody, premium illustrated aesthetic, generous empty negative 
 
 const INSTAGRAM_HASHTAGS = '#ScoreMaster #PronosticsFootball #ParisSportifs #Football #IA';
 
+// Même règles anti-texte/anti-logo que Conseil IA, réutilisées pour les fonds
+// du carrousel "Story Time" — un decor neutre par slide, jamais lié au texte
+// au point de nuire à la lisibilité (le texte reste toujours sur la bande
+// unie ajoutée côté client, jamais directement sur la photo).
+function buildCarouselSlidePrompt(scene) {
+    return `A stylized, hand-drawn illustrated scene, dark bold ink outlines, high-contrast ink wash, premium comic book / graphic novel art style. NOT photorealistic, NOT 3D render, NOT a photo.
+
+ABSOLUTE RULE: NO text, NO numbers, NO letters, NO typography, NO lettering, NO writing, NO signage, NO labels, NO watermark, NO logo, NO illegible or gibberish scribbles that could be mistaken for text — anywhere in the image, on any surface (screens, panels, walls, objects), under any circumstance. If in doubt, leave the surface blank rather than adding any mark resembling text. NO phone, NO screen, NO tablet, NO app interface anywhere.
+
+Scene: ${scene}. Deep navy and black color palette with warm gold accent lighting.
+
+ABSOLUTE RULE: NO crest, NO shield, NO crown, NO emblem, NO badge, NO seal, NO coat of arms, NO circular medallion, NO logo, NO monogram of any kind anywhere in the image — the real brand logo is added separately afterward, never attempt to draw one, not even a generic or blank-looking one.
+
+If the scene includes a stadium, its advertising boards, perimeter hoardings, scoreboards, screens and any signage must all be completely PLAIN and BLANK (solid color only) — never display any sponsor names, brand marks, numbers or text on them, even blurry or out of focus ones.
+
+Style: cinematic, moody, premium illustrated aesthetic, generous empty negative space in the bottom third of the frame for a text overlay to be added afterward — this bottom area must stay visually calm and uncluttered (no small details, no busy texture) so real typography reads clearly once composited on top of a solid dark band there.`;
+}
+
 function buildConseilCaption(conseil) {
     const headlinePlain = conseil.headline.replace(/\n/g, ' ');
     return `${conseil.kicker.toUpperCase()} 📊\n\n${headlinePlain}\n\n${conseil.sub}\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`;
@@ -196,6 +214,22 @@ module.exports = async function handler(req, res) {
                 caption: caption, image_url: '', status: 'generating', hf_status_url: statusUrl, overlay_data: overlayData
             });
             return res.status(200).json({ rows, statusUrl });
+        }
+
+        if (type === 'carousel-story') {
+            const { caption, slides, dateStr } = req.body;
+            if (!caption || !Array.isArray(slides) || !slides.length) {
+                return res.status(400).json({ error: 'caption et slides (tableau de scènes) requis' });
+            }
+            // Une image Higgsfield par slide illustrée (pas la slide CTA finale,
+            // qui reste en aplat noir côté client, sans photo).
+            const statusUrls = await Promise.all(slides.map(s => submitHiggsfield(buildCarouselSlidePrompt(s.scene), '3:4')));
+            const rows = await createPendingRow({
+                scheduled_for: dateStr || today, content_type: 'Carrousel Story', platform: 'instagram',
+                caption: caption, image_url: '', status: 'generating',
+                overlay_data: { slides, statusUrls }
+            });
+            return res.status(200).json({ rows, statusUrls });
         }
 
         // 'victory-classic' (par défaut, rétrocompatible avec les anciens appels sans `type`)

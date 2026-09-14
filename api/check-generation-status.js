@@ -48,9 +48,14 @@ module.exports = async function handler(req, res) {
         const isAdmin = await verifyAdmin(accessToken);
         if (!isAdmin) return res.status(403).json({ error: 'Accès refusé' });
 
-        const { statusUrl, rowIds, deferPending } = req.body || {};
-        if (!statusUrl || !Array.isArray(rowIds) || !rowIds.length) {
-            return res.status(400).json({ error: 'statusUrl et rowIds requis' });
+        const { statusUrl, deferPending } = req.body || {};
+        // `rowIds` optionnel : omis par les flux qui suivent plusieurs générations
+        // Higgsfield en parallèle pour UNE seule ligne pending_publications (ex :
+        // le carrousel Story Time, une image par slide) — dans ce cas on ne fait
+        // que consulter le statut, sans toucher la base ici.
+        const rowIds = Array.isArray(req.body && req.body.rowIds) ? req.body.rowIds : [];
+        if (!statusUrl) {
+            return res.status(400).json({ error: 'statusUrl requis' });
         }
 
         const statusRes = await fetch(statusUrl, { headers: { Authorization: `Key ${HF_KEY_ID}:${HF_KEY_SECRET}` } });

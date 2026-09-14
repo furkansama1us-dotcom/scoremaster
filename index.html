@@ -1828,6 +1828,15 @@ async function fetchApiScore(id, dateRaw) {
         Génère un visuel "conseil" (fond Higgsfield + texte réel habillé), dépose le brouillon dans Publications pour validation.
     </div>
 </div>
+            <div class="admin-card" id="carousel-story-card" style="padding:15px; border-left:4px solid #a855f7; margin-bottom:10px; cursor:pointer; transition:all 0.2s;" onclick="generateCarouselStoryNow()">
+    <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff; display:flex; justify-content:space-between; align-items:center;">
+        <span><i class="fas fa-images" style="color:#a855f7; margin-right:5px;"></i> Carrousel Story Time (Instagram)</span>
+        <i class="fas fa-wand-magic-sparkles" style="color:var(--text-gray); font-size:12px;"></i>
+    </div>
+    <div id="carousel-story-card-desc" style="font-size:12px; color:var(--text-gray);">
+        Génère un carrousel de 6 slides swipeables (5 fonds Higgsfield + CTA suivre), dépose le brouillon dans Publications pour validation.
+    </div>
+</div>
             <div class="admin-card" style="padding:15px; border-left:4px solid #f97316; margin-bottom:10px; cursor:pointer; transition:all 0.2s;" onclick="openTeaserGenerator()">
     <div style="font-weight:bold; font-size:15px; margin-bottom:5px; color:#fff; display:flex; justify-content:space-between; align-items:center;">
         <span><i class="fas fa-hourglass-half" style="color:#f97316; margin-right:5px;"></i> Teaser Prochain Combiné</span>
@@ -2891,6 +2900,344 @@ function buildVictoryStoryImagePrompt(c) {
 var INSTAGRAM_HASHTAGS = '#ScoreMaster #PronosticsFootball #ParisSportifs #Football #IA';
 
 // ============================================================
+// CARROUSEL "STORY TIME" — 6 slides swipeables (format post Instagram,
+// carrousel multi-images via Postiz). Contenu narratif fixe (pas de combiné
+// précis, pas d'IA générative pour le texte — validé avec l'admin : "quelque
+// chose de fixe comme une template"). 5 fonds Higgsfield SANS TEXTE (un par
+// slide, décor neutre lié au thème mais jamais superposé au texte — le texte
+// reste toujours sur la bande sombre unie ajoutée côté client). La 6e slide
+// est un pur CTA "Suivre", sans photo, construite entièrement en Canvas.
+// ============================================================
+var CAROUSEL_STORY_SLIDES = [
+    {
+        kicker: 'Story Time',
+        headline: "Un parieur qui a perdu 12 000€ en 2 ans affirme : il existe une règle que personne ne vous dit...",
+        scene: 'a large ornate magnifying glass hovering above an empty football pitch at night, dramatic floodlights, deep navy sky, moody cinematic lighting'
+    },
+    {
+        kicker: 'Le problème',
+        headline: "95% des parieurs perdent de l'argent sur le long terme. Pas par manque de connaissance du foot — parce qu'ils parient avec leurs émotions, pas avec des données.",
+        scene: 'a single empty stadium seat spotlighted in an otherwise dark and empty stand, dramatic single beam of light, moody cinematic atmosphere'
+    },
+    {
+        kicker: 'Le déclic',
+        headline: "Le jour où il a arrêté de choisir \"au feeling\" et a commencé à croiser forme récente, confrontations directes et contexte du match — tout a changé.",
+        scene: 'an antique brass compass resting on a dark wooden table, warm golden light, soft out-of-focus stadium floodlights in the background, moody cinematic lighting'
+    },
+    {
+        kicker: 'La méthode',
+        headline: "Ce n'est pas de la chance. C'est de la rigueur. Une analyse froide, jamais influencée par un nom connu ou une intuition du dimanche soir.",
+        scene: 'a chess board mid-game on a wooden desk illuminated by a warm lamp, dark moody stadium tunnel background, cinematic lighting'
+    },
+    {
+        kicker: 'La preuve',
+        headline: "Aujourd'hui, cette méthode est appliquée chaque jour par l'IA de Score Master. Rigueur. Constance. Transparence sur chaque ticket publié.",
+        scene: 'a low-angle view of an empty stadium pitch at night, dramatic floodlights, a golden vault door slightly ajar in the distance glowing softly, moody cinematic lighting'
+    }
+];
+
+function buildCarouselStoryCaption() {
+    return `Si tu es encore là, c'est que tu veux arrêter de parier au hasard. 🏆\n\nSuis @ScoreMasterOfficiel pour des analyses IA sérieuses, chaque jour.\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`;
+}
+
+function setCarouselStoryCardState(html, spinning) {
+    var card = document.getElementById('carousel-story-card');
+    var desc = document.getElementById('carousel-story-card-desc');
+    if (card) card.style.pointerEvents = spinning ? 'none' : 'auto';
+    if (card) card.style.opacity = spinning ? '0.7' : '1';
+    if (desc) desc.innerHTML = html;
+}
+
+var CAROUSEL_STORY_DEFAULT_DESC = 'Génère un carrousel de 6 slides swipeables (5 fonds Higgsfield + CTA suivre), dépose le brouillon dans Publications pour validation.';
+
+async function generateCarouselStoryNow() {
+    setCarouselStoryCardState('<i class="fas fa-spinner fa-spin"></i> Génération des 5 fonds en cours (Higgsfield)...', true);
+    try {
+        await queueCarouselStoryPublication();
+    } finally {
+        setCarouselStoryCardState(CAROUSEL_STORY_DEFAULT_DESC, false);
+    }
+}
+
+async function queueCarouselStoryPublication() {
+    try {
+        showToast('Génération du carrousel en cours (5 fonds à générer)... 🎨');
+        var data = await adminApiCall('/api/generate-story-content', {
+            type: 'carousel-story',
+            caption: buildCarouselStoryCaption(),
+            slides: CAROUSEL_STORY_SLIDES.map(function (s) { return { kicker: s.kicker, headline: s.headline, scene: s.scene }; })
+        });
+        pollCarouselStoryGeneration(data.rows[0].id, data.statusUrls, new Array(data.statusUrls.length).fill(false));
+    } catch (error) {
+        console.error('Erreur génération carrousel:', error);
+        showToast('Erreur carrousel : ' + (error && error.message ? error.message : 'inconnue'), true);
+    }
+}
+
+function pollCarouselStoryGeneration(id, statusUrls, done, attempt) {
+    attempt = attempt || 0;
+    setTimeout(async function () {
+        try {
+            var allDone = true;
+            for (var i = 0; i < statusUrls.length; i++) {
+                if (done[i]) continue;
+                var data = await adminApiCall('/api/check-generation-status', { statusUrl: statusUrls[i] });
+                if (data.failed) { showToast('La génération du fond de la slide ' + (i + 1) + ' a échoué.', true); await markPublicationFailed(id, new Error('Slide ' + (i + 1) + ' : ' + data.error)); return; }
+                if (data.done) { done[i] = data.imageUrl; } else { allDone = false; }
+            }
+            if (allDone) { finishCarouselStoryComposite(id, done); return; }
+            if (attempt > 60) { showToast('Délai dépassé pour le carrousel.', true); return; }
+            pollCarouselStoryGeneration(id, statusUrls, done, attempt + 1);
+        } catch (error) {
+            console.error('Erreur suivi génération carrousel:', error);
+        }
+    }, 5000);
+}
+
+async function finishCarouselStoryComposite(id, bgUrls) {
+    try {
+        // Upload SÉQUENTIEL (pas en parallèle) : chaque upload lit-modifie-écrit
+        // le tableau carousel_images en base, un envoi concurrent écraserait les
+        // index des autres slides (race condition classique read-modify-write).
+        for (var i = 0; i < CAROUSEL_STORY_SLIDES.length; i++) {
+            var slide = CAROUSEL_STORY_SLIDES[i];
+            var proxied = await adminApiCall('/api/image-bridge', { action: 'proxy', url: bgUrls[i] });
+            var dataUri = await compositeCarouselSlide(proxied.dataUri, slide, i, CAROUSEL_STORY_SLIDES.length + 1);
+            await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: dataUri, field: 'carousel:' + i });
+        }
+        // 6e slide (CTA) : aucune photo IA, tout est dessiné en Canvas.
+        var ctaDataUri = await compositeCarouselCtaSlide(CAROUSEL_STORY_SLIDES.length, CAROUSEL_STORY_SLIDES.length + 1);
+        await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: ctaDataUri, field: 'carousel:' + CAROUSEL_STORY_SLIDES.length });
+
+        await supabaseClient.from('pending_publications').update({ status: 'pending' }).eq('id', id);
+        showToast('Carrousel Story Time prêt (6 slides) ! Retrouve-le dans Publications pour validation. 🎨');
+        loadAdminPublications();
+    } catch (error) {
+        console.error('Erreur habillage carrousel:', error);
+        showToast('Erreur : ' + (error && error.message ? error.message : 'inconnue'), true);
+        await markPublicationFailed(id, error);
+    }
+}
+
+function compositeCarouselSlide(bgDataUri, slide, index, total) {
+    return new Promise(function (resolve, reject) {
+        var img = new Image();
+        img.onload = async function () {
+            try {
+                await Promise.all([
+                    document.fonts.load('400 64px Anton'),
+                    document.fonts.load('800 26px Manrope'),
+                    document.fonts.load('700 34px Manrope')
+                ]);
+
+                var W = 1080, H = 1350;
+                var canvas = document.createElement('canvas');
+                canvas.width = W; canvas.height = H;
+                var ctx = canvas.getContext('2d');
+
+                var SOLID_BG = '#0a0e1a';
+                ctx.fillStyle = SOLID_BG;
+                ctx.fillRect(0, 0, W, H);
+
+                // Photo décorative sur la moitié haute, pas de flou (demande
+                // explicite) — assombrissement marqué pour garantir que le texte,
+                // toujours posé sur l'aplat uni en dessous, reste net et lisible
+                // quel que soit ce que l'IA a dessiné.
+                var photoH = H * 0.5;
+                ctx.save();
+                ctx.beginPath(); ctx.rect(0, 0, W, photoH); ctx.clip();
+                ctx.filter = 'saturate(0.8)';
+                var scale = Math.max(W / img.width, photoH / img.height);
+                var dw = img.width * scale, dh = img.height * scale;
+                ctx.drawImage(img, (W - dw) / 2, (photoH - dh) / 2, dw, dh);
+                ctx.filter = 'none';
+                ctx.restore();
+
+                ctx.fillStyle = 'rgba(6,8,16,0.5)';
+                ctx.fillRect(0, 0, W, photoH);
+
+                var gradTop = ctx.createLinearGradient(0, 0, 0, H * 0.22);
+                gradTop.addColorStop(0, 'rgba(6,8,16,0.85)');
+                gradTop.addColorStop(1, 'rgba(6,8,16,0)');
+                ctx.fillStyle = gradTop; ctx.fillRect(0, 0, W, H * 0.22);
+
+                var seamH = 130;
+                var gradSeam = ctx.createLinearGradient(0, photoH - seamH, 0, photoH);
+                gradSeam.addColorStop(0, 'rgba(10,14,26,0)');
+                gradSeam.addColorStop(1, SOLID_BG);
+                ctx.fillStyle = gradSeam; ctx.fillRect(0, photoH - seamH, W, seamH);
+
+                var marginX = W * 0.08;
+
+                // Bloc de marque : vrai logo + "Score Master"
+                var badgeY = 72;
+                var logo = await loadImg('logo-dark.png');
+                var logoSize = 46;
+                ctx.drawImage(logo, marginX, badgeY - 20, logoSize, logoSize);
+                ctx.font = '400 30px Anton, Impact, sans-serif';
+                ctx.textBaseline = 'alphabetic';
+                ctx.fillStyle = '#f5f5f2';
+                ctx.fillText('SCORE ', marginX + logoSize + 16, badgeY + 20);
+                var scoreW = ctx.measureText('SCORE ').width;
+                ctx.fillStyle = '#e8b84b';
+                ctx.fillText('MASTER', marginX + logoSize + 16 + scoreW, badgeY + 20);
+
+                // Badge d'index (1/6, 2/6, ...)
+                ctx.font = '800 22px Manrope, sans-serif';
+                var idxText = (index + 1) + '/' + total;
+                var idxW = ctx.measureText(idxText).width + 26;
+                ctx.fillStyle = 'rgba(0,0,0,0.55)';
+                ctx.beginPath();
+                if (ctx.roundRect) ctx.roundRect(W - marginX - idxW, badgeY - 30, idxW, 40, 999);
+                else ctx.rect(W - marginX - idxW, badgeY - 30, idxW, 40);
+                ctx.fill();
+                ctx.fillStyle = '#fff';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText(idxText, W - marginX - idxW / 2, badgeY - 9);
+                ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+
+                // Kicker + titre — positionné juste sous la photo, ancrage bas en
+                // filet de sécurité (comme Conseil IA) pour ne jamais déborder.
+                ctx.font = '400 44px Anton, Impact, sans-serif';
+                var headlineLines = wrapCanvasText(ctx, slide.headline, W - marginX * 2).slice(0, 6);
+
+                var yNearPhoto = photoH + 90;
+                var yBottomAnchored = H - 90 - headlineLines.length * 50;
+                var y = Math.min(yNearPhoto, yBottomAnchored);
+
+                ctx.fillStyle = '#e8b84b';
+                ctx.font = '800 22px Manrope, sans-serif';
+                ctx.fillText(slide.kicker.toUpperCase(), marginX, y);
+                y += 58;
+
+                ctx.fillStyle = '#f5f5f2';
+                ctx.font = '400 44px Anton, Impact, sans-serif';
+                headlineLines.forEach(function (line) {
+                    ctx.fillText(line, marginX, y);
+                    y += 50;
+                });
+
+                if (index === 0) {
+                    ctx.font = '800 20px Manrope, sans-serif';
+                    ctx.fillStyle = 'rgba(245,245,242,0.65)';
+                    ctx.fillText('SWIPE VERS LA GAUCHE →', marginX, H - 40);
+                }
+
+                resolve(canvas.toDataURL('image/jpeg', 0.98));
+            } catch (e) { reject(e); }
+        };
+        img.onerror = function () { reject(new Error('Impossible de charger le fond généré')); };
+        img.src = bgDataUri;
+    });
+}
+
+async function compositeCarouselCtaSlide(index, total) {
+    await Promise.all([
+        document.fonts.load('400 40px Anton'),
+        document.fonts.load('800 20px Manrope'),
+        document.fonts.load('700 24px Manrope')
+    ]);
+
+    var W = 1080, H = 1350;
+    var canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    var ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#0a0e1a';
+    ctx.fillRect(0, 0, W, H);
+
+    var logo = await loadImg('logo-dark.png');
+    var logoSize = 96;
+    ctx.drawImage(logo, W / 2 - logoSize / 2, 200, logoSize, logoSize);
+
+    var marginX = W * 0.1;
+    var innerW = W - marginX * 2;
+    var y = 200 + logoSize + 90;
+
+    ctx.font = '400 46px Anton, Impact, sans-serif';
+    ctx.fillStyle = '#f5f5f2';
+    ctx.textAlign = 'center';
+    var ctaLines = wrapCanvasText(ctx, 'Si tu es encore là, c\'est que tu veux arrêter de parier au hasard.', innerW);
+    ctaLines.forEach(function (line, li) { ctx.fillText(line, W / 2, y + li * 52); });
+    y += ctaLines.length * 52 + 40;
+
+    ctx.font = '700 26px Manrope, sans-serif';
+    ctx.fillStyle = '#a9b0c4';
+    var subLines = wrapCanvasText(ctx, "Suis @ScoreMasterOfficiel pour des analyses IA sérieuses, chaque jour.", innerW);
+    subLines.forEach(function (line, li) { ctx.fillText(line, W / 2, y + li * 34); });
+    y += subLines.length * 34 + 70;
+
+    // Mini mockup de profil (stats réelles, pas des abonnés inventés)
+    var cardW = 420, cardH = 190;
+    var cardX = W / 2 - cardW / 2, cardY = y;
+    ctx.fillStyle = '#11141d';
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(cardX, cardY, cardW, cardH, 20);
+    else ctx.rect(cardX, cardY, cardW, cardH);
+    ctx.fill(); ctx.stroke();
+
+    var avSize = 52;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cardX + 40 + avSize / 2, cardY + 34 + avSize / 2, avSize / 2, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.fillStyle = '#1a1e29';
+    ctx.fillRect(cardX + 40, cardY + 34, avSize, avSize);
+    ctx.drawImage(logo, cardX + 40 + 8, cardY + 34 + 8, avSize - 16, avSize - 16);
+    ctx.restore();
+
+    ctx.textAlign = 'left';
+    ctx.font = '800 22px Manrope, sans-serif';
+    ctx.fillStyle = '#f5f5f2';
+    ctx.fillText('Score Master', cardX + 40 + avSize + 16, cardY + 54);
+    ctx.font = '600 16px Manrope, sans-serif';
+    ctx.fillStyle = '#a9b0c4';
+    ctx.fillText('Pronostics IA', cardX + 40 + avSize + 16, cardY + 78);
+
+    var stats = [['142', 'tickets'], ['+400', 'visites/j'], ['92%', 'fiabilité']];
+    var statW = cardW / 3;
+    stats.forEach(function (s, i) {
+        var sx = cardX + statW * i + statW / 2;
+        ctx.textAlign = 'center';
+        ctx.font = '400 26px Anton, Impact, sans-serif';
+        ctx.fillStyle = '#f5f5f2';
+        ctx.fillText(s[0], sx, cardY + 128);
+        ctx.font = '700 14px Manrope, sans-serif';
+        ctx.fillStyle = '#a9b0c4';
+        ctx.fillText(s[1], sx, cardY + 150);
+    });
+
+    var btnW = cardW - 60, btnH = 40;
+    ctx.fillStyle = '#e8b84b';
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(cardX + 30, cardY + cardH - 30, btnW, btnH, 10);
+    else ctx.rect(cardX + 30, cardY + cardH - 30, btnW, btnH);
+    ctx.fill();
+    ctx.fillStyle = '#141821';
+    ctx.font = '800 18px Manrope, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('Suivre', cardX + 30 + btnW / 2, cardY + cardH - 10);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+
+    ctx.font = '800 22px Manrope, sans-serif';
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    var idxText = (index + 1) + '/' + total;
+    var idxW = ctx.measureText(idxText).width + 26;
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(W - marginX - idxW, 42, idxW, 40, 999);
+    else ctx.rect(W - marginX - idxW, 42, idxW, 40);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(idxText, W - marginX - idxW / 2, 62);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+
+    return canvas.toDataURL('image/jpeg', 0.98);
+}
+
+// ============================================================
 // VISUEL "COMBINÉ DU JOUR" — même principe que la Story de victoire
 // (double format Story/Post, vrais écussons TheSportsDB, fond Higgsfield
 // SANS TEXTE), mais AVANT résultat : pas de score, pas de barre de
@@ -3766,6 +4113,30 @@ var PLATFORM_LABELS = { instagram: { label: 'Instagram', icon: 'fab fa-instagram
 function renderPublicationCard(p) {
     var pf = PLATFORM_LABELS[p.platform] || { label: p.platform, icon: 'fas fa-share', color: 'var(--text-gray)' };
     var hasDualFormat = !!(p.image_url_story || p.image_url_post);
+    var hasCarousel = Array.isArray(p.carousel_images) && p.carousel_images.length > 0 && p.carousel_images.every(Boolean);
+
+    if (hasCarousel) {
+        var thumbs = p.carousel_images.map(function (url, i) {
+            return `<div style="flex:0 0 auto; width:120px;">
+                <img src="${url}" style="width:120px; height:150px; object-fit:cover; border-radius:8px; display:block;" onerror="this.style.display='none'">
+                <a href="${url}" download="score-master-slide${i + 1}.jpg" style="display:block; text-align:center; margin-top:4px; padding:5px; background:rgba(255,255,255,.06); color:#fff; border:1px solid rgba(255,255,255,.12); border-radius:6px; font-size:9px; font-weight:700; text-decoration:none;"><i class="fas fa-download"></i> Slide ${i + 1}</a>
+            </div>`;
+        }).join('');
+        return `
+        <div class="order-history-card">
+            <div class="order-history-top">
+                <span style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:800; color:${pf.color};"><i class="${pf.icon}"></i> ${pf.label}</span>
+                <span class="order-history-date">${fmtD(p.created_at)}</span>
+            </div>
+            <div style="font-size:11px; color:var(--text-gray); margin:6px 0;">Type : ${p.content_type} · Carrousel ${p.carousel_images.length} slides · Prévu pour le ${p.scheduled_for}</div>
+            <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:10px;">${thumbs}</div>
+            <div style="font-size:13px; color:#fff; line-height:1.5; white-space:pre-wrap; margin-bottom:12px;">${p.caption}</div>
+            <div style="display:flex; gap:8px;">
+                <button onclick="approvePublication('${p.id}')" style="flex:1;padding:10px;background:linear-gradient(135deg,var(--green),#16A34A);color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-check"></i> Approuver</button>
+                <button onclick="rejectPublication('${p.id}')" style="flex:1;padding:10px;background:transparent;color:var(--red);border:1px solid rgba(244,63,94,.3);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-times"></i> Rejeter</button>
+            </div>
+        </div>`;
+    }
 
     if (!hasDualFormat) {
         return `
@@ -3832,7 +4203,7 @@ function renderPublicationHistoryCard(p) {
     };
     var st = statusMap[p.status] || { label: p.status, color: 'var(--text-gray)' };
     var captionPreview = p.caption ? (p.caption.length > 140 ? p.caption.slice(0, 140) + '…' : p.caption) : '';
-    var thumbSrc = p.image_url || p.image_url_post || p.image_url_story;
+    var thumbSrc = p.image_url || p.image_url_post || p.image_url_story || (Array.isArray(p.carousel_images) && p.carousel_images[0]);
     var thumbHtml = thumbSrc ? `<img src="${thumbSrc}" style="width:100%; border-radius:8px; margin-top:8px; display:block;" onerror="this.style.display='none'">` : '';
     return `
     <div class="order-history-card">
