@@ -2032,6 +2032,12 @@ async function fetchApiScore(id, dateRaw) {
     </div>
     <div style="flex:1; overflow-y:auto; padding:18px 16px 30px;">
         <div class="cp-view active" id="cp-view-home">
+            <div class="cp-sec">
+                <button id="cpPlanBtn" onclick="cpPlanAhead(3,1)" style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#a855f7,#e8b84b);color:#141821;font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                    <i class="fas fa-wand-magic-sparkles"></i> Planifier les prochains jours
+                </button>
+                <div style="font-size:11px;color:#5e6478;margin-top:7px;text-align:center;">Génère automatiquement 3 Conseil IA + 1 Carrousel Story (thèmes choisis pour toi, jamais de répétition). Laisse cet onglet ouvert le temps que ça se termine.</div>
+            </div>
             <div class="cp-sec"><div class="cp-eyebrow">Prochain contenu</div><div class="cp-hero" id="cpHeroNext"></div></div>
             <div class="cp-sec">
                 <div class="cp-eyebrow">Accès rapide</div>
@@ -3004,33 +3010,160 @@ var INSTAGRAM_HASHTAGS = '#ScoreMaster #PronosticsFootball #ParisSportifs #Footb
 // reste toujours sur la bande sombre unie ajoutée côté client). La 6e slide
 // est un pur CTA "Suivre", sans photo, construite entièrement en Canvas.
 // ============================================================
-var CAROUSEL_STORY_SLIDES = [
-    {
-        kicker: 'Story Time',
-        headline: "Un parieur qui a perdu 12 000€ en 2 ans affirme : il existe une règle que personne ne vous dit...",
-        scene: 'a large ornate magnifying glass hovering above an empty football pitch at night, dramatic floodlights, deep navy sky, moody cinematic lighting'
-    },
-    {
-        kicker: 'Le problème',
-        headline: "95% des parieurs perdent de l'argent sur le long terme. Pas par manque de connaissance du foot — parce qu'ils parient avec leurs émotions, pas avec des données.",
-        scene: 'a single empty stadium seat spotlighted in an otherwise dark and empty stand, dramatic single beam of light, moody cinematic atmosphere'
-    },
-    {
-        kicker: 'Le déclic',
-        headline: "Le jour où il a arrêté de choisir \"au feeling\" et a commencé à croiser forme récente, confrontations directes et contexte du match — tout a changé.",
-        scene: 'an antique brass compass resting on a dark wooden table, warm golden light, soft out-of-focus stadium floodlights in the background, moody cinematic lighting'
-    },
-    {
-        kicker: 'La méthode',
-        headline: "Ce n'est pas de la chance. C'est de la rigueur. Une analyse froide, jamais influencée par un nom connu ou une intuition du dimanche soir.",
-        scene: 'a chess board mid-game on a wooden desk illuminated by a warm lamp, dark moody stadium tunnel background, cinematic lighting'
-    },
-    {
-        kicker: 'La preuve',
-        headline: "Aujourd'hui, cette méthode est appliquée chaque jour par l'IA de Score Master. Rigueur. Constance. Transparence sur chaque ticket publié.",
-        scene: 'a low-angle view of an empty stadium pitch at night, dramatic floodlights, a golden vault door slightly ajar in the distance glowing softly, moody cinematic lighting'
-    }
+// Plusieurs scénarios narratifs distincts (pas juste un seul) pour que la
+// génération planifiée à l'avance ne publie jamais deux fois la même histoire
+// d'affilée — même principe de rotation que CONSEILS.
+var CAROUSEL_STORY_LIBRARY = [
+    [
+        {
+            kicker: 'Story Time',
+            headline: "Un parieur qui a perdu 12 000€ en 2 ans affirme : il existe une règle que personne ne vous dit...",
+            scene: 'a large ornate magnifying glass hovering above an empty football pitch at night, dramatic floodlights, deep navy sky, moody cinematic lighting'
+        },
+        {
+            kicker: 'Le problème',
+            headline: "95% des parieurs perdent de l'argent sur le long terme. Pas par manque de connaissance du foot — parce qu'ils parient avec leurs émotions, pas avec des données.",
+            scene: 'a single empty stadium seat spotlighted in an otherwise dark and empty stand, dramatic single beam of light, moody cinematic atmosphere'
+        },
+        {
+            kicker: 'Le déclic',
+            headline: "Le jour où il a arrêté de choisir \"au feeling\" et a commencé à croiser forme récente, confrontations directes et contexte du match — tout a changé.",
+            scene: 'an antique brass compass resting on a dark wooden table, warm golden light, soft out-of-focus stadium floodlights in the background, moody cinematic lighting'
+        },
+        {
+            kicker: 'La méthode',
+            headline: "Ce n'est pas de la chance. C'est de la rigueur. Une analyse froide, jamais influencée par un nom connu ou une intuition du dimanche soir.",
+            scene: 'a chess board mid-game on a wooden desk illuminated by a warm lamp, dark moody stadium tunnel background, cinematic lighting'
+        },
+        {
+            kicker: 'La preuve',
+            headline: "Aujourd'hui, cette méthode est appliquée chaque jour par l'IA de Score Master. Rigueur. Constance. Transparence sur chaque ticket publié.",
+            scene: 'a low-angle view of an empty stadium pitch at night, dramatic floodlights, a golden vault door slightly ajar in the distance glowing softly, moody cinematic lighting'
+        }
+    ],
+    [
+        {
+            kicker: 'Story Time',
+            headline: "Un ancien parieur confie : la plupart des gens perdent avant même d'avoir misé un centime...",
+            scene: 'an antique brass balance scale resting on a dark wooden table, warm golden spotlight, soft out-of-focus stadium floodlights in the background, moody cinematic lighting'
+        },
+        {
+            kicker: 'Le problème',
+            headline: "Miser trop, trop souvent, sans limite : c'est la première cause de ruine chez les parieurs — bien avant les mauvaises analyses.",
+            scene: 'a scattered pile of poker chips carelessly spread across a dark wooden table, dim moody lighting, soft golden highlights'
+        },
+        {
+            kicker: 'Le déclic',
+            headline: "Le jour où il a fixé une mise fixe — jamais doublée après une perte, jamais augmentée après un coup de chance — sa courbe a changé de direction.",
+            scene: 'a single steady candle flame glowing in an otherwise dark room, soft warm light, moody cinematic atmosphere, empty stadium silhouette faintly visible through a window'
+        },
+        {
+            kicker: 'La méthode',
+            headline: "La gestion de la mise n'est pas une option. C'est la moitié du travail — presque autant que l'analyse elle-même.",
+            scene: 'an hourglass with golden sand slowly falling, placed on a stadium ledge overlooking a floodlit pitch at dusk, moody cinematic lighting'
+        },
+        {
+            kicker: 'La preuve',
+            headline: "Score Master applique cette discipline à chaque ticket publié — jamais de mise excessive, jamais d'emballement après une série gagnante.",
+            scene: 'a golden vault door slightly ajar with a warm light glowing from within, dark moody stadium corridor background, sparks of golden light dust in the air'
+        }
+    ],
+    [
+        {
+            kicker: 'Story Time',
+            headline: "Une abonnée raconte : ce qui l'a convaincue, ce n'est pas une victoire. C'est un ticket perdant, assumé sans détour...",
+            scene: 'an open leather-bound ledger book resting on a dark wooden desk, warm lamp light, soft out-of-focus stadium floodlights in the background, moody cinematic lighting'
+        },
+        {
+            kicker: 'Le problème',
+            headline: "Beaucoup de comptes de pronostics n'affichent que leurs victoires. Sur la durée, ça ne veut rien dire — et ça cache l'essentiel.",
+            scene: 'a single blank stadium scoreboard glowing faintly in an otherwise dark and empty stadium at night, moody cinematic atmosphere'
+        },
+        {
+            kicker: 'Le déclic',
+            headline: "Elle a cherché un historique complet, gagnants et perdants confondus. C'est là qu'elle a compris ce qu'était vraiment la régularité.",
+            scene: 'a spotlight beam cutting through darkness onto an empty football pitch at night, dramatic floodlights, deep navy sky, cinematic lighting'
+        },
+        {
+            kicker: 'La méthode',
+            headline: "Chaque ticket, gagné ou perdu, reste visible. Pas de tri, pas de mise en avant sélective — juste les faits, dans l'ordre.",
+            scene: 'a lighthouse beam sweeping over a dark stadium silhouette in the distance, moody cinematic atmosphere, deep navy sky'
+        },
+        {
+            kicker: 'La preuve',
+            headline: "C'est exactement ce que fait Score Master : chaque combiné publié reste dans l'historique, sans exception, pour que la confiance se construise sur des faits.",
+            scene: 'a low-angle view of an empty stadium pitch at night, dramatic floodlights, a golden vault door slightly ajar in the distance glowing softly, moody cinematic lighting'
+        }
+    ],
+    [
+        {
+            kicker: 'Story Time',
+            headline: "Un supporter passionné avoue : il connaissait chaque joueur par cœur — et perdait quand même son argent chaque week-end...",
+            scene: 'an antique brass telescope pointed toward a floodlit stadium in the distance at night, moody cinematic lighting, deep navy sky'
+        },
+        {
+            kicker: 'Le problème',
+            headline: "Connaître une équipe par passion et savoir l'analyser froidement, ce sont deux choses différentes. La passion brouille souvent le jugement.",
+            scene: 'a tangled knot of golden thread resting on a dark wooden table, warm spotlight, moody cinematic lighting'
+        },
+        {
+            kicker: 'Le déclic',
+            headline: "Le jour où il a laissé les données trancher à sa place — même quand son cœur penchait pour son équipe préférée — ses résultats ont changé.",
+            scene: 'an antique brass sextant resting on a dark wooden desk, warm golden light, soft out-of-focus stadium floodlights in the background, moody cinematic lighting'
+        },
+        {
+            kicker: 'La méthode',
+            headline: "L'IA n'a pas de club préféré, pas de souvenir d'enfance, pas de mauvaise humeur un lundi matin. Juste des données, croisées sans parti pris.",
+            scene: 'a low-angle view of an empty stadium pitch at night, dozens of thin glowing golden light threads converging toward a single point above the center circle, dramatic floodlights'
+        },
+        {
+            kicker: 'La preuve',
+            headline: "C'est la force de Score Master : une analyse neutre, chaque jour, sur chaque match — sans jamais laisser la passion décider à la place des chiffres.",
+            scene: 'a silhouette standing at a stadium tunnel entrance looking out onto a glowing floodlit pitch, warm golden light rays streaming past them, moody cinematic lighting'
+        }
+    ],
+    [
+        {
+            kicker: 'Story Time',
+            headline: "Un parieur expérimenté explique sa règle la plus stricte : certains jours, il ne mise sur rien du tout...",
+            scene: 'an antique pocket watch resting on a dark wooden stadium bench, out-of-focus floodlit pitch glowing softly in the background'
+        },
+        {
+            kicker: 'Le problème',
+            headline: "Vouloir parier tous les jours, sur tous les matchs, c'est le meilleur moyen de miser sur des rencontres qui ne méritent pas l'analyse.",
+            scene: 'a stadium turnstile gate closed and locked at night, dim moody lighting, empty stadium silhouette in the background'
+        },
+        {
+            kicker: 'Le déclic',
+            headline: "Le jour où il a accepté de passer son tour sur un match incertain, plutôt que de forcer une analyse qui ne tenait pas debout — tout est devenu plus clair.",
+            scene: 'a single empty stadium seat spotlighted in an otherwise dark and empty stand, dramatic single beam of light, moody cinematic atmosphere'
+        },
+        {
+            kicker: 'La méthode',
+            headline: "Le bon moment compte autant que le bon match. Savoir attendre fait partie intégrante de la rigueur, pas de la prudence excessive.",
+            scene: 'a golden key resting on a dark velvet cushion, warm spotlight, soft out-of-focus stadium floodlights in the background, moody cinematic lighting'
+        },
+        {
+            kicker: 'La preuve',
+            headline: "Score Master ne publie un combiné que lorsque l'analyse le justifie vraiment — jamais pour publier, seulement pour être utile.",
+            scene: 'a low-angle view of an empty stadium pitch at night, dramatic floodlights, a golden vault door slightly ajar in the distance glowing softly, moody cinematic lighting'
+        }
+    ]
 ];
+
+function pickCarouselNarrative(recentTitles) {
+    var candidates = CAROUSEL_STORY_LIBRARY.filter(function (n) { return recentTitles.indexOf(n[0].headline) === -1; });
+    var pool = candidates.length ? candidates : CAROUSEL_STORY_LIBRARY;
+    return pool[Math.floor(Math.random() * pool.length)];
+}
+
+async function recentCarouselNarrativeTitles() {
+    try {
+        var res = await supabaseClient.from('pending_publications').select('overlay_data')
+            .eq('content_type', 'Carrousel Story').order('created_at', { ascending: false }).limit(3);
+        return (res.data || []).map(function (r) { return r.overlay_data && r.overlay_data.slides && r.overlay_data.slides[0] && r.overlay_data.slides[0].headline; }).filter(Boolean);
+    } catch (e) { return []; }
+}
 
 function buildCarouselStoryCaption() {
     return `Si tu es encore là, c'est que tu veux arrêter de parier au hasard. 🏆\n\nSuis @ScoreMasterOfficiel pour des analyses IA sérieuses, chaque jour.\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`;
@@ -3058,10 +3191,12 @@ async function generateCarouselStoryNow() {
 async function queueCarouselStoryPublication() {
     try {
         showToast('Génération du carrousel en cours (5 fonds à générer)... 🎨');
+        var recentTitles = await recentCarouselNarrativeTitles();
+        var slides = pickCarouselNarrative(recentTitles);
         var data = await adminApiCall('/api/generate-story-content', {
             type: 'carousel-story',
             caption: buildCarouselStoryCaption(),
-            slides: CAROUSEL_STORY_SLIDES.map(function (s) { return { kicker: s.kicker, headline: s.headline, scene: s.scene }; })
+            slides: slides.map(function (s) { return { kicker: s.kicker, headline: s.headline, scene: s.scene }; })
         });
         pollCarouselStoryGeneration(data.rows[0].id, data.statusUrls, new Array(data.statusUrls.length).fill(false));
     } catch (error) {
@@ -3098,18 +3233,27 @@ function pollCarouselStoryGeneration(id, statusUrls, done, attempt) {
 
 async function finishCarouselStoryComposite(id, bgUrls) {
     try {
+        // Relit les slides réellement utilisées pour CETTE génération (stockées
+        // au moment de la soumission) plutôt qu'un tableau fixe en mémoire —
+        // indispensable pour la génération planifiée à l'avance, où l'habillage
+        // peut se terminer bien après coup, potentiellement après un
+        // rechargement de page.
+        var rowRes = await supabaseClient.from('pending_publications').select('overlay_data').eq('id', id).single();
+        if (rowRes.error) throw rowRes.error;
+        var slides = (rowRes.data.overlay_data && rowRes.data.overlay_data.slides) || CAROUSEL_STORY_LIBRARY[0];
+
         // Upload SÉQUENTIEL (pas en parallèle) : chaque upload lit-modifie-écrit
         // le tableau carousel_images en base, un envoi concurrent écraserait les
         // index des autres slides (race condition classique read-modify-write).
-        for (var i = 0; i < CAROUSEL_STORY_SLIDES.length; i++) {
-            var slide = CAROUSEL_STORY_SLIDES[i];
+        for (var i = 0; i < slides.length; i++) {
+            var slide = slides[i];
             var proxied = await adminApiCall('/api/image-bridge', { action: 'proxy', url: bgUrls[i] });
-            var dataUri = await compositeCarouselSlide(proxied.dataUri, slide, i, CAROUSEL_STORY_SLIDES.length + 1);
+            var dataUri = await compositeCarouselSlide(proxied.dataUri, slide, i, slides.length + 1);
             await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: dataUri, field: 'carousel:' + i });
         }
         // 6e slide (CTA) : aucune photo IA, tout est dessiné en Canvas.
-        var ctaDataUri = await compositeCarouselCtaSlide(CAROUSEL_STORY_SLIDES.length, CAROUSEL_STORY_SLIDES.length + 1);
-        await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: ctaDataUri, field: 'carousel:' + CAROUSEL_STORY_SLIDES.length });
+        var ctaDataUri = await compositeCarouselCtaSlide(slides.length, slides.length + 1);
+        await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: ctaDataUri, field: 'carousel:' + slides.length });
 
         await supabaseClient.from('pending_publications').update({ status: 'pending' }).eq('id', id);
         showToast('Carrousel Story Time prêt (6 slides) ! Retrouve-le dans Publications pour validation. 🎨');
@@ -4189,6 +4333,26 @@ async function approveCalendarRows(typeKey, dayOffset) {
 // ============================================================
 window.adminPublicationsCache = {};
 
+// Reprend le suivi des générations laissées en plan (status "generating")
+// par une session précédente — sans ça, fermer/rouvrir le navigateur pendant
+// qu'une génération planifiée à l'avance tourne la laisserait bloquée pour
+// toujours (le suivi ne vit que dans la mémoire JS de l'onglet qui l'a lancé).
+var _resumedGenerations = {};
+function resumeOrphanedGenerations(rows) {
+    (rows || []).forEach(function (r) {
+        if (r.status !== 'generating' || _resumedGenerations[r.id]) return;
+        _resumedGenerations[r.id] = true;
+        if (r.content_type === 'Carrousel Story' && r.overlay_data && Array.isArray(r.overlay_data.statusUrls)) {
+            pollCarouselStoryGeneration(r.id, r.overlay_data.statusUrls, new Array(r.overlay_data.statusUrls.length).fill(false));
+        } else if (r.hf_status_url) {
+            if (r.content_type === 'Conseil IA') pollConseilGeneration(r.id, r.hf_status_url);
+            else if (r.content_type === 'Victoire Story') pollVictoryStoryGeneration(r.id, r.hf_status_url);
+            else if (r.content_type === 'Combiné du jour' && r.platform === 'telegram') pollComboTeaserTelegramGeneration(r.id, r.hf_status_url);
+            else if (r.content_type === 'Combiné du jour') pollComboTeaserGeneration(r.id, r.hf_status_url);
+        }
+    });
+}
+
 async function loadAdminPublications() {
     var pendingEl = document.getElementById('admin-publications-pending');
     var historyEl = document.getElementById('admin-publications-history');
@@ -4202,6 +4366,7 @@ async function loadAdminPublications() {
             .limit(30);
         if (error) throw error;
 
+        resumeOrphanedGenerations(data);
         window.adminPublicationsCache = {};
         (data || []).forEach(function (p) { window.adminPublicationsCache[p.id] = p; });
 
@@ -4259,12 +4424,44 @@ async function openContentPlanner() {
             .order('created_at', { ascending: false })
             .limit(60);
         if (error) throw error;
+        resumeOrphanedGenerations(data);
         window._cpRows = data || [];
     } catch (error) {
         console.error('Erreur chargement Content Planner:', error);
         window._cpRows = [];
     }
     cpRenderHome();
+}
+
+// Planification à l'avance : génère plusieurs contenus d'un coup (choisis
+// automatiquement, rotation anti-répétition déjà en place pour Conseil IA et
+// Carrousel Story) pour que l'admin n'ait plus qu'à approuver au réveil.
+// Les soumissions sont espacées pour ne pas saturer Higgsfield d'un coup ;
+// chaque génération continue ensuite en tâche de fond (et reprend toute
+// seule au prochain chargement grâce à resumeOrphanedGenerations, même si
+// le navigateur est fermé puis rouvert entre-temps).
+async function cpPlanAhead(conseilCount, carouselCount) {
+    conseilCount = conseilCount == null ? 3 : conseilCount;
+    carouselCount = carouselCount == null ? 1 : carouselCount;
+    var btn = document.getElementById('cpPlanBtn');
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Planification en cours...'; }
+    showToast('Planification de ' + conseilCount + ' Conseil IA + ' + carouselCount + ' Carrousel...');
+    try {
+        for (var i = 0; i < conseilCount; i++) {
+            try {
+                var data = await adminApiCall('/api/generate-story-content', { type: 'conseil' });
+                pollConseilGeneration(data.rows[0].id, data.statusUrl);
+            } catch (e) { console.error('Erreur planification Conseil IA:', e); }
+            await new Promise(function (r) { setTimeout(r, 4000); });
+        }
+        for (var j = 0; j < carouselCount; j++) {
+            await queueCarouselStoryPublication();
+            await new Promise(function (r) { setTimeout(r, 4000); });
+        }
+        showToast('Planifié ! Les contenus arriveront dans Publications au fur et à mesure. 🎨');
+    } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Planifier les prochains jours'; }
+    }
 }
 
 function closeContentPlanner() {
