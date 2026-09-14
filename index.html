@@ -4590,8 +4590,8 @@ function cpTimeToMinutes(t) {
     var m = /(\d{1,2})h(\d{2})/.exec(t || '');
     return m ? (parseInt(m[1], 10) * 60 + parseInt(m[2], 10)) : -1;
 }
-function cpSortByTimeDesc(rows) {
-    return rows.slice().sort(function (a, b) { return cpTimeToMinutes(b._cpTime) - cpTimeToMinutes(a._cpTime); });
+function cpSortByTime(rows) {
+    return rows.slice().sort(function (a, b) { return cpTimeToMinutes(a._cpTime) - cpTimeToMinutes(b._cpTime); });
 }
 
 function cpRenderHome() {
@@ -4618,7 +4618,7 @@ function cpRenderHome() {
     }
 
     // Aujourd'hui, trié par horaire de planning décroissant.
-    var todayRows = cpSortByTimeDesc(rows.filter(function (r) { return (r.created_at || '').slice(0, 10) === todayStr; }));
+    var todayRows = cpSortByTime(rows.filter(function (r) { return (r.created_at || '').slice(0, 10) === todayStr; }));
     document.getElementById('cpTodayTl').innerHTML = todayRows.length
         ? todayRows.map(cpSlotHtml).join('')
         : '<div class="cp-txt-box" style="text-align:center;color:#8a8290;">Rien généré aujourd\'hui.</div>';
@@ -4656,14 +4656,14 @@ function cpRenderMiniCal() {
 }
 
 function cpOpenDay(ds) {
-    var rows = cpSortByTimeDesc((window._cpRows || []).filter(function (r) { return (r.created_at || '').slice(0, 10) === ds; }));
+    var rows = cpSortByTime((window._cpRows || []).filter(function (r) { return (r.created_at || '').slice(0, 10) === ds; }));
     document.getElementById('cpDayLabel').textContent = cpFmtDayLabel(new Date(ds + 'T00:00:00'));
     document.getElementById('cpDayTl').innerHTML = rows.length ? rows.map(cpSlotHtml).join('') : '<div class="cp-txt-box" style="text-align:center;color:#8a8290;">Rien généré ce jour-là.</div>';
     cpGo('day');
 }
 
 function cpFilterType(typeKey) {
-    var rows = cpSortByTimeDesc((window._cpRows || []).filter(function (r) { return cpTypeKey(r.content_type) === typeKey; }));
+    var rows = cpSortByTime((window._cpRows || []).filter(function (r) { return cpTypeKey(r.content_type) === typeKey; }));
     document.getElementById('cpTypeLabel').textContent = CP_TYPES[typeKey].label + ' — historique';
     document.getElementById('cpTypeTl').innerHTML = rows.length ? rows.map(cpSlotHtml).join('') : '<div class="cp-txt-box" style="text-align:center;color:#8a8290;">Aucun élément pour ce format.</div>';
     cpGo('type');
