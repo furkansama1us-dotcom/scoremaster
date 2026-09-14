@@ -4759,6 +4759,7 @@ function cpRowThumb(row) {
 function cpRowStatusIcon(row) {
     if (row.status === 'published') return '<span class="cp-status" style="color:#3ecf8e;">✓</span>';
     if (row.status === 'failed') return '<span class="cp-status" style="color:var(--red,#f43f5e);">✕</span>';
+    if (row.status === 'approved') return '<span class="cp-status" style="color:#3ea0cf;">⏰</span>';
     return '<span class="cp-status" style="color:#f2cf7c;">⏳</span>';
 }
 
@@ -4779,6 +4780,7 @@ function cpSlotHtml(row) {
     var titleSuffix = '';
     if (stuck) titleSuffix = ' <span style="color:var(--red,#f43f5e);font-weight:800;">(⚠️ interrompue ?)</span>';
     else if (row.status === 'generating') titleSuffix = ' <span style="color:#c8963c;font-weight:800;">(en cours de génération)</span>';
+    else if (row.status === 'approved') titleSuffix = ' <span style="color:#3ea0cf;font-weight:800;">(approuvé — attend ' + (row.scheduled_time || 'le prochain cron') + ')</span>';
     var rightHtml = stuck
         ? '<button onclick="event.stopPropagation(); retryGeneration(\'' + row.id + '\')" style="flex:none;padding:6px 10px;border-radius:8px;border:1px solid #c8963c;background:#fff;color:#8a5a13;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;"><i class="fas fa-rotate-right"></i> Relancer</button>'
         : cpRowStatusIcon(row);
@@ -5049,7 +5051,7 @@ function renderPublicationHistoryCard(p) {
         published: { label: 'Publié ✅', color: 'var(--green)' },
         rejected: { label: 'Rejeté', color: 'var(--text-gray)' },
         failed: { label: 'Échec ❌', color: 'var(--red)' },
-        approved: { label: 'En cours de publication...', color: 'var(--primary-yellow)' },
+        approved: { label: p.scheduled_time ? ('Approuvé — en attente de ' + p.scheduled_time + (p.scheduled_for ? (' le ' + p.scheduled_for) : '') + ' ⏰') : 'Approuvé — en attente du prochain passage du cron...', color: '#3ea0cf' },
         generating: { label: 'Génération en cours (Higgsfield)...', color: 'var(--primary-yellow)' }
     };
     var stuck = isStuckGenerating(p);
