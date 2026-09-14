@@ -2743,12 +2743,20 @@ async function finishConseilComposite(id, rawImageUrl) {
         var overlay = rowRes.data.overlay_data;
 
         var proxied = await adminApiCall('/api/image-bridge', { action: 'proxy', url: rawImageUrl });
-        var finalDataUri = await compositeConseilImage(proxied.dataUri, overlay);
 
-        setConseilCardState('<i class="fas fa-spinner fa-spin"></i> Envoi du visuel final...', true);
-        await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: finalDataUri });
+        // Les deux formats sont générés à chaque fois (comme Combiné du jour et
+        // la Story de victoire) : Story pour alimenter les créneaux répartis
+        // dans la journée, Post pour le fil — l'admin choisit ensuite lequel
+        // publier au moment d'approuver.
+        var storyDataUri = await compositeConseilImage(proxied.dataUri, overlay, 'story');
+        var postDataUri = await compositeConseilImage(proxied.dataUri, overlay, 'post');
 
-        showToast('Conseil IA prêt ! Retrouve-le dans Publications pour validation. 💡');
+        setConseilCardState('<i class="fas fa-spinner fa-spin"></i> Envoi des visuels finaux...', true);
+        await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: storyDataUri, field: 'story' });
+        await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: postDataUri, field: 'post' });
+        await supabaseClient.from('pending_publications').update({ status: 'pending' }).eq('id', id);
+
+        showToast('Conseil IA prêt (Story + Post) ! Retrouve-le dans Publications pour validation. 💡');
         setConseilCardState(CONSEIL_DEFAULT_DESC, false);
         loadAdminPublications();
     } catch (error) {
@@ -2789,7 +2797,7 @@ function wrapCanvasText(ctx, text, maxWidth) {
     return lines;
 }
 
-function compositeConseilImage(bgDataUri, overlay) {
+function compositeConseilImage(bgDataUri, overlay, format) {
     return new Promise(function (resolve, reject) {
         var img = new Image();
         img.onload = async function () {
@@ -2801,7 +2809,14 @@ function compositeConseilImage(bgDataUri, overlay) {
                     document.fonts.load('400 30px Manrope')
                 ]);
 
-                var W = 1080, H = 1350; // format 4:5, safe pour un post Instagram
+                // format 'story' (9:16, plein écran Story) ou 'post' (4:5, feed —
+                // par défaut, comportement inchangé). Même gabarit dans les deux
+                // cas, mis à l'échelle (SCALE) pour le format le plus haut, comme
+                // pour Combiné du jour et la Story de victoire.
+                var isStory = format === 'story';
+                var W = 1080, H = isStory ? 1920 : 1350;
+                var SCALE = isStory ? H / 1350 : 1;
+                var S = function (px) { return Math.round(px * SCALE); };
                 var canvas = document.createElement('canvas');
                 canvas.width = W; canvas.height = H;
                 var ctx = canvas.getContext('2d');
@@ -2814,8 +2829,7 @@ function compositeConseilImage(bgDataUri, overlay) {
                 // La photo/illustration IA n'occupe que la moitié haute du cadre — le
                 // reste (bloc de texte) est en aplat uni : plus l'IA hallucine du faux
                 // texte/logo illisible sur ses images, moins on lui laisse de place, et
-                // la lisibilité du texte n'en dépend plus du tout. Léger flou volontaire
-                // en prime pour détruire les derniers détails fins hallucinés.
+                // la lisibilité du texte n'en dépend plus du tout.
                 var photoH = H * 0.5;
                 ctx.save();
                 ctx.beginPath(); ctx.rect(0, 0, W, photoH); ctx.clip();
@@ -2841,7 +2855,7 @@ function compositeConseilImage(bgDataUri, overlay) {
                 gradTop.addColorStop(1, 'rgba(6,8,16,0)');
                 ctx.fillStyle = gradTop; ctx.fillRect(0, 0, W, H * 0.22);
 
-                var seamH = 130;
+                var seamH = S(130);
                 var gradSeam = ctx.createLinearGradient(0, photoH - seamH, 0, photoH);
                 gradSeam.addColorStop(0, 'rgba(10,14,26,0)');
                 gradSeam.addColorStop(1, SOLID_BG);
@@ -2850,31 +2864,31 @@ function compositeConseilImage(bgDataUri, overlay) {
                 var marginX = W * 0.08;
 
                 // Bloc de marque : vrai logo (jamais redessiné par l'IA) + "Score Master"
-                var badgeY = 72;
+                var badgeY = S(72);
                 var logo = await loadImg('logo-dark.png'); // asset local, même origine : jamais de CORS taint
-                var logoSize = 46;
-                ctx.drawImage(logo, marginX, badgeY - 20, logoSize, logoSize);
-                ctx.font = '400 30px Anton, Impact, sans-serif';
+                var logoSize = S(46);
+                ctx.drawImage(logo, marginX, badgeY - S(20), logoSize, logoSize);
+                ctx.font = '400 ' + S(30) + 'px Anton, Impact, sans-serif';
                 ctx.textBaseline = 'alphabetic';
                 ctx.fillStyle = '#f5f5f2';
-                ctx.fillText('SCORE ', marginX + logoSize + 16, badgeY + 20);
+                ctx.fillText('SCORE ', marginX + logoSize + S(16), badgeY + S(20));
                 var scoreW = ctx.measureText('SCORE ').width;
                 ctx.fillStyle = '#e8b84b';
-                ctx.fillText('MASTER', marginX + logoSize + 16 + scoreW, badgeY + 20);
+                ctx.fillText('MASTER', marginX + logoSize + S(16) + scoreW, badgeY + S(20));
 
                 // Bas de l'image : kicker / headline / sous-texte / lien — hauteur
                 // calculée à l'avance (pas un offset fixe) pour ne jamais dessiner de
                 // contenu hors-cadre quand le texte est plus long que la moyenne (le
                 // chip lien se retrouvait hors canvas et disparaissait purement et
                 // simplement dans ce cas).
-                ctx.font = '400 62px Anton, Impact, sans-serif';
+                ctx.font = '400 ' + S(62) + 'px Anton, Impact, sans-serif';
                 var headlineLines = (overlay.headline || '').split('\n');
-                ctx.font = '400 30px Manrope, sans-serif';
+                ctx.font = '400 ' + S(30) + 'px Manrope, sans-serif';
                 var subLines = wrapCanvasText(ctx, overlay.sub || '', W - marginX * 2).slice(0, 4);
 
-                // Espace kicker -> titre volontairement large (72px) : la police
-                // Anton a une hauteur de capitale très haute, un gap de 46px la
-                // faisait quasiment toucher le kicker au-dessus (lu comme du texte
+                // Espace kicker -> titre volontairement large : la police Anton a
+                // une hauteur de capitale très haute, un gap trop court la faisait
+                // quasiment toucher le kicker au-dessus (lu comme du texte
                 // "superposé" alors que c'est en réalité juste trop serré).
                 //
                 // Position du bloc : on le colle juste sous la photo (raccord + une
@@ -2883,44 +2897,44 @@ function compositeConseilImage(bgDataUri, overlay) {
                 // texte quand le conseil était court. Le calcul "ancré en bas" reste
                 // en filet de sécurité (jamais dépassé, donc jamais de débordement),
                 // on prend le plus petit des deux, donc toujours le plus haut possible.
-                var yNearPhoto = photoH + 90;
-                var yBottomAnchored = H - 170 - headlineLines.length * 64 - subLines.length * 38;
+                var yNearPhoto = photoH + S(90);
+                var yBottomAnchored = H - S(170) - headlineLines.length * S(64) - subLines.length * S(38);
                 var y = Math.min(yNearPhoto, yBottomAnchored);
 
                 ctx.fillStyle = '#e8b84b';
-                ctx.font = '800 25px Manrope, sans-serif';
+                ctx.font = '800 ' + S(25) + 'px Manrope, sans-serif';
                 ctx.fillText(overlay.kicker.toUpperCase(), marginX, y);
-                y += 72;
+                y += S(72);
 
                 ctx.fillStyle = '#f5f5f2';
-                ctx.font = '400 62px Anton, Impact, sans-serif';
+                ctx.font = '400 ' + S(62) + 'px Anton, Impact, sans-serif';
                 headlineLines.forEach(function (line) {
                     ctx.fillText(line, marginX, y);
-                    y += 64;
+                    y += S(64);
                 });
-                y += 14;
+                y += S(14);
 
                 ctx.fillStyle = '#d4d7e2';
-                ctx.font = '400 30px Manrope, sans-serif';
+                ctx.font = '400 ' + S(30) + 'px Manrope, sans-serif';
                 subLines.forEach(function (line) {
                     ctx.fillText(line, marginX, y);
-                    y += 38;
+                    y += S(38);
                 });
-                y += 20;
+                y += S(20);
 
                 // Lien
-                ctx.font = '700 28px Manrope, sans-serif';
+                ctx.font = '700 ' + S(28) + 'px Manrope, sans-serif';
                 ctx.fillStyle = '#f5f5f2';
                 var chipText = 'scoremaster.fr';
-                var chipW = ctx.measureText(chipText).width + 40;
-                var chipH = 52;
+                var chipW = ctx.measureText(chipText).width + S(40);
+                var chipH = S(52);
                 ctx.strokeStyle = 'rgba(245,245,242,0.4)';
                 ctx.lineWidth = 2;
                 ctx.beginPath();
-                if (ctx.roundRect) ctx.roundRect(marginX, y - chipH + 14, chipW, chipH, 999);
-                else ctx.rect(marginX, y - chipH + 14, chipW, chipH);
+                if (ctx.roundRect) ctx.roundRect(marginX, y - chipH + S(14), chipW, chipH, 999);
+                else ctx.rect(marginX, y - chipH + S(14), chipW, chipH);
                 ctx.stroke();
-                ctx.fillText(chipText, marginX + 20, y + 6);
+                ctx.fillText(chipText, marginX + S(20), y + S(6));
 
                 resolve(canvas.toDataURL('image/jpeg', 0.98));
             } catch (e) { reject(e); }
