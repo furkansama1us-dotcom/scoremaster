@@ -303,3 +303,49 @@ alter table public.profiles
 -- /api/redeem-code.js pour la rédemption de code), qui contourne toujours RLS.
 revoke update on public.profiles from authenticated;
 grant update (username, avatar_key, email_confirmed) on public.profiles to authenticated;
+
+-- ============================================================
+-- Interrupteurs pratiques pour valider un client manuellement depuis le
+-- Table Editor Supabase, sans écrire de SQL : coche TRUE sur une ligne,
+-- le trigger applique le pack (is_vip + durée) et remet la case à FALSE
+-- automatiquement. Volontairement PAS accordées au rôle "authenticated"
+-- (voir revoke plus haut) : seul un admin dans le Dashboard peut les cocher.
+-- ============================================================
+
+alter table public.profiles
+  add column if not exists set_pack_journalier boolean not null default false,
+  add column if not exists set_pack_hebdo boolean not null default false,
+  add column if not exists set_pack_vip boolean not null default false;
+
+create or replace function public.apply_profile_pack_toggle()
+returns trigger as $$
+begin
+  if new.set_pack_journalier is true then
+    new.is_vip := true;
+    new.vip_pack_type := 'journalier';
+    new.vip_expires_at := now() + interval '1 day';
+    new.set_pack_journalier := false;
+  end if;
+
+  if new.set_pack_hebdo is true then
+    new.is_vip := true;
+    new.vip_pack_type := 'hebdo';
+    new.vip_expires_at := now() + interval '7 days';
+    new.set_pack_hebdo := false;
+  end if;
+
+  if new.set_pack_vip is true then
+    new.is_vip := true;
+    new.vip_pack_type := 'vip';
+    new.vip_expires_at := null;
+    new.set_pack_vip := false;
+  end if;
+
+  return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists trg_apply_profile_pack_toggle on public.profiles;
+create trigger trg_apply_profile_pack_toggle
+  before update on public.profiles
+  for each row execute function public.apply_profile_pack_toggle();
