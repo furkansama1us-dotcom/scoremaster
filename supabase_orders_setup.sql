@@ -210,10 +210,15 @@ alter table public.bot_conversations add column if not exists betting_experience
 alter table public.bot_conversations add column if not exists betting_luck text;
 alter table public.bot_conversations enable row level security;
 
--- Horodatage de la réponse manuelle de l'admin à un lead en attente (bouton
--- "Leads Telegram en attente" du Panel Admin > Commandes) -- une fois
--- renseigné, le lead sort de la liste "à traiter".
+-- Horodatage du premier contact admin (informatif) + historique complet de
+-- l'échange (messages du lead ET réponses de l'admin, dans l'ordre) pour la
+-- section "Leads Telegram en attente" du Panel Admin > Commandes -- permet un
+-- vrai aller-retour au lieu d'un message unique. lead_resolved contrôle
+-- l'affichage dans la liste "à traiter" (l'admin le coche une fois l'échange
+-- terminé), indépendamment de admin_contacted_at.
 alter table public.bot_conversations add column if not exists admin_contacted_at timestamptz;
+alter table public.bot_conversations add column if not exists messages jsonb not null default '[]'::jsonb;
+alter table public.bot_conversations add column if not exists lead_resolved boolean not null default false;
 
 drop policy if exists "Admins can view bot conversations" on public.bot_conversations;
 create policy "Admins can view bot conversations"

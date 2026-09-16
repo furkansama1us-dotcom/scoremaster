@@ -391,7 +391,25 @@ module.exports = async function handler(req, res) {
             if (!convo) {
                 await handleStart(chatId, msg.from);
             } else if (convo.state === 'awaiting_admin') {
-                await sendMessage(chatId, `Un membre de notre équipe va vous répondre très vite, merci de patienter un instant 🙏😊`);
+                // On enregistre le message du lead pour qu'il apparaisse dans
+                // l'historique de conversation du Panel Admin (au lieu de le
+                // perdre en répondant juste un message automatique à chaque
+                // fois) -- et on notifie l'admin uniquement au premier message
+                // pour ne pas spammer si l'échange est déjà actif.
+                const existingMessages = convo.messages || [];
+                const updatedMessages = existingMessages.concat([{ from: 'lead', text, at: new Date().toISOString() }]);
+                await safeUpsertConversation(chatId, { messages: updatedMessages, lead_resolved: false });
+
+                // Notifie l'admin quand c'était son tour de répondre (pas de
+                // message encore, ou dernier message envoyé par l'admin) --
+                // évite de spammer si le lead enchaîne plusieurs messages
+                // d'affilée avant que l'admin n'ait eu le temps de répondre.
+                const lastBefore = existingMessages[existingMessages.length - 1];
+                if (!lastBefore || lastBefore.from === 'admin') {
+                    await sendMessage(chatId, `Un membre de notre équipe va vous répondre très vite, merci de patienter un instant 🙏😊`);
+                    const leadName = convo.telegram_name || convo.telegram_username || ('Chat ' + chatId);
+                    await notifyAdmin(`💬 Nouveau message de ${leadName} : « ${text} »\n\nVa dans Panel Admin > Commandes > Leads Telegram en attente pour répondre.`);
+                }
             } else {
                 await sendMessage(chatId, `Merci de choisir une option ci-dessus 👆 pour continuer.`);
             }
