@@ -4571,6 +4571,19 @@ async function retryGeneration(id) {
     resumeOneGeneration(row);
 }
 
+// Copie la légende telle quelle (hashtags compris) pour la coller à la main
+// (ex: quand un carrousel est reposté manuellement en Reel via l'app Instagram).
+function copyPublicationCaption(id) {
+    var row = (window.adminPublicationsCache && window.adminPublicationsCache[id])
+        || (window._cpRows || []).find(function (r) { return String(r.id) === String(id); });
+    if (!row || !row.caption) { showToast('Description introuvable — recharge la page.', true); return; }
+    navigator.clipboard.writeText(row.caption).then(function () {
+        showToast('Description copiée (hashtags compris) !');
+    }).catch(function () {
+        showToast('Impossible de copier automatiquement.', true);
+    });
+}
+
 async function loadAdminPublications() {
     var pendingEl = document.getElementById('admin-publications-pending');
     var historyEl = document.getElementById('admin-publications-history');
@@ -5234,6 +5247,7 @@ function renderPublicationCard(p) {
             <div style="font-size:11px; color:var(--text-gray); margin:6px 0;">Type : ${p.content_type} · Carrousel ${p.carousel_images.length} slides · Prévu pour le ${p.scheduled_for}</div>
             <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:10px;">${thumbs}</div>
             <div style="font-size:13px; color:#fff; line-height:1.5; white-space:pre-wrap; margin-bottom:12px;">${p.caption}</div>
+            <button onclick="copyPublicationCaption('${p.id}')" style="width:100%;margin-bottom:8px;padding:9px;background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-copy"></i> Copier la description (# compris)</button>
             <div style="display:flex; gap:8px;">
                 <button onclick="approvePublication('${p.id}')" style="flex:1;padding:10px;background:linear-gradient(135deg,var(--green),#16A34A);color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-check"></i> Approuver</button>
                 <button onclick="rejectPublication('${p.id}')" style="flex:1;padding:10px;background:transparent;color:var(--red);border:1px solid rgba(244,63,94,.3);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-times"></i> Rejeter</button>
@@ -5251,6 +5265,7 @@ function renderPublicationCard(p) {
             <div style="font-size:11px; color:var(--text-gray); margin:6px 0;">Type : ${p.content_type} · Prévu pour le ${p.scheduled_for}</div>
             <img src="${p.image_url}" style="width:100%; border-radius:10px; margin-bottom:10px; display:block;" onerror="this.style.display='none'">
             <div style="font-size:13px; color:#fff; line-height:1.5; white-space:pre-wrap; margin-bottom:12px;">${p.caption}</div>
+            <button onclick="copyPublicationCaption('${p.id}')" style="width:100%;margin-bottom:8px;padding:9px;background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-copy"></i> Copier la description (# compris)</button>
             <div style="display:flex; gap:8px;">
                 <a href="${p.image_url}" download="score-master.jpg" style="flex:1;padding:10px;background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;text-align:center;text-decoration:none;"><i class="fas fa-download"></i> Enregistrer</a>
                 <button onclick="approvePublication('${p.id}')" style="flex:1;padding:10px;background:linear-gradient(135deg,var(--green),#16A34A);color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-check"></i> Approuver</button>
@@ -5288,6 +5303,7 @@ function renderPublicationCard(p) {
             </div>
         </div>
         <div style="font-size:13px; color:#fff; line-height:1.5; white-space:pre-wrap; margin-bottom:12px;">${p.caption}</div>
+        <button onclick="copyPublicationCaption('${p.id}')" style="width:100%;margin-bottom:8px;padding:9px;background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-copy"></i> Copier la description (# compris)</button>
         <div style="display:flex; gap:8px;">
             <button onclick="approvePublication('${p.id}')" style="flex:1;padding:10px;background:linear-gradient(135deg,var(--green),#16A34A);color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-check"></i> Approuver</button>
             <button onclick="rejectPublication('${p.id}')" style="flex:1;padding:10px;background:transparent;color:var(--red);border:1px solid rgba(244,63,94,.3);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-times"></i> Rejeter</button>
@@ -5322,6 +5338,7 @@ function renderPublicationHistoryCard(p) {
         ${p.error ? `<div style="font-size:10px; color:var(--red); margin-top:4px; word-break:break-all;">${p.error}</div>` : ''}
         ${stuck ? `<button onclick="retryGeneration('${p.id}')" style="margin-top:8px; width:100%; padding:9px; background:transparent; color:#c8963c; border:1px solid rgba(200,150,60,.5); border-radius:8px; font-size:12px; font-weight:800; cursor:pointer;"><i class="fas fa-rotate-right"></i> Relancer la génération</button>` : ''}
         ${p.status === 'approved' ? `<button id="publish-now-${p.id}" onclick="publishNow('${p.id}')" style="margin-top:8px; width:100%; padding:9px; background:linear-gradient(135deg,var(--primary-yellow),#B8860B); color:#000; border:none; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer;"><i class="fas fa-bolt"></i> Publier maintenant (ne pas attendre le cron)</button>` : ''}
+        ${p.caption ? `<button onclick="copyPublicationCaption('${p.id}')" style="margin-top:8px; width:100%; padding:9px; background:rgba(255,255,255,.06); color:#fff; border:1px solid rgba(255,255,255,.12); border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;"><i class="fas fa-copy"></i> Copier la description (# compris)</button>` : ''}
         <button onclick="deletePublicationRow('${p.id}')" style="margin-top:8px; width:100%; padding:7px; background:transparent; color:var(--red); border:1px solid rgba(244,63,94,.3); border-radius:8px; font-size:11px; font-weight:700; cursor:pointer;"><i class="fas fa-trash"></i> Supprimer de l'historique</button>
     </div>`;
 }
