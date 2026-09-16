@@ -12,6 +12,12 @@ const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const SALES_BOT_TOKEN = process.env.SALES_BOT_TOKEN;
 const SALES_BOT_WEBHOOK_SECRET = process.env.SALES_BOT_WEBHOOK_SECRET;
+// Chat Telegram personnel de l'admin AVEC CE BOT (pas le canal, pas un autre
+// bot) -- récupéré via @userinfobot après avoir démarré une conversation avec
+// le bot de vente. Permet un vrai aller-retour DANS Telegram : chaque message
+// d'un lead est transféré ici, et répondre directement à ce message (fonction
+// "Répondre" de Telegram) relaie la réponse au lead, sans jamais ouvrir l'app.
+const SALES_ADMIN_CHAT_ID = process.env.SALES_ADMIN_CHAT_ID;
 
 const PACKS = {
     journalier: { label: 'SM Score Exact Journalier', price: 50, emoji: '⚡' },
@@ -226,6 +232,24 @@ async function safeUpsertConversation(chatId, patch) {
     }
 }
 
+// Transfère un message de lead dans le chat perso de l'admin avec le bot, et
+// mémorise quel message Telegram (son id) correspond à quel lead (chat_id) --
+// nécessaire pour retrouver le bon destinataire quand l'admin y répondra.
+async function relayLeadMessageToAdmin(leadChatId, convo, text) {
+    if (!SALES_ADMIN_CHAT_ID) return;
+    const leadName = convo.telegram_name || convo.telegram_username || ('Chat ' + leadChatId);
+    const packLabel = convo.pack_type && PACKS[convo.pack_type] ? PACKS[convo.pack_type].label : (convo.pack_type || '?');
+    const relayText = `💬 <b>${leadName}</b>${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''} — ${packLabel}\n\n${text}\n\n<i>Réponds directement à ce message pour lui répondre sur Telegram.</i>`;
+    const sent = await sendMessage(SALES_ADMIN_CHAT_ID, relayText);
+    if (sent && sent.ok && sent.result && sent.result.message_id) {
+        await sbFetch('bot_relay_map', {
+            method: 'POST',
+            headers: { Prefer: 'return=minimal' },
+            body: JSON.stringify([{ relay_message_id: sent.result.message_id, lead_chat_id: leadChatId }])
+        }).catch(function (e) { console.error('Erreur enregistrement relay map:', e); });
+    }
+}
+
 async function handleJoinConfirm(chatId, convo) {
     const pack = PACKS[convo.pack_type];
     const orderRef = generateOrderRef();
@@ -282,6 +306,9 @@ async function handleLuckChoice(chatId, luckKey, convo) {
     await notifyAdmin(
         `✅ COMPLÉMENT DE DEMANDE (Bot Telegram)\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n🎯 Plateforme habituelle : ${convo.betting_platform || '?'}\n🏅 Sport favori : ${sportLabel || '?'}\n📅 Expérience : ${convo.betting_experience || '?'}\n🎲 Régularité : ${LUCK_LABELS[luckKey] || luckKey}\n\n➡️ Contacte le client sur Telegram pour poursuivre l'échange.\n\n📋 Message suggéré à lui envoyer (copier-coller) :\n« Ah top${firstName ? ', ' + firstName : ''} ! 😊${platformLine} nos pronostics ${sportLabel.toLowerCase()} sont particulièrement solides en ce moment 🔥. »\n\n⚠️ Le paiement (PayPal/PCS) reste à toi de l'aborder plus tard, une fois le contact établi.`
     );
+    // Message relayé (celui-ci, contrairement au précédent envoyé via
+    // telegram_queue, est directement "répondable" pour engager la conversation).
+    await relayLeadMessageToAdmin(chatId, convo, `Nouveau lead prêt à être contacté (${pack ? pack.label : convo.pack_type}). Réponds à ce message pour lui écrire directement.`);
 }
 
 async function handleRelaunch(chatId, convo) {
@@ -381,6 +408,29 @@ module.exports = async function handler(req, res) {
             const chatId = msg.chat.id;
             const text = (msg.text || '').trim();
 
+            // Message envoyé par l'admin DANS SON PROPRE chat avec le bot, en
+            // réponse ("Répondre") à un message relayé d'un lead -- on relaie
+            // directement vers le lead concerné, retrouvé via le message_id
+            // auquel l'admin a répondu. Traité en priorité, avant toute autre
+            // logique (l'admin n'est jamais dans un des états de la conversation
+            // de vente lui-même).
+            if (SALES_ADMIN_CHAT_ID && String(chatId) === String(SALES_ADMIN_CHAT_ID) && msg.reply_to_message && text) {
+                const mapRows = await sbFetch(`bot_relay_map?relay_message_id=eq.${msg.reply_to_message.message_id}&select=lead_chat_id`).catch(() => []);
+                const leadChatId = mapRows && mapRows[0] && mapRows[0].lead_chat_id;
+                if (leadChatId) {
+                    await sendMessage(leadChatId, text);
+                    const leadConvo = await getConversation(leadChatId);
+                    const leadMessages = (leadConvo && leadConvo.messages) || [];
+                    await safeUpsertConversation(leadChatId, {
+                        messages: leadMessages.concat([{ from: 'admin', text, at: new Date().toISOString() }]),
+                        lead_resolved: false,
+                        admin_contacted_at: new Date().toISOString()
+                    });
+                    await tg('setMessageReaction', { chat_id: chatId, message_id: msg.message_id, reaction: [{ type: 'emoji', emoji: '✅' }] }).catch(function () {});
+                    return res.status(200).json({ ok: true });
+                }
+            }
+
             if (text === '/start' || text.startsWith('/start ')) {
                 const startParam = text.startsWith('/start ') ? text.slice(7).trim() : null;
                 await handleStart(chatId, msg.from, startParam);
@@ -392,23 +442,18 @@ module.exports = async function handler(req, res) {
                 await handleStart(chatId, msg.from);
             } else if (convo.state === 'awaiting_admin') {
                 // On enregistre le message du lead pour qu'il apparaisse dans
-                // l'historique de conversation du Panel Admin (au lieu de le
-                // perdre en répondant juste un message automatique à chaque
-                // fois) -- et on notifie l'admin uniquement au premier message
-                // pour ne pas spammer si l'échange est déjà actif.
+                // l'historique du Panel Admin, ET on le transfère directement
+                // dans le chat perso de l'admin avec le bot (répondre à ce
+                // message relaie la réponse au lead -- voir plus haut).
                 const existingMessages = convo.messages || [];
                 const updatedMessages = existingMessages.concat([{ from: 'lead', text, at: new Date().toISOString() }]);
                 await safeUpsertConversation(chatId, { messages: updatedMessages, lead_resolved: false });
+                await relayLeadMessageToAdmin(chatId, convo, text);
 
-                // Notifie l'admin quand c'était son tour de répondre (pas de
-                // message encore, ou dernier message envoyé par l'admin) --
-                // évite de spammer si le lead enchaîne plusieurs messages
-                // d'affilée avant que l'admin n'ait eu le temps de répondre.
-                const lastBefore = existingMessages[existingMessages.length - 1];
-                if (!lastBefore || lastBefore.from === 'admin') {
+                // Message d'attente au lead seulement s'il n'a encore rien eu
+                // en retour, pour ne pas le répéter à chaque message.
+                if (!existingMessages.length) {
                     await sendMessage(chatId, `Un membre de notre équipe va vous répondre très vite, merci de patienter un instant 🙏😊`);
-                    const leadName = convo.telegram_name || convo.telegram_username || ('Chat ' + chatId);
-                    await notifyAdmin(`💬 Nouveau message de ${leadName} : « ${text} »\n\nVa dans Panel Admin > Commandes > Leads Telegram en attente pour répondre.`);
                 }
             } else {
                 await sendMessage(chatId, `Merci de choisir une option ci-dessus 👆 pour continuer.`);

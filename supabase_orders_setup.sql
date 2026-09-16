@@ -230,6 +230,19 @@ create policy "Admins can update bot conversations"
   on public.bot_conversations for update
   using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));
 
+-- Table de correspondance "message relayé dans le chat perso de l'admin avec
+-- le bot" -> "lead d'origine" (voir relayLeadMessageToAdmin dans
+-- sales-bot-webhook.js). Permet à l'admin de répondre directement à un
+-- message Telegram (fonction "Répondre") pour relayer sa réponse au lead,
+-- sans jamais ouvrir l'app. Accès service_role uniquement (webhook), aucune
+-- policy client nécessaire.
+create table if not exists public.bot_relay_map (
+  relay_message_id bigint primary key,
+  lead_chat_id bigint not null,
+  created_at timestamptz not null default now()
+);
+alter table public.bot_relay_map enable row level security;
+
 -- ============================================================
 -- Codes d'accès pack (Journalier / Hebdo / SM VIP+) — générés
 -- manuellement par l'admin depuis Panel Admin > Commandes, puis
