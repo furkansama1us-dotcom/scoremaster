@@ -32,14 +32,18 @@ if (!ANTHROPIC_API_KEY || !HF_KEY_ID || !HF_KEY_SECRET || !SUPABASE_URL || !SUPA
 
 const HF_AUTH = `Key ${HF_KEY_ID}:${HF_KEY_SECRET}`;
 
+// `time` : heure assignée à scheduled_time (format "HH:MM", fuseau Paris).
+// Sans ça, publish.js publie la ligne dès son approbation, au prochain
+// passage du cron (*/15 * * * *) -- peu importe l'heure prévue -- au lieu
+// d'attendre le créneau voulu comme le reste des contenus planifiés.
 const CONTENT_TYPES = [
-    { key: 'promo', label: 'Promo Web App', platforms: ['instagram', 'telegram'], aspect: '3:4' },
-    { key: 'prompt_ia', label: 'Prompt IA (affiche combiné)', platforms: ['instagram', 'telegram'], aspect: '3:4' },
-    { key: 'ecusson', label: 'Écusson Brodé', platforms: ['instagram'], aspect: '1:1' },
-    { key: 'story', label: 'Story Instagram', platforms: ['instagram'], aspect: '9:16' },
-    { key: 'telegram_vip', label: 'Annonce Telegram VIP+', platforms: ['telegram'], aspect: '3:4' },
-    { key: 'reels', label: 'Reels & Posts Instagram', platforms: ['instagram'], aspect: '9:16' },
-    { key: 'relance', label: 'Relance Adhérents', platforms: ['telegram'], aspect: '3:4' }
+    { key: 'promo', label: 'Promo Web App', platforms: ['instagram', 'telegram'], aspect: '3:4', time: '09:30' },
+    { key: 'prompt_ia', label: 'Prompt IA (affiche combiné)', platforms: ['instagram', 'telegram'], aspect: '3:4', time: '10:30' },
+    { key: 'ecusson', label: 'Écusson Brodé', platforms: ['instagram'], aspect: '1:1', time: '12:30' },
+    { key: 'story', label: 'Story Instagram', platforms: ['instagram'], aspect: '9:16', time: '14:30' },
+    { key: 'telegram_vip', label: 'Annonce Telegram VIP+', platforms: ['telegram'], aspect: '3:4', time: '16:30' },
+    { key: 'reels', label: 'Reels & Posts Instagram', platforms: ['instagram'], aspect: '9:16', time: '18:30' },
+    { key: 'relance', label: 'Relance Adhérents', platforms: ['telegram'], aspect: '3:4', time: '20:30' }
 ];
 
 // Scènes utilisées en mode "urgence" (appels intraday, 2-3x/jour) — on fait
@@ -231,6 +235,7 @@ async function main() {
             headers: { Prefer: 'return=minimal' },
             body: JSON.stringify([{
                 scheduled_for: dateStr,
+                scheduled_time: type.time || null,
                 content_type: type.label,
                 platform,
                 caption: draft.caption,
