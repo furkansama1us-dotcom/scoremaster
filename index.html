@@ -3306,14 +3306,25 @@ function pickCarouselNarrative(recentTitles) {
 
 async function recentCarouselNarrativeTitles() {
     try {
+        // 12 (pas 3) : avec 3 carrousels/jour et seulement 5 narrations dans
+        // la bibliothèque, ne regarder que les 3 dernières vidait le pool en
+        // moins de 2 jours -- ça recommençait donc très vite. Sur une fenêtre
+        // plus large, une narration ne revient qu'après plusieurs jours.
         var res = await supabaseClient.from('pending_publications').select('overlay_data')
-            .eq('content_type', 'Carrousel Story').order('created_at', { ascending: false }).limit(3);
+            .eq('content_type', 'Carrousel Story').order('created_at', { ascending: false }).limit(12);
         return (res.data || []).map(function (r) { return r.overlay_data && r.overlay_data.slides && r.overlay_data.slides[0] && r.overlay_data.slides[0].headline; }).filter(Boolean);
     } catch (e) { return []; }
 }
 
+var CAROUSEL_STORY_CAPTIONS = [
+    `Si tu es encore là, c'est que tu veux arrêter de parier au hasard. 🏆\n\nSuis @ScoreMasterOfficiel pour des analyses IA sérieuses, chaque jour.\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`,
+    `Tu as lu jusqu'au bout ? Alors cette méthode va te parler. 🎯\n\nRejoins @ScoreMasterOfficiel pour des pronostics construits sur des données, pas sur du feeling.\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`,
+    `Ce n'est pas de la chance. C'est de la méthode. 📊\n\nScore Master analyse chaque match avant de publier un ticket. Suis-nous pour ne rien manquer.\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`,
+    `La régularité bat la chance sur la durée. Toujours. 🔒\n\nRejoins la communauté @ScoreMasterOfficiel et suis chaque analyse, jour après jour.\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`
+];
+
 function buildCarouselStoryCaption() {
-    return `Si tu es encore là, c'est que tu veux arrêter de parier au hasard. 🏆\n\nSuis @ScoreMasterOfficiel pour des analyses IA sérieuses, chaque jour.\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`;
+    return CAROUSEL_STORY_CAPTIONS[Math.floor(Math.random() * CAROUSEL_STORY_CAPTIONS.length)];
 }
 
 function setCarouselStoryCardState(html, spinning) {

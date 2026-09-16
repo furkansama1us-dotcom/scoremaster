@@ -195,7 +195,11 @@ module.exports = async function handler(req, res) {
         const today = new Date().toISOString().slice(0, 10);
 
         if (type === 'conseil') {
-            const recent = await sbFetch(`pending_publications?content_type=eq.Conseil IA&select=overlay_data&order=created_at.desc&limit=3`).catch(() => []);
+            // 12 (pas 3) : avec 3 Conseils IA/jour et seulement 8 conseils dans
+            // le pool, ne regarder que les 3 derniers vidait la liste en moins
+            // de 3 jours -- ça recommençait donc vite. Sur une fenêtre plus
+            // large, un conseil ne revient qu'après plusieurs jours.
+            const recent = await sbFetch(`pending_publications?content_type=eq.Conseil IA&select=overlay_data&order=created_at.desc&limit=12`).catch(() => []);
             const recentHeadlines = (recent || []).map(r => r.overlay_data && r.overlay_data.headline).filter(Boolean);
             const conseil = pickConseil(recentHeadlines);
             // 9:16 (recadré ensuite côté client pour les deux formats Story ET
