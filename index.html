@@ -1735,6 +1735,11 @@ async function fetchApiScore(id, dateRaw) {
     <!-- ONGLET COMMANDES -->
     <div class="admin-tab-content" id="admin-tab-orders">
         <div class="admin-section">
+            <div class="admin-section-title" style="color:#0ea5e9;"><i class="fab fa-telegram-plane"></i> Leads Telegram en attente</div>
+            <div id="admin-telegram-leads-list" style="margin-bottom:20px;">
+                <div class="no-combined-message" style="padding:20px;"><i class="fas fa-inbox"></i>Aucun lead en attente.</div>
+            </div>
+
             <div class="admin-section-title" style="color:var(--primary-yellow);"><i class="fas fa-key"></i> Générer un code d'accès (vente manuelle)</div>
             <div style="display:flex; gap:10px; margin-bottom:10px;">
                 <select id="vip-code-pack-select" class="admin-input" style="flex:1;background:var(--bg-input); border:1px solid var(--border-color); color:#fff; padding:12px; border-radius:10px;">
@@ -5662,7 +5667,7 @@ async function clearAllPublicationHistory() {
         document.querySelectorAll('.admin-tab-btn').forEach(el => el.classList.remove('active'));
         document.getElementById('admin-tab-' + tabName).classList.add('active');
         document.getElementById('btn-tab-' + tabName).classList.add('active');
-        if (tabName === 'orders') { loadAdminOrders(); loadAdminVipCodes(); }
+        if (tabName === 'orders') { loadAdminOrders(); loadAdminVipCodes(); loadAdminTelegramLeads(); }
         if (tabName === 'calendar') renderAdminCalendar();
         if (tabName === 'publications') loadAdminPublications();
     }
@@ -6842,6 +6847,75 @@ async function fetchMatchesFromAPI() {
         var roleVipEl = document.getElementById('role-vip'); if (roleVipEl) roleVipEl.innerHTML = roleHtml;
         var badge = document.getElementById('profile-role-badge');
         if (badge) { badge.textContent = info.badgeLabel; badge.style.background = info.color + '33'; badge.style.color = info.color; badge.style.border = '1px solid ' + info.color + '44'; }
+    }
+
+    // ============================================================
+    // ADMIN — Leads Telegram en attente (bot de vente, voir
+    // sales-bot-webhook.js) : un lead n'a pas forcément de @username
+    // exploitable, mais on connaît toujours son chat_id -- on répond donc en
+    // DM via le bot lui-même (api/telegram-post.js) plutôt que de compter
+    // sur un contact Telegram personnel avec l'admin.
+    // ============================================================
+    async function loadAdminTelegramLeads() {
+        if (!window.isAdmin) return;
+        var container = document.getElementById('admin-telegram-leads-list');
+        if (!container) return;
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('bot_conversations')
+                .select('*')
+                .eq('state', 'awaiting_admin')
+                .is('admin_contacted_at', null)
+                .order('updated_at', { ascending: false })
+                .limit(20);
+            if (error) throw error;
+
+            window.adminTelegramLeadsCache = {};
+            (data || []).forEach(function (l) { window.adminTelegramLeadsCache[l.chat_id] = l; });
+
+            container.innerHTML = (data && data.length)
+                ? data.map(renderAdminTelegramLeadCard).join('')
+                : '<div class="no-combined-message" style="padding:20px;"><i class="fas fa-inbox"></i>Aucun lead en attente.</div>';
+        } catch (error) {
+            console.error('Erreur chargement leads Telegram:', error);
+        }
+    }
+
+    function renderAdminTelegramLeadCard(l) {
+        var name = l.telegram_name || l.telegram_username || ('Chat ' + l.chat_id);
+        var handle = l.telegram_username ? '@' + l.telegram_username : '(pas de @pseudo — réponse via bot uniquement)';
+        var defaultMsg = `Salut ${l.telegram_name || ''} ! 🙂 Désolé pour l'attente, je m'occupe de toi tout de suite ! En tout cas t'as fait le bon choix de nous rejoindre, l'équipe est hyper rigoureuse sur l'analyse, on ne sort un ticket que quand on est vraiment confiants dessus.`;
+        return `
+        <div class="order-history-card">
+            <div class="order-history-top">
+                <span style="font-size:13px; font-weight:800; color:#fff;"><i class="fab fa-telegram-plane" style="color:#0ea5e9;"></i> ${name}</span>
+                <span class="order-history-date">${fmtD(l.updated_at || l.created_at)}</span>
+            </div>
+            <div style="font-size:11px; color:var(--text-gray); margin-top:4px;">${handle} · Chat ID : <b style="color:var(--text-light-gray);">${l.chat_id}</b></div>
+            <div style="font-size:11px; color:var(--text-gray); margin-top:4px;">Pack : ${l.pack_type || '?'} · Plateforme : ${l.betting_platform || '?'} · Sport : ${l.betting_sport || '?'}</div>
+            <textarea id="lead-msg-${l.chat_id}" class="admin-input" style="width:100%; margin-top:8px; min-height:80px; background:var(--bg-input); border:1px solid var(--border-color); color:#fff; padding:10px; border-radius:9px; font-size:12px; resize:vertical;">${defaultMsg}</textarea>
+            <button id="lead-send-${l.chat_id}" onclick="sendAdminTelegramLeadReply('${l.chat_id}')" style="width:100%; margin-top:8px; padding:10px; background:linear-gradient(135deg,#0ea5e9,#0284c7); color:#fff; border:none; border-radius:9px; font-size:12px; font-weight:800; font-family:'Montserrat',sans-serif; cursor:pointer;"><i class="fas fa-paper-plane"></i> Envoyer via le bot</button>
+        </div>`;
+    }
+
+    async function sendAdminTelegramLeadReply(chatId) {
+        var textarea = document.getElementById('lead-msg-' + chatId);
+        var message = textarea ? textarea.value.trim() : '';
+        if (!message) { showToast('Message vide.', true); return; }
+        var btn = document.getElementById('lead-send-' + chatId);
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; }
+
+        try {
+            await adminApiCall('/api/telegram-post', { chatId: chatId, message: message });
+            await supabaseClient.from('bot_conversations').update({ admin_contacted_at: new Date().toISOString() }).eq('chat_id', chatId);
+            showToast('Message envoyé au lead !');
+            loadAdminTelegramLeads();
+        } catch (error) {
+            console.error('Erreur envoi DM lead:', error);
+            showToast('Erreur : ' + (error && error.message ? error.message : 'inconnue'), true);
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Envoyer via le bot'; }
+        }
     }
 
     async function adminGeneratePackCode() {

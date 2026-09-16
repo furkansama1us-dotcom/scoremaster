@@ -210,6 +210,21 @@ alter table public.bot_conversations add column if not exists betting_experience
 alter table public.bot_conversations add column if not exists betting_luck text;
 alter table public.bot_conversations enable row level security;
 
+-- Horodatage de la réponse manuelle de l'admin à un lead en attente (bouton
+-- "Leads Telegram en attente" du Panel Admin > Commandes) -- une fois
+-- renseigné, le lead sort de la liste "à traiter".
+alter table public.bot_conversations add column if not exists admin_contacted_at timestamptz;
+
+drop policy if exists "Admins can view bot conversations" on public.bot_conversations;
+create policy "Admins can view bot conversations"
+  on public.bot_conversations for select
+  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));
+
+drop policy if exists "Admins can update bot conversations" on public.bot_conversations;
+create policy "Admins can update bot conversations"
+  on public.bot_conversations for update
+  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));
+
 -- ============================================================
 -- Codes d'accès pack (Journalier / Hebdo / SM VIP+) — générés
 -- manuellement par l'admin depuis Panel Admin > Commandes, puis

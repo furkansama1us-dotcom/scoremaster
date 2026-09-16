@@ -4,15 +4,23 @@
 // l'ancien circuit telegram_queue qui envoyait ces messages en DM au bot
 // au lieu de les poster sur le canal.
 //
+// Gère AUSSI l'envoi d'un DM privé à un lead du bot de vente (voir
+// sales-bot-webhook.js) quand `chatId` est fourni dans le corps : passe
+// alors par l'API Telegram directement avec SALES_BOT_TOKEN (chat_id suffit,
+// pas besoin du @username, qui n'est pas toujours renseigné/disponible) au
+// lieu de Postiz. Regroupé dans ce même fichier pour rester sous la limite
+// de 12 fonctions serverless du plan Vercel Hobby.
+//
 // Auth : le client envoie le token de session Supabase de l'admin connecté
 // (Authorization: Bearer <access_token>). On vérifie ici que ce user existe
-// et a is_admin=true avant de publier quoi que ce soit.
+// et a is_admin=true avant d'envoyer quoi que ce soit.
 
 const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const POSTIZ_API_KEY = process.env.POSTIZ_API_KEY;
 const POSTIZ_DOMAIN = process.env.POSTIZ_DOMAIN || 'postiz.srv1960340.hstgr.cloud';
+const SALES_BOT_TOKEN = process.env.SALES_BOT_TOKEN;
 
 async function sbFetch(path, options) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, Object.assign({}, options, {
@@ -55,8 +63,8 @@ async function verifyAdmin(accessToken) {
 
 module.exports = async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Méthode non autorisée' });
-    if (!SUPABASE_SERVICE_ROLE_KEY || !POSTIZ_API_KEY) {
-        return res.status(500).json({ error: 'Variables d\'environnement manquantes (SUPABASE_SERVICE_ROLE_KEY, POSTIZ_API_KEY).' });
+    if (!SUPABASE_SERVICE_ROLE_KEY) {
+        return res.status(500).json({ error: 'Variable d\'environnement manquante (SUPABASE_SERVICE_ROLE_KEY).' });
     }
 
     const authHeader = req.headers.authorization || '';
@@ -66,10 +74,26 @@ module.exports = async function handler(req, res) {
         const isAdmin = await verifyAdmin(accessToken);
         if (!isAdmin) return res.status(403).json({ error: 'Accès refusé' });
 
-        const { message, imageUrl } = req.body || {};
+        const { message, imageUrl, chatId } = req.body || {};
         if (!message || !String(message).trim()) {
             return res.status(400).json({ error: 'Message manquant' });
         }
+
+        // DM privé à un lead du bot de vente (chat_id connu via bot_conversations,
+        // même sans @username) -- distinct du post public sur le canal ci-dessous.
+        if (chatId) {
+            if (!SALES_BOT_TOKEN) return res.status(500).json({ error: 'Variable d\'environnement manquante (SALES_BOT_TOKEN).' });
+            const tgRes = await fetch(`https://api.telegram.org/bot${SALES_BOT_TOKEN}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: chatId, text: message })
+            });
+            const tgData = await tgRes.json();
+            if (!tgData.ok) throw new Error(`Telegram sendMessage -> ${JSON.stringify(tgData)}`);
+            return res.status(200).json({ ok: true });
+        }
+
+        if (!POSTIZ_API_KEY) return res.status(500).json({ error: 'Variable d\'environnement manquante (POSTIZ_API_KEY).' });
 
         const integrations = await postizFetch('/integrations');
         const tg = (integrations || []).find(function (i) { return i.identifier && i.identifier.indexOf('telegram') !== -1; });
