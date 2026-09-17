@@ -19,6 +19,13 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const CRON_SECRET = process.env.CRON_SECRET;
 const POSTIZ_API_KEY = process.env.POSTIZ_API_KEY;
 const POSTIZ_DOMAIN = process.env.POSTIZ_DOMAIN || 'postiz.srv1960340.hstgr.cloud';
+// Cette instance Postiz héberge PLUSIEURS comptes Instagram (Score Master +
+// d'autres projets, ex: Hibou Empire), tous avec le même `identifier`
+// technique ("instagram-standalone") -- un simple .find() sur l'identifier
+// prenait donc le premier trouvé, potentiellement celui d'un autre projet
+// (bug réel constaté : contenu Score Master publié sur le compte Hibou
+// Empire). On cible désormais explicitement le compte par son id Postiz.
+const POSTIZ_INSTAGRAM_INTEGRATION_ID = process.env.POSTIZ_INSTAGRAM_INTEGRATION_ID || 'cmtw09jnf0001no72az5xn74h'; // "Scores Meridian" = compte Instagram réel de Score Master
 
 async function sbFetch(path, options) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, Object.assign({}, options, {
@@ -78,8 +85,8 @@ async function postizPublishInstagram(ig, item, imagePath, postType) {
 
 async function postizPublish(item, integrations) {
     if (item.platform === 'instagram') {
-        const ig = (integrations || []).find(function (i) { return i.identifier && i.identifier.indexOf('instagram') !== -1; });
-        if (!ig) throw new Error('Aucune intégration Instagram trouvée sur Postiz');
+        const ig = (integrations || []).find(function (i) { return i.id === POSTIZ_INSTAGRAM_INTEGRATION_ID; });
+        if (!ig) throw new Error('Compte Instagram Score Master introuvable sur Postiz (id attendu: ' + POSTIZ_INSTAGRAM_INTEGRATION_ID + ')');
 
         // Carrousel Story Time (plusieurs slides, voir image-bridge.js) : publié
         // comme un seul post multi-images, swipeable sur Instagram.
