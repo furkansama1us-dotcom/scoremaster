@@ -181,6 +181,18 @@
         .api-banner .api-title .live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
         .api-banner .api-desc{font-size:10px;color:var(--text-gray);margin-top:2px}
         .betclic-badge{font-weight:800;font-size:11px;text-transform:uppercase;color:var(--red);background:rgba(244,63,94,.15);padding:5px 10px;border-radius:6px;letter-spacing:.5px; transition: all 0.3s;}
+        /* Bandeau « Aperçu historique » + petit logo SM VIP+ animé */
+        .hist-banner{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;margin:0 20px 15px;cursor:pointer;text-align:left}
+        .hist-banner-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+        .hist-banner-txt b{font-size:14px;font-weight:800;line-height:1.25}
+        .hist-banner-txt small{font-size:11.5px;font-weight:800;color:var(--primary-yellow);letter-spacing:.3px}
+        .hist-banner > i{font-size:12px;flex:0 0 auto}
+        .vipx-badge{position:relative;flex:0 0 auto;width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#2a2410,#0d0d12 70%);border:2px solid var(--primary-yellow);box-shadow:0 0 10px rgba(255,193,7,.45);overflow:hidden;animation:vipxFloat 2.4s ease-in-out infinite}
+        .vipx-badge img{width:100%;height:100%;object-fit:contain;padding:5px 5px 9px}
+        .vipx-badge em{position:absolute;left:50%;bottom:1px;transform:translateX(-50%);font-style:normal;font-size:8px;font-weight:900;color:#000;background:var(--primary-yellow);padding:0 4px;border-radius:4px;line-height:11px;letter-spacing:.2px}
+        .vipx-badge::after{content:'';position:absolute;top:-40%;left:-80%;width:50%;height:180%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:rotate(18deg);animation:vipxShine 2.8s ease-in-out infinite}
+        @keyframes vipxFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-2px) scale(1.05);box-shadow:0 0 16px rgba(255,193,7,.7)}}
+        @keyframes vipxShine{0%,55%{left:-80%}85%,100%{left:140%}}
         
         .section-header{display:flex;justify-content:space-between;align-items:center;padding:0 20px;margin-bottom:15px}
         .section-title{font-size:17px;font-weight:700}
@@ -8828,7 +8840,10 @@ async function autoFetchFinalScores(combined) {
         var pw = '50%'; if (sc === 'termine' || sc === 'perdu') pw = '100%';
         if (vc) vc.innerHTML = buildCC(currentCombined, sc, sl, pw, false);
         if (hc) hc.innerHTML = buildCC(currentCombined, sc, sl, pw, true);
-        if (sc === 'en-cours' && sb) sb.innerHTML = '<div class="platform-bg-display" onclick="openTicketHistoryWithLoader()" style="background:' + platformColors().background + '; color:' + platformColors().color + '; padding:14px; border-radius:12px; text-align:center; font-weight:800; font-size:15px; margin:0 20px 15px; cursor:pointer;">Aperçu historique bookmaker favori <i class="fas fa-chevron-right" style="font-size:12px; margin-left:4px;"></i></div>';
+        if (sc === 'en-cours' && sb) sb.innerHTML = '<div class="platform-bg-display hist-banner" onclick="openTicketHistoryWithLoader()" style="background:' + platformColors().background + '; color:' + platformColors().color + ';">'
+            + '<span class="vipx-badge"><img src="logo-dark.png" alt=""><em>VIP+</em></span>'
+            + '<span class="hist-banner-txt"><b>Aperçu historique bookmaker favori</b><small>👑 Exclusivité SM VIP+ !</small></span>'
+            + '<i class="fas fa-chevron-right"></i></div>';
         else if (sb) sb.innerHTML = '';
     }
     // ============================================================
