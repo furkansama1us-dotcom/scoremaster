@@ -181,7 +181,6 @@
         .api-banner .api-title .live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
         .api-banner .api-desc{font-size:10px;color:var(--text-gray);margin-top:2px}
         .betclic-badge{font-weight:800;font-size:11px;text-transform:uppercase;color:var(--red);background:rgba(244,63,94,.15);padding:5px 10px;border-radius:6px;letter-spacing:.5px; transition: all 0.3s;}
-        .history-cta-badge{flex:0 0 auto;font-family:'Montserrat',sans-serif;font-weight:800;font-size:10.5px;line-height:1.25;text-transform:uppercase;letter-spacing:.3px;color:#000;background:var(--primary-yellow);border:none;padding:7px 10px;border-radius:8px;cursor:pointer;max-width:112px;text-align:center}
         
         .section-header{display:flex;justify-content:space-between;align-items:center;padding:0 20px;margin-bottom:15px}
         .section-title{font-size:17px;font-weight:700}
@@ -1386,7 +1385,7 @@ async function fetchApiScore(id, dateRaw) {
                     <div class="api-title">API sportifs connectés <div class="live-dot"></div></div>
                     <div class="api-desc">Données en temps réel • Cotes actualisées</div>
                 </div>
-                <button class="history-cta-badge" onclick="openTicketHistory()">Consulter l'historique</button>
+                <span class="betclic-badge platform-badge-display" onclick="openTicketHistory()" style="cursor:pointer;">BETCLIC</span>
             </div>
             <div class="ai-promo-banner fade-in-up delay-2" onclick="navigateTo('ai')">
                 <div class="ai-promo-icon"><i class="fas fa-brain"></i></div>
@@ -1735,7 +1734,7 @@ async function fetchApiScore(id, dateRaw) {
                     <div class="api-title">API sportifs connectés <div class="live-dot"></div></div>
                     <div class="api-desc">Données en temps réel • Cotes actualisées</div>
                 </div>
-                <button class="history-cta-badge" onclick="openTicketHistory()">Consulter l'historique</button>
+                <span class="betclic-badge platform-badge-display" onclick="openTicketHistory()" style="cursor:pointer;">BETCLIC</span>
             </div>
             <div id="vip-combined-status-bar"></div>
             <div class="vip-combined-container" id="vip-combined-container">
