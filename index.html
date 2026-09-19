@@ -5952,6 +5952,7 @@ function renderPublicationHistoryCard(p) {
         ${captionPreview ? `<div style="font-size:12px; color:var(--text-light-gray); margin-top:6px; line-height:1.4; white-space:pre-wrap;">${captionPreview}</div>` : ''}
         ${thumbHtml}
         ${p.error ? `<div style="font-size:10px; color:var(--red); margin-top:4px; word-break:break-all;">${p.error}</div>` : ''}
+        ${p.status === 'failed' ? `<button id="regen-${p.id}" onclick="regeneratePublication('${p.id}')" style="margin-top:8px; width:100%; padding:9px; background:rgba(232,184,75,.14); color:#e8b84b; border:1px solid rgba(232,184,75,.45); border-radius:8px; font-size:12px; font-weight:800; cursor:pointer;"><i class="fas fa-rotate-right"></i> Régénérer</button>` : ''}
         ${stuck ? `<button onclick="retryGeneration('${p.id}')" style="margin-top:8px; width:100%; padding:9px; background:transparent; color:#c8963c; border:1px solid rgba(200,150,60,.5); border-radius:8px; font-size:12px; font-weight:800; cursor:pointer;"><i class="fas fa-rotate-right"></i> Relancer la génération</button>` : ''}
         ${p.status === 'approved' ? `<button id="publish-now-${p.id}" onclick="publishNow('${p.id}')" style="margin-top:8px; width:100%; padding:9px; background:linear-gradient(135deg,var(--primary-yellow),#B8860B); color:#000; border:none; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer;"><i class="fas fa-bolt"></i> Publier maintenant (ne pas attendre le cron)</button>` : ''}
         ${p.caption ? `<button onclick="copyPublicationCaption('${p.id}')" style="margin-top:8px; width:100%; padding:9px; background:rgba(255,255,255,.06); color:#fff; border:1px solid rgba(255,255,255,.12); border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;"><i class="fas fa-copy"></i> Copier la description (# compris)</button>` : ''}
@@ -6012,6 +6013,61 @@ async function rejectPublication(id) {
     } catch (error) {
         console.error('Erreur rejet publication:', error);
         showToast('Erreur lors du rejet.', true);
+    }
+}
+
+// ------------------------------------------------------------
+// Relance une publication en échec (Higgsfield renvoie parfois
+// "Generation failed", souvent de façon passagère). On relance le MÊME type de
+// contenu, puis on supprime la ligne en échec une fois la nouvelle lancée.
+// Pour un carrousel du calendrier, les images viennent de la routine : si
+// elles sont déjà là, on relance seulement l'habillage.
+// ------------------------------------------------------------
+async function regeneratePublication(id) {
+    var row = (window.adminPublicationsCache && window.adminPublicationsCache[id])
+        || (window._cpRows || []).find(function (r) { return String(r.id) === String(id); });
+    if (!row) { showToast('Publication introuvable — recharge la page.', true); return; }
+
+    var btn = document.getElementById('regen-' + id);
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Relance en cours...'; }
+
+    try {
+        // Carrousel du calendrier : images déjà générées -> on refait l'habillage.
+        if (row.overlay_data && row.overlay_data.source === 'content-calendar') {
+            if (Array.isArray(row.overlay_data.slides) && row.overlay_data.slides.every(function (s) { return s && s.image_url; })) {
+                await supabaseClient.from('pending_publications').update({ status: 'generating', error: null }).eq('id', id);
+                await finishCalendarCarousel(row);
+                return;
+            }
+            showToast('Images manquantes : la routine les regénérera ce soir à 21h.', true);
+            return;
+        }
+
+        var type = row.content_type || '';
+        var combo = null;
+        if (type === 'Combiné du jour' || type === 'Victoire Story') {
+            // Retrouve le combiné concerné : celui de la date prévue, sinon le plus récent.
+            combo = (allCombineds || []).find(function (c) { return c.date === row.scheduled_for; })
+                || (allCombineds || [])[0];
+            if (!combo) { showToast('Combiné introuvable pour cette date.', true); return; }
+        }
+
+        if (type === 'Combiné du jour') await queueComboTeaserForCombo(combo);
+        else if (type === 'Victoire Story') await queueVictoryStoryPublication(combo.id);
+        else if (type === 'Conseil IA') await generateConseilNow();
+        else if (type === 'Carrousel Story') await generateCarouselStoryNow();
+        else { showToast('Type non relançable automatiquement : ' + type, true); return; }
+
+        // La nouvelle génération est lancée : l'ancienne ligne en échec ne sert plus.
+        await supabaseClient.from('pending_publications').delete().eq('id', id);
+        showToast('Nouvelle génération lancée. Laisse cet onglet ouvert. ⏳');
+        loadAdminPublications();
+        cpRefreshIfOpen();
+    } catch (error) {
+        console.error('Erreur relance publication :', error);
+        showToast('Relance impossible : ' + (error && error.message ? error.message : 'erreur inconnue'), true);
+    } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-rotate-right"></i> Régénérer'; }
     }
 }
 
