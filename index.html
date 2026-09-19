@@ -542,10 +542,8 @@
         .tk-ball { width:17px; height:17px; flex:0 0 auto; }
         .hc-leg-teams .tk-ball { width:19px; height:19px; }
         .hc-more { margin-left:auto; width:40px; height:40px; border-radius:50%; border:none; background:#25282d; color:#fff; font-size:15px; cursor:pointer; }
-        /* Carte avec reflet blanc diagonal, comme sur l'aperçu */
-        .hc-card { position:relative; background:linear-gradient(180deg,#1c1d23 0%,var(--tk-card) 100%); border-radius:18px; overflow:hidden; box-shadow:inset 0 1px 0 rgba(255,255,255,.06); }
-        .hc-card::before { content:''; position:absolute; top:-40%; right:-20%; width:80%; height:90%; background:radial-gradient(closest-side,rgba(255,255,255,.07),rgba(255,255,255,0)); pointer-events:none; }
-        .hc-card::after { content:''; position:absolute; inset:0; background:linear-gradient(115deg,rgba(255,255,255,0) 35%,rgba(255,255,255,.045) 50%,rgba(255,255,255,0) 65%); pointer-events:none; }
+        /* Carte avec halo blanc diffus en haut, même effet que le fond derrière les filtres */
+        .hc-card { position:relative; background:radial-gradient(115% 65% at 72% 0%,#2d3038 0%,var(--tk-card) 70%); border-radius:18px; overflow:hidden; box-shadow:inset 0 1px 0 rgba(255,255,255,.06); }
         .hc-card > * { position:relative; z-index:1; }
         .hc-bar { margin:20px 18px 14px; height:6px; border-radius:6px; background:var(--tk-line); overflow:hidden; }
         .hc-bar span { display:block; height:100%; border-radius:6px; }
