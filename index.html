@@ -517,70 +517,74 @@
         .history-card .status.termine { color:var(--green); }
         .history-card .status.perdu { color:var(--red); }
         /* Page « Mes tickets » (ouverte par le badge bookmaker) — palette et proportions calquées sur l'aperçu fourni */
-        #ticket-history-overlay { --tk-bg:#15171b; --tk-card:#1d1f24; --tk-soft:#26292e; --tk-line:#2a2d33; --tk-foot:#191b1f; --tk-text:#f1f2f4; --tk-gray:#8d9199; --tk-dim:#6c7078; --tk-green:#5acf8e; --tk-green-bg:#16301f; --tk-red:#f26a6a; --tk-red-bg:#3a1c1f; --tk-amber:#f0b429; --tk-amber-bg:#3a2e12; --tk-odd:#272c66; font-family:Roboto,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; background:radial-gradient(120% 60% at 70% 0%,#1f232b 0%,var(--tk-bg) 60%) !important; }
+        #ticket-history-overlay { --tk-bg:#141619; --tk-card:#1e2025; --tk-soft:#2a2d32; --tk-line:#2b2e34; --tk-foot:#1a1c20; --tk-text:#eceef1; --tk-gray:#8f939a; --tk-dim:#72767e; --tk-green:#5dca8f; --tk-green-bg:#173222; --tk-red:#ef6b6b; --tk-red-bg:#3a1d20; --tk-amber:#efb43a; --tk-amber-bg:#3a2f14; --tk-odd:#262b5e; font-family:Roboto,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; background:radial-gradient(110% 55% at 75% 0%,#22262e 0%,var(--tk-bg) 65%) !important; }
         .tk-top { display:flex; align-items:center; justify-content:space-between; padding:calc(14px + var(--safe-top)) 16px 10px; }
-        .tk-top span { font-weight:700; font-size:18px; color:var(--tk-text); }
+        .tk-top span { font-weight:600; font-size:18px; color:var(--tk-text); }
         .tk-close { width:36px; height:36px; border-radius:50%; border:none; background:var(--tk-soft); color:var(--tk-text); font-size:16px; cursor:pointer; }
-        .hc-filters { display:flex; gap:10px; padding:4px 16px 16px; overflow-x:auto; scrollbar-width:none; }
+        .hc-filters { display:flex; gap:8px; padding:4px 14px 14px; overflow-x:auto; scrollbar-width:none; }
         .hc-filters::-webkit-scrollbar { display:none; }
-        .hc-views { flex:0 0 auto; display:flex; gap:2px; padding:4px; border-radius:24px; background:var(--tk-soft); }
-        .hc-view { width:42px; height:36px; border:none; border-radius:20px; background:transparent; color:var(--tk-gray); font-size:15px; cursor:pointer; }
-        .hc-view.active { background:#34373d; color:var(--tk-text); }
-        .hc-filter { flex:0 0 auto; padding:0 18px; height:44px; border-radius:24px; border:2px solid transparent; background:var(--tk-soft); color:var(--tk-text); font-size:16px; font-weight:500; font-family:inherit; cursor:pointer; }
-        .hc-filter .n { color:var(--tk-dim); }
-        .hc-filter.active { background:transparent; border-color:#e9eaec; }
-        .hc { margin-bottom:26px; }
-        .hc-head { display:flex; align-items:center; gap:10px; margin:0 0 12px 8px; }
-        .hc-pill { font-size:14px; font-weight:500; padding:5px 8px; border-radius:6px; }
+        .hc-views { flex:0 0 auto; display:flex; gap:2px; padding:4px; border-radius:24px; background:#23262b; }
+        .hc-view { width:42px; height:34px; border:none; border-radius:18px; background:transparent; color:#9a9ea5; font-size:15px; cursor:pointer; }
+        .hc-view.active { background:#3a3d43; color:#fff; }
+        .hc-filter { flex:0 0 auto; padding:0 16px; height:42px; border-radius:22px; border:1.5px solid transparent; background:#2a2d32; color:#eceef1; font-size:16px; font-weight:400; font-family:inherit; cursor:pointer; }
+        .hc-filter .n { color:#7d8189; }
+        .hc-filter.active { background:transparent; border-color:#d9dbde; }
+        .hc { margin-bottom:24px; }
+        .hc-head { display:flex; align-items:center; gap:9px; margin:0 0 12px 12px; }
+        .hc-pill { font-size:14px; font-weight:500; padding:4px 7px; border-radius:6px; line-height:1.2; }
         .hc-pill.termine { color:var(--tk-green); background:var(--tk-green-bg); }
         .hc-pill.perdu { color:var(--tk-red); background:var(--tk-red-bg); }
         .hc-pill.en-cours { color:var(--tk-amber); background:var(--tk-amber-bg); }
-        .hc-title { font-size:22px; font-weight:700; color:var(--tk-text); letter-spacing:-.2px; }
-        .hc-count { display:inline-flex; align-items:center; gap:6px; font-size:13px; color:var(--tk-dim); background:var(--tk-soft); padding:4px 9px; border-radius:14px; }
-        .hc-count i { color:var(--tk-text); font-size:13px; }
-        .hc-more { margin-left:auto; width:40px; height:40px; border-radius:50%; border:none; background:var(--tk-soft); color:var(--tk-text); font-size:16px; cursor:pointer; }
-        .hc-card { background:var(--tk-card); border-radius:18px; overflow:hidden; }
-        .hc-bar { margin:22px 20px 16px; height:6px; border-radius:6px; background:var(--tk-line); overflow:hidden; }
+        .hc-title { font-size:21px; font-weight:600; color:#f3f4f6; }
+        .hc-count { display:inline-flex; align-items:center; gap:5px; font-size:13px; color:#6e7279; background:rgba(255,255,255,.05); padding:3px 8px 3px 4px; border-radius:14px; }
+        .tk-ball { width:17px; height:17px; flex:0 0 auto; }
+        .hc-leg-teams .tk-ball { width:19px; height:19px; }
+        .hc-more { margin-left:auto; width:40px; height:40px; border-radius:50%; border:none; background:#25282d; color:#fff; font-size:15px; cursor:pointer; }
+        /* Carte avec reflet blanc diagonal, comme sur l'aperçu */
+        .hc-card { position:relative; background:linear-gradient(180deg,#202227 0%,var(--tk-card) 100%); border-radius:18px; overflow:hidden; box-shadow:inset 0 1px 0 rgba(255,255,255,.06); }
+        .hc-card::before { content:''; position:absolute; top:-40%; right:-20%; width:80%; height:90%; background:radial-gradient(closest-side,rgba(255,255,255,.07),rgba(255,255,255,0)); pointer-events:none; }
+        .hc-card::after { content:''; position:absolute; inset:0; background:linear-gradient(115deg,rgba(255,255,255,0) 35%,rgba(255,255,255,.045) 50%,rgba(255,255,255,0) 65%); pointer-events:none; }
+        .hc-card > * { position:relative; z-index:1; }
+        .hc-bar { margin:20px 18px 14px; height:6px; border-radius:6px; background:var(--tk-line); overflow:hidden; }
         .hc-bar span { display:block; height:100%; border-radius:6px; }
         .hc-bar span.termine { background:var(--tk-green); }
         .hc-bar span.perdu { background:var(--tk-red); }
         .hc-bar span.en-cours { background:var(--tk-amber); }
-        .hc-ctrl { display:flex; align-items:center; gap:10px; padding:0 20px 8px; }
-        .hc-toggle { width:44px; height:44px; border-radius:50%; border:none; background:#2c2f35; color:var(--tk-gray); font-size:16px; cursor:pointer; transition:transform .25s; }
+        .hc-ctrl { display:flex; align-items:center; gap:10px; padding:0 18px 4px; }
+        .hc-toggle { width:42px; height:42px; border-radius:50%; border:none; background:#2e3136; color:#b9bcc2; font-size:15px; cursor:pointer; transition:transform .25s; }
         .hc.collapsed .hc-toggle { transform:rotate(-90deg); }
-        .hc-tally { display:inline-flex; align-items:center; gap:9px; height:44px; padding:0 16px; border-radius:24px; border:1px solid var(--tk-line); background:var(--tk-foot); font-weight:500; font-size:19px; color:var(--tk-text); }
-        .hc-tally i { font-size:20px; }
+        .hc-tally { display:inline-flex; align-items:center; gap:8px; height:42px; padding:0 15px; border-radius:22px; border:1px solid #2c2f35; background:rgba(0,0,0,.12); font-weight:400; font-size:19px; color:#f3f4f6; }
+        .hc-tally i { font-size:19px; }
         .hc-tally i.fa-check-circle { color:var(--tk-green); }
         .hc-tally i.fa-times-circle { color:var(--tk-red); }
-        .hc-tally i.fa-hourglass-half { color:var(--tk-amber); font-size:16px; }
+        .hc-tally i.fa-hourglass-half { color:var(--tk-amber); font-size:15px; }
         .hc.collapsed .hc-legs { display:none; }
-        .hc-leg { display:flex; align-items:flex-start; gap:10px; padding:16px 20px; border-bottom:1px solid var(--tk-line); }
+        .hc-leg { padding:14px 18px 15px; border-bottom:1px solid var(--tk-line); }
         .hc-leg:last-child { border-bottom:none; }
-        .hc-leg-main { flex:1; min-width:0; }
-        .hc-leg-pick { font-size:16px; color:var(--tk-gray); display:flex; align-items:center; gap:8px; }
-        .hc-leg-pick i { font-size:19px; }
-        .hc-leg-pick b { font-size:18px; font-weight:600; letter-spacing:.5px; }
+        .hc-leg-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+        .hc-leg-pick { font-size:15px; color:var(--tk-gray); display:flex; align-items:center; gap:7px; min-width:0; }
+        .hc-leg-pick i { font-size:18px; }
+        .hc-leg-pick b { font-size:17px; font-weight:600; letter-spacing:.6px; }
         .hc-leg-pick.termine i, .hc-leg-pick.termine b { color:var(--tk-green); }
         .hc-leg-pick.perdu i { color:var(--tk-dim); }
         .hc-leg-pick.perdu b, .hc-leg-pick.en-cours b { color:var(--tk-text); }
         .hc-leg-pick.en-cours i { color:var(--tk-amber); }
-        .hc-leg-teams { margin-top:10px; font-size:15px; color:var(--tk-text); font-weight:400; display:flex; align-items:flex-start; gap:8px; }
-        .hc-leg-teams > span:last-child { flex:1; min-width:0; line-height:1.4; }
-        .hc-leg-teams > :not(:last-child) { flex:0 0 auto; line-height:1.4; }
-        .hc-leg-teams .ball { color:var(--tk-text); font-size:18px; }
+        .hc-leg-teams { margin-top:9px; font-size:15px; font-weight:400; color:var(--tk-text); display:flex; align-items:center; gap:8px; }
+        .hc-leg-teams > span:last-child { flex:1; min-width:0; line-height:1.35; }
+        .hc-leg-teams > :not(:last-child) { flex:0 0 auto; }
         .hc-leg-teams img { width:18px; height:18px; object-fit:contain; }
-        .hc-leg-teams .sc { color:var(--tk-gray); margin:0 4px; }
-        .hc-odd { flex:0 0 auto; min-width:36px; text-align:center; background:var(--tk-odd); color:#fff; font-weight:600; font-size:17px; padding:7px 9px; border-radius:8px; }
-        .hc-sum { padding:14px 20px 16px; border-top:1px solid var(--tk-line); }
-        .hc-row { display:flex; justify-content:space-between; align-items:center; font-size:16px; color:var(--tk-text); }
-        .hc-row + .hc-row { margin-top:12px; }
-        .hc-row strong { color:var(--tk-text); font-size:19px; font-weight:600; }
-        .hc-row .hc-odd { font-size:19px; padding:6px 10px; }
+        .hc-leg-teams .sc { color:#9a9ea5; margin:0 5px; }
+        .hc-odd { flex:0 0 auto; min-width:30px; text-align:center; background:var(--tk-odd); color:#fff; font-weight:500; font-size:16px; line-height:1; padding:6px 7px; border-radius:6px; }
+        .hc-sum { padding:14px 18px 14px; border-top:1px solid var(--tk-line); }
+        .hc-row { display:flex; justify-content:space-between; align-items:center; font-size:15px; color:#e3e5e8; }
+        .hc-row + .hc-row { margin-top:8px; }
+        .hc-row strong { color:#f3f4f6; font-size:17px; font-weight:500; }
+        .hc-row .hc-odd { font-size:17px; padding:6px 8px; }
+        .hc-row small { color:var(--tk-dim); font-size:11px; margin-left:4px; }
         .hc-gain { margin-top:14px !important; padding-top:14px; border-top:1px solid var(--tk-line); }
-        .hc-gain strong { color:var(--tk-green); font-size:21px; }
+        .hc-gain strong { color:var(--tk-green); font-size:19px; font-weight:500; }
         .hc-gain.perdu strong { color:var(--tk-dim); }
-        .hc-foot { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:11px 20px; background:var(--tk-foot); font-size:13px; color:var(--tk-dim); }
-        .hc-foot .ai-confidence-tag { margin-left:0; }
+        .hc-foot { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 18px; background:var(--tk-foot); font-size:13px; color:#6c7078; }
         #ticket-history-overlay .no-combined-message { color:var(--tk-gray); }
         .admin-history-item { background:#1C2541; padding:12px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; }
         .admin-history-item span { font-size:13px; color:#fff; }
@@ -8627,6 +8631,23 @@ function ticketEuros(v) {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(v);
 }
 
+var TICKET_BALL_SVG = '<svg class="tk-ball" viewBox="0 0 24 24" aria-hidden="true"><defs><clipPath id="tkb"><circle cx="12" cy="12" r="10.8"/></clipPath></defs><circle cx="12" cy="12" r="10.8" fill="#f7f7f7"/><g clip-path="url(#tkb)"><g fill="#202020"><polygon points="12.0,8.7 15.1,11.0 13.9,14.7 10.1,14.7 8.9,11.0"/><polygon points="17.1,5.0 16.0,1.7 18.8,-0.4 21.7,1.7 20.6,5.0"/><polygon points="20.2,14.7 23.0,12.6 25.9,14.7 24.8,18.0 21.3,18.0"/><polygon points="12.0,20.6 14.9,22.7 13.8,26.0 10.2,26.0 9.1,22.7"/><polygon points="3.8,14.7 2.7,18.0 -0.8,18.0 -1.9,14.7 1.0,12.6"/><polygon points="6.9,5.0 3.4,5.0 2.3,1.7 5.2,-0.4 8.0,1.7"/></g><g stroke="#3a3a3a" stroke-width=".7"><line x1="12.0" y1="8.7" x2="12.0" y2="3.8"/><line x1="15.1" y1="11.0" x2="19.8" y2="9.5"/><line x1="13.9" y1="14.7" x2="16.8" y2="18.6"/><line x1="10.1" y1="14.7" x2="7.2" y2="18.6"/><line x1="8.9" y1="11.0" x2="4.2" y2="9.5"/></g></g><circle cx="12" cy="12" r="10.8" fill="none" stroke="#bdbdbd" stroke-width=".5"/></svg>';
+
+// Référence Score Master du combiné (dérivée de son id en base).
+function ticketRef(c) {
+    var id = String(c.id || '');
+    if (/^\d+$/.test(id)) return 'SM-' + id.padStart(6, '0');
+    return 'SM-' + id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase();
+}
+
+// « 1h51 - 16 septembre 2026 » si l'heure de création est connue, sinon la date seule.
+function ticketStamp(c) {
+    var day = ticketFullDate(c.date || c.created_at);
+    if (!c.created_at) return day;
+    var t = new Intl.DateTimeFormat('fr-FR', { hour: 'numeric', minute: '2-digit', timeZone: 'Europe/Paris' }).format(new Date(c.created_at)).replace(':', 'h');
+    return t + ' - ' + day;
+}
+
 function buildTicketCardHtml(c) {
         var sc = c.status || 'en-cours';
         var matches = c.matches || [];
@@ -8637,14 +8658,10 @@ function buildTicketCardHtml(c) {
             if(m.odds && m.odds > 0) { calcOdds *= m.odds; hasValidOdds = true; }
         });
         var finalOdds = parseFloat(c.total_odds || c.totalOdds) || (hasValidOdds ? calcOdds : 0);
-        var displayOdds = finalOdds > 0 ? finalOdds.toFixed(2) : '***.**';
-
-        var aiConfidences = matches.filter(function (m) { return m.ai_confidence; }).map(function (m) { return m.ai_confidence; });
-        var aiAvgConfidence = aiConfidences.length ? Math.round(aiConfidences.reduce(function (a, b) { return a + b; }, 0) / aiConfidences.length) : null;
-        var aiTag = aiAvgConfidence ? `<span class="ai-confidence-tag"><i class="fas fa-microchip"></i> Fiabilité IA ${aiAvgConfidence}%</span>` : '';
+        var fmtOdd = function (v) { v = Number(v); return v % 1 === 0 ? String(v) : v.toFixed(2); };
+        var displayOdds = finalOdds > 0 ? fmtOdd(finalOdds) : '***.**';
 
         var pillLabel = sc === 'termine' ? 'Gagné' : (sc === 'perdu' ? 'Perdu' : 'En cours');
-
         var barHtml = `<span class="${sc}" style="width:${sc === 'en-cours' ? 0 : 100}%;"></span>`;
 
         var tally = sc === 'termine'
@@ -8660,7 +8677,7 @@ function buildTicketCardHtml(c) {
             var mid = scoreParts && scoreParts.length === 2
                 ? `<span class="sc">${scoreParts[0]} - ${scoreParts[1]}</span>`
                 : `<span class="sc">-</span>`;
-            var teamsLine = away ? `${home} ${mid} ${away}` : home;
+            var teamsLine = away ? `${home}${mid}${away}` : home;
             var scoreLabel = hasScore ? m.score.replace('-', ' - ') : '-';
 
             var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" alt="">` : (m.league_flag ? `<span style="display:inline-flex; align-items:center;">${m.league_flag}</span>` : ''));
@@ -8670,29 +8687,27 @@ function buildTicketCardHtml(c) {
             else if (sc === 'perdu') pick = `<i class="fas fa-flag-checkered"></i> Score final <b>${scoreLabel}</b>`;
             else pick = `<i class="fas fa-clock"></i> ${m.time ? "Coup d'envoi " + m.time : 'À venir'}`;
 
-            var odd = m.odds && m.odds > 0 ? `<span class="hc-odd">${Number(m.odds) % 1 === 0 ? Number(m.odds) : Number(m.odds).toFixed(2)}</span>` : '';
+            var odd = m.odds && m.odds > 0 ? `<span class="hc-odd">${fmtOdd(m.odds)}</span>` : '';
 
             return `<div class="hc-leg">
-                <div class="hc-leg-main">
-                    <div class="hc-leg-pick ${sc}">${pick}</div>
-                    <div class="hc-leg-teams"><i class="fas fa-futbol ball"></i>${logoDisplay}<span>${teamsLine}</span></div>
-                </div>
-                ${odd}
+                <div class="hc-leg-top"><div class="hc-leg-pick ${sc}">${pick}</div>${odd}</div>
+                <div class="hc-leg-teams">${TICKET_BALL_SVG}${logoDisplay}<span>${teamsLine}</span></div>
             </div>`;
         }).join('');
 
+        // Montants d'exemple : aucun pari réel n'est enregistré, d'où la mention « simulée ».
         var gainHtml = '';
         if (finalOdds > 0 && sc !== 'en-cours') {
             var gain = sc === 'termine' ? TICKET_SIM_STAKE * finalOdds : 0;
-            gainHtml = `<div class="hc-row"><span>Mise (simulation)</span><strong>${ticketEuros(TICKET_SIM_STAKE)}</strong></div>
-                <div class="hc-row hc-gain ${sc}"><span>Gains simulés</span><strong>${ticketEuros(gain)}</strong></div>`;
+            gainHtml = `<div class="hc-row"><span>Mise <small>simulée</small></span><strong>${ticketEuros(TICKET_SIM_STAKE)}</strong></div>
+                <div class="hc-row hc-gain ${sc}"><span>Gains <small>simulés</small></span><strong>${ticketEuros(gain)}</strong></div>`;
         }
 
         return `<div class="hc ${sc}">
             <div class="hc-head">
                 <span class="hc-pill ${sc}">${pillLabel}</span>
                 <span class="hc-title">Combiné</span>
-                <span class="hc-count"><i class="fas fa-futbol"></i>${matches.length}</span>
+                <span class="hc-count">${TICKET_BALL_SVG}${matches.length}</span>
                 <button class="hc-more" onclick="copyTicketCombined('${String(c.id || '').replace(/[^\w-]/g, '')}')" aria-label="Copier le combiné"><i class="fas fa-ellipsis-h"></i></button>
             </div>
             <div class="hc-card">
@@ -8706,7 +8721,7 @@ function buildTicketCardHtml(c) {
                     <div class="hc-row"><span>Cote totale</span><span class="hc-odd">${displayOdds}</span></div>
                     ${gainHtml}
                 </div>
-                <div class="hc-foot"><span>${aiTag || 'Pronostic Score Master'}</span><span>${ticketFullDate(c.date)}</span></div>
+                <div class="hc-foot"><span>Réf : ${ticketRef(c)}</span><span>${ticketStamp(c)}</span></div>
             </div>
         </div>`;
 }
