@@ -8755,7 +8755,8 @@ function buildTicketCardHtml(c) {
                 </div>
                 ${sc === 'en-cours'
                     ? `<button class="hc-cta" onclick="completeTicket('${String(c.id || '').replace(/[^\w-]/g, '')}')">Compléter</button>`
-                    : `<div class="hc-foot"><span>Réf : ${ticketRef(c)}</span><span>${ticketStamp(c)}</span></div>`}
+                    : ''}
+                <div class="hc-foot"><span>Réf : ${ticketRef(c)}</span><span>${ticketStamp(c)}</span></div>
             </div>
         </div>`;
 }
