@@ -5132,7 +5132,8 @@ function cpAssignScheduleTimes(rows) {
         var key = day + '|' + typeKey;
         byDayType[key] = byDayType[key] || 0;
         var slots = CP_DAILY_TIMES[typeKey];
-        r._cpTime = slots ? slots[byDayType[key] % slots.length] : (r.created_at ? new Date(r.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h') : '--h--');
+        r._cpTime = slots ? slots[byDayType[key] % slots.length]
+            : (r.scheduled_time ? String(r.scheduled_time).replace(':', 'h') : '--h--');
         r._cpJoker = !!CP_JOKER_TYPES[typeKey];
         byDayType[key]++;
     });
@@ -5352,8 +5353,8 @@ function cpRowDay(r) { return r.scheduled_for || (r.created_at || '').slice(0, 1
 
 function cpRowTime(row) {
     if (row._cpTime) return row._cpTime;
-    var d = row.created_at ? new Date(row.created_at) : null;
-    return d ? d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h') : '--h--';
+    if (row.scheduled_time) return String(row.scheduled_time).replace(':', 'h');
+    return '--h--';
 }
 
 function cpRowTitle(row) {
