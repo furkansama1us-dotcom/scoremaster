@@ -571,11 +571,11 @@
         .hc-leg-pick.perdu i { color:var(--tk-dim); }
         .hc-leg-pick.perdu b, .hc-leg-pick.en-cours b { color:var(--tk-text); }
         .hc-leg-pick.en-cours i { color:var(--tk-amber); }
-        .hc-leg-teams { margin-top:9px; font-size:14px; font-weight:700; color:var(--tk-team); display:flex; align-items:center; gap:8px; }
+        .hc-leg-teams { margin-top:9px; font-size:14.5px; font-weight:400; color:#e4e4e6; display:flex; align-items:center; gap:8px; }
         .hc-leg-teams > span:last-child { flex:1; min-width:0; line-height:1.35; }
         .hc-leg-teams > :not(:last-child) { flex:0 0 auto; }
         .hc-leg-teams img { width:18px; height:18px; object-fit:contain; }
-        .hc-leg-teams .sc { color:var(--tk-team); margin:0 4px; }
+        .hc-leg-teams .sc { color:#9a9a9a; margin:0 6px; }
         .hc-odd { flex:0 0 auto; min-width:30px; text-align:center; background:var(--tk-odd); color:#fff; font-weight:700; font-size:17px; line-height:1; padding:7px 8px; border-radius:7px; }
         .hc-sum { padding:14px 18px 14px; border-top:1px solid var(--tk-line); }
         .hc-row { display:flex; justify-content:space-between; align-items:center; font-size:15px; color:var(--tk-label); }
@@ -8640,7 +8640,7 @@ function ticketEuros(v) {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(v);
 }
 
-var TICKET_BALL_SVG = '<svg class="tk-ball" viewBox="0 0 24 24" aria-hidden="true"><defs><clipPath id="tkb"><circle cx="12" cy="12" r="11"/></clipPath></defs><circle cx="12" cy="12" r="11" fill="#f2f2f2"/><g clip-path="url(#tkb)"><g fill="#141414"><polygon points="12.0,8.3 15.5,10.9 14.2,15.0 9.8,15.0 8.5,10.9"/><polygon points="16.9,5.3 15.5,0.9 19.2,-1.8 22.9,0.9 21.5,5.3"/><polygon points="19.9,14.6 23.6,11.9 27.3,14.6 25.9,18.9 21.3,18.9"/><polygon points="12.0,20.3 15.7,23.0 14.3,27.4 9.7,27.4 8.3,23.0"/><polygon points="4.1,14.6 2.7,18.9 -1.9,18.9 -3.3,14.6 0.4,11.9"/><polygon points="7.1,5.3 2.5,5.3 1.1,0.9 4.8,-1.8 8.5,0.9"/></g><g stroke="#8a8a8a" stroke-width=".5"><line x1="12.0" y1="8.3" x2="12.0" y2="4.8"/><line x1="15.5" y1="10.9" x2="18.8" y2="9.8"/><line x1="14.2" y1="15.0" x2="16.2" y2="17.8"/><line x1="9.8" y1="15.0" x2="7.8" y2="17.8"/><line x1="8.5" y1="10.9" x2="5.2" y2="9.8"/></g></g><circle cx="12" cy="12" r="11" fill="none" stroke="#9a9a9a" stroke-width=".6"/></svg>';
+var TICKET_BALL_SVG = '<svg class="tk-ball" viewBox="0 0 24 24" aria-hidden="true"><defs><radialGradient id="tkg" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#ececec"/><stop offset="1" stop-color="#9a9a9a"/></radialGradient><clipPath id="tkb"><circle cx="12" cy="12" r="11"/></clipPath></defs><circle cx="12" cy="12" r="11" fill="url(#tkg)"/><g clip-path="url(#tkb)"><g stroke="#6a6a6a" stroke-width=".4" fill="none"><line x1="10.69" y1="7.49" x2="9.77" y2="3.18"/><line x1="14.88" y1="9.35" x2="18.69" y2="7.15"/><line x1="14.40" y1="13.91" x2="17.67" y2="16.85"/><line x1="9.91" y1="14.86" x2="8.12" y2="18.88"/><line x1="7.62" y1="10.89" x2="3.25" y2="10.43"/></g><g fill="#111"><polygon points="10.69,7.49 14.88,9.35 14.40,13.91 9.91,14.86 7.62,10.89"/><polygon points="14.96,3.53 12.66,-0.44 15.73,-3.84 19.92,-1.98 19.44,2.58"/><polygon points="19.95,12.19 23.02,8.78 27.21,10.65 26.73,15.21 22.25,16.16"/><polygon points="13.27,19.61 17.46,21.48 16.98,26.04 12.49,26.99 10.20,23.02"/><polygon points="4.14,15.55 3.66,20.11 -0.82,21.06 -3.12,17.09 -0.05,13.69"/><polygon points="5.18,5.61 0.70,6.57 -1.59,2.60 1.47,-0.81 5.66,1.05"/></g></g><circle cx="12" cy="12" r="11.1" fill="none" stroke="#bdbdbd" stroke-width=".9"/></svg>';
 
 // Référence Score Master du combiné (dérivée de son id en base).
 function ticketRef(c) {
