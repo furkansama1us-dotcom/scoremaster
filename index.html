@@ -2475,6 +2475,19 @@ async function fetchApiScore(id, dateRaw) {
     </div>
 </div>
 
+<!-- Pop-up : historique « Mes tickets » réservé aux SM VIP+ -->
+<div id="history-vip-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:10004;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);" onclick="if(event.target===this)closeHistoryVipPopup()">
+    <div style="background:var(--bg-card);padding:34px 26px 24px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,193,7,0.18);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);position:relative;">
+        <i class="fas fa-times" onclick="closeHistoryVipPopup()" style="position:absolute;top:18px;right:18px;color:var(--text-gray);font-size:18px;cursor:pointer;"></i>
+        <div style="width:70px;height:70px;background:rgba(255,193,7,0.12);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 22px;"><i class="fas fa-crown" style="font-size:30px;color:var(--primary-yellow);"></i></div>
+        <h3 style="font-size:21px;font-weight:800;margin-bottom:12px;color:#fff;font-family:'Montserrat',sans-serif;">Oups, accès réservé !</h3>
+        <p style="font-size:14px;color:var(--text-gray);margin-bottom:26px;line-height:1.6;font-family:'Montserrat',sans-serif;">L'historique complet de nos tickets est une exclusivité des membres <b style="color:var(--primary-yellow);">SM VIP+</b>.<br><br>Rejoins-les pour suivre chaque combiné en direct, voir les scores exacts et les cotes de tous nos pronostics.</p>
+        <button onclick="closeHistoryVipPopup(); navigateTo('packs');" style="width:100%;padding:16px;background:var(--primary-yellow);color:#000;border:none;border-radius:14px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:10px;">👑 Devenir membre SM VIP+</button>
+        <button onclick="closeHistoryVipPopup(); goToUnlockSection();" style="width:100%;padding:13px;background:rgba(255,255,255,0.05);color:#fff;border:1px solid rgba(255,255,255,0.1);border-radius:14px;font-size:13px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:6px;"><i class="fas fa-key" style="margin-right:6px;color:var(--primary-yellow);"></i>J'ai déjà un code d'accès</button>
+        <button onclick="closeHistoryVipPopup()" style="width:100%;padding:10px;background:transparent;color:var(--text-gray);border:none;font-size:13px;font-family:'Montserrat',sans-serif;cursor:pointer;">Plus tard</button>
+    </div>
+</div>
+
 <div id="info-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
     <div style="background:var(--bg-card);padding:30px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);position:relative;">
         <i class="fas fa-times" onclick="closeInfoPopup()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
@@ -9193,7 +9206,31 @@ async function runTicketSync(first) {
 
 var ticketLoaderBusy = false;
 
+// Historique réservé aux SM VIP+ (les admins ont aussi isUserVip).
+function openHistoryVipPopup() {
+    var popup = document.getElementById('history-vip-popup');
+    popup.style.display = 'flex';
+    setTimeout(function () { popup.style.opacity = '1'; popup.firstElementChild.style.transform = 'scale(1)'; }, 10);
+}
+
+function closeHistoryVipPopup() {
+    var popup = document.getElementById('history-vip-popup');
+    popup.style.opacity = '0';
+    popup.firstElementChild.style.transform = 'scale(0.9)';
+    setTimeout(function () { popup.style.display = 'none'; }, 300);
+}
+
+// « J'ai déjà un code » : accueil, section « Débloquer mon accès ».
+function goToUnlockSection() {
+    navigateTo('home');
+    setTimeout(function () {
+        var el = document.getElementById('unlock-section-title');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 150);
+}
+
 async function openTicketHistoryWithLoader() {
+    if (!window.isUserVip) { openHistoryVipPopup(); return; }
     if (ticketLoaderBusy) return;
     ticketLoaderBusy = true;
     var loader = document.getElementById('ticket-loader');
