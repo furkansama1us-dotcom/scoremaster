@@ -8640,16 +8640,12 @@ function ticketRef(c) {
     return id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase();
 }
 
-// « 1h51 - 16 septembre 2026 » : heure de publication (created_at) ; pour les anciens
-// combinés qui ne l'ont pas, l'heure saisie avec le combiné (champ time).
+// « 1h51 - 16 septembre 2026 » : date et heure de publication (created_at). Les anciens
+// combinés, publiés avant la colonne, n'affichent que leur date (heure inconnue).
 function ticketStamp(c) {
-    var day = ticketFullDate(c.date || c.created_at);
-    if (!c.created_at) {
-        var hm = String(c.time || '').match(/(\d{1,2}):(\d{2})/);
-        return hm ? parseInt(hm[1], 10) + 'h' + hm[2] + ' - ' + day : day;
-    }
+    if (!c.created_at) return ticketFullDate(c.date);
     var t = new Intl.DateTimeFormat('fr-FR', { hour: 'numeric', minute: '2-digit', timeZone: 'Europe/Paris' }).format(new Date(c.created_at)).replace(':', 'h');
-    return t + ' - ' + day;
+    return t + ' - ' + ticketFullDate(c.created_at);
 }
 
 function buildTicketCardHtml(c) {
