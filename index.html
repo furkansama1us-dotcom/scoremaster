@@ -8686,7 +8686,8 @@ function buildTicketCardHtml(c) {
             var teamsLine = away ? `${home}${mid}${away}` : home;
             var scoreLabel = hasScore ? m.score.replace('-', ' - ') : '-';
 
-            var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" alt="">` : (m.league_flag ? `<span style="display:inline-flex; align-items:center;">${m.league_flag}</span>` : ''));
+            // Ballon + logo de compétition s'il a été saisi (pas de drapeau, comme l'aperçu).
+            var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" alt="">` : '');
 
             var pick;
             if (sc === 'termine') pick = `<i class="fas fa-check-circle"></i> Score exact <b>${scoreLabel}</b>`;
