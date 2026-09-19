@@ -9152,7 +9152,7 @@ async function runTicketSync(first) {
         currentCombined = allCombineds.find(function (c) { return c.status === 'en-cours'; }) || allCombineds[0] || null;
         setTicketSync('', label, 100);
         filterTicketHistory(ticketFilter);
-        setTimeout(function () { if (run === ticketSyncRun) setTicketSync('ok', 'Données à jour', null); }, 350);
+        setTimeout(function () { if (run === ticketSyncRun) setTicketSync('ok', 'Connecté · Données à jour', null); }, 350);
     } catch (e) {
         clearInterval(ticker);
         if (run !== ticketSyncRun) return;
