@@ -394,3 +394,123 @@ alter table public.combineds_public
 
 alter table public.combineds_public
   alter column created_at set default now();
+
+-- ============================================================
+-- SM points (phase de test) — monnaie fictive de Score Master.
+-- Solde sur profiles.sm_points, historique dans sm_points_transactions,
+-- règles (bonus d'inscription, parrainage) dans sm_points_settings.
+-- Le solde n'est jamais modifiable depuis le navigateur (voir le
+-- verrouillage colonne par colonne de profiles plus haut) : tout passe
+-- par les fonctions admin_* ci-dessous, qui vérifient is_admin.
+-- ============================================================
+
+alter table public.profiles
+  add column if not exists sm_points numeric(12,2) not null default 0;
+
+create table if not exists public.sm_points_transactions (
+  id bigint generated always as identity primary key,
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  amount numeric(12,2) not null,
+  reason text not null,
+  balance_after numeric(12,2) not null,
+  created_by uuid,
+  created_at timestamptz not null default now()
+);
+alter table public.sm_points_transactions enable row level security;
+
+drop policy if exists "Users can view their own sm points history" on public.sm_points_transactions;
+create policy "Users can view their own sm points history"
+  on public.sm_points_transactions for select
+  using (user_id = auth.uid());
+
+drop policy if exists "Admins can view all sm points history" on public.sm_points_transactions;
+create policy "Admins can view all sm points history"
+  on public.sm_points_transactions for select
+  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));
+
+create table if not exists public.sm_points_settings (
+  id text primary key default 'singleton',
+  enabled boolean not null default false,
+  welcome_bonus integer not null default 100,
+  referral_friends integer not null default 3,
+  referral_reward integer not null default 50,
+  updated_at timestamptz not null default now()
+);
+insert into public.sm_points_settings (id) values ('singleton') on conflict do nothing;
+alter table public.sm_points_settings enable row level security;
+
+drop policy if exists "Anyone can read sm points settings" on public.sm_points_settings;
+create policy "Anyone can read sm points settings"
+  on public.sm_points_settings for select
+  using (true);
+
+drop policy if exists "Admins can update sm points settings" on public.sm_points_settings;
+create policy "Admins can update sm points settings"
+  on public.sm_points_settings for update
+  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));
+
+-- Liste des membres et de leur solde (admin uniquement).
+create or replace function public.admin_list_sm_points(p_search text default '')
+returns table (id uuid, username text, email text, sm_points numeric, created_at timestamptz)
+language plpgsql security definer set search_path = public as $$
+begin
+  if not exists (select 1 from profiles where profiles.id = auth.uid() and is_admin = true) then
+    raise exception 'Réservé aux admins';
+  end if;
+  return query
+    select p.id, p.username, p.email, p.sm_points, p.created_at
+    from profiles p
+    where coalesce(p_search, '') = ''
+       or p.username ilike '%' || p_search || '%'
+       or p.email ilike '%' || p_search || '%'
+    order by p.sm_points desc, p.created_at desc
+    limit 100;
+end $$;
+
+-- Crédit / débit atomique : met à jour le solde et journalise en une transaction.
+create or replace function public.admin_adjust_sm_points(p_user uuid, p_amount numeric, p_reason text)
+returns numeric
+language plpgsql security definer set search_path = public as $$
+declare v_balance numeric;
+begin
+  if not exists (select 1 from profiles where id = auth.uid() and is_admin = true) then
+    raise exception 'Réservé aux admins';
+  end if;
+  if p_amount is null or p_amount = 0 then
+    raise exception 'Montant nul';
+  end if;
+  update profiles set sm_points = sm_points + p_amount where id = p_user
+    returning sm_points into v_balance;
+  if v_balance is null then
+    raise exception 'Membre introuvable';
+  end if;
+  if v_balance < 0 then
+    raise exception 'Solde insuffisant';
+  end if;
+  insert into sm_points_transactions (user_id, amount, reason, balance_after, created_by)
+    values (p_user, p_amount, coalesce(nullif(trim(p_reason), ''), 'Ajustement admin'), v_balance, auth.uid());
+  return v_balance;
+end $$;
+
+-- Dernières opérations avec le pseudo du membre (admin uniquement).
+create or replace function public.admin_sm_points_history(p_limit integer default 30)
+returns table (id bigint, username text, email text, amount numeric, reason text, balance_after numeric, created_at timestamptz)
+language plpgsql security definer set search_path = public as $$
+begin
+  if not exists (select 1 from profiles where profiles.id = auth.uid() and is_admin = true) then
+    raise exception 'Réservé aux admins';
+  end if;
+  return query
+    select t.id, p.username, p.email, t.amount, t.reason, t.balance_after, t.created_at
+    from sm_points_transactions t
+    join profiles p on p.id = t.user_id
+    order by t.created_at desc
+    limit least(greatest(coalesce(p_limit, 30), 1), 200);
+end $$;
+
+revoke all on function public.admin_list_sm_points(text) from public;
+revoke all on function public.admin_adjust_sm_points(uuid, numeric, text) from public;
+revoke all on function public.admin_sm_points_history(integer) from public;
+grant execute on function public.admin_list_sm_points(text) to authenticated;
+grant execute on function public.admin_adjust_sm_points(uuid, numeric, text) to authenticated;
+grant execute on function public.admin_sm_points_history(integer) to authenticated;

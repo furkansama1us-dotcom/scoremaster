@@ -458,6 +458,42 @@
         .admin-card{background:var(--bg-card);border-radius:16px;padding:20px;border:1px solid var(--border-color);margin-bottom:12px}
         .admin-field{margin-bottom:16px}
         .admin-field:last-child{margin-bottom:0}
+        /* Onglet admin SM Points */
+        .smp-badge { font-size:10px; letter-spacing:.5px; padding:2px 7px; border-radius:6px; background:rgba(255,193,7,.15); color:var(--primary-yellow); }
+        .smp-stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+        .smp-stat { background:var(--bg-card); border:1px solid var(--border-color); border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:4px; }
+        .smp-stat span { font-size:18px; font-weight:800; color:var(--primary-yellow); }
+        .smp-stat small { font-size:11px; color:var(--text-gray); }
+        .smp-card-title { font-size:14px; font-weight:800; color:#fff; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+        .smp-card-title i { color:var(--primary-yellow); }
+        .smp-switch-row { display:flex; justify-content:space-between; align-items:center; font-size:14px; color:#fff; margin-bottom:14px; }
+        .smp-switch-row input { width:20px; height:20px; accent-color:var(--primary-yellow); }
+        .smp-grid { display:grid; grid-template-columns:1fr; gap:10px; }
+        .smp-grid label { display:flex; flex-direction:column; gap:6px; font-size:12px; color:var(--text-gray); }
+        .smp-input { width:100%; min-width:0; background:var(--bg-input); border:1px solid var(--border-color); color:#fff; padding:11px 12px; border-radius:10px; font-size:14px; font-family:inherit; }
+        .smp-hint { font-size:12px; color:var(--text-light-gray); margin:12px 0; line-height:1.5; }
+        .smp-btn { border:none; border-radius:10px; font-family:'Montserrat',sans-serif; font-weight:800; cursor:pointer; }
+        .smp-btn-yellow { width:100%; padding:13px; background:var(--primary-yellow); color:#000; font-size:13px; }
+        .smp-btn-green, .smp-btn-red { flex:0 0 42px; height:42px; font-size:14px; }
+        .smp-btn-green { background:rgba(34,197,94,.15); color:var(--green); border:1px solid rgba(34,197,94,.35); }
+        .smp-btn-red { background:rgba(244,63,94,.12); color:var(--red); border:1px solid rgba(244,63,94,.3); }
+        .smp-member { border-top:1px solid var(--border-color); padding:12px 0; }
+        .smp-member:first-child { border-top:none; padding-top:0; }
+        .smp-member-top { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; }
+        .smp-member-id { display:flex; flex-direction:column; min-width:0; }
+        .smp-member-id b { font-size:14px; color:#fff; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .smp-member-id small, .smp-op small { font-size:11px; color:var(--text-gray); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .smp-balance { flex:0 0 auto; font-weight:800; color:var(--primary-yellow); font-size:15px; }
+        .smp-adjust { display:flex; gap:8px; }
+        .smp-adjust .smp-input { padding:10px; font-size:13px; }
+        .smp-adjust .smp-input:first-child { flex:0 0 82px; }
+        .smp-op { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 0; border-top:1px solid var(--border-color); }
+        .smp-op:first-child { border-top:none; padding-top:0; }
+        .smp-op > div { display:flex; flex-direction:column; min-width:0; }
+        .smp-op b { font-size:13px; color:#fff; }
+        .smp-op-amt { align-items:flex-end; font-weight:800; font-size:14px; flex:0 0 auto; }
+        .smp-op-amt.pos { color:var(--green); }
+        .smp-op-amt.neg { color:var(--red); }
         .admin-label{font-size:12px;color:var(--text-gray);margin-bottom:6px;font-weight:500;display:flex;align-items:center;gap:5px}
         .admin-label i{font-size:11px;color:var(--primary-yellow)}
         .admin-input{width:100%;padding:12px 14px;background:var(--bg-input);border:1px solid var(--border-color);border-radius:10px;color:var(--text-white);font-size:14px;font-family:'Inter',sans-serif;outline:none;transition:border-color .3s}
@@ -1756,6 +1792,7 @@ async function fetchApiScore(id, dateRaw) {
         <button class="admin-tab-btn" id="btn-tab-notifications" onclick="switchAdminTab('notifications')"><i class="fas fa-bell"></i> Notifs</button>
         <button class="admin-tab-btn" id="btn-tab-calendar" onclick="switchAdminTab('calendar')"><i class="fas fa-calendar-days"></i> Calendrier</button>
         <button class="admin-tab-btn" id="btn-tab-publications" onclick="switchAdminTab('publications')"><i class="fas fa-paper-plane"></i> Publications</button>
+        <button class="admin-tab-btn" id="btn-tab-smpoints" onclick="switchAdminTab('smpoints')"><i class="fas fa-coins"></i> SM Points</button>
     </div>
 
     <!-- ONGLET 1 : DASHBOARD -->
@@ -2081,6 +2118,51 @@ async function fetchApiScore(id, dateRaw) {
                 Aujourd'hui et demain uniquement. Clique sur "Générer" : Claude écrit la légende, Higgsfield crée l'image, et le brouillon atterrit ci-dessous prêt à approuver — même circuit que la génération automatique de nuit.
             </p>
             <div id="admin-calendar-container"></div>
+        </div>
+    </div>
+
+    <!-- ONGLET SM POINTS (phase de test) -->
+    <div class="admin-tab-content" id="admin-tab-smpoints">
+        <div class="admin-section">
+            <div class="admin-section-title" style="font-size:16px; margin-bottom:8px;"><i class="fas fa-coins"></i> SM Points <span class="smp-badge">Test</span></div>
+            <p style="font-size:13px; color:var(--text-gray); margin-bottom:16px; line-height:1.5;">
+                Monnaie fictive de Score Master. En phase de test, rien n'est visible côté membres tant que l'interrupteur ci-dessous est désactivé.
+            </p>
+
+            <div class="smp-stats">
+                <div class="smp-stat"><span id="smp-stat-total">–</span><small>points en circulation</small></div>
+                <div class="smp-stat"><span id="smp-stat-holders">–</span><small>membres avec des points</small></div>
+            </div>
+
+            <div class="admin-card">
+                <div class="smp-card-title"><i class="fas fa-sliders-h"></i> Règles</div>
+                <label class="smp-switch-row">
+                    <span>Activer côté membres</span>
+                    <input type="checkbox" id="smp-enabled">
+                </label>
+                <div class="smp-grid">
+                    <label>Bonus d'inscription<input type="number" id="smp-welcome" min="0" step="1" class="smp-input"></label>
+                    <label>Amis parrainés<input type="number" id="smp-ref-friends" min="1" step="1" class="smp-input"></label>
+                    <label>Récompense parrainage<input type="number" id="smp-ref-reward" min="0" step="1" class="smp-input"></label>
+                </div>
+                <p class="smp-hint" id="smp-rule-preview"></p>
+                <button class="smp-btn smp-btn-yellow" onclick="saveSmPointsSettings()"><i class="fas fa-save"></i> Enregistrer les règles</button>
+            </div>
+
+            <div class="admin-card">
+                <div class="smp-card-title"><i class="fas fa-users"></i> Membres</div>
+                <input type="search" id="smp-search" class="smp-input" placeholder="Rechercher un pseudo ou un e-mail" oninput="debounceSmPointsSearch()">
+                <div id="smp-members" style="margin-top:12px;">
+                    <div class="no-combined-message" style="padding:16px;"><i class="fas fa-spinner fa-spin"></i>Chargement…</div>
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="smp-card-title"><i class="fas fa-history"></i> Dernières opérations</div>
+                <div id="smp-history">
+                    <div class="no-combined-message" style="padding:16px;"><i class="fas fa-inbox"></i>Aucune opération.</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -5804,6 +5886,136 @@ async function clearAllPublicationHistory() {
         setTimeout(function () { popup.style.display = 'none'; }, 300);
     }
 
+    // ============================================================
+// SM POINTS — PANEL ADMIN (phase de test)
+// Lecture et écriture via les fonctions SQL admin_* (security definer,
+// réservées aux admins) : le solde n'est jamais modifié directement.
+// ============================================================
+var smPointsSearchTimer = null;
+
+function smFmt(v) {
+    return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(Number(v) || 0) + ' SM';
+}
+
+function smEsc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (ch) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+}
+
+function smMissingSetup(error) {
+    var msg = (error && (error.message || error.details)) || '';
+    return /sm_points|admin_list_sm_points|admin_sm_points_history|does not exist|Could not find/i.test(msg);
+}
+
+async function loadAdminSmPoints() {
+    await Promise.all([loadSmPointsSettings(), loadSmPointsMembers(), loadSmPointsHistory()]);
+}
+
+async function loadSmPointsSettings() {
+    var res = await supabaseClient.from('sm_points_settings').select('*').eq('id', 'singleton').maybeSingle();
+    if (res.error || !res.data) {
+        document.getElementById('smp-rule-preview').innerHTML = smMissingSetup(res.error) || !res.data
+            ? '<span style="color:var(--red);">Tables SM points absentes : exécute la migration SQL dans Supabase.</span>'
+            : smEsc(res.error.message);
+        return;
+    }
+    var s = res.data;
+    document.getElementById('smp-enabled').checked = !!s.enabled;
+    document.getElementById('smp-welcome').value = s.welcome_bonus;
+    document.getElementById('smp-ref-friends').value = s.referral_friends;
+    document.getElementById('smp-ref-reward').value = s.referral_reward;
+    updateSmRulePreview();
+    ['smp-welcome', 'smp-ref-friends', 'smp-ref-reward'].forEach(function (id) {
+        document.getElementById(id).oninput = updateSmRulePreview;
+    });
+}
+
+function updateSmRulePreview() {
+    var w = parseInt(document.getElementById('smp-welcome').value, 10) || 0;
+    var f = parseInt(document.getElementById('smp-ref-friends').value, 10) || 0;
+    var r = parseInt(document.getElementById('smp-ref-reward').value, 10) || 0;
+    document.getElementById('smp-rule-preview').textContent =
+        'Inscription : +' + w + ' SM · Parraine ' + f + ' ami' + (f > 1 ? 's' : '') + ' et gagne ' + r + ' SM';
+}
+
+async function saveSmPointsSettings() {
+    var payload = {
+        enabled: document.getElementById('smp-enabled').checked,
+        welcome_bonus: Math.max(0, parseInt(document.getElementById('smp-welcome').value, 10) || 0),
+        referral_friends: Math.max(1, parseInt(document.getElementById('smp-ref-friends').value, 10) || 1),
+        referral_reward: Math.max(0, parseInt(document.getElementById('smp-ref-reward').value, 10) || 0),
+        updated_at: new Date().toISOString()
+    };
+    var res = await supabaseClient.from('sm_points_settings').update(payload).eq('id', 'singleton').select();
+    if (res.error || !res.data || !res.data.length) { showToast('Enregistrement impossible' + (res.error ? ' : ' + res.error.message : ''), true); return; }
+    showToast('Règles SM points enregistrées');
+}
+
+function debounceSmPointsSearch() {
+    clearTimeout(smPointsSearchTimer);
+    smPointsSearchTimer = setTimeout(loadSmPointsMembers, 300);
+}
+
+async function loadSmPointsMembers() {
+    var box = document.getElementById('smp-members');
+    var q = (document.getElementById('smp-search').value || '').trim();
+    var res = await supabaseClient.rpc('admin_list_sm_points', { p_search: q });
+    if (res.error) {
+        box.innerHTML = '<div class="no-combined-message" style="padding:16px;color:var(--red);"><i class="fas fa-exclamation-triangle"></i>'
+            + (smMissingSetup(res.error) ? 'Migration SQL SM points non exécutée.' : smEsc(res.error.message)) + '</div>';
+        return;
+    }
+    var rows = res.data || [];
+    if (!q) {
+        var total = rows.reduce(function (a, r) { return a + (Number(r.sm_points) || 0); }, 0);
+        document.getElementById('smp-stat-total').textContent = smFmt(total);
+        document.getElementById('smp-stat-holders').textContent = rows.filter(function (r) { return Number(r.sm_points) > 0; }).length;
+    }
+    if (!rows.length) { box.innerHTML = '<div class="no-combined-message" style="padding:16px;"><i class="fas fa-user-slash"></i>Aucun membre trouvé.</div>'; return; }
+    box.innerHTML = rows.map(function (r) {
+        return `<div class="smp-member" id="smp-m-${r.id}">
+            <div class="smp-member-top">
+                <div class="smp-member-id"><b>${smEsc(r.username || 'Sans pseudo')}</b><small>${smEsc(r.email || '')}</small></div>
+                <div class="smp-balance">${smFmt(r.sm_points)}</div>
+            </div>
+            <div class="smp-adjust">
+                <input type="number" class="smp-input" id="smp-amt-${r.id}" placeholder="Points" min="0" step="1">
+                <input type="text" class="smp-input" id="smp-why-${r.id}" placeholder="Motif">
+                <button class="smp-btn smp-btn-green" onclick="adjustSmPoints('${r.id}', 1)" aria-label="Créditer"><i class="fas fa-plus"></i></button>
+                <button class="smp-btn smp-btn-red" onclick="adjustSmPoints('${r.id}', -1)" aria-label="Débiter"><i class="fas fa-minus"></i></button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+async function adjustSmPoints(userId, sign) {
+    var amt = parseFloat(String(document.getElementById('smp-amt-' + userId).value).replace(',', '.'));
+    if (!(amt > 0)) { showToast('Saisis un montant positif', true); return; }
+    var why = document.getElementById('smp-why-' + userId).value.trim() || (sign > 0 ? 'Crédit admin' : 'Débit admin');
+    var res = await supabaseClient.rpc('admin_adjust_sm_points', { p_user: userId, p_amount: sign * amt, p_reason: why });
+    if (res.error) { showToast(res.error.message, true); return; }
+    showToast((sign > 0 ? '+' : '−') + smFmt(amt) + ' · nouveau solde ' + smFmt(res.data));
+    loadSmPointsMembers();
+    loadSmPointsHistory();
+}
+
+async function loadSmPointsHistory() {
+    var box = document.getElementById('smp-history');
+    var res = await supabaseClient.rpc('admin_sm_points_history', { p_limit: 30 });
+    if (res.error) { box.innerHTML = '<div class="no-combined-message" style="padding:16px;"><i class="fas fa-inbox"></i>Historique indisponible.</div>'; return; }
+    var rows = res.data || [];
+    if (!rows.length) { box.innerHTML = '<div class="no-combined-message" style="padding:16px;"><i class="fas fa-inbox"></i>Aucune opération.</div>'; return; }
+    var f = new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' });
+    box.innerHTML = rows.map(function (t) {
+        var pos = Number(t.amount) > 0;
+        return `<div class="smp-op">
+            <div><b>${smEsc(t.username || t.email || 'Membre')}</b><small>${smEsc(t.reason)} · ${f.format(new Date(t.created_at))}</small></div>
+            <div class="smp-op-amt ${pos ? 'pos' : 'neg'}">${pos ? '+' : ''}${smFmt(t.amount)}<small>solde ${smFmt(t.balance_after)}</small></div>
+        </div>`;
+    }).join('');
+}
+
     function switchAdminTab(tabName) {
         document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.admin-tab-btn').forEach(el => el.classList.remove('active'));
@@ -5812,6 +6024,7 @@ async function clearAllPublicationHistory() {
         if (tabName === 'orders') { loadAdminOrders(); loadAdminVipCodes(); loadAdminTelegramLeads(); }
         if (tabName === 'calendar') renderAdminCalendar();
         if (tabName === 'publications') loadAdminPublications();
+        if (tabName === 'smpoints') loadAdminSmPoints();
     }
 
     // ============================================================
@@ -8670,6 +8883,9 @@ function closeFullHistory() {
 // À la validation, m.score est remplacé par le score réel : sur un combiné gagné
 // c'est le score exact pronostiqué, sur un perdu le pronostic n'est plus connu.
 var TICKET_SIM_STAKE = 100; // défaut de l'onglet IA, utilisé quand la mise du combiné (table VIP) n'est pas lisible
+// Montants (mise, gains, cash out) masqués tant que les SM points ne sont pas en place :
+// sans unité fictive, des euros affichés passeraient pour de vrais gains.
+var TICKET_SHOW_AMOUNTS = false;
 
 function ticketFullDate(d) {
     if (!d) return '';
@@ -8785,7 +9001,9 @@ function buildTicketCardHtml(c) {
         // Aucun pari réel n'est enregistré, d'où la mention « simulée ».
         var stake = parseFloat(c.mise) > 0 ? parseFloat(c.mise) : TICKET_SIM_STAKE;
         var gainHtml = '';
-        if (finalOdds > 0 && sc === 'en-cours') {
+        if (!TICKET_SHOW_AMOUNTS) {
+            gainHtml = '';
+        } else if (finalOdds > 0 && sc === 'en-cours') {
             gainHtml = `<div class="hc-row"><span>Mise <small>simulée</small></span><strong>${ticketEuros(stake)}</strong></div>
                 <div class="hc-row hc-gain pot"><span>Gains potentiels <small>simulés</small></span><strong>${ticketEuros(stake * finalOdds)}</strong></div>`;
         } else if (finalOdds > 0) {
@@ -8814,7 +9032,7 @@ function buildTicketCardHtml(c) {
                 </div>
                 ${sc === 'en-cours'
                     ? `<div class="hc-cta-row">
-                        ${finalOdds > 0 ? `<button class="hc-cash" onclick="cashoutTicket()">Cashout ${ticketEuros(ticketCashout(c, stake))}</button>` : ''}
+                        ${finalOdds > 0 ? `<button class="hc-cash" onclick="cashoutTicket()">Cashout${TICKET_SHOW_AMOUNTS ? ' ' + ticketEuros(ticketCashout(c, stake)) : ''}</button>` : ''}
                         <button class="hc-cta" onclick="completeTicket('${String(c.id || '').replace(/[^\w-]/g, '')}')">Compléter</button>
                     </div>`
                     : ''}
