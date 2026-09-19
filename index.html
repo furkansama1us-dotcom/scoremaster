@@ -5110,9 +5110,7 @@ function cpChipHtml(typeKey, joker) {
 // "Joker" = publication qui reste manuelle : c'est toi qui postes, jamais
 // d'envoi automatique — seule la génération se fait à l'avance.
 var CP_DAILY_TIMES = {
-    combo:    ['08h00'],
-    conseil:  ['11h00', '15h00', '19h00'],
-    carousel: ['13h00', '17h00', '21h00'],
+    combo:    ['12h00'],
     victory:  ['22h30']
 };
 // Joker = uniquement ce qui dépend d'un match réel (pas encore connu à
@@ -5173,7 +5171,10 @@ async function openContentPlanner() {
     // Dès que l'admin ouvre le Content Planner, prépare automatiquement le
     // contenu du lendemain s'il n'existe pas encore — pas besoin d'attendre
     // le soir, ça réduit le risque qu'une génération tardive soit interrompue.
-    cpAutoTriggerNextDay();
+    // Plus de génération automatique de Conseil IA / Carrousel Story : la
+    // cadence quotidienne vient désormais du calendrier de contenu (2 carrousels
+    // par jour). Ces formats restent disponibles à la demande, sous
+    // « Générer à la demande ».
 }
 
 // ============================================================
