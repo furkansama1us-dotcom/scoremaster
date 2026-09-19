@@ -18,7 +18,7 @@
     
     <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiU2NvcmUgTWVyaWRpYW4iLCJzaG9ydF9uYW1lIjoiU2NvcmUgTWVyaWRpYW4iLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBBMEUxRiIsInRoZW1lX2NvbG9yIjoiIzBBMEUxRiIsIm9yaWVudGF0aW9uIjoicG9ydHJhaXQiLCJpY29ucyI6W3sic3JjIjoibG9nby1kYXJrLnBuZyIsInNpemVzIjoiMTkyeDE5MiA1MTJ4NTEyIiwidHlwZSI6ImltYWdlL3BuZyIsInB1cnBvc2UiOiJhbnkgbWFza2FibGUifV19">
     
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Anton&family=Manrope:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Anton&family=Manrope:wght@400;700;800&family=Roboto+Condensed:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <!-- Supreme (Fontshare) : police de la page « Mes tickets », reprise de la maquette Figma -->
     <link href="https://api.fontshare.com/v2/css?f[]=supreme@400,700&display=swap" rel="stylesheet">
@@ -593,6 +593,41 @@
         .hc-gain.perdu strong { color:var(--tk-dim); }
         .hc-foot { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 18px; background:var(--tk-foot); font-size:13px; color:var(--tk-dim); }
         #ticket-history-overlay .no-combined-message { color:var(--tk-gray); }
+        /* Coupon « En cours » façon pari en direct (SM points) */
+        .sl-card { background:#1f212c; border-radius:14px; overflow:hidden; font-family:'Roboto Condensed',Roboto,-apple-system,'Segoe UI',Arial,sans-serif; }
+        .sl-head { display:flex; justify-content:space-between; align-items:center; padding:11px 16px; background:var(--primary-yellow); color:#111; font-size:16px; font-weight:700; }
+        .sl-head em { font-style:normal; font-weight:700; font-size:17px; color:#9a6a00; }
+        .hc.collapsed .sl-legs { display:none; }
+        .sl-legs { padding:12px 10px 4px; display:flex; flex-direction:column; gap:12px; }
+        .sl-leg { position:relative; background:#2a2d3a; border-radius:10px; padding:14px 34px 12px 12px; min-height:128px; }
+        .sl-tab { position:absolute; top:0; left:0; display:flex; align-items:center; gap:10px; padding:8px 14px 8px 12px; background:#1b1d27; border-radius:10px 0 14px 0; }
+        .sl-tab .tk-ball { width:26px; height:26px; }
+        .sl-tab img, .sl-tab .fl img { width:26px !important; height:20px !important; object-fit:cover; border-radius:3px; }
+        .sl-tab .fl { font-size:22px; line-height:1; display:inline-flex; }
+        .sl-live { position:absolute; top:50px; left:6px; background:var(--primary-yellow); color:#111; font-size:12px; font-weight:800; padding:3px 12px; border-radius:3px; }
+        .sl-when { text-align:center; font-size:12px; letter-spacing:1.2px; color:#8b8e9b; padding-left:70px; }
+        .sl-state { position:absolute; top:12px; right:12px; font-size:17px; }
+        .sl-ok { color:#3ecf8e; } .sl-ko { color:#ef5b5b; } .sl-done { color:#8b8e9b; } .sl-wait { color:var(--primary-yellow); }
+        .sl-teams { margin-top:16px; text-align:center; font-size:17px; font-weight:700; color:#fff; padding-left:8px; }
+        .sl-pick { margin-top:4px; text-align:center; font-size:16px; color:#c3c5cf; }
+        .sl-pick b { color:#3ecf8e; font-weight:700; }
+        .sl-pick b.locked { color:#8b8e9b; font-weight:400; font-size:14px; }
+        .sl-chev { position:absolute; right:12px; top:58px; color:#c3c5cf; font-size:18px; }
+        .sl-bottom { display:flex; justify-content:space-between; align-items:flex-end; margin-top:12px; margin-right:-22px; font-size:14px; color:#c3c5cf; }
+        .sl-bottom .sl-live-score { color:var(--primary-yellow); }
+        .sl-cote { color:#c3c5cf; }
+        .sl-cote b { color:#fff; font-size:19px; font-weight:500; margin-left:4px; }
+        .sl-sum { margin-top:10px; background:#2a2d3a; }
+        .sl-row { display:flex; justify-content:space-between; align-items:center; padding:13px 20px; font-size:16px; color:#e3e4ea; }
+        .sl-row strong { color:#fff; font-size:22px; font-weight:700; }
+        .sl-mise { background:#16171f; }
+        .sl-pot span, .sl-pot strong { color:var(--primary-yellow); }
+        .sl-actions { padding:12px 10px 8px; background:#2a2d3a; display:flex; flex-direction:column; align-items:center; gap:10px; }
+        .sl-btn { width:100%; height:50px; border:none; border-radius:25px; font-family:inherit; font-size:17px; font-weight:700; cursor:pointer; }
+        .sl-cash { background:var(--primary-yellow); color:#111; }
+        .sl-complete { background:#fff; color:#111; }
+        .sl-share { background:none; border:none; color:#fff; font-family:inherit; font-size:16px; cursor:pointer; display:inline-flex; align-items:center; gap:10px; padding:4px 10px; }
+        .sl-share i { font-size:20px; }
         .admin-history-item { background:#1C2541; padding:12px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; }
         .admin-history-item span { font-size:13px; color:#fff; }
         .admin-history-item button { background:var(--primary-yellow); color:#000; border:none; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer; }
@@ -8672,6 +8707,120 @@ function completeTicket(id) {
     navigateTo('packs');
 }
 
+// ------------------------------------------------------------
+// Coupon « En cours » façon pari en direct, en SM points (monnaie fictive de Score Master).
+// Le cash out est purement visuel pour l'instant : montant indicatif, bouton « Bientôt disponible ».
+// ------------------------------------------------------------
+function ticketPoints(v) {
+    return new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v) + ' SM';
+}
+
+// Minutes « horloge de Paris » depuis l'epoch, pour comparer maintenant et un coup d'envoi saisi en heure de Paris.
+function parisMinutes(y, mo, d, h, mi) { return Date.UTC(y, mo - 1, d, h, mi) / 60000; }
+function parisNowMinutes() {
+    var p = {};
+    new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false })
+        .formatToParts(new Date()).forEach(function (x) { p[x.type] = x.value; });
+    return parisMinutes(+p.year, +p.month, +p.day, +p.hour % 24, +p.minute);
+}
+
+// État d'un match d'après l'heure : 'avenir', 'live' (jusqu'à 1h50 après le coup d'envoi) ou 'fini'.
+function slipLegState(date, time) {
+    var hm = String(time || '').match(/(\d{1,2}):(\d{2})/);
+    if (!date || !hm) return 'avenir';
+    var dp = date.split('-').map(Number);
+    var kick = parisMinutes(dp[0], dp[1], dp[2], +hm[1], +hm[2]);
+    var now = parisNowMinutes();
+    if (now < kick) return 'avenir';
+    return now < kick + 110 ? 'live' : 'fini';
+}
+
+// « Aujourd'hui à 13:00 », « Demain à 21:00 », « Lundi 22/09 à 21:00 »
+function slipKickoffLabel(date, time) {
+    var hm = String(time || '').match(/\d{1,2}:\d{2}/);
+    var at = hm ? ' à ' + hm[0] : '';
+    if (!date) return hm ? hm[0] : '';
+    var fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris' });
+    if (date === fmt.format(new Date())) return "Aujourd'hui" + at;
+    if (date === fmt.format(new Date(Date.now() + 864e5))) return 'Demain' + at;
+    var dt = new Date(date + 'T12:00:00Z');
+    var wd = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', timeZone: 'UTC' }).format(dt);
+    return wd.charAt(0).toUpperCase() + wd.slice(1) + ' ' + date.slice(8, 10) + '/' + date.slice(5, 7) + at;
+}
+
+function buildLiveSlipHtml(c, stake, finalOdds, fmtOdd) {
+    var matches = c.matches || [];
+    var id = String(c.id || '').replace(/[^\w-]/g, '');
+    var norm = function (s) { return String(s || '').replace(/\s/g, ''); };
+    var wonOdds = 1;
+
+    var legs = matches.map(function (m, i) {
+        var state = slipLegState(c.date, m.time);
+        var detected = c.detected_scores && c.detected_scores[i];
+        var hasPick = m.score && m.score.indexOf('?') === -1;
+        var parts = (m.teams || 'Équipes').split(' - ');
+        var teams = parts.length > 1 ? parts[0] + ' - ' + parts.slice(1).join(' - ') : parts[0];
+        var flag = (m.logo && m.logo.startsWith('<img')) ? m.logo : (m.logo ? `<img src="${m.logo}" alt="">` : (m.league_flag ? `<span class="fl">${m.league_flag}</span>` : ''));
+
+        var won = state === 'fini' && detected && hasPick && norm(detected) === norm(m.score);
+        if (won && m.odds > 0) wonOdds *= m.odds;
+        var icon = state === 'fini'
+            ? (detected && hasPick ? (won ? '<i class="fas fa-check-circle sl-ok"></i>' : '<i class="fas fa-times-circle sl-ko"></i>') : '<i class="far fa-check-circle sl-done"></i>')
+            : '<i class="far fa-clock sl-wait"></i>';
+        var pick = hasPick
+            ? `Score exact <b>${m.score.replace('-', ' - ')}</b>`
+            : `Score exact <b class="locked"><i class="fas fa-lock"></i> Réservé VIP</b>`;
+        var bottom = state === 'live'
+            ? `<span class="sl-live-score">Score en cours : ${detected || '-'}</span>`
+            : (state === 'fini' ? `<span>Score du match : ${detected || '-'}</span>` : '<span></span>');
+        var odd = m.odds > 0 ? `<span class="sl-cote">Cote <b>${fmtOdd(m.odds)}</b></span>` : '';
+
+        return `<div class="sl-leg">
+            <div class="sl-tab">${TICKET_BALL_SVG}${flag}</div>
+            ${state === 'live' ? '<span class="sl-live">LIVE</span>' : ''}
+            <div class="sl-when">${slipKickoffLabel(c.date, m.time)}</div>
+            <div class="sl-state">${icon}</div>
+            <div class="sl-teams">${teams}</div>
+            <div class="sl-pick">${pick}</div>
+            <i class="fas fa-chevron-right sl-chev"></i>
+            <div class="sl-bottom">${bottom}${odd}</div>
+        </div>`;
+    }).join('');
+
+    // Montant indicatif en attendant le vrai calcul du cash out.
+    var cashout = stake * wonOdds * 0.9;
+    var money = finalOdds > 0
+        ? `<div class="sl-row"><span>Cote totale</span><strong>${fmtOdd(finalOdds)}</strong></div>
+           <div class="sl-row sl-mise"><span>Mise</span><strong>${ticketPoints(stake)}</strong></div>
+           <div class="sl-row sl-pot"><span>Gains potentiels</span><strong>${ticketPoints(stake * finalOdds)}</strong></div>`
+        : `<div class="sl-row"><span>Cote totale</span><strong>***</strong></div>`;
+
+    return `<div class="hc en-cours sl">
+        <div class="sl-card">
+            <div class="sl-head"><span>Combiné (${matches.length} pronostic${matches.length > 1 ? 's' : ''})</span><em>En cours</em></div>
+            <div class="sl-legs">${legs}</div>
+            <div class="sl-sum">${money}</div>
+            <div class="sl-actions">
+                ${finalOdds > 0 ? `<button class="sl-btn sl-cash" onclick="cashoutTicket()">Cashout : ${ticketPoints(cashout)} disponibles</button>` : ''}
+                <button class="sl-btn sl-complete" onclick="completeTicket('${id}')">Compléter mon pari</button>
+                <button class="sl-share" onclick="shareTicket('${id}')">Partager <i class="fas fa-share-alt"></i></button>
+            </div>
+        </div>
+    </div>`;
+}
+
+function cashoutTicket() {
+    showToast('Cash out bientôt disponible avec les SM points');
+}
+
+function shareTicket(id) {
+    var c = allCombineds.find(function (x) { return String(x.id) === id; });
+    if (!c) return;
+    var txt = 'Mon combiné Score Master :\n' + (c.matches || []).map(function (m) { return '• ' + m.teams; }).join('\n') + '\nhttps://scoremaster.fr';
+    if (navigator.share) { navigator.share({ title: 'Combiné Score Master', text: txt }).catch(function () {}); return; }
+    if (navigator.clipboard) navigator.clipboard.writeText(txt).then(function () { showToast('Combiné copié, prêt à partager'); }, function () {});
+}
+
 function buildTicketCardHtml(c) {
         var sc = c.status || 'en-cours';
         var matches = c.matches || [];
@@ -8725,6 +8874,7 @@ function buildTicketCardHtml(c) {
         // Mise du combiné (celle de la carte VIP) si disponible, sinon la valeur par défaut.
         // Aucun pari réel n'est enregistré, d'où la mention « simulée ».
         var stake = parseFloat(c.mise) > 0 ? parseFloat(c.mise) : TICKET_SIM_STAKE;
+        if (sc === 'en-cours') return buildLiveSlipHtml(c, stake, finalOdds, fmtOdd);
         var gainHtml = '';
         if (finalOdds > 0 && sc === 'en-cours') {
             gainHtml = `<div class="hc-row"><span>Mise <small>simulée</small></span><strong>${ticketEuros(stake)}</strong></div>
