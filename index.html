@@ -8788,7 +8788,7 @@ async function autoFetchFinalScores(combined) {
         var pw = '50%'; if (sc === 'termine' || sc === 'perdu') pw = '100%';
         if (vc) vc.innerHTML = buildCC(currentCombined, sc, sl, pw, false);
         if (hc) hc.innerHTML = buildCC(currentCombined, sc, sl, pw, true);
-        if (sc === 'en-cours' && sb) sb.innerHTML = '<div style="background:var(--primary-yellow); color:#000; padding:14px; border-radius:12px; text-align:center; font-weight:800; font-size:15px; margin:0 20px 15px;">Combiné à venir ! 🔥</div>';
+        if (sc === 'en-cours' && sb) sb.innerHTML = '<div onclick="openTicketHistory()" style="background:var(--primary-yellow); color:#000; padding:14px; border-radius:12px; text-align:center; font-weight:800; font-size:15px; margin:0 20px 15px; cursor:pointer;">Aperçu historique bookmaker favori <i class="fas fa-chevron-right" style="font-size:12px; margin-left:4px;"></i></div>';
         else if (sb) sb.innerHTML = '';
     }
     // ============================================================
