@@ -3405,13 +3405,43 @@ function compositeConseilImage(bgDataUri, overlay, format) {
 // message + photo de victoire déjà en place (Telegram), spécifiquement
 // pour la page Instagram.
 // ============================================================
+// ------------------------------------------------------------
+// Choix d'une phrase sans répéter les derniers usages (mémoire locale par
+// clé). Évite les légendes identiques d'une publication à l'autre, qui
+// revenaient souvent avec un simple Math.random().
+// ------------------------------------------------------------
+function pickFresh(key, pool) {
+    if (!pool || !pool.length) return '';
+    var memKey = 'sm_pick_' + key;
+    var recent = [];
+    try { recent = JSON.parse(localStorage.getItem(memKey) || '[]'); } catch (e) { recent = []; }
+    var keep = Math.max(1, Math.min(pool.length - 1, Math.ceil(pool.length * 0.6)));
+    var available = pool.filter(function (_, i) { return recent.indexOf(i) === -1; });
+    var chosen = available.length ? available[Math.floor(Math.random() * available.length)] : pool[Math.floor(Math.random() * pool.length)];
+    recent.unshift(pool.indexOf(chosen));
+    try { localStorage.setItem(memKey, JSON.stringify(recent.slice(0, keep))); } catch (e) {}
+    return chosen;
+}
+
 var VICTORY_STORY_TAGLINES = [
     "On vous l'avait dit l'équipe ! L'IA de Score Master parle d'elle-même. 🔥",
     "La rigueur paie, encore une fois. Score Master, toujours au rendez-vous. 🏆",
     "Pas de hasard, juste de l'analyse sérieuse. Merci de nous faire confiance. 🤝",
     "Un ticket de plus, une méthode qui ne change pas. Score Master. 💪",
     "L'analyse parle, les résultats suivent. On continue ensemble. ⚽",
-    "La régularité, notre vraie signature. Merci à toute la communauté. ❤️"
+    "La régularité, notre vraie signature. Merci à toute la communauté. ❤️",
+    "Analysé hier soir, validé ce soir. C'est ça, le travail de fond. 📊",
+    "Score exact trouvé. Pas d'esbroufe : des données, du temps, de la patience. ⏱️",
+    "Ceux qui ont suivi savent. Les autres, la porte reste ouverte. 🚪",
+    "Chaque ticket honoré nous oblige : on remet ça demain, même méthode. 🔁",
+    "Rien de spectaculaire, juste de la constance. C'est ce qui fait la différence. 🧠",
+    "Le foot reste imprévisible. Notre travail, lui, ne change pas d'un jour à l'autre. 🎯",
+    "Encore un pronostic qui tombe juste. Merci pour votre confiance, l'équipe. 🙌",
+    "Ce soir, l'analyse a eu le dernier mot. On savoure, puis on se remet au travail. 🌙",
+    "Pas de chance là-dedans : de la lecture de match, tout simplement. 📖",
+    "Le ticket est honoré. Les coulisses, elles, c'est des heures de préparation. 🔧",
+    "Ceux qui doutaient hier ont la réponse ce soir. Sans bruit. 🤫",
+    "Objectif atteint. On garde la tête froide : demain est un autre match. 🧊"
 ];
 
 function parseMatchScore(scoreStr) {
@@ -3456,7 +3486,7 @@ function buildVictoryStoryOverlay(c) {
 
     return {
         matches: matches,
-        tagline: VICTORY_STORY_TAGLINES[Math.floor(Math.random() * VICTORY_STORY_TAGLINES.length)],
+        tagline: pickFresh('victory_tagline', VICTORY_STORY_TAGLINES),
         confidence: aiAvgConfidence
     };
 }
@@ -3641,11 +3671,19 @@ var CAROUSEL_STORY_CAPTIONS = [
     `Si tu es encore là, c'est que tu veux arrêter de parier au hasard. 🏆\n\nSuis @ScoreMasterOfficiel pour des analyses IA sérieuses, chaque jour.\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`,
     `Tu as lu jusqu'au bout ? Alors cette méthode va te parler. 🎯\n\nRejoins @ScoreMasterOfficiel pour des pronostics construits sur des données, pas sur du feeling.\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`,
     `Ce n'est pas de la chance. C'est de la méthode. 📊\n\nScore Master analyse chaque match avant de publier un ticket. Suis-nous pour ne rien manquer.\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`,
-    `La régularité bat la chance sur la durée. Toujours. 🔒\n\nRejoins la communauté @ScoreMasterOfficiel et suis chaque analyse, jour après jour.\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`
+    `La régularité bat la chance sur la durée. Toujours. 🔒\n\nRejoins la communauté @ScoreMasterOfficiel et suis chaque analyse, jour après jour.\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`,
+    `Parier sans préparation, c'est jouer à pile ou face avec son argent. 🪙\n\nIci, chaque sélection est argumentée avant d'être publiée. Viens voir par toi-même.\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`,
+    `Le plus dur n'est pas de gagner un pari. C'est de tenir sur la durée. 📈\n\nOn publie nos analyses tous les jours, gagnées comme perdues.\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`,
+    `Forme récente, confrontations, contexte du match. Trois choses que l'émotion ignore. 🧠\n\nNos analyses partent toujours de là. Suis @ScoreMasterOfficiel.\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`,
+    `Un pronostic sans explication, ça ne vaut rien. 🔎\n\nChez Score Master, tu vois le raisonnement derrière chaque ticket.\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`,
+    `Personne ne gagne tout le temps. Ceux qui le promettent te mentent. ⚠️\n\nNous, on publie nos résultats tels quels. Juge sur pièces.\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`,
+    `Tu peux continuer à suivre ton intuition du dimanche soir. Ou tester une méthode. 🎲\n\nLe choix t'appartient. L'analyse du jour est en ligne.\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`,
+    `On ne vend pas du rêve, on partage un travail d'analyse. ⚙️\n\nÀ toi de voir s'il te parle. Tout est visible sur le site.\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`,
+    `Ce carrousel t'a parlé ? Garde-le, tu y repenseras au prochain pari impulsif. 📌\n\nEt viens voir nos analyses quotidiennes.\n\n🌐 https://scoremaster.fr/\n📲 Telegram : @ScoreMasterOfficiel\n\n${INSTAGRAM_HASHTAGS}`
 ];
 
 function buildCarouselStoryCaption() {
-    return CAROUSEL_STORY_CAPTIONS[Math.floor(Math.random() * CAROUSEL_STORY_CAPTIONS.length)];
+    return pickFresh('carousel_caption', CAROUSEL_STORY_CAPTIONS);
 }
 
 function setCarouselStoryCardState(html, spinning) {
@@ -3992,7 +4030,18 @@ var COMBO_TEASER_TAGLINES = [
     "Nouvelle sélection IA disponible dès maintenant. Rejoignez-nous ! ⚡",
     "L'analyse du jour est prête. Découvrez le combiné sur scoremaster.fr 🎯",
     "Chaque jour, une sélection passée au crible par l'IA. À vous de jouer. 🤝",
-    "Le combiné du jour vient de tomber. L'analyse complète vous attend. 🚀"
+    "Le combiné du jour vient de tomber. L'analyse complète vous attend. 🚀",
+    "Sélection du soir publiée. Les détails match par match sont sur le site. 📋",
+    "On a fini de décortiquer les affiches : le combiné est en ligne. 🔎",
+    "Travail terminé de notre côté. À vous de découvrir la sélection du jour. 🧠",
+    "Nouvelle journée, nouvelle analyse. Le combiné est disponible. 📅",
+    "Les matchs sont choisis, les cotes vérifiées. Le combiné vous attend. ✅",
+    "Le ticket du jour est prêt. Rendez-vous sur scoremaster.fr pour le détail. 🎟️",
+    "Sélection publiée : deux affiches, une méthode, zéro improvisation. ⚙️",
+    "Notre analyse du jour est en ligne. Prenez le temps de la lire. ⏳",
+    "Le combiné est disponible. Comme toujours : transparence totale sur le résultat. 🔓",
+    "Analyse bouclée, combiné en ligne. Bonne lecture à tous. 📖",
+    "La sélection du jour vient d'être publiée sur l'app. À découvrir. 📲"
 ];
 
 function buildComboTeaserOverlay(c) {
@@ -4007,7 +4056,7 @@ function buildComboTeaserOverlay(c) {
     });
     return {
         matches: matches,
-        tagline: COMBO_TEASER_TAGLINES[Math.floor(Math.random() * COMBO_TEASER_TAGLINES.length)]
+        tagline: pickFresh('teaser_tagline', COMBO_TEASER_TAGLINES)
     };
 }
 

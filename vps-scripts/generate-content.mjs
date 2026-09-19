@@ -60,6 +60,31 @@ const URGENCE_SCENES = [
     'a golden hourglass with sand running out, dark background, the "SM" crown monogram subtly etched on its base'
 ];
 
+// Angle éditorial du jour : impose une STRUCTURE de légende différente à chaque
+// génération. Sans ça, le modèle retombe toujours sur la même accroche
+// ("La rigueur paie...", "Pas de hasard...") d'un jour à l'autre.
+const CAPTION_ANGLES = [
+    'Question directe au lecteur en ouverture, puis une réponse courte et nette.',
+    "Mini-récit à la première personne (2-3 phrases) : une situation vécue par un parieur, puis la leçon.",
+    'Constat chiffré vérifiable sur le sport (fréquence des nuls, importance de la forme récente...), sans jamais inventer de statistique sur nos propres résultats.',
+    "Coulisses : raconte le travail de préparation d'une analyse, comme un carnet de bord.",
+    'Mise en garde bienveillante contre une erreur classique (parier sur son club, doubler après une perte...).',
+    'Conseil pratique immédiatement applicable, formulé en une seule phrase impérative.',
+    'Comparaison imagée avec un autre domaine (cuisine, échecs, musculation, course à pied).',
+    "Opposition en deux temps : \"ce que font la plupart\" / \"ce qu'on fait ici\".",
+    'Ton sobre et factuel, sans emphase ni superlatif, deux phrases maximum.',
+    'Adresse à la communauté : remerciement sincère, sans promesse de gains.',
+    "Réflexion sur le temps long : ce qui compte sur une saison, pas sur un soir.",
+    'Fausse évidence démontée : commence par une croyance répandue, puis explique pourquoi elle est fausse.'
+];
+
+function computeTodayAngle() {
+    const now = new Date();
+    const daySeed = now.getUTCFullYear() * 372 + (now.getUTCMonth() + 1) * 31 + now.getUTCDate();
+    const hourSlot = Math.floor(now.getUTCHours() / 4);
+    return CAPTION_ANGLES[(daySeed * 3 + hourSlot) % CAPTION_ANGLES.length];
+}
+
 function computeTodayUrgenceScene() {
     const today = new Date();
     const daySeed = today.getUTCFullYear() * 372 + (today.getUTCMonth() + 1) * 31 + today.getUTCDate();
@@ -96,8 +121,8 @@ function computeTomorrowType() {
 
 async function getRecentHistory() {
     const [pubs, tg] = await Promise.all([
-        sbFetch('pending_publications?select=caption,content_type&order=created_at.desc&limit=5').catch(() => []),
-        sbFetch('telegram_queue?select=message&order=created_at.desc&limit=5').catch(() => [])
+        sbFetch('pending_publications?select=caption,content_type&order=created_at.desc&limit=20').catch(() => []),
+        sbFetch('telegram_queue?select=message&order=created_at.desc&limit=10').catch(() => [])
     ]);
     return [...(pubs || []).map(p => p.caption), ...(tg || []).map(t => t.message)].filter(Boolean);
 }
@@ -121,8 +146,18 @@ async function draftWithClaude(type, recentHistory, combine, forcedScene) {
 Type de contenu à produire aujourd'hui : "${type.label}".
 ${matchInfo ? `Combiné en cours (noms d'équipes uniquement, PAS de score) : ${matchInfo}` : "Aucun combiné en cours actuellement — reste générique (marque/app), sans référence à un match précis."}
 
-Ne répète pas ces accroches/légendes déjà utilisées récemment :
-${recentHistory.length ? recentHistory.map(h => `- ${h.slice(0, 120)}`).join('\n') : '(aucun historique)'}
+ANGLE ÉDITORIAL IMPOSÉ POUR CETTE LÉGENDE (change à chaque génération, respecte-le strictement) :
+${computeTodayAngle()}
+
+Légendes déjà publiées récemment — interdiction de les reprendre, même reformulées :
+${recentHistory.length ? recentHistory.map(h => `- ${h.slice(0, 160)}`).join('\n') : '(aucun historique)'}
+
+RÈGLES ANTI-RÉPÉTITION (essentielles) :
+- Ne commence JAMAIS par les mêmes mots qu'une des légendes ci-dessus.
+- Bannis les formules déjà trop vues dans la marque : "Pas de hasard", "La rigueur paie", "L'analyse parle", "ce n'est pas de la chance, c'est de la méthode", "décuplez vos gains".
+- Varie la longueur d'une fois sur l'autre : parfois une seule phrase, parfois un court paragraphe.
+- Varie les emojis (2 maximum) et n'ouvre pas systématiquement sur un emoji.
+- Aucune promesse de gain, aucun pourcentage de réussite inventé, aucun montant d'argent promis.
 
 ${forcedScene ? `STYLE VISUEL OBLIGATOIRE pour "image_prompt" : illustration digitale stylisée dessinée à la main, contours sombres marqués, ink wash haute-contraste, style bande dessinée / roman graphique premium (PAS de photo réaliste, PAS de rendu 3D). INTERDIT ABSOLU : aucun texte, aucun chiffre, aucune typographie visible dans l'image, sous aucun prétexte. INTERDIT : aucun téléphone/smartphone/iPhone, aucun écran, aucune tablette dans l'image. Reprends cette scène en l'enrichissant de détails de composition/lumière, avec le monogramme "SM" en forme d'écusson surmonté d'une couronne dorée intégré discrètement dans le décor, sans aucun texte à côté :\n${forcedScene}` : `STYLE VISUEL OBLIGATOIRE pour "image_prompt" (à écrire en anglais) :
 - Illustration digitale stylisée, dessinée à la main, contours sombres marqués, ink wash haute-contraste, style bande dessinée / roman graphique premium (PAS de photo réaliste, PAS de rendu 3D, PAS de maquette d'écran/interface).
