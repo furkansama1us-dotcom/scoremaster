@@ -3168,7 +3168,7 @@ async function finishConseilComposite(id, rawImageUrl) {
         // dans la journée, Post pour le fil — l'admin choisit ensuite lequel
         // publier au moment d'approuver.
         var storyDataUri = await compositeConseilImage(proxied.dataUri, overlay, 'story');
-        var postDataUri = await compositeConseilImage(proxied.dataUri, overlay, 'post');
+        var postDataUri = await toReelFormat(await compositeConseilImage(proxied.dataUri, overlay, 'post'));
 
         setConseilCardState('<i class="fas fa-spinner fa-spin"></i> Envoi des visuels finaux...', true);
         await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: storyDataUri, field: 'story' });
@@ -3214,6 +3214,41 @@ function wrapCanvasText(ctx, text, maxWidth) {
     });
     if (current) lines.push(current);
     return lines;
+}
+
+// ------------------------------------------------------------
+// Passage d'un visuel "post" (4:5) au format Reel Instagram (1080x1920).
+// Le contenu n'est jamais déformé : il est centré dans une zone sûre, en
+// laissant 260 px en haut et 260 px en bas, là où Instagram pose son
+// interface sur un Reel. Le fond reprend la couleur du visuel d'origine.
+// ------------------------------------------------------------
+var REEL_W = 1080, REEL_H = 1920, REEL_SAFE_TOP = 260, REEL_SAFE_BOTTOM = 260;
+
+function toReelFormat(dataUri) {
+    return new Promise(async function (resolve, reject) {
+        try {
+            var img = await loadImg(dataUri);
+            var canvas = document.createElement('canvas');
+            canvas.width = REEL_W; canvas.height = REEL_H;
+            var ctx = canvas.getContext('2d');
+
+            // Couleur de fond = pixel en haut à gauche du visuel source
+            var probe = document.createElement('canvas');
+            probe.width = 1; probe.height = 1;
+            var pctx = probe.getContext('2d');
+            pctx.drawImage(img, 0, 0, 1, 1);
+            var px = pctx.getImageData(0, 0, 1, 1).data;
+            ctx.fillStyle = 'rgb(' + px[0] + ',' + px[1] + ',' + px[2] + ')';
+            ctx.fillRect(0, 0, REEL_W, REEL_H);
+
+            var safeH = REEL_H - REEL_SAFE_TOP - REEL_SAFE_BOTTOM;
+            var scale = Math.min(REEL_W / img.width, safeH / img.height);
+            var w = Math.round(img.width * scale), hh = Math.round(img.height * scale);
+            ctx.drawImage(img, Math.round((REEL_W - w) / 2), Math.round(REEL_SAFE_TOP + (safeH - hh) / 2), w, hh);
+
+            resolve(canvas.toDataURL('image/jpeg', 0.92));
+        } catch (e) { reject(e); }
+    });
 }
 
 function compositeConseilImage(bgDataUri, overlay, format) {
@@ -4105,9 +4140,9 @@ async function finishComboTeaserTelegramComposite(id, rawImageUrl) {
             });
         }
 
-        // Un seul format ici (post 4:5) : upload sans `field`, comme le flux
+        // Un seul format ici (post 9:16, prêt pour un Reel) : upload sans `field`, comme le flux
         // Conseil IA -> passe la ligne en "pending" directement.
-        var postDataUri = await compositeComboTeaser(proxiedBg.dataUri, overlay, logoUrls, 'post');
+        var postDataUri = await toReelFormat(await compositeComboTeaser(proxiedBg.dataUri, overlay, logoUrls, 'post'));
         await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: postDataUri });
 
         showToast('Visuel du combiné prêt pour Telegram ! Retrouve-le dans Publications pour validation. 📸');
@@ -4141,7 +4176,7 @@ async function finishComboTeaserComposite(id, rawImageUrl) {
         }
 
         var storyDataUri = await compositeComboTeaser(proxiedBg.dataUri, overlay, logoUrls, 'story');
-        var postDataUri = await compositeComboTeaser(proxiedBg.dataUri, overlay, logoUrls, 'post');
+        var postDataUri = await toReelFormat(await compositeComboTeaser(proxiedBg.dataUri, overlay, logoUrls, 'post'));
         await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: storyDataUri, field: 'story' });
         await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: postDataUri, field: 'post' });
         await supabaseClient.from('pending_publications').update({ status: 'pending' }).eq('id', id);
@@ -4354,7 +4389,7 @@ async function finishVictoryStoryComposite(id, rawImageUrl) {
         // Les deux formats sont générés à chaque fois : l'admin choisit ensuite,
         // au moment d'approuver, de publier en Story, en Post, ou les deux.
         var storyDataUri = await compositeVictoryStory(proxiedBg.dataUri, overlay, logoUrls, 'story');
-        var postDataUri = await compositeVictoryStory(proxiedBg.dataUri, overlay, logoUrls, 'post');
+        var postDataUri = await toReelFormat(await compositeVictoryStory(proxiedBg.dataUri, overlay, logoUrls, 'post'));
         await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: storyDataUri, field: 'story' });
         await adminApiCall('/api/image-bridge', { action: 'upload', id: id, imageDataUri: postDataUri, field: 'post' });
         await supabaseClient.from('pending_publications').update({ status: 'pending' }).eq('id', id);
@@ -5567,7 +5602,9 @@ function renderPublicationCard(p) {
         </div>`;
     }
 
-    // Contenu généré en 2 formats (Story 9:16 + Post 4:5) : l'admin choisit lequel
+    // Contenu généré en 2 formats, tous deux en 9:16 (Story et Post/Reel, ce
+    // dernier avec des marges hautes et basses libres pour l'interface d'un
+    // Reel) : l'admin choisit lequel
     // publier (ou les deux) avant d'approuver — dimensions natives pour chaque
     // format, jamais un recadrage moche de l'un vers l'autre.
     var storyChecked = p.publish_as_story !== false;
@@ -5588,9 +5625,9 @@ function renderPublicationCard(p) {
                 ${p.image_url_story ? `<a href="${p.image_url_story}" download="score-master-story.jpg" style="display:block; text-align:center; margin-top:4px; padding:6px; background:rgba(255,255,255,.06); color:#fff; border:1px solid rgba(255,255,255,.12); border-radius:7px; font-size:10px; font-weight:700; text-decoration:none;"><i class="fas fa-download"></i> Enregistrer</a>` : ''}
             </div>
             <div style="flex:1;">
-                <img src="${p.image_url_post || ''}" style="width:100%; border-radius:10px; display:block; aspect-ratio:4/5; object-fit:cover; background:#0a0e1a;" onerror="this.style.display='none'">
+                <img src="${p.image_url_post || ''}" style="width:100%; border-radius:10px; display:block; aspect-ratio:9/16; object-fit:cover; background:#0a0e1a;" onerror="this.style.display='none'">
                 <label style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-light-gray); margin-top:6px;">
-                    <input type="checkbox" id="pub-post-${p.id}" ${postChecked ? 'checked' : ''} style="accent-color:var(--primary-yellow);"> Post (feed)
+                    <input type="checkbox" id="pub-post-${p.id}" ${postChecked ? 'checked' : ''} style="accent-color:var(--primary-yellow);"> Post / Reel
                 </label>
                 ${p.image_url_post ? `<a href="${p.image_url_post}" download="score-master-post.jpg" style="display:block; text-align:center; margin-top:4px; padding:6px; background:rgba(255,255,255,.06); color:#fff; border:1px solid rgba(255,255,255,.12); border-radius:7px; font-size:10px; font-weight:700; text-decoration:none;"><i class="fas fa-download"></i> Enregistrer</a>` : ''}
             </div>
