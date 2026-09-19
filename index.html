@@ -539,7 +539,7 @@
             #splash-screen, #login-screen, #app, #admin-page, #combo-live-overlay, #full-history-overlay,
             #prompt-gen-overlay, #ecusson-gen-overlay, #insta-texts-overlay, #promo-telegram-overlay,
             #telegram-launch-overlay, #insta-reels-overlay, #relance-overlay, #comeback-overlay, #teaser-overlay,
-            #content-planner-overlay, #ticket-history-overlay {
+            #content-planner-overlay, #ticket-history-overlay, #ticket-loader {
                 position:fixed !important; left:50% !important; top:50% !important; transform:translate(-50%,-50%) !important;
                 width:100vw !important; height:100vh !important; max-width:420px !important; max-height:900px !important;
                 border-radius:30px !important; overflow-y:auto !important; overflow-x:hidden !important;
@@ -560,6 +560,14 @@
         .tk-top .tk-brand { display:flex; align-items:center; gap:10px; font-weight:800; font-size:18px; letter-spacing:.5px; color:var(--tk-text); }
         .tk-top .tk-platform { font-size:11px; padding:4px 8px; }
         .tk-title { display:flex; flex-direction:column; gap:5px; min-width:0; }
+        #ticket-loader { background:radial-gradient(120% 65% at 78% 18%,#262a34 0%,#15161c 45%,#0A0A0F 80%); font-family:Supreme,Roboto,-apple-system,'Segoe UI',Arial,sans-serif; }
+        .tl-inner { height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:0 40px; }
+        .tl-logo { width:84px; height:84px; object-fit:contain; animation:tlPulse 1.4s ease-in-out infinite; }
+        .tl-text { font-size:15px; font-weight:700; color:#fff; letter-spacing:.3px; text-align:center; }
+        .tl-bar { width:100%; max-width:240px; height:4px; border-radius:4px; background:#26282e; overflow:hidden; }
+        .tl-bar span { display:block; width:0; height:100%; border-radius:4px; background:var(--primary-yellow); transition:width .18s ease-out; }
+        .tl-pct { font-size:13px; font-weight:700; color:#8d9098; font-variant-numeric:tabular-nums; }
+        @keyframes tlPulse { 50% { transform:scale(1.06); opacity:.85; } }
         .tk-sync { display:flex; align-items:center; gap:7px; font-size:12px; color:#8d9098; min-height:16px; }
         .tk-sync b { font-weight:700; color:#fff; font-variant-numeric:tabular-nums; }
         .tk-dot { width:7px; height:7px; border-radius:50%; background:#f0b429; flex:0 0 auto; animation:tkPulse 1s ease-in-out infinite; }
@@ -1385,7 +1393,7 @@ async function fetchApiScore(id, dateRaw) {
                     <div class="api-title">API sportifs connectés <div class="live-dot"></div></div>
                     <div class="api-desc">Données en temps réel • Cotes actualisées</div>
                 </div>
-                <span class="betclic-badge platform-badge-display" onclick="openTicketHistory()" style="cursor:pointer;">BETCLIC</span>
+                <span class="betclic-badge platform-badge-display" onclick="openTicketHistoryWithLoader()" style="cursor:pointer;">BETCLIC</span>
             </div>
             <div class="ai-promo-banner fade-in-up delay-2" onclick="navigateTo('ai')">
                 <div class="ai-promo-icon"><i class="fas fa-brain"></i></div>
@@ -1734,7 +1742,7 @@ async function fetchApiScore(id, dateRaw) {
                     <div class="api-title">API sportifs connectés <div class="live-dot"></div></div>
                     <div class="api-desc">Données en temps réel • Cotes actualisées</div>
                 </div>
-                <span class="betclic-badge platform-badge-display" onclick="openTicketHistory()" style="cursor:pointer;">BETCLIC</span>
+                <span class="betclic-badge platform-badge-display" onclick="openTicketHistoryWithLoader()" style="cursor:pointer;">BETCLIC</span>
             </div>
             <div id="vip-combined-status-bar"></div>
             <div class="vip-combined-container" id="vip-combined-container">
@@ -2296,6 +2304,16 @@ async function fetchApiScore(id, dateRaw) {
     </div>
     <div style="flex:1; overflow-y:auto; padding:0 20px 30px;">
         <div id="full-history-container"></div>
+    </div>
+</div>
+
+<!-- ÉCRAN DE CHARGEMENT avant « Mes tickets » : charge réellement l'historique pendant l'affichage -->
+<div id="ticket-loader" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:10003;opacity:0;transition:opacity 0.25s;">
+    <div class="tl-inner">
+        <img src="logo-dark.png" alt="Score Master" class="tl-logo">
+        <div class="tl-text" id="tl-text">Chargement de l'historique…</div>
+        <div class="tl-bar"><span id="tl-fill"></span></div>
+        <div class="tl-pct" id="tl-pct">0 %</div>
     </div>
 </div>
 
@@ -8797,7 +8815,7 @@ async function autoFetchFinalScores(combined) {
         var pw = '50%'; if (sc === 'termine' || sc === 'perdu') pw = '100%';
         if (vc) vc.innerHTML = buildCC(currentCombined, sc, sl, pw, false);
         if (hc) hc.innerHTML = buildCC(currentCombined, sc, sl, pw, true);
-        if (sc === 'en-cours' && sb) sb.innerHTML = '<div class="platform-bg-display" onclick="openTicketHistory()" style="background:' + platformColors().background + '; color:' + platformColors().color + '; padding:14px; border-radius:12px; text-align:center; font-weight:800; font-size:15px; margin:0 20px 15px; cursor:pointer;">Aperçu historique bookmaker favori <i class="fas fa-chevron-right" style="font-size:12px; margin-left:4px;"></i></div>';
+        if (sc === 'en-cours' && sb) sb.innerHTML = '<div class="platform-bg-display" onclick="openTicketHistoryWithLoader()" style="background:' + platformColors().background + '; color:' + platformColors().color + '; padding:14px; border-radius:12px; text-align:center; font-weight:800; font-size:15px; margin:0 20px 15px; cursor:pointer;">Aperçu historique bookmaker favori <i class="fas fa-chevron-right" style="font-size:12px; margin-left:4px;"></i></div>';
         else if (sb) sb.innerHTML = '';
     }
     // ============================================================
@@ -9171,6 +9189,40 @@ async function runTicketSync(first) {
     }
     if (run !== ticketSyncRun) return;
     ticketSyncTimer = setTimeout(function () { runTicketSync(false); }, 5350);
+}
+
+var ticketLoaderBusy = false;
+
+async function openTicketHistoryWithLoader() {
+    if (ticketLoaderBusy) return;
+    ticketLoaderBusy = true;
+    var loader = document.getElementById('ticket-loader');
+    var fill = document.getElementById('tl-fill');
+    var pct = document.getElementById('tl-pct');
+    var text = document.getElementById('tl-text');
+    var show = function (v) { fill.style.width = v + '%'; pct.textContent = v + ' %'; };
+    text.textContent = "Chargement de l'historique…";
+    show(0);
+    loader.style.display = 'block';
+    setTimeout(function () { loader.style.opacity = '1'; }, 10);
+
+    var steps = [8, 19, 34, 47, 58, 69, 78, 86, 93, 99], i = 0;
+    var ticker = setInterval(function () { if (i < steps.length) show(steps[i++]); }, 120);
+    var started = Date.now();
+    try {
+        var data = await fetchTicketCombineds();
+        allCombineds = data;
+        currentCombined = allCombineds.find(function (c) { return c.status === 'en-cours'; }) || allCombineds[0] || null;
+    } catch (e) {
+        text.textContent = 'Connexion lente, affichage des dernières données connues…';
+    }
+    await new Promise(function (r) { setTimeout(r, Math.max(0, 1250 - (Date.now() - started))); });
+    clearInterval(ticker);
+    show(100);
+    await new Promise(function (r) { setTimeout(r, 250); });
+    openTicketHistory();
+    loader.style.opacity = '0';
+    setTimeout(function () { loader.style.display = 'none'; ticketLoaderBusy = false; }, 250);
 }
 
 function stopTicketSync() {
