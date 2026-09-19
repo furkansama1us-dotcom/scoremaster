@@ -8625,7 +8625,7 @@ function closeFullHistory() {
 // sélections repliables, cote totale et gain simulé pour une mise d'exemple.
 // À la validation, m.score est remplacé par le score réel : sur un combiné gagné
 // c'est le score exact pronostiqué, sur un perdu le pronostic n'est plus connu.
-var TICKET_SIM_STAKE = 10;
+var TICKET_SIM_STAKE = 100; // défaut de l'onglet IA, utilisé quand la mise du combiné (table VIP) n'est pas lisible
 
 function ticketFullDate(d) {
     if (!d) return '';
@@ -8722,14 +8722,16 @@ function buildTicketCardHtml(c) {
             </div>`;
         }).join('');
 
-        // Montants d'exemple : aucun pari réel n'est enregistré, d'où la mention « simulée ».
+        // Mise du combiné (celle de la carte VIP) si disponible, sinon la valeur par défaut.
+        // Aucun pari réel n'est enregistré, d'où la mention « simulée ».
+        var stake = parseFloat(c.mise) > 0 ? parseFloat(c.mise) : TICKET_SIM_STAKE;
         var gainHtml = '';
         if (finalOdds > 0 && sc === 'en-cours') {
-            gainHtml = `<div class="hc-row"><span>Mise <small>simulée</small></span><strong>${ticketEuros(TICKET_SIM_STAKE)}</strong></div>
-                <div class="hc-row hc-gain termine"><span>Gains potentiels <small>simulés</small></span><strong>${ticketEuros(TICKET_SIM_STAKE * finalOdds)}</strong></div>`;
+            gainHtml = `<div class="hc-row"><span>Mise <small>simulée</small></span><strong>${ticketEuros(stake)}</strong></div>
+                <div class="hc-row hc-gain termine"><span>Gains potentiels <small>simulés</small></span><strong>${ticketEuros(stake * finalOdds)}</strong></div>`;
         } else if (finalOdds > 0) {
-            var gain = sc === 'termine' ? TICKET_SIM_STAKE * finalOdds : 0;
-            gainHtml = `<div class="hc-row"><span>Mise <small>simulée</small></span><strong>${ticketEuros(TICKET_SIM_STAKE)}</strong></div>
+            var gain = sc === 'termine' ? stake * finalOdds : 0;
+            gainHtml = `<div class="hc-row"><span>Mise <small>simulée</small></span><strong>${ticketEuros(stake)}</strong></div>
                 <div class="hc-row hc-gain ${sc}"><span>Gains <small>simulés</small></span><strong>${ticketEuros(gain)}</strong></div>`;
         }
 
