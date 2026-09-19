@@ -556,7 +556,7 @@
         .history-card .status.perdu { color:var(--red); }
         /* Page « Mes tickets » (ouverte par le badge bookmaker) — palette et proportions calquées sur l'aperçu fourni */
         #ticket-history-overlay { --tk-bg:#0A0A0F; --tk-card:#16171c; --tk-soft:#2f2f36; --tk-line:#32353d; --tk-foot:#1b1c21; --tk-text:#ffffff; --tk-label:#b9b9b9; --tk-gray:#888888; --tk-team:#bcbcbc; --tk-dim:#717171; --tk-green:#73d5ab; --tk-green-bg:#18332a; --tk-red:#ef6b6b; --tk-red-bg:#3a1d20; --tk-amber:#efb43a; --tk-amber-bg:#3a2f14; --tk-pending:#a9abd8; --tk-odd:rgba(26,35,82,.8); font-family:Supreme,Roboto,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; background:radial-gradient(120% 65% at 78% 18%,#262a34 0%,#15161c 45%,var(--tk-bg) 80%) !important; }
-        .tk-top { display:flex; align-items:center; justify-content:space-between; padding:calc(14px + var(--safe-top)) 16px 10px; background:#000; }
+        .tk-top { display:flex; flex-direction:column; align-items:flex-start; gap:12px; padding:calc(12px + var(--safe-top)) 16px 10px; background:#000; }
         .tk-top .tk-brand { display:flex; align-items:center; gap:10px; font-weight:800; font-size:18px; letter-spacing:.5px; color:var(--tk-text); }
         .tk-top .tk-platform { font-size:11px; padding:4px 8px; }
         .tk-title { display:flex; flex-direction:column; gap:5px; min-width:0; }
@@ -567,7 +567,9 @@
         .tk-sync.ok { color:#3ecf8e; }
         .tk-sync.err .tk-dot { background:#ef5b5b; animation:none; }
         @keyframes tkPulse { 50% { opacity:.3; } }
-        .tk-close { width:36px; height:36px; border-radius:50%; border:none; background:var(--tk-soft); color:var(--tk-text); font-size:16px; cursor:pointer; }
+        .tk-back { display:inline-flex; align-items:center; gap:8px; height:34px; padding:0 14px 0 10px; border:1px solid #343539; border-radius:17px; background:#1d1e21; color:#fff; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+        .tk-back i { font-size:11px; color:#b9bbc2; }
+        .tk-back img { width:20px; height:20px; object-fit:contain; }
         .hc-filters { display:flex; gap:8px; padding:4px 14px 12px; margin-bottom:14px; overflow-x:auto; scrollbar-width:none; background:#000; }
         .hc-filters::-webkit-scrollbar { display:none; }
         .hc-views { flex:0 0 auto; display:flex; gap:2px; padding:3px; border-radius:20px; background:#1d1e21; border:1px solid #343539; }
@@ -2300,11 +2302,11 @@ async function fetchApiScore(id, dateRaw) {
 <!-- HISTORIQUE DES TICKETS — nouvelle page, ouverte par le badge bookmaker de la bannière « API sportifs connectés » -->
 <div id="ticket-history-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:10002;flex-direction:column;opacity:0;transition:opacity 0.3s;">
     <div class="tk-top">
+        <button class="tk-back" onclick="closeTicketHistory()"><i class="fas fa-chevron-left"></i><img src="logo-dark.png" alt="">Retour sur Score Master</button>
         <div class="tk-title">
             <span class="tk-brand">SCORE MASTER <span class="betclic-badge platform-badge-display tk-platform">BETCLIC</span></span>
             <span class="tk-sync" id="tk-sync"><i class="tk-dot"></i><span id="tk-sync-text">Chargement des dernières données…</span><b id="tk-sync-pct"></b></span>
         </div>
-        <button class="tk-close" onclick="closeTicketHistory()" aria-label="Fermer"><i class="fas fa-times"></i></button>
     </div>
     <div class="hc-filters" id="ticket-history-filters">
         <div class="hc-views">
