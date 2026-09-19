@@ -8629,13 +8629,6 @@ function ticketFullDate(d) {
     return new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Paris' }).format(dt);
 }
 
-function ticketShortDate(d) {
-    if (!d) return '';
-    var dt = new Date(d);
-    if (isNaN(dt)) return '';
-    return new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Europe/Paris' }).format(dt);
-}
-
 function ticketEuros(v) {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(v);
 }
@@ -8649,10 +8642,10 @@ function ticketRef(c) {
     return id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase();
 }
 
-// « 14h35 - 30/11/2025 » : heure de publication (created_at) ; pour les anciens
+// « 1h51 - 16 septembre 2026 » : heure de publication (created_at) ; pour les anciens
 // combinés qui ne l'ont pas, l'heure saisie avec le combiné (champ time).
 function ticketStamp(c) {
-    var day = ticketShortDate(c.date || c.created_at);
+    var day = ticketFullDate(c.date || c.created_at);
     if (!c.created_at) {
         var hm = String(c.time || '').match(/(\d{1,2}):(\d{2})/);
         return hm ? parseInt(hm[1], 10) + 'h' + hm[2] + ' - ' + day : day;
