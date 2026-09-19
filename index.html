@@ -3750,6 +3750,50 @@ function pollCarouselStoryGeneration(id, statusUrls, done, attempt) {
     }, 5000);
 }
 
+// ------------------------------------------------------------
+// Carrousel du calendrier de contenu : habillage des 8 slides (texte réel +
+// logo Score Master), puis passage en "pending" pour validation. La ligne
+// Telegram jumelle (même calendar_id) reçoit la première slide en visuel.
+// ------------------------------------------------------------
+async function finishCalendarCarousel(row) {
+    try {
+        var slides = row.overlay_data.slides;
+        var kicker = row.overlay_data.format_nom || 'Score Master';
+        var firstSlideDataUri = null;
+
+        for (var i = 0; i < slides.length; i++) {
+            var proxied = await adminApiCall('/api/image-bridge', { action: 'proxy', url: slides[i].image_url });
+            var dataUri = await compositeCarouselSlide(proxied.dataUri, {
+                kicker: i === 0 ? kicker : '',
+                headline: slides[i].texte
+            }, i, slides.length);
+            if (i === 0) firstSlideDataUri = dataUri;
+            await adminApiCall('/api/image-bridge', { action: 'upload', id: row.id, imageDataUri: dataUri, field: 'carousel:' + i });
+        }
+
+        await supabaseClient.from('pending_publications').update({ status: 'pending' }).eq('id', row.id);
+
+        // Version Telegram du même contenu : une seule image (la première slide).
+        if (firstSlideDataUri && row.platform === 'instagram') {
+            var twin = await supabaseClient.from('pending_publications')
+                .select('id, status')
+                .eq('platform', 'telegram')
+                .filter('overlay_data->>calendar_id', 'eq', row.overlay_data.calendar_id)
+                .maybeSingle();
+            if (twin.data && twin.data.status === 'generating') {
+                await adminApiCall('/api/image-bridge', { action: 'upload', id: twin.data.id, imageDataUri: firstSlideDataUri });
+            }
+        }
+
+        showToast('Carrousel « ' + (row.overlay_data.titre || 'calendrier') + ' » prêt à valider ! 🎨');
+        loadAdminPublications();
+    } catch (error) {
+        console.error('Erreur habillage carrousel calendrier :', error);
+        showToast('Erreur : ' + (error && error.message ? error.message : 'inconnue'), true);
+        await markPublicationFailed(row.id, error);
+    }
+}
+
 async function finishCarouselStoryComposite(id, bgUrls) {
     try {
         // Relit les slides réellement utilisées pour CETTE génération (stockées
@@ -4905,6 +4949,12 @@ var _resumedGenerations = {};
 // bouton "Relancer" manuel (qui doit pouvoir re-tenter même si une reprise
 // automatique a déjà été tentée, d'où le paramètre séparé de la garde).
 function resumeOneGeneration(r) {
+    // Carrousel issu du calendrier de contenu : les 8 images sont déjà générées
+    // (avec la mascotte) par la routine, il reste l'habillage texte + logo.
+    if (r.overlay_data && r.overlay_data.source === 'content-calendar' && Array.isArray(r.overlay_data.slides)) {
+        finishCalendarCarousel(r);
+        return true;
+    }
     if (r.content_type === 'Carrousel Story' && r.overlay_data && Array.isArray(r.overlay_data.statusUrls)) {
         pollCarouselStoryGeneration(r.id, r.overlay_data.statusUrls, new Array(r.overlay_data.statusUrls.length).fill(false));
         return true;

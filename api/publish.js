@@ -25,6 +25,11 @@ const POSTIZ_DOMAIN = process.env.POSTIZ_DOMAIN || 'postiz.srv1960340.hstgr.clou
 // prenait donc le premier trouvé, potentiellement celui d'un autre projet
 // (bug réel constaté : contenu Score Master publié sur le compte Hibou
 // Empire). On cible désormais explicitement le compte par son id Postiz.
+// Secret partagé avec la routine "Calendrier de contenu" (Claude Code), qui
+// génère les 8 visuels d'un carrousel avec la mascotte puis dépose le brouillon
+// ici. Sans ce secret, aucun dépôt possible : la clé anon ne peut pas écrire
+// dans pending_publications (aucune policy d'insertion).
+const CALENDAR_SECRET = process.env.CALENDAR_SECRET;
 const POSTIZ_INSTAGRAM_INTEGRATION_ID = process.env.POSTIZ_INSTAGRAM_INTEGRATION_ID || 'cmtw09jnf0001no72az5xn74h'; // "Scores Meridian" = compte Instagram réel de Score Master
 
 async function sbFetch(path, options) {
@@ -231,6 +236,55 @@ async function handleForcePublish(req, res) {
     }
 }
 
+// POST { action: 'calendar-draft', secret, draft } — dépose un brouillon de
+// carrousel issu du calendrier de contenu. Les images sont déjà générées
+// (URLs Higgsfield) ; l'habillage texte + logo est fait ensuite côté app, à
+// l'ouverture de l'onglet Publications, comme pour les autres carrousels.
+async function handleCalendarDraft(req, res) {
+    if (!CALENDAR_SECRET) return res.status(500).json({ error: 'CALENDAR_SECRET manquant côté serveur.' });
+    const { secret, draft } = req.body || {};
+    if (secret !== CALENDAR_SECRET) return res.status(403).json({ error: 'Secret invalide.' });
+    if (!draft || !draft.calendar_id || !draft.caption || !Array.isArray(draft.slides) || !draft.slides.length) {
+        return res.status(400).json({ error: 'draft.calendar_id, draft.caption et draft.slides sont requis.' });
+    }
+    if (draft.slides.some(function (s) { return !s || !s.image_url || !s.texte; })) {
+        return res.status(400).json({ error: 'Chaque slide doit avoir image_url et texte.' });
+    }
+
+    // Idempotence : une même publication du calendrier n'est jamais déposée deux
+    // fois pour la même plateforme (Instagram et Telegram ont chacun leur ligne).
+    const query = 'pending_publications?select=id&overlay_data->>calendar_id=eq.'
+        + encodeURIComponent(draft.calendar_id)
+        + '&platform=eq.' + encodeURIComponent(draft.platform || 'instagram');
+    const existing = await sbFetch(query);
+    if (existing && existing.length) {
+        return res.status(200).json({ ok: true, already: true, id: existing[0].id });
+    }
+
+    const row = {
+        scheduled_for: draft.scheduled_for,
+        scheduled_time: draft.scheduled_time,
+        content_type: draft.content_type || 'Carrousel Calendrier',
+        platform: draft.platform || 'instagram',
+        caption: draft.caption,
+        status: 'generating',
+        overlay_data: {
+            calendar_id: draft.calendar_id,
+            titre: draft.titre || '',
+            format: draft.format || '',
+            format_nom: draft.format_nom || '',
+            source: 'content-calendar',
+            slides: draft.slides
+        }
+    };
+    const inserted = await sbFetch('pending_publications', {
+        method: 'POST',
+        headers: { Prefer: 'return=representation' },
+        body: JSON.stringify([row])
+    });
+    res.status(200).json({ ok: true, id: inserted && inserted[0] && inserted[0].id });
+}
+
 module.exports = async function handler(req, res) {
     if (!SUPABASE_SERVICE_ROLE_KEY || !POSTIZ_API_KEY) {
         return res.status(500).json({ error: 'Variables d\'environnement manquantes (SUPABASE_SERVICE_ROLE_KEY, POSTIZ_API_KEY).' });
@@ -238,6 +292,7 @@ module.exports = async function handler(req, res) {
 
     try {
         if (req.method === 'GET') return await handleCronSweep(req, res);
+        if (req.method === 'POST' && req.body && req.body.action === 'calendar-draft') return await handleCalendarDraft(req, res);
         if (req.method === 'POST') return await handleForcePublish(req, res);
         return res.status(405).json({ error: 'Méthode non autorisée' });
     } catch (error) {
