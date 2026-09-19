@@ -382,3 +382,15 @@ drop trigger if exists trg_apply_profile_pack_toggle on public.profiles;
 create trigger trg_apply_profile_pack_toggle
   before update on public.profiles
   for each row execute function public.apply_profile_pack_toggle();
+
+-- ============================================================
+-- Heure de publication des combinés publics (page « Mes tickets »).
+-- Colonne ajoutée sans défaut pour ne pas dater les anciens combinés
+-- à l'heure de la migration ; le défaut vaut pour les nouveaux.
+-- ============================================================
+
+alter table public.combineds_public
+  add column if not exists created_at timestamptz;
+
+alter table public.combineds_public
+  alter column created_at set default now();

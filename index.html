@@ -8636,14 +8636,18 @@ var TICKET_BALL_SVG = '<svg class="tk-ball" viewBox="0 0 24 24" aria-hidden="tru
 // Référence Score Master du combiné (dérivée de son id en base).
 function ticketRef(c) {
     var id = String(c.id || '');
-    if (/^\d+$/.test(id)) return 'SM-' + id.padStart(6, '0');
-    return 'SM-' + id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase();
+    if (/^\d+$/.test(id)) return id.padStart(8, '0');
+    return id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase();
 }
 
-// « 1h51 - 16 septembre 2026 » si l'heure de création est connue, sinon la date seule.
+// « 1h51 - 16 septembre 2026 » : heure de publication (created_at) ; pour les anciens
+// combinés qui ne l'ont pas, l'heure saisie avec le combiné (champ time).
 function ticketStamp(c) {
     var day = ticketFullDate(c.date || c.created_at);
-    if (!c.created_at) return day;
+    if (!c.created_at) {
+        var hm = String(c.time || '').match(/(\d{1,2}):(\d{2})/);
+        return hm ? parseInt(hm[1], 10) + 'h' + hm[2] + ' - ' + day : day;
+    }
     var t = new Intl.DateTimeFormat('fr-FR', { hour: 'numeric', minute: '2-digit', timeZone: 'Europe/Paris' }).format(new Date(c.created_at)).replace(':', 'h');
     return t + ' - ' + day;
 }
