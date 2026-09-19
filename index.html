@@ -2403,6 +2403,22 @@ async function fetchApiScore(id, dateRaw) {
         #content-planner-overlay .cp-thumb-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:2px;}
         #content-planner-overlay .cp-thumb{flex:0 0 auto;width:90px;height:112px;border-radius:9px;object-fit:cover;border:1px solid #e7e0d5;}
         #content-planner-overlay .cp-statusline{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;padding:10px 12px;border-radius:10px;}
+        #content-planner-overlay .cp-dash{background:#fff;border:1px solid #e7e0d5;border-radius:16px;padding:14px;box-shadow:0 2px 10px rgba(42,36,48,.05);}
+        #content-planner-overlay .cp-dash-head{display:flex;align-items:center;gap:10px;}
+        #content-planner-overlay .cp-nav{flex:0 0 auto;width:34px;height:34px;border-radius:10px;border:1px solid #e7e0d5;background:#fff;color:#5a5262;font-size:14px;cursor:pointer;}
+        #content-planner-overlay .cp-dash-day{flex:1;text-align:center;}
+        #content-planner-overlay .cp-dash-day b{display:block;font-family:Anton,Impact,sans-serif;font-size:17px;color:#2a2430;letter-spacing:.3px;}
+        #content-planner-overlay .cp-dash-day small{display:block;font-size:11.5px;color:#8a8290;margin-top:2px;}
+        #content-planner-overlay .cp-today-btn{width:100%;margin-top:10px;padding:8px;border-radius:10px;border:1px solid #e7e0d5;background:#faf7f2;color:#5a5262;font-size:11.5px;font-weight:800;cursor:pointer;}
+        #content-planner-overlay .cp-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px;}
+        #content-planner-overlay .cp-kpi{background:#faf7f2;border:1px solid #efe9df;border-radius:11px;padding:9px 6px;text-align:center;}
+        #content-planner-overlay .cp-kpi b{display:block;font-family:Anton,Impact,sans-serif;font-size:19px;line-height:1.1;}
+        #content-planner-overlay .cp-kpi small{display:block;font-size:9.5px;color:#8a8290;margin-top:3px;line-height:1.2;}
+        #content-planner-overlay .cp-week-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fff;border:1px solid #e7e0d5;border-radius:11px;margin-bottom:7px;cursor:pointer;}
+        #content-planner-overlay .cp-week-row b{flex:1;font-size:12.5px;color:#2a2430;font-weight:800;}
+        #content-planner-overlay .cp-week-row span{font-size:11px;color:#8a8290;}
+        #content-planner-overlay .cp-pill{display:inline-block;font-size:10px;font-weight:800;padding:3px 8px;border-radius:999px;white-space:nowrap;}
+        #content-planner-overlay .cp-fold{width:100%;text-align:left;background:none;border:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8a8290;font-weight:800;cursor:pointer;padding:0 2px 10px;}
         #content-planner-overlay .cp-view{display:none;}
         #content-planner-overlay .cp-view.active{display:block;}
     </style>
@@ -2412,8 +2428,29 @@ async function fetchApiScore(id, dateRaw) {
     </div>
     <div style="flex:1; overflow-y:auto; padding:18px 16px 30px;">
         <div class="cp-view active" id="cp-view-home">
+            <div class="cp-sec">
+                <div class="cp-dash">
+                    <div class="cp-dash-head">
+                        <button class="cp-nav" onclick="cpShiftDay(-1)" aria-label="Jour précédent"><i class="fas fa-chevron-left"></i></button>
+                        <div class="cp-dash-day"><b id="cpDashDay">—</b><small id="cpDashSub">—</small></div>
+                        <button class="cp-nav" onclick="cpShiftDay(1)" aria-label="Jour suivant"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <button class="cp-today-btn" onclick="cpGoToday()">Revenir à aujourd'hui</button>
+                    <div class="cp-kpis" id="cpKpis"></div>
+                </div>
+            </div>
+            <div class="cp-sec">
+                <div class="cp-eyebrow">Programme du jour</div>
+                <div class="cp-tl" id="cpTodayTl"></div>
+            </div>
+            <div class="cp-sec">
+                <div class="cp-eyebrow">7 prochains jours</div>
+                <div id="cpWeek"></div>
+            </div>
             <div class="cp-sec" id="cpNextDayBanner"></div>
             <div class="cp-sec">
+                <button class="cp-fold" onclick="cpToggleActions()">⚙️ Générer à la demande <span id="cpFoldCaret">▾</span></button>
+                <div id="cpActionsBox" style="display:none;">
                 <button id="cpPlanBtn" onclick="cpPlanAhead(3,1)" style="width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#a855f7,#e8b84b);color:#141821;font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
                     <i class="fas fa-wand-magic-sparkles"></i> Planifier les prochains jours
                 </button>
@@ -2421,6 +2458,8 @@ async function fetchApiScore(id, dateRaw) {
                 <button onclick="cpOpenMultiSelect()" style="width:100%;margin-top:10px;padding:12px;border-radius:12px;border:1.5px solid #c8963c;background:#fff;color:#8a5a13;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
                     <i class="fas fa-calendar-check"></i> Générer sur plusieurs jours
                 </button>
+            </div>
+                </div>
             </div>
             <div class="cp-sec"><div class="cp-eyebrow">Prochain contenu</div><div class="cp-hero" id="cpHeroNext"></div></div>
             <div class="cp-sec">
@@ -2431,17 +2470,6 @@ async function fetchApiScore(id, dateRaw) {
                     <button class="cp-quick-card" onclick="cpFilterType('carousel')"><div class="cp-quick-ic" style="background:rgba(168,85,247,.14);color:#a855f7;">🖼️</div><div class="cp-quick-name">Carrousel Story</div><div class="cp-quick-sub">6 slides</div></button>
                     <button class="cp-quick-card" onclick="cpFilterType('victory')"><div class="cp-quick-ic" style="background:rgba(62,207,142,.14);color:#3ecf8e;">✅</div><div class="cp-quick-name">Victoire</div><div class="cp-quick-sub">Résultat confirmé</div></button>
                 </div>
-            </div>
-            <div class="cp-sec">
-                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
-                    <div class="cp-eyebrow" id="cpTodayLabel" style="margin-bottom:0;">Aujourd'hui</div>
-                    <div style="display:flex; gap:6px;">
-                        <button id="cpDayFilter0" onclick="cpSetHomeDayOffset(0)" style="padding:5px 10px;border-radius:999px;border:1px solid #e7e0d5;background:#fff;color:#5a5262;font-size:11px;font-weight:800;cursor:pointer;">Aujourd'hui</button>
-                        <button id="cpDayFilter1" onclick="cpSetHomeDayOffset(1)" style="padding:5px 10px;border-radius:999px;border:1px solid #e7e0d5;background:#fff;color:#5a5262;font-size:11px;font-weight:800;cursor:pointer;">J+1</button>
-                        <button id="cpDayFilter2" onclick="cpSetHomeDayOffset(2)" style="padding:5px 10px;border-radius:999px;border:1px solid #e7e0d5;background:#fff;color:#5a5262;font-size:11px;font-weight:800;cursor:pointer;">J+2</button>
-                    </div>
-                </div>
-                <div class="cp-tl" id="cpTodayTl"></div>
             </div>
             <div class="cp-sec"><div class="cp-eyebrow">Ce mois-ci</div><div class="cp-mini" id="cpMiniCal"></div></div>
         </div>
@@ -4931,7 +4959,7 @@ async function approveCalendarRows(typeKey, dayOffset) {
 // contenu historique, ces types n'apparaissent plus dans l'onglet
 // Publications — leur validation se fait exclusivement depuis le Content
 // Planner (bouton dédié dans l'en-tête du Panel Admin).
-var CP_CONTENT_TYPES = ['Conseil IA', 'Combiné du jour', 'Carrousel Story', 'Victoire', 'Victoire Story'];
+var CP_CONTENT_TYPES = ['Conseil IA', 'Combiné du jour', 'Carrousel Story', 'Victoire', 'Victoire Story', 'Carrousel Calendrier'];
 
 // ============================================================
 // PUBLICATIONS — validation des brouillons générés par le script VPS
@@ -5055,6 +5083,7 @@ var CP_TYPES = {
     combo:    { label: 'Combiné du jour', chip: '#3ea0cf', chipBg: 'rgba(62,160,207,.14)', chipFg: '#3ea0cf', icon: '🏆' },
     carousel: { label: 'Carrousel Story', chip: '#a855f7', chipBg: 'rgba(168,85,247,.14)', chipFg: '#a855f7', icon: '🖼️' },
     victory:  { label: 'Victoire',        chip: '#3ecf8e', chipBg: 'rgba(62,207,142,.14)', chipFg: '#3ecf8e', icon: '✅' },
+    calendrier: { label: 'Calendrier', chip: '#c8963c', chipBg: 'rgba(200,150,60,.16)', chipFg: '#8a5a13', icon: '🗓️' },
     other:    { label: 'Autre',           chip: '#8b91a3', chipBg: 'rgba(139,145,163,.14)', chipFg: '#8b91a3', icon: '📄' }
 };
 
@@ -5062,6 +5091,7 @@ function cpTypeKey(contentType) {
     var s = (contentType || '').toLowerCase();
     if (s.indexOf('conseil') !== -1) return 'conseil';
     if (s.indexOf('combiné') !== -1 || s.indexOf('combine') !== -1) return 'combo';
+    if (s.indexOf('carrousel calendrier') !== -1) return 'calendrier';
     if (s.indexOf('carrousel') !== -1) return 'carousel';
     if (s.indexOf('victoire') !== -1) return 'victory';
     return 'other';
@@ -5138,7 +5168,7 @@ async function openContentPlanner() {
     setTimeout(function () { overlay.style.opacity = '1'; }, 10);
     cpGo('home');
 
-    await cpFetchRows();
+    await Promise.all([cpFetchRows(), cpLoadCalendar()]);
     cpRenderHome();
     // Dès que l'admin ouvre le Content Planner, prépare automatiquement le
     // contenu du lendemain s'il n'existe pas encore — pas besoin d'attendre
@@ -5406,47 +5436,204 @@ function cpSetHomeDayOffset(offset) {
     cpRenderHome();
 }
 
-function cpRenderHome() {
+// ------------------------------------------------------------
+// TABLEAU DE BORD DU CONTENT PLANNER
+// Réunit les publications générées dans l'app (Conseil IA, Combiné, Victoire)
+// et le calendrier de contenu (150 carrousels, content-calendar.json), pour
+// avoir en un écran : le programme du jour, l'état de chaque publication et
+// les 7 prochains jours.
+// ------------------------------------------------------------
+var CP_CALENDAR_START = '2026-09-21'; // jour 1 du calendrier de contenu
+var _cpCalendar = null;
+
+async function cpLoadCalendar() {
+    if (_cpCalendar) return _cpCalendar;
+    try {
+        var res = await fetch('content-calendar.json', { cache: 'no-store' });
+        _cpCalendar = await res.json();
+    } catch (e) {
+        console.error('Calendrier de contenu introuvable :', e);
+        _cpCalendar = [];
+    }
+    return _cpCalendar;
+}
+
+function cpDayNumber(dayStr) {
+    var a = new Date(CP_CALENDAR_START + 'T00:00:00Z').getTime();
+    var b = new Date(dayStr + 'T00:00:00Z').getTime();
+    return Math.round((b - a) / 86400000) + 1;
+}
+
+// Entrées du calendrier prévues ce jour-là, fusionnées avec leur ligne en base.
+function cpCalendarEntries(dayStr) {
+    var n = cpDayNumber(dayStr);
+    if (!_cpCalendar || n < 1 || n > 50) return [];
     var rows = window._cpRows || [];
+    return _cpCalendar.filter(function (e) { return e.jour === n; }).map(function (e) {
+        var row = rows.find(function (r) {
+            return r.overlay_data && r.overlay_data.calendar_id === e.id && r.platform === 'instagram';
+        });
+        return { entry: e, row: row || null };
+    });
+}
+
+var CP_STATUS_PILLS = {
+    pending: { label: 'À valider', bg: 'rgba(232,184,75,.18)', fg: '#8a5a13' },
+    generating: { label: 'En génération', bg: 'rgba(168,85,247,.14)', fg: '#7c3aed' },
+    approved: { label: 'Approuvé', bg: 'rgba(62,160,207,.14)', fg: '#2b7fa5' },
+    published: { label: 'Publié', bg: 'rgba(62,207,142,.16)', fg: '#1f8a5b' },
+    failed: { label: 'Échec', bg: 'rgba(244,63,94,.14)', fg: '#c2334e' },
+    rejected: { label: 'Rejeté', bg: '#efe9df', fg: '#8a8290' },
+    none: { label: 'Prévu', bg: '#efe9df', fg: '#8a8290' }
+};
+
+function cpPill(status) {
+    var s = CP_STATUS_PILLS[status] || CP_STATUS_PILLS.none;
+    return '<span class="cp-pill" style="background:' + s.bg + ';color:' + s.fg + ';">' + s.label + '</span>';
+}
+
+function cpCalendarSlotHtml(item) {
+    var e = item.entry;
+    var status = item.row ? item.row.status : 'none';
+    var click = item.row
+        ? 'cpOpenSheet(\'' + item.row.id + '\')'
+        : 'showToast(\'Visuels générés la veille à 21h par la routine.\')';
+    return '<div class="cp-slot" style="cursor:pointer;" onclick="' + click + '">' +
+        '<div class="cp-time mono">' + e.heure.replace(':', 'h') + '</div>' +
+        '<div class="cp-mid">' +
+            '<div class="cp-top">' + cpChipHtml('calendrier') + '<span class="cp-pill" style="background:#efe9df;color:#8a8290;">' + e.format_nom + '</span></div>' +
+            '<div class="cp-ttl">' + e.titre + '</div>' +
+        '</div>' +
+        cpPill(status) +
+    '</div>';
+}
+
+function cpDayItemsHtml(dayStr) {
+    var rows = (window._cpRows || []).filter(function (r) {
+        return cpRowDay(r) === dayStr && !(r.overlay_data && r.overlay_data.source === 'content-calendar');
+    });
+    var cal = cpCalendarEntries(dayStr);
+    var parts = cal.map(cpCalendarSlotHtml).concat(cpSortByTime(rows).map(cpSlotHtml));
+    return parts.length ? parts.join('') : '<div class="cp-txt-box" style="text-align:center;color:#8a8290;">Aucune publication prévue ce jour-là.</div>';
+}
+
+function cpDayCounts(dayStr) {
+    var c = { total: 0, pending: 0, published: 0, generating: 0 };
+    cpCalendarEntries(dayStr).forEach(function (it) {
+        c.total++;
+        if (!it.row) return;
+        if (it.row.status === 'pending') c.pending++;
+        else if (it.row.status === 'published') c.published++;
+        else if (it.row.status === 'generating') c.generating++;
+    });
+    (window._cpRows || []).forEach(function (r) {
+        if (cpRowDay(r) !== dayStr) return;
+        if (r.overlay_data && r.overlay_data.source === 'content-calendar') return;
+        c.total++;
+        if (r.status === 'pending') c.pending++;
+        else if (r.status === 'published') c.published++;
+        else if (r.status === 'generating') c.generating++;
+    });
+    return c;
+}
+
+function cpShiftDay(delta) {
+    window._cpHomeDayOffset = (window._cpHomeDayOffset || 0) + delta;
+    cpRenderHome();
+}
+
+function cpGoToday() {
+    window._cpHomeDayOffset = 0;
+    cpRenderHome();
+}
+
+function cpToggleActions() {
+    var box = document.getElementById('cpActionsBox');
+    var caret = document.getElementById('cpFoldCaret');
+    var open = box.style.display !== 'none';
+    box.style.display = open ? 'none' : 'block';
+    if (caret) caret.textContent = open ? '▾' : '▴';
+}
+
+function cpLongDayLabel(dayStr, offset) {
+    var d = new Date(dayStr + 'T12:00:00Z');
+    var txt = new Intl.DateTimeFormat('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(d);
+    txt = txt.charAt(0).toUpperCase() + txt.slice(1);
+    if (offset === 0) return "Aujourd'hui · " + txt;
+    if (offset === 1) return 'Demain · ' + txt;
+    return txt;
+}
+
+function cpRenderWeek() {
+    var box = document.getElementById('cpWeek');
+    if (!box) return;
+    var html = '';
+    for (var i = 1; i <= 7; i++) {
+        var ds = dateStrOffset((window._cpHomeDayOffset || 0) + i);
+        var c = cpDayCounts(ds);
+        var d = new Date(ds + 'T12:00:00Z');
+        var label = new Intl.DateTimeFormat('fr-FR', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' }).format(d);
+        html += '<div class="cp-week-row" onclick="cpJumpToDay(' + ((window._cpHomeDayOffset || 0) + i) + ')">' +
+            '<b>' + label.charAt(0).toUpperCase() + label.slice(1) + '</b>' +
+            '<span>' + c.total + ' prévue' + (c.total > 1 ? 's' : '') + '</span>' +
+            (c.pending ? cpPill('pending') : '') +
+            (c.published ? cpPill('published') : '') +
+            '<i class="fas fa-chevron-right" style="color:#c9c2b8;font-size:11px;"></i>' +
+        '</div>';
+    }
+    box.innerHTML = html;
+}
+
+function cpJumpToDay(offset) {
+    window._cpHomeDayOffset = offset;
+    cpRenderHome();
+}
+
+function cpRenderHome() {
     var offset = window._cpHomeDayOffset || 0;
     var dayStr = dateStrOffset(offset);
-    var dayLabels = ["Aujourd'hui", 'Demain (J+1)', 'Après-demain (J+2)'];
+    var dayNum = cpDayNumber(dayStr);
 
-    [0, 1, 2].forEach(function (o) {
-        var btn = document.getElementById('cpDayFilter' + o);
-        if (!btn) return;
-        var active = o === offset;
-        btn.style.background = active ? '#c8963c' : '#fff';
-        btn.style.color = active ? '#fff' : '#5a5262';
-        btn.style.borderColor = active ? '#c8963c' : '#e7e0d5';
-    });
-    var labelEl = document.getElementById('cpTodayLabel');
-    if (labelEl) labelEl.textContent = dayLabels[offset] || dayLabels[0];
+    var dayEl = document.getElementById('cpDashDay');
+    var subEl = document.getElementById('cpDashSub');
+    if (dayEl) dayEl.textContent = cpLongDayLabel(dayStr, offset);
+    if (subEl) subEl.textContent = (dayNum >= 1 && dayNum <= 50)
+        ? 'Jour ' + dayNum + ' / 50 du calendrier de contenu'
+        : 'Hors calendrier de contenu';
 
-    // Prochain contenu : la plus récente ligne pas encore publiée.
-    var next = rows.filter(function (r) { return r.status !== 'published'; })
-        .sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); })[0];
+    var c = cpDayCounts(dayStr);
+    var kpis = document.getElementById('cpKpis');
+    if (kpis) {
+        kpis.innerHTML =
+            '<div class="cp-kpi"><b style="color:#2a2430;">' + c.total + '</b><small>prévues</small></div>' +
+            '<div class="cp-kpi"><b style="color:#8a5a13;">' + c.pending + '</b><small>à valider</small></div>' +
+            '<div class="cp-kpi"><b style="color:#7c3aed;">' + c.generating + '</b><small>en génération</small></div>' +
+            '<div class="cp-kpi"><b style="color:#1f8a5b;">' + c.published + '</b><small>publiées</small></div>';
+    }
+
+    document.getElementById('cpTodayTl').innerHTML = cpDayItemsHtml(dayStr);
+    cpRenderWeek();
+
+    // Prochain contenu à traiter : la première publication en attente de validation.
+    var rows = window._cpRows || [];
+    var next = rows.filter(function (r) { return r.status === 'pending'; })
+        .sort(function (a, b) { return new Date(a.created_at) - new Date(b.created_at); })[0]
+        || rows.filter(function (r) { return r.status !== 'published' && r.status !== 'rejected'; })
+            .sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); })[0];
     var heroEl = document.getElementById('cpHeroNext');
-    if (next) {
-        var t = CP_TYPES[cpTypeKey(next.content_type)];
+    if (heroEl && next) {
         heroEl.innerHTML =
             '<div class="cp-lbl">' + cpChipHtml(cpTypeKey(next.content_type), next._cpJoker) + '</div>' +
-            '<div class="cp-count">' + (next.status === 'generating' ? 'En génération' : 'Prêt à valider') + '</div>' +
-            '<div class="cp-when">Prévu pour le ' + (next.scheduled_for || '—') + '</div>' +
+            '<div class="cp-count">' + (CP_STATUS_PILLS[next.status] || CP_STATUS_PILLS.none).label + '</div>' +
+            '<div class="cp-when">Prévu pour le ' + (next.scheduled_for || '—') + (next.scheduled_time ? ' à ' + next.scheduled_time : '') + '</div>' +
             '<div class="cp-hero-body">' +
                 '<div class="cp-hero-title">' + next.content_type + '</div>' +
                 '<div class="cp-hero-desc">' + cpRowTitle(next) + '</div>' +
             '</div>' +
             '<button onclick="cpOpenSheet(\'' + next.id + '\')" style="margin-top:14px;width:100%;padding:11px;border-radius:11px;background:#e8b84b;color:#141821;font-weight:800;font-size:13px;border:none;cursor:pointer;">Voir le détail</button>';
-    } else {
+    } else if (heroEl) {
         heroEl.innerHTML = '<div class="cp-hero-desc">Rien en attente pour le moment — tout est publié ! 🎉</div>';
     }
-
-    // Jour sélectionné (Aujourd'hui / J+1 / J+2), trié par horaire croissant.
-    var dayRows = cpDayWithPlaceholders(rows.filter(function (r) { return cpRowDay(r) === dayStr; }));
-    document.getElementById('cpTodayTl').innerHTML = dayRows.length
-        ? dayRows.map(cpSlotHtml).join('')
-        : '<div class="cp-txt-box" style="text-align:center;color:#8a8290;">Rien généré ce jour-là.</div>';
 
     cpRenderMiniCal();
 }
