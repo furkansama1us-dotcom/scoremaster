@@ -20,6 +20,8 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Anton&family=Manrope:wght@400;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Supreme (Fontshare) : police de la page « Mes tickets », reprise de la maquette Figma -->
+    <link href="https://api.fontshare.com/v2/css?f[]=supreme@400,700&display=swap" rel="stylesheet">
     
     <style>
         .combined-card { display: flex; flex-direction: column; }
@@ -517,31 +519,31 @@
         .history-card .status.termine { color:var(--green); }
         .history-card .status.perdu { color:var(--red); }
         /* Page « Mes tickets » (ouverte par le badge bookmaker) — palette et proportions calquées sur l'aperçu fourni */
-        #ticket-history-overlay { --tk-bg:#141619; --tk-card:#1e2025; --tk-soft:#2a2d32; --tk-line:#2b2e34; --tk-foot:#1a1c20; --tk-text:#eceef1; --tk-gray:#8f939a; --tk-dim:#72767e; --tk-green:#5dca8f; --tk-green-bg:#173222; --tk-red:#ef6b6b; --tk-red-bg:#3a1d20; --tk-amber:#efb43a; --tk-amber-bg:#3a2f14; --tk-odd:#262b5e; font-family:Roboto,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; background:radial-gradient(110% 55% at 75% 0%,#22262e 0%,var(--tk-bg) 65%) !important; }
+        #ticket-history-overlay { --tk-bg:#131418; --tk-card:#16171c; --tk-soft:#2f2f36; --tk-line:#26272d; --tk-foot:#1b1c21; --tk-text:#ffffff; --tk-label:#b9b9b9; --tk-gray:#888888; --tk-team:#bcbcbc; --tk-dim:#717171; --tk-green:#73d5ab; --tk-green-bg:#18332a; --tk-red:#ef6b6b; --tk-red-bg:#3a1d20; --tk-amber:#efb43a; --tk-amber-bg:#3a2f14; --tk-odd:rgba(26,35,82,.8); font-family:Supreme,Roboto,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; background:radial-gradient(110% 55% at 75% 0%,#22262e 0%,var(--tk-bg) 65%) !important; }
         .tk-top { display:flex; align-items:center; justify-content:space-between; padding:calc(14px + var(--safe-top)) 16px 10px; }
-        .tk-top span { font-weight:600; font-size:18px; color:var(--tk-text); }
+        .tk-top span { font-weight:700; font-size:18px; color:var(--tk-text); }
         .tk-close { width:36px; height:36px; border-radius:50%; border:none; background:var(--tk-soft); color:var(--tk-text); font-size:16px; cursor:pointer; }
         .hc-filters { display:flex; gap:8px; padding:4px 14px 14px; overflow-x:auto; scrollbar-width:none; }
         .hc-filters::-webkit-scrollbar { display:none; }
         .hc-views { flex:0 0 auto; display:flex; gap:2px; padding:4px; border-radius:24px; background:#23262b; }
-        .hc-view { width:42px; height:34px; border:none; border-radius:18px; background:transparent; color:#9a9ea5; font-size:15px; cursor:pointer; }
+        .hc-view { width:42px; height:34px; border:none; border-radius:18px; background:transparent; color:var(--tk-label); font-size:15px; cursor:pointer; }
         .hc-view.active { background:#3a3d43; color:#fff; }
-        .hc-filter { flex:0 0 auto; padding:0 16px; height:42px; border-radius:22px; border:1.5px solid transparent; background:#2a2d32; color:#eceef1; font-size:16px; font-weight:400; font-family:inherit; cursor:pointer; }
-        .hc-filter .n { color:#7d8189; }
+        .hc-filter { flex:0 0 auto; padding:0 16px; height:42px; border-radius:22px; border:1.5px solid transparent; background:var(--tk-soft); color:#fff; font-size:16px; font-weight:700; font-family:inherit; cursor:pointer; }
+        .hc-filter .n { color:var(--tk-gray); font-weight:400; }
         .hc-filter.active { background:transparent; border-color:#d9dbde; }
         .hc { margin-bottom:24px; }
         .hc-head { display:flex; align-items:center; gap:9px; margin:0 0 12px 12px; }
-        .hc-pill { font-size:14px; font-weight:500; padding:4px 7px; border-radius:6px; line-height:1.2; }
+        .hc-pill { font-size:14px; font-weight:700; padding:4px 7px; border-radius:6px; line-height:1.2; }
         .hc-pill.termine { color:var(--tk-green); background:var(--tk-green-bg); }
         .hc-pill.perdu { color:var(--tk-red); background:var(--tk-red-bg); }
         .hc-pill.en-cours { color:var(--tk-amber); background:var(--tk-amber-bg); }
-        .hc-title { font-size:21px; font-weight:600; color:#f3f4f6; }
-        .hc-count { display:inline-flex; align-items:center; gap:5px; font-size:13px; color:#6e7279; background:rgba(255,255,255,.05); padding:3px 8px 3px 4px; border-radius:14px; }
+        .hc-title { font-size:21px; font-weight:700; color:#fff; }
+        .hc-count { display:inline-flex; align-items:center; gap:5px; font-size:14px; color:var(--tk-gray); background:rgba(255,255,255,.05); padding:3px 8px 3px 4px; border-radius:14px; }
         .tk-ball { width:17px; height:17px; flex:0 0 auto; }
         .hc-leg-teams .tk-ball { width:19px; height:19px; }
         .hc-more { margin-left:auto; width:40px; height:40px; border-radius:50%; border:none; background:#25282d; color:#fff; font-size:15px; cursor:pointer; }
         /* Carte avec reflet blanc diagonal, comme sur l'aperçu */
-        .hc-card { position:relative; background:linear-gradient(180deg,#202227 0%,var(--tk-card) 100%); border-radius:18px; overflow:hidden; box-shadow:inset 0 1px 0 rgba(255,255,255,.06); }
+        .hc-card { position:relative; background:linear-gradient(180deg,#1c1d23 0%,var(--tk-card) 100%); border-radius:18px; overflow:hidden; box-shadow:inset 0 1px 0 rgba(255,255,255,.06); }
         .hc-card::before { content:''; position:absolute; top:-40%; right:-20%; width:80%; height:90%; background:radial-gradient(closest-side,rgba(255,255,255,.07),rgba(255,255,255,0)); pointer-events:none; }
         .hc-card::after { content:''; position:absolute; inset:0; background:linear-gradient(115deg,rgba(255,255,255,0) 35%,rgba(255,255,255,.045) 50%,rgba(255,255,255,0) 65%); pointer-events:none; }
         .hc-card > * { position:relative; z-index:1; }
@@ -553,7 +555,7 @@
         .hc-ctrl { display:flex; align-items:center; gap:10px; padding:0 18px 4px; }
         .hc-toggle { width:42px; height:42px; border-radius:50%; border:none; background:#2e3136; color:#b9bcc2; font-size:15px; cursor:pointer; transition:transform .25s; }
         .hc.collapsed .hc-toggle { transform:rotate(-90deg); }
-        .hc-tally { display:inline-flex; align-items:center; gap:8px; height:42px; padding:0 15px; border-radius:22px; border:1px solid #2c2f35; background:rgba(0,0,0,.12); font-weight:400; font-size:19px; color:#f3f4f6; }
+        .hc-tally { display:inline-flex; align-items:center; gap:8px; height:42px; padding:0 15px; border-radius:22px; border:1px solid #2c2f35; background:rgba(0,0,0,.12); font-weight:400; font-size:19px; color:var(--tk-gray); }
         .hc-tally i { font-size:19px; }
         .hc-tally i.fa-check-circle { color:var(--tk-green); }
         .hc-tally i.fa-times-circle { color:var(--tk-red); }
@@ -564,27 +566,27 @@
         .hc-leg-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
         .hc-leg-pick { font-size:15px; color:var(--tk-gray); display:flex; align-items:center; gap:7px; min-width:0; }
         .hc-leg-pick i { font-size:18px; }
-        .hc-leg-pick b { font-size:17px; font-weight:600; letter-spacing:.6px; }
+        .hc-leg-pick b { font-size:17px; font-weight:700; letter-spacing:.6px; margin-left:4px; }
         .hc-leg-pick.termine i, .hc-leg-pick.termine b { color:var(--tk-green); }
         .hc-leg-pick.perdu i { color:var(--tk-dim); }
         .hc-leg-pick.perdu b, .hc-leg-pick.en-cours b { color:var(--tk-text); }
         .hc-leg-pick.en-cours i { color:var(--tk-amber); }
-        .hc-leg-teams { margin-top:9px; font-size:15px; font-weight:400; color:var(--tk-text); display:flex; align-items:center; gap:8px; }
+        .hc-leg-teams { margin-top:9px; font-size:14px; font-weight:700; color:var(--tk-team); display:flex; align-items:center; gap:8px; }
         .hc-leg-teams > span:last-child { flex:1; min-width:0; line-height:1.35; }
         .hc-leg-teams > :not(:last-child) { flex:0 0 auto; }
         .hc-leg-teams img { width:18px; height:18px; object-fit:contain; }
-        .hc-leg-teams .sc { color:#9a9ea5; margin:0 5px; }
-        .hc-odd { flex:0 0 auto; min-width:30px; text-align:center; background:var(--tk-odd); color:#fff; font-weight:500; font-size:16px; line-height:1; padding:6px 7px; border-radius:6px; }
+        .hc-leg-teams .sc { color:var(--tk-team); margin:0 4px; }
+        .hc-odd { flex:0 0 auto; min-width:30px; text-align:center; background:var(--tk-odd); color:#fff; font-weight:700; font-size:17px; line-height:1; padding:7px 8px; border-radius:7px; }
         .hc-sum { padding:14px 18px 14px; border-top:1px solid var(--tk-line); }
-        .hc-row { display:flex; justify-content:space-between; align-items:center; font-size:15px; color:#e3e5e8; }
+        .hc-row { display:flex; justify-content:space-between; align-items:center; font-size:15px; color:var(--tk-label); }
         .hc-row + .hc-row { margin-top:8px; }
-        .hc-row strong { color:#f3f4f6; font-size:17px; font-weight:500; }
+        .hc-row strong { color:#fff; font-size:19px; font-weight:700; }
         .hc-row .hc-odd { font-size:17px; padding:6px 8px; }
         .hc-row small { color:var(--tk-dim); font-size:11px; margin-left:4px; }
         .hc-gain { margin-top:14px !important; padding-top:14px; border-top:1px solid var(--tk-line); }
-        .hc-gain strong { color:var(--tk-green); font-size:19px; font-weight:500; }
+        .hc-gain strong { color:var(--tk-green); font-size:19px; font-weight:700; }
         .hc-gain.perdu strong { color:var(--tk-dim); }
-        .hc-foot { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 18px; background:var(--tk-foot); font-size:13px; color:#6c7078; }
+        .hc-foot { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 18px; background:var(--tk-foot); font-size:13px; color:var(--tk-dim); }
         #ticket-history-overlay .no-combined-message { color:var(--tk-gray); }
         .admin-history-item { background:#1C2541; padding:12px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; }
         .admin-history-item span { font-size:13px; color:#fff; }
@@ -8627,11 +8629,18 @@ function ticketFullDate(d) {
     return new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Paris' }).format(dt);
 }
 
+function ticketShortDate(d) {
+    if (!d) return '';
+    var dt = new Date(d);
+    if (isNaN(dt)) return '';
+    return new Intl.DateTimeFormat('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Europe/Paris' }).format(dt);
+}
+
 function ticketEuros(v) {
     return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(v);
 }
 
-var TICKET_BALL_SVG = '<svg class="tk-ball" viewBox="0 0 24 24" aria-hidden="true"><defs><clipPath id="tkb"><circle cx="12" cy="12" r="10.8"/></clipPath></defs><circle cx="12" cy="12" r="10.8" fill="#f7f7f7"/><g clip-path="url(#tkb)"><g fill="#202020"><polygon points="12.0,8.7 15.1,11.0 13.9,14.7 10.1,14.7 8.9,11.0"/><polygon points="17.1,5.0 16.0,1.7 18.8,-0.4 21.7,1.7 20.6,5.0"/><polygon points="20.2,14.7 23.0,12.6 25.9,14.7 24.8,18.0 21.3,18.0"/><polygon points="12.0,20.6 14.9,22.7 13.8,26.0 10.2,26.0 9.1,22.7"/><polygon points="3.8,14.7 2.7,18.0 -0.8,18.0 -1.9,14.7 1.0,12.6"/><polygon points="6.9,5.0 3.4,5.0 2.3,1.7 5.2,-0.4 8.0,1.7"/></g><g stroke="#3a3a3a" stroke-width=".7"><line x1="12.0" y1="8.7" x2="12.0" y2="3.8"/><line x1="15.1" y1="11.0" x2="19.8" y2="9.5"/><line x1="13.9" y1="14.7" x2="16.8" y2="18.6"/><line x1="10.1" y1="14.7" x2="7.2" y2="18.6"/><line x1="8.9" y1="11.0" x2="4.2" y2="9.5"/></g></g><circle cx="12" cy="12" r="10.8" fill="none" stroke="#bdbdbd" stroke-width=".5"/></svg>';
+var TICKET_BALL_SVG = '<svg class="tk-ball" viewBox="0 0 24 24" aria-hidden="true"><defs><clipPath id="tkb"><circle cx="12" cy="12" r="11"/></clipPath></defs><circle cx="12" cy="12" r="11" fill="#f2f2f2"/><g clip-path="url(#tkb)"><g fill="#141414"><polygon points="12.0,8.3 15.5,10.9 14.2,15.0 9.8,15.0 8.5,10.9"/><polygon points="16.9,5.3 15.5,0.9 19.2,-1.8 22.9,0.9 21.5,5.3"/><polygon points="19.9,14.6 23.6,11.9 27.3,14.6 25.9,18.9 21.3,18.9"/><polygon points="12.0,20.3 15.7,23.0 14.3,27.4 9.7,27.4 8.3,23.0"/><polygon points="4.1,14.6 2.7,18.9 -1.9,18.9 -3.3,14.6 0.4,11.9"/><polygon points="7.1,5.3 2.5,5.3 1.1,0.9 4.8,-1.8 8.5,0.9"/></g><g stroke="#8a8a8a" stroke-width=".5"><line x1="12.0" y1="8.3" x2="12.0" y2="4.8"/><line x1="15.5" y1="10.9" x2="18.8" y2="9.8"/><line x1="14.2" y1="15.0" x2="16.2" y2="17.8"/><line x1="9.8" y1="15.0" x2="7.8" y2="17.8"/><line x1="8.5" y1="10.9" x2="5.2" y2="9.8"/></g></g><circle cx="12" cy="12" r="11" fill="none" stroke="#9a9a9a" stroke-width=".6"/></svg>';
 
 // Référence Score Master du combiné (dérivée de son id en base).
 function ticketRef(c) {
@@ -8640,10 +8649,10 @@ function ticketRef(c) {
     return id.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8).toUpperCase();
 }
 
-// « 1h51 - 16 septembre 2026 » : heure de publication (created_at) ; pour les anciens
+// « 14h35 - 30/11/2025 » : heure de publication (created_at) ; pour les anciens
 // combinés qui ne l'ont pas, l'heure saisie avec le combiné (champ time).
 function ticketStamp(c) {
-    var day = ticketFullDate(c.date || c.created_at);
+    var day = ticketShortDate(c.date || c.created_at);
     if (!c.created_at) {
         var hm = String(c.time || '').match(/(\d{1,2}):(\d{2})/);
         return hm ? parseInt(hm[1], 10) + 'h' + hm[2] + ' - ' + day : day;
@@ -8662,7 +8671,7 @@ function buildTicketCardHtml(c) {
             if(m.odds && m.odds > 0) { calcOdds *= m.odds; hasValidOdds = true; }
         });
         var finalOdds = parseFloat(c.total_odds || c.totalOdds) || (hasValidOdds ? calcOdds : 0);
-        var fmtOdd = function (v) { v = Number(v); return v % 1 === 0 ? String(v) : v.toFixed(2); };
+        var fmtOdd = function (v) { return Number(v).toFixed(2).replace('.', ','); };
         var displayOdds = finalOdds > 0 ? fmtOdd(finalOdds) : '***.**';
 
         var pillLabel = sc === 'termine' ? 'Gagné' : (sc === 'perdu' ? 'Perdu' : 'En cours');
