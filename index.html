@@ -4444,7 +4444,8 @@ function compositeVictoryStory(bgDataUri, overlay, logoUrls, format) {
             if (isPost) {
                 ctx.font = '800 30px Manrope, sans-serif';
                 var taglineLinesEstimate = wrapCanvasText(ctx, overlay.tagline, W - (W * 0.09) * 2).length;
-                var naturalContentH = 380 + overlay.matches.length * 306 + taglineLinesEstimate * 38 + 416;
+                // 248 par match depuis que les noms sont à côté des logos (et non dessous)
+                var naturalContentH = 380 + overlay.matches.length * 248 + taglineLinesEstimate * 38 + 416;
                 SCALE = Math.max(0.55, Math.min(1, (H - 150) / naturalContentH));
             }
             var S = function (px) { return Math.round(px * SCALE); };
@@ -4486,19 +4487,25 @@ function compositeVictoryStory(bgDataUri, overlay, logoUrls, format) {
                 if (logos.home) ctx.drawImage(logos.home, marginX, rowY, logoSz, logoSz);
                 if (logos.away) ctx.drawImage(logos.away, W - marginX - logoSz, rowY, logoSz, logoSz);
 
+                // Noms à côté des logos (et non dessous), centrés sur la hauteur du logo
                 ctx.font = '800 ' + S(24) + 'px Manrope, sans-serif';
                 ctx.fillStyle = '#f5f5f2';
-                ctx.textAlign = 'left';
-                wrapCanvasText(ctx, m.homeTeam, logoSz + S(20)).slice(0, 2).forEach(function (line, li) {
-                    ctx.fillText(line, marginX, rowY + logoSz + S(30) + li * S(28));
-                });
-                ctx.textAlign = 'right';
-                wrapCanvasText(ctx, m.awayTeam, logoSz + S(20)).slice(0, 2).forEach(function (line, li) {
-                    ctx.fillText(line, W - marginX, rowY + logoSz + S(30) + li * S(28));
-                });
+                var nameGap = S(16);
+                var nameW = W / 2 - marginX - logoSz - nameGap - S(95);
+                var lineH = S(28);
+                var logoMidY = rowY + logoSz / 2;
+                var drawName = function (text, align, x) {
+                    var lines = wrapCanvasText(ctx, text, nameW).slice(0, 2);
+                    ctx.textAlign = align;
+                    lines.forEach(function (line, li) {
+                        ctx.fillText(line, x, logoMidY - (lines.length - 1) * lineH / 2 + li * lineH);
+                    });
+                };
+                drawName(m.homeTeam, 'left', marginX + logoSz + nameGap);
+                drawName(m.awayTeam, 'right', W - marginX - logoSz - nameGap);
                 ctx.textAlign = 'left';
 
-                var barY = rowY + logoSz + S(92);
+                var barY = rowY + logoSz + S(34);
                 drawProbBar(ctx, marginX, barY, innerW, S(12), m.homeProb, m.drawProb, m.awayProb);
 
                 ctx.font = '700 ' + S(18) + 'px Manrope, sans-serif';
