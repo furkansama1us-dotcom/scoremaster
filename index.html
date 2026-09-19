@@ -5859,12 +5859,21 @@ async function clearAllPublicationHistory() {
         showToast('Profil mis à jour !');
     }
 
+    // Couleurs du bookmaker favori (badges et bandeau « Aperçu historique »).
+    function platformColors() {
+        if (userPlatform === 'WINAMAX') return { color: '#fff', background: 'rgba(255, 0, 0, 0.5)' };
+        if (userPlatform === 'UNIBET') return { color: '#00e676', background: 'rgba(0, 230, 118, 0.15)' };
+        return { color: 'var(--red)', background: 'rgba(244,63,94,.15)' };
+    }
+
     function updatePlatformDisplay() {
+        var pc = platformColors();
         document.querySelectorAll('.platform-badge-display').forEach(function(el) {
             el.textContent = userPlatform;
-            if(userPlatform === 'WINAMAX') { el.style.color = '#fff'; el.style.background = 'rgba(255, 0, 0, 0.5)'; }
-            else if(userPlatform === 'UNIBET') { el.style.color = '#00e676'; el.style.background = 'rgba(0, 230, 118, 0.15)'; }
-            else { el.style.color = 'var(--red)'; el.style.background = 'rgba(244,63,94,.15)'; }
+            el.style.color = pc.color; el.style.background = pc.background;
+        });
+        document.querySelectorAll('.platform-bg-display').forEach(function(el) {
+            el.style.color = pc.color; el.style.background = pc.background;
         });
     }
 
@@ -8788,7 +8797,7 @@ async function autoFetchFinalScores(combined) {
         var pw = '50%'; if (sc === 'termine' || sc === 'perdu') pw = '100%';
         if (vc) vc.innerHTML = buildCC(currentCombined, sc, sl, pw, false);
         if (hc) hc.innerHTML = buildCC(currentCombined, sc, sl, pw, true);
-        if (sc === 'en-cours' && sb) sb.innerHTML = '<div onclick="openTicketHistory()" style="background:var(--primary-yellow); color:#000; padding:14px; border-radius:12px; text-align:center; font-weight:800; font-size:15px; margin:0 20px 15px; cursor:pointer;">Aperçu historique bookmaker favori <i class="fas fa-chevron-right" style="font-size:12px; margin-left:4px;"></i></div>';
+        if (sc === 'en-cours' && sb) sb.innerHTML = '<div class="platform-bg-display" onclick="openTicketHistory()" style="background:' + platformColors().background + '; color:' + platformColors().color + '; padding:14px; border-radius:12px; text-align:center; font-weight:800; font-size:15px; margin:0 20px 15px; cursor:pointer;">Aperçu historique bookmaker favori <i class="fas fa-chevron-right" style="font-size:12px; margin-left:4px;"></i></div>';
         else if (sb) sb.innerHTML = '';
     }
     // ============================================================
