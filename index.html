@@ -9625,13 +9625,14 @@ function renderAdminHistory() {
             matchesDetailsHtml += '</div>';
         }
 
-        let cardBaseHtml = function(statusText, btnHtml) {
+        let cardBaseHtml = function(statusText, btnHtml, footerHtml) {
             return `<div class="admin-history-item" data-combined-id="${c.id}" style="flex-direction:column; align-items:stretch;">
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <span>Le ${fmtD(c.date)} - ${statusText}</span>
                             <div style="display:flex; gap:6px;">${btnHtml}</div>
                         </div>
                         ${matchesDetailsHtml}
+                        ${footerHtml || ''}
                     </div>`;
         };
 
@@ -9665,7 +9666,9 @@ function renderAdminHistory() {
                     <button onclick="queueComboTeaserPublication('${c.id}')" title="Générer le visuel Instagram (Story + Post)" style="background:rgba(230,66,140,0.15); color:#e6428c; border:1px solid rgba(230,66,140,0.4); padding:6px 10px;"><i class="fab fa-instagram"></i></button>
                     <button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue); padding:6px 10px;"><i class="fas fa-edit"></i></button>
                     <button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(244,63,94,0.2); color:var(--red); padding:6px 10px;"><i class="fas fa-trash"></i></button>`;
-                htmlActive += cardBaseHtml(displayStatus, btns);
+                // Les matchs peuvent finir avant le délai de 2 h : validation manuelle forcée.
+                let forceFinish = `<button onclick="openValidationScreen('${c.id}')" style="width:100%; margin-top:10px; padding:10px; background:rgba(34,197,94,0.15); color:var(--green); border:1px solid rgba(34,197,94,0.4); border-radius:8px; font-weight:bold; font-size:13px;"><i class="fas fa-flag-checkered"></i> Matchs terminés — valider le résultat</button>`;
+                htmlActive += cardBaseHtml(displayStatus, btns, forceFinish);
             }
         } else {
             let btns = `
