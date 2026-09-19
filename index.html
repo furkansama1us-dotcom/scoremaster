@@ -566,7 +566,7 @@
         .hc-leg-pick i { font-size:18px; }
         .hc-leg-pick b { font-size:17px; font-weight:700; letter-spacing:.6px; margin-left:4px; }
         .hc-leg-pick.termine i, .hc-leg-pick.termine b { color:var(--tk-green); }
-        .hc-leg-pick.perdu i { color:var(--tk-dim); }
+        .hc-leg-pick.perdu i { color:var(--tk-red); }
         .hc-leg-pick.perdu b, .hc-leg-pick.en-cours b { color:var(--tk-text); }
         .hc-leg-pick.en-cours i { color:var(--tk-amber); }
         .hc-leg-teams { margin-top:9px; font-size:14.5px; font-weight:400; color:#e4e4e6; display:flex; align-items:center; gap:8px; }
@@ -8666,7 +8666,7 @@ function buildTicketCardHtml(c) {
 
         var tally = sc === 'termine'
             ? `<i class="fas fa-check-circle"></i> ${matches.length}`
-            : (sc === 'perdu' ? `<i class="fas fa-times-circle"></i> Perdu` : `<i class="fas fa-hourglass-half"></i> ${matches.length}`);
+            : (sc === 'perdu' ? `<i class="fas fa-times-circle"></i> ${matches.length}` : `<i class="fas fa-hourglass-half"></i> ${matches.length}`);
 
         var legsHtml = matches.map(function (m) {
             var hasScore = m.score && m.score.indexOf('?') === -1;
@@ -8684,7 +8684,7 @@ function buildTicketCardHtml(c) {
 
             var pick;
             if (sc === 'termine') pick = `<i class="fas fa-check-circle"></i> Score exact <b>${scoreLabel}</b>`;
-            else if (sc === 'perdu') pick = `<i class="fas fa-flag-checkered"></i> Score final <b>${scoreLabel}</b>`;
+            else if (sc === 'perdu') pick = `<i class="fas fa-times-circle"></i> Score final <b>${scoreLabel}</b>`;
             else pick = `<i class="fas fa-clock"></i> ${m.time ? "Coup d'envoi " + m.time : 'À venir'}`;
 
             var odd = m.odds && m.odds > 0 ? `<span class="hc-odd">${fmtOdd(m.odds)}</span>` : '';
