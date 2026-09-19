@@ -519,7 +519,7 @@
         .history-card .status.termine { color:var(--green); }
         .history-card .status.perdu { color:var(--red); }
         /* Page « Mes tickets » (ouverte par le badge bookmaker) — palette et proportions calquées sur l'aperçu fourni */
-        #ticket-history-overlay { --tk-bg:#131418; --tk-card:#16171c; --tk-soft:#2f2f36; --tk-line:#26272d; --tk-foot:#1b1c21; --tk-text:#ffffff; --tk-label:#b9b9b9; --tk-gray:#888888; --tk-team:#bcbcbc; --tk-dim:#717171; --tk-green:#73d5ab; --tk-green-bg:#18332a; --tk-red:#ef6b6b; --tk-red-bg:#3a1d20; --tk-amber:#efb43a; --tk-amber-bg:#3a2f14; --tk-odd:rgba(26,35,82,.8); font-family:Supreme,Roboto,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; background:radial-gradient(110% 55% at 75% 0%,#22262e 0%,var(--tk-bg) 65%) !important; }
+        #ticket-history-overlay { --tk-bg:#131418; --tk-card:#16171c; --tk-soft:#2f2f36; --tk-line:#26272d; --tk-foot:#1b1c21; --tk-text:#ffffff; --tk-label:#b9b9b9; --tk-gray:#888888; --tk-team:#bcbcbc; --tk-dim:#717171; --tk-green:#73d5ab; --tk-green-bg:#18332a; --tk-red:#ef6b6b; --tk-red-bg:#3a1d20; --tk-amber:#efb43a; --tk-amber-bg:#3a2f14; --tk-pending:#a9abd8; --tk-odd:rgba(26,35,82,.8); font-family:Supreme,Roboto,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; background:radial-gradient(110% 55% at 75% 0%,#22262e 0%,var(--tk-bg) 65%) !important; }
         .tk-top { display:flex; align-items:center; justify-content:space-between; padding:calc(14px + var(--safe-top)) 16px 10px; }
         .tk-top span { font-weight:700; font-size:18px; color:var(--tk-text); }
         .tk-close { width:36px; height:36px; border-radius:50%; border:none; background:var(--tk-soft); color:var(--tk-text); font-size:16px; cursor:pointer; }
@@ -549,15 +549,20 @@
         .hc-bar span { display:block; height:100%; border-radius:6px; }
         .hc-bar span.termine { background:var(--tk-green); }
         .hc-bar span.perdu { background:var(--tk-red); }
-        .hc-bar span.en-cours { background:var(--tk-amber); }
+        .hc-bar span.en-cours { background:var(--tk-pending); }
         .hc-ctrl { display:flex; align-items:center; gap:10px; padding:0 18px 4px; }
         .hc-toggle { width:42px; height:42px; border-radius:50%; border:none; background:#2e3136; color:#b9bcc2; font-size:15px; cursor:pointer; transition:transform .25s; }
         .hc.collapsed .hc-toggle { transform:rotate(-90deg); }
+        .hc.en-cours.collapsed .hc-toggle { transform:rotate(180deg); }
         .hc-tally { display:inline-flex; align-items:center; gap:8px; height:42px; padding:0 15px; border-radius:22px; border:1px solid #2c2f35; background:rgba(0,0,0,.12); font-weight:400; font-size:19px; color:var(--tk-gray); }
         .hc-tally i { font-size:19px; }
         .hc-tally i.fa-check-circle { color:var(--tk-green); }
         .hc-tally i.fa-times-circle { color:var(--tk-red); }
-        .hc-tally i.fa-hourglass-half { color:var(--tk-amber); font-size:15px; }
+        .hc-tally i.fa-clock { color:var(--tk-pending); }
+        .hc.en-cours .hc-tally { border-color:#e9eaec; }
+        .hc.en-cours .hc-leg-teams { font-weight:700; color:#fff; }
+        .hc-kick { flex:0 0 auto !important; margin-left:auto; font-size:12px; font-weight:400; color:var(--tk-dim); }
+        .hc-cta { display:block; width:calc(100% - 20px); margin:4px 10px 12px; height:44px; border:none; border-radius:22px; background:#fff; color:#111; font-family:inherit; font-size:16px; font-weight:700; cursor:pointer; }
         .hc.collapsed .hc-legs { display:none; }
         .hc-leg { padding:14px 18px 15px; border-bottom:1px solid var(--tk-line); }
         .hc-leg:last-child { border-bottom:none; }
@@ -568,10 +573,12 @@
         .hc-leg-pick.termine i, .hc-leg-pick.termine b { color:var(--tk-green); }
         .hc-leg-pick.perdu i { color:var(--tk-red); }
         .hc-leg-pick.perdu b, .hc-leg-pick.en-cours b { color:var(--tk-text); }
-        .hc-leg-pick.en-cours i { color:var(--tk-amber); }
+        .hc-leg-pick.en-cours i { color:var(--tk-pending); }
+        .hc-leg-pick.en-cours b { color:var(--tk-green) !important; }
+        .hc-leg-pick.en-cours b.locked { color:var(--tk-dim) !important; font-weight:400; font-size:14px; letter-spacing:0; }
         .hc-leg-teams { margin-top:9px; font-size:14.5px; font-weight:400; color:#e4e4e6; display:flex; align-items:center; gap:8px; }
-        .hc-leg-teams > span:last-child { flex:1; min-width:0; line-height:1.35; }
-        .hc-leg-teams > :not(:last-child) { flex:0 0 auto; }
+        .hc-leg-teams > span.tm { flex:1; min-width:0; line-height:1.35; }
+        .hc-leg-teams > :not(.tm) { flex:0 0 auto; }
         .hc-leg-teams img { width:18px; height:18px; object-fit:contain; }
         .hc-leg-teams .sc { color:#9a9a9a; margin:0 6px; }
         .hc-odd { flex:0 0 auto; min-width:30px; text-align:center; background:var(--tk-odd); color:#fff; font-weight:700; font-size:17px; line-height:1; padding:7px 8px; border-radius:7px; }
@@ -8648,6 +8655,23 @@ function ticketStamp(c) {
     return t + ' - ' + ticketFullDate(c.created_at);
 }
 
+function ticketKickoff(date, time) {
+    var hm = String(time || '').match(/\d{1,2}:\d{2}/);
+    if (!date) return hm ? hm[0] : '';
+    var fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris' });
+    var today = fmt.format(new Date());
+    var tomorrow = fmt.format(new Date(Date.now() + 864e5));
+    var day = date === today ? 'Auj.' : (date === tomorrow ? 'Dem.' : date.slice(8, 10) + '/' + date.slice(5, 7));
+    return day + (hm ? ' ' + hm[0] : '');
+}
+
+// « Compléter » : un VIP copie le combiné, sinon direction les offres pour le débloquer.
+function completeTicket(id) {
+    if (window.isUserVip) { copyTicketCombined(id); return; }
+    closeTicketHistory();
+    navigateTo('packs');
+}
+
 function buildTicketCardHtml(c) {
         var sc = c.status || 'en-cours';
         var matches = c.matches || [];
@@ -8662,11 +8686,11 @@ function buildTicketCardHtml(c) {
         var displayOdds = finalOdds > 0 ? fmtOdd(finalOdds) : '***.**';
 
         var pillLabel = sc === 'termine' ? 'Gagné' : (sc === 'perdu' ? 'Perdu' : 'En cours');
-        var barHtml = `<span class="${sc}" style="width:${sc === 'en-cours' ? 0 : 100}%;"></span>`;
+        var barHtml = `<span class="${sc}" style="width:100%;"></span>`;
 
         var tally = sc === 'termine'
             ? `<i class="fas fa-check-circle"></i> ${matches.length}`
-            : (sc === 'perdu' ? `<i class="fas fa-times-circle"></i> ${matches.length}` : `<i class="fas fa-hourglass-half"></i> ${matches.length}`);
+            : (sc === 'perdu' ? `<i class="fas fa-times-circle"></i> ${matches.length}` : `<i class="fas fa-clock"></i> ${matches.length}`);
 
         var legsHtml = matches.map(function (m) {
             var hasScore = m.score && m.score.indexOf('?') === -1;
@@ -8677,7 +8701,7 @@ function buildTicketCardHtml(c) {
             var mid = scoreParts && scoreParts.length === 2
                 ? `<span class="sc">${scoreParts[0]} - ${scoreParts[1]}</span>`
                 : `<span class="sc">-</span>`;
-            var teamsLine = away ? `${home}${mid}${away}` : home;
+            var teamsLine = away ? (sc === 'en-cours' ? `${home} - ${away}` : `${home}${mid}${away}`) : home;
             var scoreLabel = hasScore ? m.score.replace('-', ' - ') : '-';
 
             var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" alt="">` : (m.league_flag ? `<span style="display:inline-flex; align-items:center;">${m.league_flag}</span>` : ''));
@@ -8685,19 +8709,25 @@ function buildTicketCardHtml(c) {
             var pick;
             if (sc === 'termine') pick = `<i class="fas fa-check-circle"></i> Score exact <b>${scoreLabel}</b>`;
             else if (sc === 'perdu') pick = `<i class="fas fa-times-circle"></i> Score final <b>${scoreLabel}</b>`;
-            else pick = `<i class="fas fa-clock"></i> ${m.time ? "Coup d'envoi " + m.time : 'À venir'}`;
+            else pick = hasScore
+                ? `<i class="fas fa-clock"></i> Score exact <b>${scoreLabel}</b>`
+                : `<i class="fas fa-clock"></i> Score exact <b class="locked"><i class="fas fa-lock" style="font-size:12px;color:inherit;"></i> Réservé VIP</b>`;
+            var kick = sc === 'en-cours' ? `<span class="hc-kick">${ticketKickoff(c.date, m.time)}</span>` : '';
 
             var odd = m.odds && m.odds > 0 ? `<span class="hc-odd">${fmtOdd(m.odds)}</span>` : '';
 
             return `<div class="hc-leg">
                 <div class="hc-leg-top"><div class="hc-leg-pick ${sc}">${pick}</div>${odd}</div>
-                <div class="hc-leg-teams">${TICKET_BALL_SVG}${logoDisplay}<span>${teamsLine}</span></div>
+                <div class="hc-leg-teams">${TICKET_BALL_SVG}${logoDisplay}<span class="tm">${teamsLine}</span>${kick}</div>
             </div>`;
         }).join('');
 
         // Montants d'exemple : aucun pari réel n'est enregistré, d'où la mention « simulée ».
         var gainHtml = '';
-        if (finalOdds > 0 && sc !== 'en-cours') {
+        if (finalOdds > 0 && sc === 'en-cours') {
+            gainHtml = `<div class="hc-row"><span>Mise <small>simulée</small></span><strong>${ticketEuros(TICKET_SIM_STAKE)}</strong></div>
+                <div class="hc-row hc-gain termine"><span>Gains potentiels <small>simulés</small></span><strong>${ticketEuros(TICKET_SIM_STAKE * finalOdds)}</strong></div>`;
+        } else if (finalOdds > 0) {
             var gain = sc === 'termine' ? TICKET_SIM_STAKE * finalOdds : 0;
             gainHtml = `<div class="hc-row"><span>Mise <small>simulée</small></span><strong>${ticketEuros(TICKET_SIM_STAKE)}</strong></div>
                 <div class="hc-row hc-gain ${sc}"><span>Gains <small>simulés</small></span><strong>${ticketEuros(gain)}</strong></div>`;
@@ -8713,7 +8743,7 @@ function buildTicketCardHtml(c) {
             <div class="hc-card">
                 <div class="hc-bar">${barHtml}</div>
                 <div class="hc-ctrl">
-                    <button class="hc-toggle" onclick="this.closest('.hc').classList.toggle('collapsed')" aria-label="Afficher ou masquer les matchs"><i class="fas fa-chevron-down"></i></button>
+                    <button class="hc-toggle" onclick="this.closest('.hc').classList.toggle('collapsed')" aria-label="Afficher ou masquer les matchs"><i class="fas fa-chevron-${sc === 'en-cours' ? 'up' : 'down'}"></i></button>
                     <span class="hc-tally">${tally}</span>
                 </div>
                 <div class="hc-legs">${legsHtml}</div>
@@ -8721,7 +8751,9 @@ function buildTicketCardHtml(c) {
                     <div class="hc-row"><span>Cote totale</span><span class="hc-odd">${displayOdds}</span></div>
                     ${gainHtml}
                 </div>
-                <div class="hc-foot"><span>Réf : ${ticketRef(c)}</span><span>${ticketStamp(c)}</span></div>
+                ${sc === 'en-cours'
+                    ? `<button class="hc-cta" onclick="completeTicket('${String(c.id || '').replace(/[^\w-]/g, '')}')">Compléter</button>`
+                    : `<div class="hc-foot"><span>Réf : ${ticketRef(c)}</span><span>${ticketStamp(c)}</span></div>`}
             </div>
         </div>`;
 }
