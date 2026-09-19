@@ -9004,12 +9004,12 @@ function buildTicketCardHtml(c) {
         if (!TICKET_SHOW_AMOUNTS) {
             gainHtml = '';
         } else if (finalOdds > 0 && sc === 'en-cours') {
-            gainHtml = `<div class="hc-row"><span>Mise <small>simulée</small></span><strong>${ticketEuros(stake)}</strong></div>
-                <div class="hc-row hc-gain pot"><span>Gains potentiels <small>simulés</small></span><strong>${ticketEuros(stake * finalOdds)}</strong></div>`;
+            gainHtml = `<div class="hc-row"><span>Mise <small></small></span><strong>${ticketEuros(stake)}</strong></div>
+                <div class="hc-row hc-gain pot"><span>Gains potentiels <small></small></span><strong>${ticketEuros(stake * finalOdds)}</strong></div>`;
         } else if (finalOdds > 0) {
             var gain = sc === 'termine' ? stake * finalOdds : 0;
-            gainHtml = `<div class="hc-row"><span>Mise <small>simulée</small></span><strong>${ticketEuros(stake)}</strong></div>
-                <div class="hc-row hc-gain ${sc}"><span>Gains <small>simulés</small></span><strong>${ticketEuros(gain)}</strong></div>`;
+            gainHtml = `<div class="hc-row"><span>Mise <small></small></span><strong>${ticketEuros(stake)}</strong></div>
+                <div class="hc-row hc-gain ${sc}"><span>Gains <small></small></span><strong>${ticketEuros(gain)}</strong></div>`;
         }
 
         return `<div class="hc ${sc}">
