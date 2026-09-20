@@ -514,3 +514,11 @@ revoke all on function public.admin_sm_points_history(integer) from public;
 grant execute on function public.admin_list_sm_points(text) to authenticated;
 grant execute on function public.admin_adjust_sm_points(uuid, numeric, text) to authenticated;
 grant execute on function public.admin_sm_points_history(integer) to authenticated;
+
+-- ============================================================
+-- Alerte Telegram « fin de match imminente » (api/auto-confirm.js) :
+-- marque le combiné pour n'envoyer le message qu'une seule fois.
+-- ============================================================
+
+alter table public.combineds_public
+  add column if not exists end_notified_at timestamptz;
