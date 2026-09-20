@@ -628,3 +628,17 @@ ALTER TABLE public.ai_fixtures ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Lecture publique des rencontres" ON public.ai_fixtures;
 CREATE POLICY "Lecture publique des rencontres" ON public.ai_fixtures
     FOR SELECT USING (true);
+
+-- ============================================================
+-- CACHE DES CLASSEMENTS football-data.org
+-- Le plan gratuit autorise 10 requetes/minute pour tout le site, alors que
+-- chaque visiteur en demandait 12. Les classements sont desormais servis
+-- depuis ce cache, rafraichi au plus une fois toutes les 12 heures.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.ai_standings (
+    code       TEXT PRIMARY KEY,
+    payload    JSONB NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+ALTER TABLE public.ai_standings ENABLE ROW LEVEL SECURITY;

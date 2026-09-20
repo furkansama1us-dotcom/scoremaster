@@ -109,6 +109,48 @@ async function sbFetch(path, options) {
     return t ? JSON.parse(t) : null;
 }
 
+// Le plan gratuit de football-data.org est limité à 10 requêtes par minute
+// pour l'ensemble du site. Les classements changent au plus une fois par jour :
+// on les sert depuis Supabase et on ne rappelle l'API que si le cache a vieilli.
+const DUREE_CACHE_CLASSEMENT_MS = 12 * 60 * 60 * 1000;
+
+async function lireCacheClassement(code) {
+    try {
+        const rows = await sbFetch('ai_standings?select=payload,updated_at&code=eq.' + encodeURIComponent(code));
+        return (rows && rows[0]) || null;
+    } catch (e) {
+        return null;
+    }
+}
+
+async function ecrireCacheClassement(code, payload) {
+    try {
+        await sbFetch('ai_standings', {
+            method: 'POST',
+            headers: { Prefer: 'resolution=merge-duplicates' },
+            body: JSON.stringify([{ code, payload, updated_at: new Date().toISOString() }])
+        });
+    } catch (e) { /* le cache n'est qu'une optimisation */ }
+}
+
+// Les rencontres mises en cache par le rafraîchissement, au format football-data
+// pour que les deux fronts n'aient rien à adapter.
+async function matchsDepuisCache(dateFrom) {
+    const rows = await sbFetch('ai_fixtures?select=*&fixture_date=eq.' + encodeURIComponent(dateFrom) + '&order=kickoff.asc');
+    if (!rows || !rows.length) return null;
+    return {
+        source: 'api-football',
+        matches: rows.map(f => ({
+            id: f.fixture_id,
+            utcDate: f.kickoff,
+            homeTeam: { name: f.home },
+            awayTeam: { name: f.away },
+            competition: { name: f.league_name, code: f.league_code, major: true },
+            area: { name: f.country, flag: f.flag }
+        }))
+    };
+}
+
 // GET /api/football?type=refresh-predictions&secret=...&date=AAAA-MM-JJ
 // Récupère les matchs du jour (football-data.org), les relie aux fixtures
 // API-Football, puis stocke les probabilités en base. Idempotent : un match
@@ -252,32 +294,45 @@ module.exports = async function handler(req, res) {
         return res.status(400).json({ error: 'type invalide (attendu: matches ou standings)' });
     }
 
+    // Classements : on répond depuis le cache tant qu'il est frais, ce qui
+    // évite 12 requêtes par visiteur sur un quota de 10 par minute.
+    let cache = null;
+    if (type === 'standings' && SUPABASE_SERVICE_ROLE_KEY) {
+        cache = await lireCacheClassement(code);
+        if (cache && cache.payload && (Date.now() - new Date(cache.updated_at).getTime()) < DUREE_CACHE_CLASSEMENT_MS) {
+            return res.status(200).json(cache.payload);
+        }
+    }
+
     try {
         const apiRes = await fetch(url, { headers: { 'X-Auth-Token': FOOTBALL_DATA_API_KEY } });
-        const data = await apiRes.json();
+        // Un 429 arrive en texte brut, pas en JSON : on lit d'abord le corps.
+        const brut = await apiRes.text();
+        let data = null;
+        try { data = JSON.parse(brut); } catch (e) { /* réponse non JSON */ }
 
-        // Pendant les trêves, football-data ne renvoie aucune rencontre : on
-        // sert alors le cache API-Football, au même format, pour que la page
-        // et le générateur de combiné restent alimentés.
-        if (type === 'matches' && apiRes.ok && !(data.matches || []).length && SUPABASE_SERVICE_ROLE_KEY) {
+        if (type === 'standings') {
+            if (apiRes.ok && data) {
+                await ecrireCacheClassement(code, data);
+                return res.status(200).json(data);
+            }
+            // API indisponible : mieux vaut un classement daté que rien.
+            if (cache && cache.payload) return res.status(200).json(cache.payload);
+            return res.status(apiRes.status === 429 ? 429 : 502).json({ error: 'Classement indisponible', details: brut.slice(0, 120) });
+        }
+
+        // Matchs : le cache API-Football prend le relais aussi bien pendant les
+        // trêves (liste vide) que lorsque football-data est saturé.
+        if (SUPABASE_SERVICE_ROLE_KEY && (!apiRes.ok || !data || !(data.matches || []).length)) {
             try {
-                const secours = await sbFetch('ai_fixtures?select=*&fixture_date=eq.' + encodeURIComponent(dateFrom) + '&order=kickoff.asc');
-                if (secours && secours.length) {
-                    return res.status(200).json({
-                        source: 'api-football',
-                        matches: secours.map(f => ({
-                            id: f.fixture_id,
-                            utcDate: f.kickoff,
-                            homeTeam: { name: f.home },
-                            awayTeam: { name: f.away },
-                            competition: { name: f.league_name, code: f.league_code, major: true },
-                            area: { name: f.country, flag: f.flag }
-                        }))
-                    });
-                }
+                const secours = await matchsDepuisCache(dateFrom);
+                if (secours) return res.status(200).json(secours);
             } catch (e) { /* cache indisponible : on renvoie la réponse d'origine */ }
         }
 
+        if (!data) {
+            return res.status(apiRes.status === 429 ? 429 : 502).json({ error: 'football-data.org indisponible', details: brut.slice(0, 120) });
+        }
         res.status(apiRes.status).json(data);
     } catch (e) {
         res.status(502).json({ error: 'Erreur proxy football-data.org', details: String(e) });
