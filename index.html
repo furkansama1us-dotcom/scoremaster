@@ -7190,7 +7190,7 @@ async function fetchMatchesFromAPI() {
             else if (winnerKey === 'awayProb') pickLabel = `Victoire <span>${away}</span>`;
             else pickLabel = `Match nul probable`;
 
-            return { home: home, away: away, league: league, flagUrl: flagUrl, timeStr: timeStr, startTimestamp: m.startTimestamp || 0, homeStanding: homeStanding, awayStanding: awayStanding, pred: pred, conf: conf, isVipPick: isVipPick, confClass: confClass, confLabel: confLabel, pickLabel: pickLabel, reelle: reelle, seed: seed };
+            return { home: home, away: away, league: league, flagUrl: flagUrl, timeStr: timeStr, startTimestamp: m.startTimestamp || 0, homeStanding: homeStanding, awayStanding: awayStanding, pred: pred, conf: conf, isVipPick: isVipPick, confClass: confClass, confLabel: confLabel, pickLabel: pickLabel, reelle: reelle, seed: seed, winnerKey: winnerKey };
         });
 
         return appliquerSelectionVip(liste, dateStr);
@@ -7201,6 +7201,22 @@ async function fetchMatchesFromAPI() {
     // donc avec les rencontres les mieux notées jusqu'à atteindre ce minimum.
     var AI_VIP_MINIMUM = 2;
 
+    // Répartit les deux autres issues sur ce qui reste, au prorata de leurs
+    // probabilités d'origine, en tombant juste sur 100 %. Exemple : un pick
+    // annoncé à 95 % donne 95 / 3 / 2.
+    function repartirAutourDe(pred, winnerKey, conf) {
+        var autres = ['homeProb', 'drawProb', 'awayProb'].filter(function (k) { return k !== winnerKey; });
+        var reste = 100 - conf;
+        var somme = pred[autres[0]] + pred[autres[1]];
+        var premier = somme > 0 ? Math.round(reste * pred[autres[0]] / somme) : Math.round(reste / 2);
+        premier = Math.max(0, Math.min(reste, premier));
+        var out = {};
+        out[winnerKey] = conf;
+        out[autres[0]] = premier;
+        out[autres[1]] = reste - premier;
+        return { homeProb: out.homeProb, drawProb: out.drawProb, awayProb: out.awayProb };
+    }
+
     function appliquerTeaserVip(item) {
         item.isVipPick = true;
         // Indice de victoire annoncé sur les picks floutés : 90 à 99 %.
@@ -7209,10 +7225,14 @@ async function fetchMatchesFromAPI() {
         item.conf = 90 + Math.round(seededScore(item.seed + '#vipconf') * 9);
         item.confClass = 'vip';
         item.confLabel = 'Très élevé';
+        // Les barres suivent l'indice annoncé : afficher 98 % de fiabilité
+        // au-dessus d'un 45/45/10 serait incohérent.
+        item.pred = repartirAutourDe(item.predOrigine || item.pred, item.winnerKey, item.conf);
         return item;
     }
 
     function appliquerSelectionVip(liste, dateStr) {
+        liste.forEach(function (x) { x.predOrigine = x.pred; });
         var vip = liste.filter(function (x) { return x.isVipPick; });
         var manquants = Math.min(AI_VIP_MINIMUM, liste.length) - vip.length;
 
