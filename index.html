@@ -70,6 +70,11 @@
         @keyframes loaderBounce{0%,80%,100%{transform:scale(.6);opacity:.3}40%{transform:scale(1);opacity:1}}
         @keyframes ballSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
         .ball-spinner{display:inline-block;font-size:40px;animation:ballSpin 0.8s linear infinite;margin-bottom:15px}
+        @keyframes smLoaderPulse{0%,100%{transform:scale(.9);opacity:.7}50%{transform:scale(1.06);opacity:1}}
+        @keyframes smLoaderHalo{0%,100%{opacity:.25;transform:translate(-50%,-50%) scale(.85)}50%{opacity:.6;transform:translate(-50%,-50%) scale(1.15)}}
+        .sm-loader{position:relative;display:inline-flex;align-items:center;justify-content:center;width:82px;height:82px}
+        .sm-loader::before{content:'';position:absolute;top:50%;left:50%;width:82px;height:82px;border-radius:50%;background:radial-gradient(circle,rgba(255,215,0,.45),transparent 70%);animation:smLoaderHalo 1.8s ease-in-out infinite}
+        .sm-loader img{position:relative;width:64px;height:64px;object-fit:contain;animation:smLoaderPulse 1.8s ease-in-out infinite}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
         @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
         @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
@@ -7124,7 +7129,7 @@ async function fetchMatchesFromAPI() {
         var c = AI_CITATIONS[Math.floor(Math.random() * AI_CITATIONS.length)];
         container.innerHTML = `
         <div style="padding:40px 24px;text-align:center;">
-            <span class="ball-spinner" style="font-size:34px;display:inline-block;">⚽</span>
+            <div class="sm-loader"><img src="logo-dark.png" alt="Score Master"></div>
             <div id="ai-loader-pct" style="margin-top:16px;font-family:'Montserrat',sans-serif;font-size:26px;font-weight:800;color:var(--primary-yellow);">0 %</div>
             <div style="max-width:260px;margin:12px auto 0;height:6px;border-radius:99px;background:var(--bg-input);overflow:hidden;">
                 <div id="ai-loader-bar" style="width:0%;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--primary-yellow),var(--dark-yellow));transition:width .45s ease;"></div>
