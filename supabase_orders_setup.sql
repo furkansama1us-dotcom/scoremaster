@@ -568,3 +568,36 @@ alter table public.profiles
 
 alter table public.vip_access_codes
   add column if not exists revoked boolean not null default false;
+
+-- ============================================================
+-- Cache des prédictions gratuites (API-Football) affichées sur la page
+-- « Pronostics AI ». Rempli côté serveur par
+-- GET /api/football?type=refresh-predictions&secret=CRON_SECRET&date=...
+-- (clé API jamais exposée au navigateur, quota de 100 requêtes/jour
+-- protégé : la page publique lit uniquement ce cache).
+-- ============================================================
+
+create table if not exists public.ai_predictions (
+  id bigint generated always as identity primary key,
+  fixture_date date not null,
+  home text not null,
+  away text not null,
+  home_prob integer,
+  draw_prob integer,
+  away_prob integer,
+  advice text,
+  goals_home text,
+  goals_away text,
+  under_over text,
+  source text not null default 'api-football',
+  fetched_at timestamptz not null default now(),
+  unique (fixture_date, home, away)
+);
+
+alter table public.ai_predictions enable row level security;
+
+-- Lecture publique : ce sont les pronostics gratuits, affichés à tous.
+drop policy if exists "Anyone can read free predictions" on public.ai_predictions;
+create policy "Anyone can read free predictions"
+  on public.ai_predictions for select
+  using (true);

@@ -6758,6 +6758,40 @@ async function fetchMatchesFromAPI() {
         return ((h >>> 0) % 1000) / 1000;
     }
 
+    // Prédictions réelles (API-Football), lues dans le cache alimenté côté
+    // serveur. La page ne contacte jamais l'API directement : le quota gratuit
+    // (100 requêtes/jour) ne dépend donc pas du nombre de visiteurs.
+    window.aiRealPredictions = window.aiRealPredictions || {};
+
+    function normaliseEquipe(s) {
+        return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+    }
+
+    async function loadRealPredictions(dateStr) {
+        if (window.aiRealPredictions[dateStr]) return window.aiRealPredictions[dateStr];
+        try {
+            const { data, error } = await supabaseClient
+                .from('ai_predictions')
+                .select('home, away, home_prob, draw_prob, away_prob, advice, goals_home, goals_away, under_over')
+                .eq('fixture_date', dateStr);
+            if (error) throw error;
+            window.aiRealPredictions[dateStr] = data || [];
+        } catch (e) {
+            console.error('Prédictions indisponibles :', e);
+            window.aiRealPredictions[dateStr] = [];
+        }
+        return window.aiRealPredictions[dateStr];
+    }
+
+    function findRealPrediction(home, away, dateStr) {
+        var liste = window.aiRealPredictions[dateStr] || [];
+        var h = normaliseEquipe(home), a = normaliseEquipe(away);
+        return liste.find(function (p) {
+            var ph = normaliseEquipe(p.home), pa = normaliseEquipe(p.away);
+            return (ph === h || ph.includes(h) || h.includes(ph)) && (pa === a || pa.includes(a) || a.includes(pa));
+        }) || null;
+    }
+
     function generateAIPrediction(home, away, dateStr, homeStanding, awayStanding) {
         const s1 = seededScore(home + '|' + away + '|' + dateStr);
         const s2 = seededScore(away + '|' + home + '|' + dateStr + '#2');
@@ -7038,9 +7072,11 @@ async function fetchMatchesFromAPI() {
 
         if (window.aiCache[dateStr]) {
             await ensureStandingsLoaded();
+            await loadRealPredictions(dateStr);
             renderAIPronostics(window.aiCache[dateStr], dateStr);
             return;
         }
+        await loadRealPredictions(dateStr);
 
         container.innerHTML = '<div class="no-combined-message"><span class="ball-spinner">⚽</span><br>Veuillez patienter...</div>';
 
@@ -7113,7 +7149,10 @@ async function fetchMatchesFromAPI() {
 
             var homeStanding = findTeamStanding(home);
             var awayStanding = findTeamStanding(away);
-            var pred = generateAIPrediction(home, away, dateStr, homeStanding, awayStanding);
+            var reelle = findRealPrediction(home, away, dateStr);
+            var pred = reelle
+                ? { homeProb: reelle.home_prob, drawProb: reelle.draw_prob, awayProb: reelle.away_prob }
+                : generateAIPrediction(home, away, dateStr, homeStanding, awayStanding);
             var maxProb = Math.max(pred.homeProb, pred.drawProb, pred.awayProb);
             var winnerKey = pred.homeProb === maxProb ? 'homeProb' : (pred.awayProb === maxProb ? 'awayProb' : 'drawProb');
 
@@ -7124,15 +7163,22 @@ async function fetchMatchesFromAPI() {
                 : Math.round(51 + seededScore(seed + '#normconf') * 22);
             pred = redistributeConfidence(pred, winnerKey, conf);
 
+            if (reelle) {
+                // Avec une vraie analyse, la confiance affichée est la probabilité
+                // du pronostic retenu — plus aucun chiffre inventé.
+                conf = Math.max(pred.homeProb, pred.drawProb, pred.awayProb);
+            }
+
             var confClass = isVipPick ? 'vip' : (conf >= 65 ? 'high' : 'mid');
             var confLabel = isVipPick ? 'Très élevé' : (conf >= 65 ? 'Confiance élevée' : 'Confiance moyenne');
+            if (reelle) confLabel = 'Analyse API-Football';
 
             var pickLabel;
             if (winnerKey === 'homeProb') pickLabel = `Victoire <span>${home}</span>`;
             else if (winnerKey === 'awayProb') pickLabel = `Victoire <span>${away}</span>`;
             else pickLabel = `Match nul probable`;
 
-            return { home: home, away: away, league: league, flagUrl: flagUrl, timeStr: timeStr, startTimestamp: m.startTimestamp || 0, homeStanding: homeStanding, awayStanding: awayStanding, pred: pred, conf: conf, isVipPick: isVipPick, confClass: confClass, confLabel: confLabel, pickLabel: pickLabel };
+            return { home: home, away: away, league: league, flagUrl: flagUrl, timeStr: timeStr, startTimestamp: m.startTimestamp || 0, homeStanding: homeStanding, awayStanding: awayStanding, pred: pred, conf: conf, isVipPick: isVipPick, confClass: confClass, confLabel: confLabel, pickLabel: pickLabel, reelle: reelle };
         });
     }
 
