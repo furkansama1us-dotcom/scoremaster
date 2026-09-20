@@ -2307,6 +2307,10 @@ async function fetchApiScore(id, dateRaw) {
             <span class="profile-info-label">Membre depuis</span>
             <span class="profile-info-value" id="profile-member-since">—</span>
         </div>
+        <div class="profile-info-row" id="profile-access-row">
+            <span class="profile-info-label">Accès jusqu'au</span>
+            <span class="profile-info-value" id="profile-access-until">—</span>
+        </div>
         <div class="profile-info-row" style="margin-bottom:16px;">
             <span class="profile-info-label">Statut</span>
             <span style="color:#10b981; font-size:0.88rem; font-weight:600;">● Actif</span>
@@ -6178,6 +6182,36 @@ async function clearAllPublicationHistory() {
         document.getElementById('profile-display-email').textContent = p.email || '—';
         var memberSince = p.created_at ? new Date(p.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '—';
         document.getElementById('profile-member-since').textContent = memberSince;
+
+        // Date de fin d'accès : pack VIP, rôle Testeur ou Membre SM à durée
+        // limitée. Un accès sans échéance affiche « À vie ».
+        var accessRow = document.getElementById('profile-access-row');
+        var accessEl = document.getElementById('profile-access-until');
+        if (accessRow && accessEl) {
+            var fin = null;
+            if (window.isAdmin) fin = 'admin';
+            else if (window.isUserVip) fin = window.currentProfileRaw && window.currentProfileRaw.vip_expires_at;
+            else if (window.testerUntil && window.testerUntil > Date.now()) fin = new Date(window.testerUntil).toISOString();
+            else if (window.isMemberSM) fin = window.currentProfileRaw && window.currentProfileRaw.member_until;
+
+            if (fin === 'admin' || (!fin && (window.isAdmin || window.isUserVip || window.isMemberSM))) {
+                accessEl.textContent = 'À vie';
+                accessEl.style.color = 'var(--green)';
+                accessRow.style.display = 'flex';
+            } else if (fin) {
+                var d = new Date(fin);
+                var court = (d.getTime() - Date.now()) < 24 * 60 * 60 * 1000;
+                accessEl.textContent = new Intl.DateTimeFormat('fr-FR', {
+                    day: 'numeric', month: 'long', year: 'numeric',
+                    hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris'
+                }).format(d).replace(':', 'h');
+                accessEl.style.color = court ? 'var(--primary-yellow)' : '#fff';
+                accessRow.style.display = 'flex';
+            } else {
+                // Visiteur ou Membre SM par e-mail confirmé : pas d'échéance à montrer.
+                accessRow.style.display = 'none';
+            }
+        }
         var roleMap = {
             'admin':      { label: '👑 Admin',           bg: 'rgba(255,193,7,0.2)',  color: '#FFC107' },
             'vip':        { label: '🔥 VIP+',             bg: 'rgba(244,63,94,0.2)',  color: '#F43F5E' },
@@ -8500,6 +8534,7 @@ async function fetchMatchesFromAPI() {
         // Le rôle affiché reflète le pack exact (journalier/hebdo/vip), pas
         // un "VIP+" générique — sauf pour un admin, qui garde son propre badge.
         // Un Visiteur qui a confirmé son email passe Membre SM (sans VIP).
+        window.currentProfileRaw = profile || null;
         window.isMemberSM = !!(profile && profile.is_member
             && (!profile.member_until || new Date(profile.member_until).getTime() > Date.now()));
         var role = window.isAdmin ? 'admin' : (window.isUserVip ? (window.userVipPackType || 'vip') : ((window.isEmailConfirmed || window.isMemberSM) ? 'membre' : 'visiteur'));
