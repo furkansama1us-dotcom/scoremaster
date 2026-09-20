@@ -7061,6 +7061,96 @@ async function fetchMatchesFromAPI() {
         loadAIPronostics(offset);
     }
 
+    // Citations affichées pendant le chargement. Celles qui portent un nom sont
+    // des phrases connues et documentées ; les autres sont des adages volontairement
+    // non signés, pour ne prêter à personne des propos qu'il n'a pas tenus.
+    var AI_CITATIONS = [
+        { t: "Le football est un sport simple : 22 joueurs courent après un ballon et à la fin, ce sont les Allemands qui gagnent.", a: "Gary Lineker" },
+        { t: "Certains pensent que le football est une question de vie ou de mort. Je peux vous assurer que c'est bien plus important que cela.", a: "Bill Shankly" },
+        { t: "Jouer au football est très simple, mais jouer un football simple est la chose la plus difficile qui soit.", a: "Johan Cruyff" },
+        { t: "Chaque inconvénient a son avantage.", a: "Johan Cruyff" },
+        { t: "Tu joues au football avec la tête. Tes jambes sont là pour t'aider.", a: "Johan Cruyff" },
+        { t: "Le ballon ne se tache jamais.", a: "Diego Maradona" },
+        { t: "Quand les mouettes suivent le chalutier, c'est qu'elles pensent que des sardines seront jetées à la mer.", a: "Éric Cantona" },
+        { t: "Si je parle, je suis dans de gros ennuis.", a: "José Mourinho" },
+        { t: "Le talent sans travail ne sert à rien.", a: "Cristiano Ronaldo" },
+        { t: "Le succès n'est pas un hasard : c'est du travail, de la persévérance et l'amour de ce que l'on fait.", a: "Pelé" },
+        { t: "Un match ne se gagne pas sur le papier.", a: null },
+        { t: "La forme est passagère, la préparation reste.", a: null },
+        { t: "Le favori n'a jamais marqué un seul but avant le coup d'envoi.", a: null },
+        { t: "Une cote basse n'a jamais garanti une victoire.", a: null },
+        { t: "Les statistiques éclairent, elles ne décident pas.", a: null },
+        { t: "Un derby ne se lit pas dans un classement.", a: null },
+        { t: "Le terrain tranche toujours à la fin.", a: null },
+        { t: "Mieux vaut un pronostic tiède qu'un coup de cœur ruineux.", a: null },
+        { t: "La discipline bat l'intuition sur la longueur.", a: null },
+        { t: "Un bon parieur perd souvent, mais jamais beaucoup.", a: null },
+        { t: "La patience est la première des mises.", a: null },
+        { t: "Trois matchs sûrs valent mieux qu'un rêve à dix.", a: null },
+        { t: "Le jour où tu crois avoir tout compris, le football te le rappelle.", a: null },
+        { t: "Les grandes équipes gagnent aussi les jours sans.", a: null },
+        { t: "Un gardien en état de grâce vaut deux attaquants.", a: null },
+        { t: "Les blessures écrivent plus de scénarios que les tactiques.", a: null },
+        { t: "Le calendrier fatigue avant les jambes.", a: null },
+        { t: "À domicile, on joue à onze contre onze et quelques milliers.", a: null },
+        { t: "La défense gagne les titres, l'attaque gagne les soirées.", a: null },
+        { t: "Un but à la dernière minute efface quatre-vingt-neuf minutes de raison.", a: null },
+        { t: "Le hasard existe, mais il préfère les équipes bien préparées.", a: null },
+        { t: "Une série s'arrête toujours le jour où l'on cesse d'y croire.", a: null },
+        { t: "Le milieu de terrain décide, les ailes concluent.", a: null },
+        { t: "On ne contrôle pas le résultat, seulement la décision.", a: null },
+        { t: "La meilleure analyse est celle que l'on relit à froid.", a: null },
+        { t: "Un pronostic sans argument n'est qu'un souhait.", a: null },
+        { t: "La chance sourit à ceux qui ont regardé le match précédent.", a: null },
+        { t: "Un effectif court s'épuise en février.", a: null },
+        { t: "Les promus surprennent à l'aller, rarement au retour.", a: null },
+        { t: "Le championnat se joue sur trente journées, pas sur une.", a: null },
+        { t: "Un entraîneur change tout, sauf les jambes de ses joueurs.", a: null },
+        { t: "Les confrontations directes ont de la mémoire.", a: null },
+        { t: "La pelouse aussi fait partie de la tactique.", a: null },
+        { t: "Un match du dimanche soir ne ressemble jamais à un match du samedi.", a: null },
+        { t: "On perd rarement à cause d'un seul joueur.", a: null },
+        { t: "Le doute est le meilleur conseiller d'avant-match.", a: null },
+        { t: "Gagner petit, souvent, vaut mieux que gagner gros, une fois.", a: null },
+        { t: "Le football récompense ceux qui durent.", a: null },
+        { t: "Les stats de possession ne rentrent pas au fond des filets.", a: null },
+        { t: "Analyser, c'est réduire le hasard, pas le supprimer.", a: null }
+    ];
+
+    // Écran de chargement : la barre avance sur des étapes réelles (cache des
+    // pronostics, appel API, classements, rendu) et progresse doucement entre
+    // deux étapes pour ne pas paraître figée.
+    function demarrerChargementAI(container) {
+        var c = AI_CITATIONS[Math.floor(Math.random() * AI_CITATIONS.length)];
+        container.innerHTML = `
+        <div style="padding:40px 24px;text-align:center;">
+            <span class="ball-spinner" style="font-size:34px;display:inline-block;">⚽</span>
+            <div id="ai-loader-pct" style="margin-top:16px;font-family:'Montserrat',sans-serif;font-size:26px;font-weight:800;color:var(--primary-yellow);">0 %</div>
+            <div style="max-width:260px;margin:12px auto 0;height:6px;border-radius:99px;background:var(--bg-input);overflow:hidden;">
+                <div id="ai-loader-bar" style="width:0%;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--primary-yellow),var(--dark-yellow));transition:width .45s ease;"></div>
+            </div>
+            <div style="margin-top:6px;font-size:11px;color:var(--text-gray);letter-spacing:.5px;">Analyse des rencontres en cours</div>
+            <div style="max-width:300px;margin:26px auto 0;font-size:13px;line-height:1.6;color:var(--text-light-gray);font-style:italic;">« ${c.t} »</div>
+            ${c.a ? `<div style="margin-top:8px;font-size:12px;font-weight:700;color:var(--text-gray);">— ${c.a}</div>` : ''}
+        </div>`;
+
+        var cible = 0, actuel = 0;
+        var elPct = document.getElementById('ai-loader-pct');
+        var elBar = document.getElementById('ai-loader-bar');
+        var timer = setInterval(function () {
+            if (actuel >= cible) return;
+            actuel += Math.max(1, Math.round((cible - actuel) / 5));
+            if (actuel > cible) actuel = cible;
+            if (elPct) elPct.textContent = actuel + ' %';
+            if (elBar) elBar.style.width = actuel + '%';
+        }, 80);
+
+        return {
+            vers: function (v) { if (v > cible) cible = v; },
+            terminer: function () { clearInterval(timer); }
+        };
+    }
+
     async function loadAIPronostics(offsetDays) {
         offsetDays = offsetDays || 0;
         var container = document.getElementById('ai-pronostics-container');
@@ -7079,9 +7169,10 @@ async function fetchMatchesFromAPI() {
             renderAIPronostics(window.aiCache[dateStr], dateStr);
             return;
         }
+        var chargement = demarrerChargementAI(container);
+        chargement.vers(15);
         await loadRealPredictions(dateStr);
-
-        container.innerHTML = '<div class="no-combined-message"><span class="ball-spinner">⚽</span><br>Veuillez patienter...</div>';
+        chargement.vers(35);
 
         try {
             // L'API football-data.org ignore les requêtes où dateFrom === dateTo :
@@ -7099,11 +7190,13 @@ async function fetchMatchesFromAPI() {
                 response = await fetch(TARGET_URL);
             }
             if (response.status === 429) {
+                chargement.terminer();
                 container.innerHTML = '<div class="no-combined-message"><i class="fas fa-hourglass-half"></i>Trop de demandes d’un coup.<br><span style="font-size:12px;">Patiente une minute puis réessaie.</span></div>';
                 return;
             }
             if (!response.ok) throw new Error("Erreur réseau ou API");
 
+            chargement.vers(70);
             var data = await response.json();
             var matches = (data.matches || []).filter(function (m) {
                 return m.utcDate && m.utcDate.slice(0, 10) === dateStr;
@@ -7121,8 +7214,11 @@ async function fetchMatchesFromAPI() {
 
             window.aiCache[dateStr] = matches;
             await ensureStandingsLoaded();
+            chargement.vers(100);
+            chargement.terminer();
             renderAIPronostics(matches, dateStr);
         } catch (error) {
+            chargement.terminer();
             console.error("Erreur AI Pronostics:", error);
             container.innerHTML = '<div class="no-combined-message"><i class="fas fa-triangle-exclamation"></i>Impossible de charger les analyses pour le moment.<br><span style="font-size:12px;">Réessaie dans quelques instants.</span></div>';
         }
