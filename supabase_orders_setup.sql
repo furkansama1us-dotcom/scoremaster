@@ -601,3 +601,30 @@ drop policy if exists "Anyone can read free predictions" on public.ai_prediction
 create policy "Anyone can read free predictions"
   on public.ai_predictions for select
   using (true);
+
+-- ============================================================
+-- CACHE DES RENCONTRES API-FOOTBALL
+-- football-data.org ne couvre que 12 compétitions et s'arrête pendant les
+-- trêves. Ce cache prend le relais pour la page Pronostics AI et pour le
+-- générateur de combiné. Écriture par la clé service role uniquement.
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.ai_fixtures (
+    fixture_id   BIGINT PRIMARY KEY,
+    fixture_date DATE NOT NULL,
+    kickoff      TIMESTAMPTZ,
+    home         TEXT NOT NULL,
+    away         TEXT NOT NULL,
+    league_code  TEXT,
+    league_name  TEXT,
+    country      TEXT,
+    flag         TEXT,
+    created_at   TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS ai_fixtures_date_idx ON public.ai_fixtures (fixture_date, kickoff);
+
+ALTER TABLE public.ai_fixtures ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Lecture publique des rencontres" ON public.ai_fixtures;
+CREATE POLICY "Lecture publique des rencontres" ON public.ai_fixtures
+    FOR SELECT USING (true);

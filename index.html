@@ -6908,7 +6908,10 @@ async function fetchMatchesFromAPI() {
 
             var bigLeagueCodes = AI_COMPETITIONS.map(function (c) { return c.code; });
             var matches = (data.matches || []).filter(function (m) {
-                return m.utcDate && m.utcDate.slice(0, 10) === dateStr && m.competition && bigLeagueCodes.indexOf(m.competition.code) !== -1;
+                // « major » vient du cache API-Football : ces rencontres ont déjà
+                // été filtrées côté serveur sur la liste des ligues suivies.
+                return m.utcDate && m.utcDate.slice(0, 10) === dateStr && m.competition
+                    && (m.competition.major === true || bigLeagueCodes.indexOf(m.competition.code) !== -1);
             });
 
             if (matches.length < 2) {
