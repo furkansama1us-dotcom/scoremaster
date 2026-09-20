@@ -9687,7 +9687,13 @@ async function setMatchPostponed(id, index, postponed) {
 function editTicketScores(id) {
     if (!window.isAdmin) { showToast('Réservé aux admins.', true); return; }
     closeTicketHistory();
-    setTimeout(function () { openQuickEditScreen(id); }, 320);
+    // Le Panel Admin doit être ouvert : openQuickEditScreen ne fait que changer
+    // d'onglet, il ne rend pas la page admin visible.
+    setTimeout(function () {
+        document.getElementById('admin-page').classList.add('active');
+        openQuickEditScreen(id);
+        showToast('Corrige les scores puis enregistre.');
+    }, 320);
 }
 
 function copyTicketCombined(id) {
