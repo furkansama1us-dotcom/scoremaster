@@ -522,3 +522,15 @@ grant execute on function public.admin_sm_points_history(integer) to authenticat
 
 alter table public.combineds_public
   add column if not exists end_notified_at timestamptz;
+
+-- ============================================================
+-- Rôle « Testeur » : code à usage unique (préfixe SMT) qui donne pendant
+-- 5 minutes le libellé de rôle « Testeur » au compte qui le saisit, et
+-- rien d'autre. Aucun accès supplémentaire : is_vip et vip_pack_type ne
+-- sont pas touchés. La date de fin est écrite uniquement par
+-- api/redeem-code.js (clé service_role) ; la colonne n'est pas dans la
+-- liste des colonnes modifiables par le client (voir le grant plus haut).
+-- ============================================================
+
+alter table public.profiles
+  add column if not exists tester_until timestamptz;

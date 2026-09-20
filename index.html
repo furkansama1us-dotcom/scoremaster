@@ -1980,6 +1980,9 @@ async function fetchApiScore(id, dateRaw) {
             </div>
             <div id="admin-vip-codes-list" style="margin-bottom:20px;"></div>
 
+            <button onclick="adminGenerateTesterCode()" style="width:100%;padding:13px;margin-bottom:10px;background:rgba(62,160,207,.08);color:#3ea0cf;border:1px dashed rgba(62,160,207,.4);border-radius:12px;font-size:13px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                <i class="fas fa-stopwatch"></i> Générer un code Testeur (5 min, usage unique)
+            </button>
             <button onclick="adminGenerateTestUnlockCode()" style="width:100%;padding:13px;margin-bottom:20px;background:rgba(255,215,0,.08);color:var(--primary-yellow);border:1px dashed rgba(255,215,0,.4);border-radius:12px;font-size:13px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
                 <i class="fas fa-flask"></i> Générer un code de test (débloque ton propre compte)
             </button>
@@ -6166,6 +6169,7 @@ async function clearAllPublicationHistory() {
             'hebdo':      { label: '📅 Pack Hebdo',       bg: 'rgba(139,92,246,0.2)', color: '#8B5CF6' },
             'membre':     { label: '💙 Membre SM',        bg: 'rgba(74,144,217,0.2)', color: '#3B82F6' },
             'visiteur':   { label: '👁 Visiteur',         bg: 'rgba(138,138,138,0.2)', color: '#8A93A8' },
+            'testeur':    { label: '🧪 Testeur',          bg: 'rgba(62,160,207,0.2)', color: '#3ea0cf' },
         };
         var role = p.role || 'visiteur';
         var roleInfo = roleMap[role] || roleMap['visiteur'];
@@ -7692,8 +7696,31 @@ async function fetchMatchesFromAPI() {
     var VIP_PACK_INFO = {
         journalier: { label: 'Pack Journalier', badgeLabel: '⏱ Pack Journalier', durationDays: 1, prefix: 'SMJ', color: '#22C55E' },
         hebdo:      { label: 'Pack Hebdo',       badgeLabel: '📅 Pack Hebdo',      durationDays: 7, prefix: 'SMH', color: '#8B5CF6' },
-        vip:        { label: 'SM VIP+ (à vie)',  badgeLabel: '🔥 VIP+',            durationDays: null, prefix: 'SMV', color: '#F43F5E' }
+        vip:        { label: 'SM VIP+ (à vie)',  badgeLabel: '🔥 VIP+',            durationDays: null, prefix: 'SMV', color: '#F43F5E' },
+        testeur:    { label: 'Testeur (5 min)',  badgeLabel: '🧪 Testeur',         durationDays: null, prefix: 'SMT', color: '#3ea0cf' }
     };
+
+    // Rôle « Testeur » : purement cosmétique et temporaire. Aucun droit
+    // supplémentaire n'est accordé — le compte reste un visiteur.
+    function applyTesterRole(until) {
+        window.testerUntil = until ? new Date(until).getTime() : 0;
+        if (!window.testerUntil || window.testerUntil <= Date.now()) return;
+
+        var html = '<span style="color:#3ea0cf;">🧪 Testeur</span>';
+        var homeEl = document.getElementById('role-home'); if (homeEl) homeEl.innerHTML = html;
+        var vipEl = document.getElementById('role-vip'); if (vipEl) vipEl.innerHTML = html;
+        var badge = document.getElementById('profile-role-badge');
+        if (badge) { badge.textContent = '🧪 Testeur'; badge.style.background = 'rgba(62,160,207,0.2)'; badge.style.color = '#3ea0cf'; badge.style.border = '1px solid #3ea0cf44'; }
+
+        clearTimeout(window.testerTimer);
+        window.testerTimer = setTimeout(function () {
+            window.testerUntil = 0;
+            var back = '<span style="color:var(--blue);">' + (window.isEmailConfirmed ? 'Membre SM' : 'Visiteur') + '</span>';
+            var h2 = document.getElementById('role-home'); if (h2) h2.innerHTML = back;
+            var v2 = document.getElementById('role-vip'); if (v2) v2.innerHTML = back;
+            showToast('Fin de la période de test.');
+        }, window.testerUntil - Date.now());
+    }
 
     function applyRoleDisplay(packType) {
         var info = VIP_PACK_INFO[packType];
@@ -8008,6 +8035,28 @@ async function fetchMatchesFromAPI() {
     // Raccourci admin : génère un code de déblocage instantané sur le compte
     // admin lui-même, sans passer par le circuit panier -> validation manuelle
     // -> WhatsApp. Utile uniquement pour tester le combiné débloqué.
+    // Code "Testeur" : à usage unique, il donne pendant 5 minutes le libellé de
+    // rôle « Testeur » au compte qui le saisit — et rien d'autre. Aucun combiné
+    // débloqué, aucun accès VIP : les droits restent ceux d'un visiteur.
+    async function adminGenerateTesterCode() {
+        var code = generateOrderCode('SMT');
+        try {
+            const { error } = await supabaseClient.from('vip_access_codes').insert([{
+                pack_type: 'testeur',
+                code: code,
+                duration_days: null
+            }]);
+            if (error) throw error;
+        } catch (error) {
+            console.error('Erreur génération code Testeur :', error);
+            showToast('Erreur lors de la génération du code.', true);
+            return;
+        }
+        if (navigator.clipboard) navigator.clipboard.writeText(code).catch(function () {});
+        showToast('Code ' + code + ' copié — valable 5 minutes, une seule utilisation.');
+        loadAdminVipCodes();
+    }
+
     async function adminGenerateTestUnlockCode() {
         if (!window.currentAuthUser) { showToast('Tu dois être connecté.', true); return; }
         if (!currentCombined || !currentCombined.matches || !currentCombined.matches.length) {
@@ -8086,6 +8135,19 @@ async function fetchMatchesFromAPI() {
         // du compte. La rédemption passe par le serveur (clé service_role) —
         // jamais d'écriture directe de is_vip/vip_pack_type depuis le client,
         // sinon n'importe qui pourrait se l'auto-accorder via les devtools.
+        // Code Testeur (préfixe SMT) : usage unique, 5 minutes, aucun accès.
+        if (/^SMT-/.test(code)) {
+            try {
+                var testRes = await adminApiCall('/api/redeem-code', { code: code });
+                applyTesterRole(testRes.tester_until);
+                showToast('Rôle Testeur activé pour 5 minutes.');
+            } catch (error) {
+                console.error('Erreur code Testeur :', error);
+                showToast(error.message || 'Code invalide ou déjà utilisé.', true);
+            }
+            return;
+        }
+
         if (/^SM[JHV]-/.test(code)) {
             try {
                 var packResult = await adminApiCall('/api/redeem-code', { code: code });
@@ -8315,7 +8377,7 @@ async function fetchMatchesFromAPI() {
         window.currentAuthUser = user;
         var profile = null;
         try {
-            var profileRes = await supabaseClient.from('profiles').select('is_vip, is_admin, username, vip_expires_at, vip_pack_type, email_confirmed, avatar_key').eq('id', user.id).single();
+            var profileRes = await supabaseClient.from('profiles').select('is_vip, is_admin, username, vip_expires_at, vip_pack_type, email_confirmed, avatar_key, tester_until').eq('id', user.id).single();
             profile = profileRes.data;
         } catch(e) {}
 
@@ -8372,6 +8434,12 @@ async function fetchMatchesFromAPI() {
         } else {
             document.getElementById('role-home').innerHTML = '<span style="color:var(--blue);">Visiteur</span>';
             document.getElementById('role-vip').innerHTML  = '<span style="color:var(--blue);">Visiteur</span>';
+        }
+
+        // Période de test encore en cours au chargement : on réaffiche le rôle.
+        if (!window.isAdmin && !window.isUserVip && profile && profile.tester_until
+            && new Date(profile.tester_until).getTime() > Date.now()) {
+            applyTesterRole(profile.tester_until);
         }
 
         var adminBtn = document.getElementById('admin-panel-btn');

@@ -58,6 +58,25 @@ module.exports = async function handler(req, res) {
 
         // Verrou optimiste : la condition used=eq.false dans l'URL fait que
         // seule UNE requête concurrente peut réussir à marquer ce code utilisé.
+        // Code "Testeur" : usage unique, 5 minutes, AUCUN accès supplémentaire.
+        // is_vip et vip_pack_type ne sont jamais touchés : le compte garde
+        // exactement les droits d'un visiteur, seul le libellé du rôle change.
+        if (packCode.pack_type === 'testeur') {
+            const claimedTest = await sbFetch(`vip_access_codes?id=eq.${packCode.id}&used=eq.false`, {
+                method: 'PATCH',
+                headers: { 'Prefer': 'return=representation' },
+                body: JSON.stringify({ used: true, used_by: user.id, used_at: new Date().toISOString() })
+            });
+            if (!claimedTest || !claimedTest.length) return res.status(409).json({ error: 'Ce code vient d\'être utilisé.' });
+
+            const testerUntil = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+            await sbFetch(`profiles?id=eq.${user.id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ tester_until: testerUntil })
+            });
+            return res.status(200).json({ ok: true, pack_type: 'testeur', tester_until: testerUntil });
+        }
+
         const claimed = await sbFetch(`vip_access_codes?id=eq.${packCode.id}&used=eq.false`, {
             method: 'PATCH',
             headers: { 'Prefer': 'return=representation' },
