@@ -7150,7 +7150,7 @@ async function fetchMatchesFromAPI() {
     }
 
     function buildAIEnrichedList(matches, dateStr) {
-        return matches.map(function (m) {
+        var liste = matches.map(function (m) {
             var home = (m.homeTeam && m.homeTeam.name) || "Domicile";
             var away = (m.awayTeam && m.awayTeam.name) || "Extérieur";
             var league = (m.tournament && m.tournament.name) || "Compétition";
@@ -7170,30 +7170,66 @@ async function fetchMatchesFromAPI() {
             var winnerKey = pred.homeProb === maxProb ? 'homeProb' : (pred.awayProb === maxProb ? 'awayProb' : 'drawProb');
 
             var seed = home + '|' + away + '|' + dateStr;
-            var isVipPick = seededScore(seed + '#vip') < 0.35;
-            var conf = isVipPick
-                ? Math.round(95 + seededScore(seed + '#vipconf') * 4)
-                : Math.round(51 + seededScore(seed + '#normconf') * 22);
+            var conf;
             if (reelle) {
                 // Analyse réelle : on affiche les probabilités d'API-Football
                 // telles quelles, et la confiance est celle du pronostic retenu.
                 // Aucune redistribution, sinon le chiffre annoncé serait inventé.
                 conf = maxProb;
             } else {
+                conf = Math.round(51 + seededScore(seed + '#normconf') * 22);
                 pred = redistributeConfidence(pred, winnerKey, conf);
             }
 
-            var confClass = isVipPick ? 'vip' : (conf >= 65 ? 'high' : 'mid');
-            var confLabel = isVipPick ? 'Très élevé' : (conf >= 65 ? 'Confiance élevée' : 'Confiance moyenne');
-            if (reelle) confLabel = 'Analyse API-Football';
+            var confClass = conf >= 65 ? 'high' : 'mid';
+            var confLabel = reelle ? 'Analyse API-Football' : (conf >= 65 ? 'Confiance élevée' : 'Confiance moyenne');
+            var isVipPick = seededScore(seed + '#vip') < 0.35;
 
             var pickLabel;
             if (winnerKey === 'homeProb') pickLabel = `Victoire <span>${home}</span>`;
             else if (winnerKey === 'awayProb') pickLabel = `Victoire <span>${away}</span>`;
             else pickLabel = `Match nul probable`;
 
-            return { home: home, away: away, league: league, flagUrl: flagUrl, timeStr: timeStr, startTimestamp: m.startTimestamp || 0, homeStanding: homeStanding, awayStanding: awayStanding, pred: pred, conf: conf, isVipPick: isVipPick, confClass: confClass, confLabel: confLabel, pickLabel: pickLabel, reelle: reelle };
+            return { home: home, away: away, league: league, flagUrl: flagUrl, timeStr: timeStr, startTimestamp: m.startTimestamp || 0, homeStanding: homeStanding, awayStanding: awayStanding, pred: pred, conf: conf, isVipPick: isVipPick, confClass: confClass, confLabel: confLabel, pickLabel: pickLabel, reelle: reelle, seed: seed };
         });
+
+        return appliquerSelectionVip(liste, dateStr);
+    }
+
+    // Nombre de pronostics réservés aux VIP+ affichés chaque jour. Le tirage
+    // d'origine pouvait n'en désigner aucun sur une journée courte : on complète
+    // donc avec les rencontres les mieux notées jusqu'à atteindre ce minimum.
+    var AI_VIP_MINIMUM = 2;
+
+    function appliquerTeaserVip(item) {
+        item.isVipPick = true;
+        // Indice de victoire annoncé sur les picks floutés : 90 à 99 %.
+        // C'est l'accroche commerciale du VIP+, pas la probabilité calculée —
+        // elle n'est donc jamais présentée comme une analyse API-Football.
+        item.conf = 90 + Math.round(seededScore(item.seed + '#vipconf') * 9);
+        item.confClass = 'vip';
+        item.confLabel = 'Très élevé';
+        return item;
+    }
+
+    function appliquerSelectionVip(liste, dateStr) {
+        var vip = liste.filter(function (x) { return x.isVipPick; });
+        var manquants = Math.min(AI_VIP_MINIMUM, liste.length) - vip.length;
+
+        if (manquants > 0) {
+            // On promeut les rencontres à la probabilité la plus forte, en
+            // départageant par un tirage stable sur la journée pour que la
+            // sélection ne change pas d'un rechargement à l'autre.
+            liste.filter(function (x) { return !x.isVipPick; })
+                .sort(function (a, b) {
+                    return (b.conf - a.conf) || (seededScore(a.seed + '#promo|' + dateStr) - seededScore(b.seed + '#promo|' + dateStr));
+                })
+                .slice(0, manquants)
+                .forEach(appliquerTeaserVip);
+        }
+
+        liste.filter(function (x) { return x.isVipPick; }).forEach(appliquerTeaserVip);
+        return liste;
     }
 
     function buildAIMatchCardHtml(item) {
