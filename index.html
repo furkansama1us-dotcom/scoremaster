@@ -404,13 +404,27 @@
         .pack-detail-features{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
         .pack-feature{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-light-gray);background:var(--bg-input);padding:5px 10px;border-radius:8px}
         .pack-feature i{color:var(--green);font-size:10px}
-        .pack-detail-bottom{display:flex;align-items:center;justify-content:space-between}
+        .pack-detail-bottom{display:block}
         .pack-price-container{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
         .price-old{font-size:14px;color:var(--red);text-decoration:line-through;font-weight:600}
         .price-new{font-size:24px;font-weight:900}
         .price-label{font-size:13px;color:var(--text-gray);font-weight:400}
-        .pack-subscribe-btn{padding:10px 24px;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;transition:all .3s; box-shadow: 0 4px 10px rgba(0,0,0,0.2);}
-        .pack-subscribe-btn:active{transform:scale(.95)}
+        .pack-subscribe-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px 20px;border:none;border-radius:14px;font-size:16px;font-weight:900;letter-spacing:.3px;cursor:pointer;transition:all .25s;box-shadow:0 8px 22px rgba(0,0,0,.35);}
+        .pack-subscribe-btn:active{transform:scale(.97)}
+        /* Le bouton respire doucement pour rester le point d'entrée évident de la carte */
+        @keyframes packCtaBreathe{0%,100%{transform:scale(1);box-shadow:0 8px 22px rgba(0,0,0,.35)}50%{transform:scale(1.025);box-shadow:0 12px 28px rgba(0,0,0,.45)}}
+        .pack-btn-pulse{animation:packCtaBreathe 2.6s ease-in-out infinite,btnPulse 2s ease infinite}
+        /* Garantie : léger battement de la lueur pour attirer l'œil sans clignoter */
+        @keyframes guaranteeGlow{0%,100%{box-shadow:0 0 14px rgba(34,197,94,.14);transform:translateY(0)}50%{box-shadow:0 0 26px rgba(34,197,94,.34);transform:translateY(-2px)}}
+        .guarantee-badge{animation:guaranteeGlow 3s ease-in-out infinite}
+        @keyframes shieldTick{0%,88%,100%{transform:rotate(0)}92%{transform:rotate(-9deg)}96%{transform:rotate(9deg)}}
+        .guarantee-badge i{animation:shieldTick 4s ease-in-out infinite;transform-origin:50% 60%}
+        /* Places restantes : reflet qui balaie la barre + chiffre qui bat */
+        .spots-bar{position:relative;overflow:hidden}
+        .spots-bar::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);transform:translateX(-100%);animation:spotsSweep 2.8s ease-in-out infinite}
+        @keyframes spotsSweep{0%{transform:translateX(-100%)}60%,100%{transform:translateX(100%)}}
+        @keyframes spotsCount{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+        .spots-text strong{display:inline-block;animation:spotsCount 1.8s ease-in-out infinite}
         
         .pack-info-btn {background:var(--bg-input); width:32px; height:32px; border-radius:50%; display:flex; justify-content:center; align-items:center; cursor:pointer; border: 1px solid var(--border-color); flex-shrink:0; transition:all 0.2s;}
         .pack-info-btn:active {background:var(--border-color);}
@@ -1519,12 +1533,6 @@ async function fetchApiScore(id, dateRaw) {
                     </div>
                     <div class="guarantee-badge"><i class="fas fa-shield-alt"></i><span>Satisfait ou remboursé sous 48h</span></div>
                     <div class="pack-detail-bottom">
-                        <div class="pack-price-container">
-                            <span class="price-old">89,99€</span>
-                            <span class="price-new" style="color:var(--green);">50€</span>
-                            <span class="price-label">unique</span>
-                            <div class="economy-badge">-44% 🎉</div>
-                        </div>
                         <button class="pack-subscribe-btn pack-btn-pulse" style="background:var(--green);color:#fff;" onclick="openCheckout('journalier', 50)"><i class="fab fa-telegram-plane" style="margin-right:6px;"></i> J'adhère !</button>
                     </div>
                     <div class="payment-methods">
@@ -1574,12 +1582,6 @@ async function fetchApiScore(id, dateRaw) {
                         <span style="color:#FFC107;">Garantie satisfait ou remboursé 7 jours</span>
                     </div>
                     <div class="pack-detail-bottom">
-                        <div class="pack-price-container">
-                            <span class="price-old">179,99€</span>
-                            <span class="price-new" style="color:#FFC107;">99,99€</span>
-                            <span class="price-label">unique • à vie</span>
-                            <div class="economy-badge" style="background:rgba(255,193,7,0.15); color:#FFC107;">-44% 🔥</div>
-                        </div>
                         <button class="pack-subscribe-btn pack-btn-pulse" style="background:linear-gradient(135deg, #FFC107, #B8860B);color:#000; font-size:15px; padding:12px 28px;" onclick="openCheckout('vip', 99.99)"><i class="fab fa-telegram-plane" style="margin-right:6px;"></i> J'adhère !</button>
                     </div>
                     <div class="payment-methods">
@@ -1618,12 +1620,6 @@ async function fetchApiScore(id, dateRaw) {
                     </div>
                     <div class="guarantee-badge"><i class="fas fa-shield-alt"></i><span>Satisfait ou remboursé sous 48h</span></div>
                     <div class="pack-detail-bottom">
-                        <div class="pack-price-container">
-                            <span class="price-old">129,99€</span>
-                            <span class="price-new" style="color:var(--blue);">69,99€</span>
-                            <span class="price-label">unique</span>
-                            <div class="economy-badge" style="background:rgba(74,144,217,0.15); color:var(--blue);">-46% 💎</div>
-                        </div>
                         <button class="pack-subscribe-btn pack-btn-pulse" style="background:var(--blue);color:#fff;" onclick="openCheckout('hebdo', 69.99)"><i class="fab fa-telegram-plane" style="margin-right:6px;"></i> J'adhère !</button>
                     </div>
                     <div class="payment-methods">
