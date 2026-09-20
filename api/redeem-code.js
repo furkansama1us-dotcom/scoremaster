@@ -58,6 +58,24 @@ module.exports = async function handler(req, res) {
 
         // Verrou optimiste : la condition used=eq.false dans l'URL fait que
         // seule UNE requête concurrente peut réussir à marquer ce code utilisé.
+        // Code "Membre SM" : usage unique, à vie, AUCUN accès supplémentaire non
+        // plus — un Membre SM a exactement les droits d'un visiteur, seul le
+        // libellé du rôle change (is_vip et vip_pack_type restent intacts).
+        if (packCode.pack_type === 'membre') {
+            const claimedMember = await sbFetch(`vip_access_codes?id=eq.${packCode.id}&used=eq.false`, {
+                method: 'PATCH',
+                headers: { 'Prefer': 'return=representation' },
+                body: JSON.stringify({ used: true, used_by: user.id, used_at: new Date().toISOString() })
+            });
+            if (!claimedMember || !claimedMember.length) return res.status(409).json({ error: 'Ce code vient d\'être utilisé.' });
+
+            await sbFetch(`profiles?id=eq.${user.id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ is_member: true })
+            });
+            return res.status(200).json({ ok: true, pack_type: 'membre' });
+        }
+
         // Code "Testeur" : usage unique, 5 minutes, AUCUN accès supplémentaire.
         // is_vip et vip_pack_type ne sont jamais touchés : le compte garde
         // exactement les droits d'un visiteur, seul le libellé du rôle change.

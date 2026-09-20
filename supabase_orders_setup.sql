@@ -534,3 +534,14 @@ alter table public.combineds_public
 
 alter table public.profiles
   add column if not exists tester_until timestamptz;
+
+-- ============================================================
+-- Rôle « Membre SM » par code : code à usage unique (préfixe SMM) qui
+-- passe définitivement le compte en « Membre SM ». Comme le rôle Testeur,
+-- il n'accorde AUCUN droit supplémentaire (mêmes permissions qu'un
+-- visiteur) : seul le libellé du rôle change. Écrit uniquement par
+-- api/redeem-code.js (clé service_role).
+-- ============================================================
+
+alter table public.profiles
+  add column if not exists is_member boolean not null default false;

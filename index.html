@@ -1980,6 +1980,9 @@ async function fetchApiScore(id, dateRaw) {
             </div>
             <div id="admin-vip-codes-list" style="margin-bottom:20px;"></div>
 
+            <button onclick="adminGenerateMemberCode()" style="width:100%;padding:13px;margin-bottom:10px;background:rgba(59,130,246,.08);color:#3B82F6;border:1px dashed rgba(59,130,246,.4);border-radius:12px;font-size:13px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                <i class="fas fa-id-card"></i> Générer un code Membre SM (à vie, usage unique)
+            </button>
             <button onclick="adminGenerateTesterCode()" style="width:100%;padding:13px;margin-bottom:10px;background:rgba(62,160,207,.08);color:#3ea0cf;border:1px dashed rgba(62,160,207,.4);border-radius:12px;font-size:13px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
                 <i class="fas fa-stopwatch"></i> Générer un code Testeur (5 min, usage unique)
             </button>
@@ -7697,8 +7700,20 @@ async function fetchMatchesFromAPI() {
         journalier: { label: 'Pack Journalier', badgeLabel: '⏱ Pack Journalier', durationDays: 1, prefix: 'SMJ', color: '#22C55E' },
         hebdo:      { label: 'Pack Hebdo',       badgeLabel: '📅 Pack Hebdo',      durationDays: 7, prefix: 'SMH', color: '#8B5CF6' },
         vip:        { label: 'SM VIP+ (à vie)',  badgeLabel: '🔥 VIP+',            durationDays: null, prefix: 'SMV', color: '#F43F5E' },
-        testeur:    { label: 'Testeur (5 min)',  badgeLabel: '🧪 Testeur',         durationDays: null, prefix: 'SMT', color: '#3ea0cf' }
+        testeur:    { label: 'Testeur (5 min)',  badgeLabel: '🧪 Testeur',         durationDays: null, prefix: 'SMT', color: '#3ea0cf' },
+        membre:     { label: 'Membre SM (à vie)', badgeLabel: '💙 Membre SM',      durationDays: null, prefix: 'SMM', color: '#3B82F6' }
     };
+
+    // Rôle « Membre SM » : définitif, mais sans aucun droit supplémentaire —
+    // mêmes permissions qu'un visiteur, seul le libellé change.
+    function applyMemberRole() {
+        window.isMemberSM = true;
+        var html = '<span style="color:#3B82F6;">Membre SM</span>';
+        var homeEl = document.getElementById('role-home'); if (homeEl) homeEl.innerHTML = html;
+        var vipEl = document.getElementById('role-vip'); if (vipEl) vipEl.innerHTML = html;
+        var badge = document.getElementById('profile-role-badge');
+        if (badge) { badge.textContent = '💙 Membre SM'; badge.style.background = 'rgba(74,144,217,0.2)'; badge.style.color = '#3B82F6'; badge.style.border = '1px solid #3B82F644'; }
+    }
 
     // Rôle « Testeur » : purement cosmétique et temporaire. Aucun droit
     // supplémentaire n'est accordé — le compte reste un visiteur.
@@ -7715,7 +7730,8 @@ async function fetchMatchesFromAPI() {
         clearTimeout(window.testerTimer);
         window.testerTimer = setTimeout(function () {
             window.testerUntil = 0;
-            var back = '<span style="color:var(--blue);">' + (window.isEmailConfirmed ? 'Membre SM' : 'Visiteur') + '</span>';
+            var estMembre = window.isEmailConfirmed || window.isMemberSM;
+            var back = '<span style="color:' + (estMembre ? '#3B82F6' : 'var(--blue)') + ';">' + (estMembre ? 'Membre SM' : 'Visiteur') + '</span>';
             var h2 = document.getElementById('role-home'); if (h2) h2.innerHTML = back;
             var v2 = document.getElementById('role-vip'); if (v2) v2.innerHTML = back;
             showToast('Fin de la période de test.');
@@ -8035,6 +8051,28 @@ async function fetchMatchesFromAPI() {
     // Raccourci admin : génère un code de déblocage instantané sur le compte
     // admin lui-même, sans passer par le circuit panier -> validation manuelle
     // -> WhatsApp. Utile uniquement pour tester le combiné débloqué.
+    // Code "Membre SM" : usage unique, définitif. Il change le libellé du rôle
+    // du compte qui le saisit, sans lui donner le moindre droit supplémentaire —
+    // un Membre SM voit exactement la même chose qu'un visiteur.
+    async function adminGenerateMemberCode() {
+        var code = generateOrderCode('SMM');
+        try {
+            const { error } = await supabaseClient.from('vip_access_codes').insert([{
+                pack_type: 'membre',
+                code: code,
+                duration_days: null
+            }]);
+            if (error) throw error;
+        } catch (error) {
+            console.error('Erreur génération code Membre SM :', error);
+            showToast('Erreur lors de la génération du code.', true);
+            return;
+        }
+        if (navigator.clipboard) navigator.clipboard.writeText(code).catch(function () {});
+        showToast('Code ' + code + ' copié — Membre SM à vie, une seule utilisation.');
+        loadAdminVipCodes();
+    }
+
     // Code "Testeur" : à usage unique, il donne pendant 5 minutes le libellé de
     // rôle « Testeur » au compte qui le saisit — et rien d'autre. Aucun combiné
     // débloqué, aucun accès VIP : les droits restent ceux d'un visiteur.
@@ -8135,6 +8173,19 @@ async function fetchMatchesFromAPI() {
         // du compte. La rédemption passe par le serveur (clé service_role) —
         // jamais d'écriture directe de is_vip/vip_pack_type depuis le client,
         // sinon n'importe qui pourrait se l'auto-accorder via les devtools.
+        // Code Membre SM (préfixe SMM) : usage unique, définitif, aucun accès.
+        if (/^SMM-/.test(code)) {
+            try {
+                await adminApiCall('/api/redeem-code', { code: code });
+                applyMemberRole();
+                showToast('Tu es désormais Membre SM ! 💙');
+            } catch (error) {
+                console.error('Erreur code Membre SM :', error);
+                showToast(error.message || 'Code invalide ou déjà utilisé.', true);
+            }
+            return;
+        }
+
         // Code Testeur (préfixe SMT) : usage unique, 5 minutes, aucun accès.
         if (/^SMT-/.test(code)) {
             try {
@@ -8377,7 +8428,7 @@ async function fetchMatchesFromAPI() {
         window.currentAuthUser = user;
         var profile = null;
         try {
-            var profileRes = await supabaseClient.from('profiles').select('is_vip, is_admin, username, vip_expires_at, vip_pack_type, email_confirmed, avatar_key, tester_until').eq('id', user.id).single();
+            var profileRes = await supabaseClient.from('profiles').select('is_vip, is_admin, username, vip_expires_at, vip_pack_type, email_confirmed, avatar_key, tester_until, is_member').eq('id', user.id).single();
             profile = profileRes.data;
         } catch(e) {}
 
@@ -8409,7 +8460,8 @@ async function fetchMatchesFromAPI() {
         // Le rôle affiché reflète le pack exact (journalier/hebdo/vip), pas
         // un "VIP+" générique — sauf pour un admin, qui garde son propre badge.
         // Un Visiteur qui a confirmé son email passe Membre SM (sans VIP).
-        var role = window.isAdmin ? 'admin' : (window.isUserVip ? (window.userVipPackType || 'vip') : (window.isEmailConfirmed ? 'membre' : 'visiteur'));
+        window.isMemberSM = !!(profile && profile.is_member);
+        var role = window.isAdmin ? 'admin' : (window.isUserVip ? (window.userVipPackType || 'vip') : ((window.isEmailConfirmed || window.isMemberSM) ? 'membre' : 'visiteur'));
 
         window.currentUserProfile = {
             pseudo:     finalUsername,
@@ -8427,7 +8479,7 @@ async function fetchMatchesFromAPI() {
             document.getElementById('role-vip').innerHTML  = roleHtml;
         } else if (window.isUserVip) {
             applyRoleDisplay(window.userVipPackType || 'vip');
-        } else if (window.isEmailConfirmed) {
+        } else if (window.isEmailConfirmed || window.isMemberSM) {
             var membreHtml = '<span style="color:#3B82F6;">Membre SM</span>';
             document.getElementById('role-home').innerHTML = membreHtml;
             document.getElementById('role-vip').innerHTML  = membreHtml;
