@@ -282,6 +282,18 @@ async function handleCalendarDraft(req, res) {
         headers: { Prefer: 'return=representation' },
         body: JSON.stringify([row])
     });
+
+    // Notification Telegram privée à l'admin : une seule par publication (sur la
+    // ligne Instagram, pas sur sa jumelle Telegram), pour ne pas doubler l'alerte.
+    if ((draft.platform || 'instagram') === 'instagram') {
+        const quand = draft.scheduled_time ? (' à ' + String(draft.scheduled_time).replace(':', 'h')) : '';
+        const message = `🗓️ CARROUSEL PRÊT À VALIDER\n\n« ${draft.titre || draft.calendar_id} »\nPrévu le ${draft.scheduled_for}${quand} — Instagram + Telegram.\n\nOuvre l'app : Panel Admin > Publications. Les visuels s'habillent tout seuls à l'ouverture, puis tu approuves.`;
+        await sbFetch('telegram_queue', {
+            method: 'POST',
+            body: JSON.stringify([{ message: message }])
+        }).catch(function () {});
+    }
+
     res.status(200).json({ ok: true, id: inserted && inserted[0] && inserted[0].id });
 }
 
