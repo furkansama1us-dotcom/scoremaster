@@ -1,3 +1,8 @@
 node_modules/
 vps-scripts/.env
 preview.png
+
+# Dossiers de travail locaux (maquettes, mascotte, calendrier)
+figma-to-html/
+mascotte scoremaster/
+*.xlsx
