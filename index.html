@@ -723,6 +723,16 @@
         .hc-gain.perdu strong { color:var(--tk-dim); }
         .hc-foot { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px 18px; background:var(--tk-foot); font-size:13px; color:var(--tk-dim); }
         #ticket-history-overlay .no-combined-message { color:var(--tk-gray); }
+        .tkm-back { position:fixed; inset:0; z-index:10005; background:rgba(0,0,0,.6); display:flex; align-items:flex-end; justify-content:center; opacity:0; transition:opacity .2s; }
+        .tkm-back.on { opacity:1; }
+        .tkm-sheet { width:100%; max-width:420px; background:#1c1d22; border-radius:18px 18px 0 0; padding:10px 10px calc(16px + var(--safe-bottom)); font-family:Supreme,Roboto,-apple-system,'Segoe UI',Arial,sans-serif; transform:translateY(16px); transition:transform .2s; }
+        .tkm-back.on .tkm-sheet { transform:translateY(0); }
+        .tkm-title { text-align:center; font-size:12px; color:#7a7d85; padding:10px 0 12px; }
+        .tkm-item { display:flex; align-items:center; gap:12px; width:100%; padding:14px 16px; border:none; border-radius:12px; background:transparent; color:#fff; font-family:inherit; font-size:15px; font-weight:500; text-align:left; cursor:pointer; }
+        .tkm-item i { width:20px; text-align:center; color:#9a9da5; }
+        .tkm-item.admin i { color:var(--primary-yellow); }
+        .tkm-item:active { background:rgba(255,255,255,.06); }
+        .tkm-cancel { margin-top:6px; width:100%; padding:14px; border:none; border-radius:12px; background:rgba(255,255,255,.06); color:#fff; font-family:inherit; font-size:15px; font-weight:700; cursor:pointer; }
         .admin-history-item { background:#1C2541; padding:12px; margin-bottom:8px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; }
         .admin-history-item span { font-size:13px; color:#fff; }
         .admin-history-item button { background:var(--primary-yellow); color:#000; border:none; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer; }
@@ -9444,21 +9454,28 @@ function buildTicketCardHtml(c) {
         var sc = c.status || 'en-cours';
         var matches = c.matches || [];
 
+        // Un match reporté ne compte pas dans la cote totale : on recalcule
+        // plutôt que d'utiliser total_odds, figé au moment de la publication.
+        var hasPostponed = matches.some(function (m) { return m.match_status === 'reporte'; });
         var calcOdds = 1;
         var hasValidOdds = false;
         matches.forEach(function(m) {
+            if (m.match_status === 'reporte') return;
             if(m.odds && m.odds > 0) { calcOdds *= m.odds; hasValidOdds = true; }
         });
-        var finalOdds = parseFloat(c.total_odds || c.totalOdds) || (hasValidOdds ? calcOdds : 0);
+        var finalOdds = hasPostponed
+            ? (hasValidOdds ? calcOdds : 0)
+            : (parseFloat(c.total_odds || c.totalOdds) || (hasValidOdds ? calcOdds : 0));
         var fmtOdd = function (v) { return Number(v).toFixed(2).replace('.', ','); };
         var displayOdds = finalOdds > 0 ? fmtOdd(finalOdds) : '***.**';
 
+        var kept = matches.filter(function (m) { return m.match_status !== 'reporte'; }).length;
         var pillLabel = sc === 'termine' ? 'Gagné' : (sc === 'perdu' ? 'Perdu' : 'En cours');
         var barHtml = `<span class="${sc}" style="width:100%;"></span>`;
 
         var tally = sc === 'termine'
-            ? `<i class="fas fa-check-circle"></i> ${matches.length}`
-            : (sc === 'perdu' ? `<i class="fas fa-times-circle"></i> ${matches.length}` : `<i class="fas fa-clock"></i> ${matches.length}`);
+            ? `<i class="fas fa-check-circle"></i> ${kept}`
+            : (sc === 'perdu' ? `<i class="fas fa-times-circle"></i> ${kept}` : `<i class="fas fa-clock"></i> ${kept}`);
 
         var legsHtml = matches.map(function (m) {
             var hasScore = m.score && m.score.indexOf('?') === -1;
@@ -9475,14 +9492,16 @@ function buildTicketCardHtml(c) {
             var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" alt="">` : (m.league_flag ? `<span style="display:inline-flex; align-items:center;">${m.league_flag}</span>` : ''));
 
             var pick;
-            if (sc === 'termine') pick = `<i class="fas fa-check-circle"></i> Score exact <b>${scoreLabel}</b>`;
+            if (m.match_status === 'reporte') pick = `<i class="fas fa-calendar-xmark"></i> Match reporté <b class="locked">hors combiné</b>`;
+            else if (sc === 'termine') pick = `<i class="fas fa-check-circle"></i> Score exact <b>${scoreLabel}</b>`;
             else if (sc === 'perdu') pick = `<i class="fas fa-times-circle"></i> Score final <b>${scoreLabel}</b>`;
             else pick = hasScore
                 ? `<i class="fas fa-clock"></i> Score exact <b>${scoreLabel}</b>`
                 : `<i class="fas fa-clock"></i> Score exact <b class="locked"><i class="fas fa-lock" style="font-size:12px;color:inherit;"></i> Réservé VIP</b>`;
             var kick = sc === 'en-cours' ? `<span class="hc-kick">${ticketKickoff(c.date, m.time)}</span>` : '';
 
-            var odd = m.odds && m.odds > 0 ? `<span class="hc-odd">${fmtOdd(m.odds)}</span>` : '';
+            // Cote annulée sur un match reporté : elle ne compte plus, on ne l'affiche plus.
+            var odd = (m.match_status !== 'reporte' && m.odds && m.odds > 0) ? `<span class="hc-odd">${fmtOdd(m.odds)}</span>` : '';
 
             return `<div class="hc-leg">
                 <div class="hc-leg-top"><div class="hc-leg-pick ${sc}">${pick}</div>${odd}</div>
@@ -9509,8 +9528,8 @@ function buildTicketCardHtml(c) {
             <div class="hc-head">
                 <span class="hc-pill ${sc}">${pillLabel}</span>
                 <span class="hc-title">Combiné</span>
-                <span class="hc-count">${TICKET_BALL_SVG}${matches.length}</span>
-                <button class="hc-more" onclick="copyTicketCombined('${String(c.id || '').replace(/[^\w-]/g, '')}')" aria-label="Copier le combiné"><i class="fas fa-ellipsis-h"></i></button>
+                <span class="hc-count">${TICKET_BALL_SVG}${kept}</span>
+                <button class="hc-more" onclick="openTicketMenu('${String(c.id || '').replace(/[^\w-]/g, '')}')" aria-label="Actions du ticket"><i class="fas fa-ellipsis-h"></i></button>
             </div>
             <div class="hc-card">
                 <div class="hc-bar">${barHtml}</div>
@@ -9568,6 +9587,107 @@ function setTicketView(view) {
     document.querySelectorAll('#ticket-history-container .hc').forEach(function (card) {
         card.classList.toggle('collapsed', view === 'closed');
     });
+}
+
+// Menu du bouton ••• d'un ticket. « Corriger les scores » n'apparaît que pour
+// un admin : c'est l'écran d'édition rapide du Panel Admin qui est ouvert,
+// celui qui écrit réellement les scores affichés aux membres.
+function openTicketMenu(id) {
+    closeTicketMenu();
+    var back = document.createElement('div');
+    back.className = 'tkm-back';
+    back.id = 'ticket-menu';
+    back.onclick = function (e) { if (e.target === back) closeTicketMenu(); };
+    back.innerHTML =
+        '<div class="tkm-sheet">' +
+            '<div class="tkm-title">Actions du ticket</div>' +
+            '<button class="tkm-item" onclick="closeTicketMenu(); copyTicketCombined(\'' + id + '\')"><i class="fas fa-copy"></i> Copier le combiné</button>' +
+            '<button class="tkm-item" onclick="closeTicketMenu(); shareTicketCombined(\'' + id + '\')"><i class="fas fa-share-alt"></i> Partager</button>' +
+            (window.isAdmin
+                ? '<button class="tkm-item admin" onclick="closeTicketMenu(); editTicketScores(\'' + id + '\')"><i class="fas fa-pen-to-square"></i> Corriger les scores réels</button>'
+                  + '<button class="tkm-item admin" onclick="closeTicketMenu(); openPostponedPicker(\'' + id + '\')"><i class="fas fa-calendar-xmark"></i> Signaler un match reporté</button>'
+                : '') +
+            '<button class="tkm-cancel" onclick="closeTicketMenu()">Annuler</button>' +
+        '</div>';
+    document.body.appendChild(back);
+    setTimeout(function () { back.classList.add('on'); }, 10);
+}
+
+function closeTicketMenu() {
+    var el = document.getElementById('ticket-menu');
+    if (!el) return;
+    el.classList.remove('on');
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 200);
+}
+
+function shareTicketCombined(id) {
+    var c = allCombineds.find(function (x) { return String(x.id) === id; });
+    if (!c) return;
+    var txt = 'Combiné Score Master du ' + ticketFullDate(c.date) + '\n'
+        + (c.matches || []).map(function (m) { return '• ' + m.teams + (m.score && m.score.indexOf('?') === -1 ? ' — ' + m.score : ''); }).join('\n')
+        + '\nhttps://scoremaster.fr';
+    if (navigator.share) { navigator.share({ title: 'Combiné Score Master', text: txt }).catch(function () {}); return; }
+    if (navigator.clipboard) navigator.clipboard.writeText(txt).then(function () { showToast('Combiné copié, prêt à partager'); }, function () {});
+}
+
+// Match reporté : l'admin choisit le match concerné, qui sort alors du calcul
+// de la cote totale et s'affiche comme reporté sur le ticket.
+function openPostponedPicker(id) {
+    if (!window.isAdmin) { showToast('Réservé aux admins.', true); return; }
+    var c = allCombineds.find(function (x) { return String(x.id) === id; });
+    if (!c || !c.matches) return;
+    closeTicketMenu();
+
+    var back = document.createElement('div');
+    back.className = 'tkm-back';
+    back.id = 'ticket-menu';
+    back.onclick = function (e) { if (e.target === back) closeTicketMenu(); };
+    back.innerHTML =
+        '<div class="tkm-sheet">' +
+            '<div class="tkm-title">Quel match a été reporté ?</div>' +
+            c.matches.map(function (m, i) {
+                var deja = m.match_status === 'reporte';
+                return '<button class="tkm-item' + (deja ? ' admin' : '') + '" onclick="closeTicketMenu(); setMatchPostponed(\'' + id + '\', ' + i + ', ' + (deja ? 'false' : 'true') + ')">' +
+                    '<i class="fas fa-' + (deja ? 'rotate-left' : 'calendar-xmark') + '"></i> ' +
+                    (m.teams || 'Match ' + (i + 1)) + (deja ? ' — annuler le report' : '') +
+                '</button>';
+            }).join('') +
+            '<button class="tkm-cancel" onclick="closeTicketMenu()">Annuler</button>' +
+        '</div>';
+    document.body.appendChild(back);
+    setTimeout(function () { back.classList.add('on'); }, 10);
+}
+
+// Écrit le marqueur dans les deux tables, sans jamais recopier les données VIP
+// (scores réels) dans la table publique : chaque ligne est relue puis modifiée
+// à l'index concerné uniquement.
+async function setMatchPostponed(id, index, postponed) {
+    try {
+        for (const table of ['combineds_public', 'combineds_vip']) {
+            var res = await supabaseClient.from(table).select('matches').eq('id', id).maybeSingle();
+            if (res.error || !res.data || !Array.isArray(res.data.matches)) continue;
+            var matches = res.data.matches;
+            if (!matches[index]) continue;
+            if (postponed) matches[index].match_status = 'reporte';
+            else matches[index].match_status = 'en-cours';
+            var upd = await supabaseClient.from(table).update({ matches: matches }).eq('id', id);
+            if (upd.error) throw upd.error;
+        }
+        showToast(postponed ? 'Match signalé comme reporté.' : 'Report annulé.');
+        await chargerDonnees();
+        filterTicketHistory(ticketFilter);
+        renderAdminHistory();
+    } catch (error) {
+        console.error('Erreur report de match :', error);
+        showToast('Enregistrement impossible : ' + (error && error.message ? error.message : 'erreur inconnue'), true);
+    }
+}
+
+// Ouvre l'édition rapide du combiné (scores et cotes) côté Panel Admin.
+function editTicketScores(id) {
+    if (!window.isAdmin) { showToast('Réservé aux admins.', true); return; }
+    closeTicketHistory();
+    setTimeout(function () { openQuickEditScreen(id); }, 320);
 }
 
 function copyTicketCombined(id) {
