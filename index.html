@@ -1980,6 +1980,9 @@ async function fetchApiScore(id, dateRaw) {
             </div>
             <div id="admin-vip-codes-list" style="margin-bottom:20px;"></div>
 
+            <button onclick="adminGenerateSharedTestCode()" style="width:100%;padding:13px;margin-bottom:10px;background:rgba(62,160,207,.08);color:#3ea0cf;border:1px dashed rgba(62,160,207,.4);border-radius:12px;font-size:13px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
+                <i class="fas fa-stopwatch"></i> Générer un code de test partageable (5 min)
+            </button>
             <button onclick="adminGenerateTestUnlockCode()" style="width:100%;padding:13px;margin-bottom:20px;background:rgba(255,215,0,.08);color:var(--primary-yellow);border:1px dashed rgba(255,215,0,.4);border-radius:12px;font-size:13px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
                 <i class="fas fa-flask"></i> Générer un code de test (débloque ton propre compte)
             </button>
@@ -8008,6 +8011,51 @@ async function fetchMatchesFromAPI() {
     // Raccourci admin : génère un code de déblocage instantané sur le compte
     // admin lui-même, sans passer par le circuit panier -> validation manuelle
     // -> WhatsApp. Utile uniquement pour tester le combiné débloqué.
+    // Code de test partageable : n'importe quel membre connecté peut le saisir,
+    // il voit le combiné en clair pendant 5 minutes, sans obtenir le moindre
+    // rôle (il reste visiteur). Utile pour faire tester le parcours à quelqu'un.
+    async function adminGenerateSharedTestCode() {
+        if (!window.currentAuthUser) { showToast('Tu dois être connecté.', true); return; }
+        if (!currentCombined || !currentCombined.matches || !currentCombined.matches.length) {
+            showToast("Aucun combiné en cours à débloquer pour le moment.", true);
+            return;
+        }
+
+        var snapshot = {
+            date: currentCombined.date,
+            time: currentCombined.time,
+            matches: currentCombined.matches,
+            total_odds: currentCombined.total_odds,
+            mise: currentCombined.mise,
+            gains: currentCombined.gains
+        };
+        var unlockCode = generateOrderCode('SMT');
+        var expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+        try {
+            const { error } = await supabaseClient.from('orders').insert([{
+                user_id: window.currentAuthUser.id,
+                reference: generateOrderCode('TESTOPEN'),
+                items: [{ name: 'Code de test partageable (5 min)', price: 0 }],
+                total: 0,
+                status: 'confirmee',
+                unlock_code: unlockCode,
+                unlock_open: true,
+                unlock_expires_at: expiresAt.toISOString(),
+                unlock_content: JSON.stringify(snapshot)
+            }]);
+            if (error) throw error;
+        } catch (error) {
+            console.error('Erreur génération code de test partageable :', error);
+            showToast("Erreur lors de la génération du code.", true);
+            return;
+        }
+
+        if (navigator.clipboard) navigator.clipboard.writeText(unlockCode).catch(function () {});
+        showToast('Code ' + unlockCode + ' copié — valable 5 minutes.');
+        loadAdminVipCodes();
+    }
+
     async function adminGenerateTestUnlockCode() {
         if (!window.currentAuthUser) { showToast('Tu dois être connecté.', true); return; }
         if (!currentCombined || !currentCombined.matches || !currentCombined.matches.length) {
@@ -8086,6 +8134,28 @@ async function fetchMatchesFromAPI() {
         // du compte. La rédemption passe par le serveur (clé service_role) —
         // jamais d'écriture directe de is_vip/vip_pack_type depuis le client,
         // sinon n'importe qui pourrait se l'auto-accorder via les devtools.
+        // Code de test partageable (préfixe SMT) : accès temporaire, aucun rôle.
+        if (/^SMT-/.test(code)) {
+            try {
+                var test = await adminApiCall('/api/redeem-code', { code: code });
+                var kickoffTest = getComboKickoffTime(test.snapshot);
+                if (kickoffTest && kickoffTest.getTime() <= Date.now()) {
+                    showToast('Les matchs de ce combiné ont déjà commencé.', true);
+                    return;
+                }
+                localStorage.setItem('sm_active_unlock', JSON.stringify({
+                    code: code, snapshot: test.snapshot, reference: test.reference, expires_at: test.expires_at
+                }));
+                renderUnlockState();
+                openUnlockSuccessPopup(test.snapshot);
+                showToast('Accès de test ouvert pour 5 minutes.');
+            } catch (error) {
+                console.error('Erreur code de test :', error);
+                showToast(error.message || 'Code invalide ou expiré.', true);
+            }
+            return;
+        }
+
         if (/^SM[JHV]-/.test(code)) {
             try {
                 var packResult = await adminApiCall('/api/redeem-code', { code: code });
@@ -8181,6 +8251,13 @@ async function fetchMatchesFromAPI() {
         var raw = localStorage.getItem('sm_active_unlock');
         var state = null;
         try { state = raw ? JSON.parse(raw) : null; } catch (e) { state = null; }
+
+        // Un code de test porte une expiration courte : passé ce délai, l'accès
+        // se referme, même si les matchs n'ont pas encore commencé.
+        if (state && state.expires_at && new Date(state.expires_at).getTime() <= Date.now()) {
+            localStorage.removeItem('sm_active_unlock');
+            state = null;
+        }
 
         var kickoff = state ? getComboKickoffTime(state.snapshot) : null;
         var stillBeforeKickoff = !kickoff || kickoff.getTime() > Date.now();
