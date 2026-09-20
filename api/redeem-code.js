@@ -52,7 +52,7 @@ module.exports = async function handler(req, res) {
     if (!code) return res.status(400).json({ error: 'Code requis' });
 
     try {
-        const rows = await sbFetch(`vip_access_codes?code=eq.${encodeURIComponent(code)}&used=eq.false&select=*`);
+        const rows = await sbFetch(`vip_access_codes?code=eq.${encodeURIComponent(code)}&used=eq.false&revoked=is.false&select=*`);
         const packCode = rows && rows[0];
         if (!packCode) return res.status(404).json({ error: 'Code invalide, déjà utilisé, ou expiré.' });
 

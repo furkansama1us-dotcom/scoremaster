@@ -559,3 +559,12 @@ alter table public.vip_access_codes
 
 alter table public.profiles
   add column if not exists member_until timestamptz;
+
+-- ============================================================
+-- Annulation d'un code d'accès : un code annulé reste visible dans
+-- l'historique du Panel Admin mais n'est plus utilisable (api/redeem-code.js
+-- refuse revoked = true). La suppression, elle, efface la ligne.
+-- ============================================================
+
+alter table public.vip_access_codes
+  add column if not exists revoked boolean not null default false;

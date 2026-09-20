@@ -7953,6 +7953,35 @@ async function fetchMatchesFromAPI() {
         }
     }
 
+    // Annuler un code encore disponible : il devient inutilisable, mais reste
+    // visible dans l'historique tant qu'il n'est pas supprimé.
+    async function revokeVipCode(id, code) {
+        if (!confirm('Annuler le code ' + code + ' ? Il ne pourra plus être utilisé.')) return;
+        try {
+            const { error } = await supabaseClient.from('vip_access_codes')
+                .update({ revoked: true }).eq('id', id);
+            if (error) throw error;
+            showToast('Code ' + code + ' annulé.');
+            loadAdminVipCodes();
+        } catch (error) {
+            console.error('Erreur annulation code :', error);
+            showToast("Annulation impossible" + (error && error.message ? ' : ' + error.message : ''), true);
+        }
+    }
+
+    async function deleteVipCode(id, code) {
+        if (!confirm("Supprimer définitivement " + code + " de l'historique ?")) return;
+        try {
+            const { error } = await supabaseClient.from('vip_access_codes').delete().eq('id', id);
+            if (error) throw error;
+            showToast('Code supprimé.');
+            loadAdminVipCodes();
+        } catch (error) {
+            console.error('Erreur suppression code :', error);
+            showToast("Suppression impossible" + (error && error.message ? ' : ' + error.message : ''), true);
+        }
+    }
+
     async function loadAdminVipCodes() {
         if (!window.isAdmin) return;
         var container = document.getElementById('admin-vip-codes-list');
@@ -7973,16 +8002,23 @@ async function fetchMatchesFromAPI() {
 
             container.innerHTML = data.map(function (c) {
                 var info = VIP_PACK_INFO[c.pack_type] || { label: c.pack_type };
-                var statusHtml = c.used
-                    ? '<span style="color:var(--text-gray);"><i class="fas fa-check-circle"></i> Utilisé</span>'
-                    : '<span style="color:var(--green);"><i class="fas fa-circle" style="font-size:8px;"></i> Disponible</span>';
+                var statusHtml = c.revoked
+                    ? '<span style="color:var(--red);"><i class="fas fa-ban"></i> Annulé</span>'
+                    : (c.used
+                        ? '<span style="color:var(--text-gray);"><i class="fas fa-check-circle"></i> Utilisé</span>'
+                        : '<span style="color:var(--green);"><i class="fas fa-circle" style="font-size:8px;"></i> Disponible</span>');
+                var dispo = !c.used && !c.revoked;
                 return `
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;background:rgba(255,255,255,.04);border:1px solid var(--border-color);border-radius:9px;margin-bottom:8px;">
                     <div>
                         <div style="font-size:13px;font-weight:800;color:#fff;font-family:'Montserrat',sans-serif;letter-spacing:.5px;">${c.code}</div>
                         <div style="font-size:11px;color:var(--text-gray);margin-top:2px;">${info.label} &nbsp;•&nbsp; ${statusHtml}</div>
                     </div>
-                    ${c.used ? '' : `<button onclick="copyVipCode('${c.code}')" style="padding:8px 12px;background:rgba(255,215,0,.1);color:var(--primary-yellow);border:1px solid rgba(255,215,0,.3);border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;"><i class="fas fa-copy"></i> Copier</button>`}
+                    <div style="display:flex;gap:6px;flex:0 0 auto;">
+                        ${dispo ? `<button onclick="copyVipCode('${c.code}')" style="padding:8px 10px;background:rgba(255,215,0,.1);color:var(--primary-yellow);border:1px solid rgba(255,215,0,.3);border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;"><i class="fas fa-copy"></i> Copier</button>` : ''}
+                        ${dispo ? `<button onclick="revokeVipCode('${c.id}', '${c.code}')" title="Annuler ce code" style="padding:8px 10px;background:rgba(244,63,94,.08);color:var(--red);border:1px solid rgba(244,63,94,.3);border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;"><i class="fas fa-ban"></i></button>` : ''}
+                        <button onclick="deleteVipCode('${c.id}', '${c.code}')" title="Supprimer de l'historique" style="padding:8px 10px;background:transparent;color:var(--text-gray);border:1px solid var(--border-color);border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;"><i class="fas fa-trash"></i></button>
+                    </div>
                 </div>`;
             }).join('');
         } catch (error) {
