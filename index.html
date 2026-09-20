@@ -7088,7 +7088,17 @@ async function fetchMatchesFromAPI() {
             var dateToStr = `${dTo.getFullYear()}-${String(dTo.getMonth() + 1).padStart(2, '0')}-${String(dTo.getDate()).padStart(2, '0')}`;
             const TARGET_URL = `/api/football?type=matches&dateFrom=${dateStr}&dateTo=${dateToStr}`;
 
+            // football-data.org limite le plan gratuit à 10 requêtes/minute :
+            // un 429 est passager, on laisse retomber puis on réessaie une fois.
             var response = await fetch(TARGET_URL);
+            if (response.status === 429) {
+                await new Promise(function (r) { setTimeout(r, 6000); });
+                response = await fetch(TARGET_URL);
+            }
+            if (response.status === 429) {
+                container.innerHTML = '<div class="no-combined-message"><i class="fas fa-hourglass-half"></i>Trop de demandes d’un coup.<br><span style="font-size:12px;">Patiente une minute puis réessaie.</span></div>';
+                return;
+            }
             if (!response.ok) throw new Error("Erreur réseau ou API");
 
             var data = await response.json();

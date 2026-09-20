@@ -15,7 +15,7 @@ const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 // Nombre de matchs analysés par journée : 100 requêtes/jour au total, et on
 // couvre trois journées (aujourd'hui, J+1, J+2).
-const MAX_MATCHS_PAR_JOUR = 12;
+const MAX_MATCHS_PAR_JOUR = 15;
 // Le plan gratuit est limité à 10 requêtes par minute. On en garde une pour la
 // liste des fixtures : 8 analyses par passage, le reste est repris au passage
 // suivant grâce au cache (la fonction est idempotente).
