@@ -16,6 +16,11 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 // Nombre de matchs analysés par journée : 100 requêtes/jour au total, et on
 // couvre trois journées (aujourd'hui, J+1, J+2).
 const MAX_MATCHS_PAR_JOUR = 12;
+// Le plan gratuit est limité à 10 requêtes par minute. On en garde une pour la
+// liste des fixtures : 8 analyses par passage, le reste est repris au passage
+// suivant grâce au cache (la fonction est idempotente).
+const MAX_APPELS_PAR_PASSAGE = 8;
+const PAUSE_ENTRE_APPELS_MS = 300;
 
 function normaliseNom(s) {
     return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
@@ -31,9 +36,15 @@ async function apiFootball(path) {
     const r = await fetch('https://v3.football.api-sports.io' + path, {
         headers: { 'x-apisports-key': APIFOOTBALL_KEY }
     });
-    if (!r.ok) throw new Error('API-Football ' + path + ' -> ' + r.status);
+    if (!r.ok) {
+        const err = new Error('API-Football ' + path + ' -> ' + r.status);
+        err.status = r.status;
+        throw err;
+    }
     return r.json();
 }
+
+const pause = ms => new Promise(r => setTimeout(r, ms));
 
 async function sbFetch(path, options) {
     const r = await fetch(SUPABASE_URL + '/rest/v1/' + path, Object.assign({}, options, {
@@ -58,7 +69,8 @@ async function refreshPredictions(req, res) {
     if (!CRON_SECRET || req.query.secret !== CRON_SECRET) return res.status(401).json({ error: 'Secret invalide' });
 
     const date = req.query.date || new Date().toISOString().slice(0, 10);
-    const resume = { date, analyses: 0, deja: 0, sansCorrespondance: 0, erreurs: [] };
+    const resume = { date, analyses: 0, deja: 0, sansCorrespondance: 0, restant: 0, quotaAtteint: false, erreurs: [] };
+    let appels = 0;
 
     try {
         // Matchs affichés par l'app ce jour-là (même source que la page publique)
@@ -88,7 +100,13 @@ async function refreshPredictions(req, res) {
             const fx = fixtures.find(f => memeEquipe(f.teams.home.name, home) && memeEquipe(f.teams.away.name, away));
             if (!fx) { resume.sansCorrespondance++; continue; }
 
+            // Budget de requêtes épuisé : on s'arrête proprement, le passage
+            // suivant reprendra là où on en est.
+            if (appels >= MAX_APPELS_PAR_PASSAGE) { resume.restant++; continue; }
+
             try {
+                if (appels > 0) await pause(PAUSE_ENTRE_APPELS_MS);
+                appels++;
                 const pred = ((await apiFootball('/predictions?fixture=' + fx.fixture.id)).response || [])[0];
                 if (!pred) { resume.sansCorrespondance++; continue; }
                 const pourcent = p => parseInt(String(p || '0').replace('%', ''), 10) || 0;
@@ -113,6 +131,15 @@ async function refreshPredictions(req, res) {
                 });
                 resume.analyses++;
             } catch (e) {
+                if (e && e.status === 429) {
+                    // Limite de débit atteinte : inutile d'insister, le cron
+                    // repassera. On note les matchs restants sans les compter
+                    // comme des erreurs.
+                    resume.quotaAtteint = true;
+                    appels = MAX_APPELS_PAR_PASSAGE;
+                    resume.restant++;
+                    continue;
+                }
                 resume.erreurs.push({ match: home + ' - ' + away, erreur: String(e) });
             }
         }
