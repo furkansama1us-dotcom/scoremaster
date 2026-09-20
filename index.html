@@ -1988,17 +1988,13 @@ async function fetchApiScore(id, dateRaw) {
                     <option value="journalier">Pack Journalier (1 jour)</option>
                     <option value="hebdo">Pack Hebdo (7 jours)</option>
                     <option value="vip">SM VIP+ (à vie)</option>
+                    <option value="membre">Membre SM (à vie, aucun accès)</option>
+                    <option value="testeur">Testeur (5 min, aucun accès)</option>
                 </select>
                 <button onclick="adminGeneratePackCode()" style="padding:0 18px;background:var(--primary-yellow);color:#000;border:none;border-radius:10px;font-size:13px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;white-space:nowrap;"><i class="fas fa-bolt"></i> Générer</button>
             </div>
             <div id="admin-vip-codes-list" style="margin-bottom:20px;"></div>
 
-            <button onclick="adminGenerateMemberCode()" style="width:100%;padding:13px;margin-bottom:10px;background:rgba(59,130,246,.08);color:#3B82F6;border:1px dashed rgba(59,130,246,.4);border-radius:12px;font-size:13px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
-                <i class="fas fa-id-card"></i> Générer un code Membre SM (à vie, usage unique)
-            </button>
-            <button onclick="adminGenerateTesterCode()" style="width:100%;padding:13px;margin-bottom:10px;background:rgba(62,160,207,.08);color:#3ea0cf;border:1px dashed rgba(62,160,207,.4);border-radius:12px;font-size:13px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
-                <i class="fas fa-stopwatch"></i> Générer un code Testeur (5 min, usage unique)
-            </button>
             <button onclick="adminGenerateTestUnlockCode()" style="width:100%;padding:13px;margin-bottom:20px;background:rgba(255,215,0,.08);color:var(--primary-yellow);border:1px dashed rgba(255,215,0,.4);border-radius:12px;font-size:13px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
                 <i class="fas fa-flask"></i> Générer un code de test (débloque ton propre compte)
             </button>
@@ -7933,16 +7929,22 @@ async function fetchMatchesFromAPI() {
 
         var code = generateOrderCode(info.prefix);
         var minutes = selectedCodeMinutes();
+        // Durée par défaut du type choisi quand le sélecteur est laissé libre :
+        // 5 minutes pour un Testeur, la durée du pack sinon, à vie pour le reste.
+        var defautMinutes = packType === 'testeur' ? 5 : null;
+        var finalMinutes = minutes === null ? defautMinutes : (minutes === 0 ? null : minutes);
         try {
             const { error } = await supabaseClient.from('vip_access_codes').insert([{
                 pack_type: packType,
                 code: code,
-                duration_days: minutes === null ? info.durationDays : (minutes === 0 ? null : Math.round(minutes / 1440) || null),
-                duration_minutes: minutes === null ? null : (minutes === 0 ? null : minutes)
+                duration_days: (minutes === null && !defautMinutes) ? info.durationDays : null,
+                duration_minutes: finalMinutes
             }]);
             if (error) throw error;
-            var duree = minutes === null ? (info.durationDays ? info.durationDays + ' j' : 'à vie') : codeDurationLabel(minutes);
-            showToast(`Code généré : ${code} (${duree}) — à transmettre manuellement au client.`);
+            var duree = finalMinutes ? codeDurationLabel(finalMinutes)
+                : ((minutes === null && info.durationDays) ? info.durationDays + ' j' : 'à vie');
+            if (navigator.clipboard) navigator.clipboard.writeText(code).catch(function () {});
+            showToast(`Code ${code} copié (${info.label} · ${duree}) — usage unique.`);
             loadAdminVipCodes();
         } catch (error) {
             console.error('Erreur génération code pack:', error);
