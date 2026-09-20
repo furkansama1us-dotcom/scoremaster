@@ -9502,7 +9502,7 @@ function buildTicketCardHtml(c) {
             var pick;
             if (m.match_status === 'reporte') pick = `<i class="fas fa-calendar-xmark"></i> Match reporté <b class="locked">hors combiné</b>`;
             else if (sc === 'termine') pick = `<i class="fas fa-check-circle"></i> Score exact <b>${scoreLabel}</b>`;
-            else if (sc === 'perdu') pick = `<i class="fas ${legWon === true ? 'fa-check-circle' : 'fa-times-circle'}"></i> Pronostic <b>${scoreLabel}</b>${reelLabel ? ' <span class="hc-real">· réel ' + reelLabel + '</span>' : ''}`;
+            else if (sc === 'perdu') pick = `<i class="fas ${legWon === true ? 'fa-check-circle' : 'fa-times-circle'}"></i> Score exact <b>${scoreLabel}</b>`;
             else pick = hasScore
                 ? `<i class="fas fa-clock"></i> Score exact <b>${scoreLabel}</b>`
                 : `<i class="fas fa-clock"></i> Score exact <b class="locked"><i class="fas fa-lock" style="font-size:12px;color:inherit;"></i> Réservé VIP</b>`;
