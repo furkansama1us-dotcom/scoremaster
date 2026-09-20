@@ -69,11 +69,14 @@ module.exports = async function handler(req, res) {
             });
             if (!claimedMember || !claimedMember.length) return res.status(409).json({ error: 'Ce code vient d\'être utilisé.' });
 
+            const memberUntil = packCode.duration_minutes
+                ? new Date(Date.now() + packCode.duration_minutes * 60 * 1000).toISOString()
+                : null;
             await sbFetch(`profiles?id=eq.${user.id}`, {
                 method: 'PATCH',
-                body: JSON.stringify({ is_member: true })
+                body: JSON.stringify({ is_member: true, member_until: memberUntil })
             });
-            return res.status(200).json({ ok: true, pack_type: 'membre' });
+            return res.status(200).json({ ok: true, pack_type: 'membre', member_until: memberUntil });
         }
 
         // Code "Testeur" : usage unique, 5 minutes, AUCUN accès supplémentaire.
@@ -87,7 +90,8 @@ module.exports = async function handler(req, res) {
             });
             if (!claimedTest || !claimedTest.length) return res.status(409).json({ error: 'Ce code vient d\'être utilisé.' });
 
-            const testerUntil = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+            const testerMinutes = packCode.duration_minutes || 5;
+            const testerUntil = new Date(Date.now() + testerMinutes * 60 * 1000).toISOString();
             await sbFetch(`profiles?id=eq.${user.id}`, {
                 method: 'PATCH',
                 body: JSON.stringify({ tester_until: testerUntil })
@@ -102,9 +106,13 @@ module.exports = async function handler(req, res) {
         });
         if (!claimed || !claimed.length) return res.status(409).json({ error: 'Ce code vient d\'être utilisé.' });
 
-        const expiresAt = packCode.duration_days
-            ? new Date(Date.now() + packCode.duration_days * 24 * 60 * 60 * 1000).toISOString()
-            : null;
+        // La durée en minutes, choisie à la génération, prime sur la durée en
+        // jours par défaut du pack. Aucune des deux : accès à vie.
+        const expiresAt = packCode.duration_minutes
+            ? new Date(Date.now() + packCode.duration_minutes * 60 * 1000).toISOString()
+            : (packCode.duration_days
+                ? new Date(Date.now() + packCode.duration_days * 24 * 60 * 60 * 1000).toISOString()
+                : null);
 
         await sbFetch(`profiles?id=eq.${user.id}`, {
             method: 'PATCH',

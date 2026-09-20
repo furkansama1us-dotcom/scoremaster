@@ -545,3 +545,17 @@ alter table public.profiles
 
 alter table public.profiles
   add column if not exists is_member boolean not null default false;
+
+-- ============================================================
+-- Durée configurable à la génération d'un code d'accès : exprimée en
+-- minutes, elle prime sur duration_days (durée par défaut du pack).
+-- NULL dans les deux colonnes = accès à vie.
+-- member_until borne un rôle « Membre SM » accordé pour une durée
+-- limitée (NULL = à vie).
+-- ============================================================
+
+alter table public.vip_access_codes
+  add column if not exists duration_minutes integer;
+
+alter table public.profiles
+  add column if not exists member_until timestamptz;

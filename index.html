@@ -1970,7 +1970,20 @@ async function fetchApiScore(id, dateRaw) {
             </div>
 
             <div class="admin-section-title" style="color:var(--primary-yellow);"><i class="fas fa-key"></i> Générer un code d'accès (vente manuelle)</div>
-            <div style="display:flex; gap:10px; margin-bottom:10px;">
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:10px;">
+                <select id="vip-code-duration-select" class="admin-input" style="flex:1;background:var(--bg-input); border:1px solid var(--border-color); color:#fff; padding:12px; border-radius:10px;">
+                    <option value="">Durée par défaut du pack</option>
+                    <option value="5">5 minutes</option>
+                    <option value="60">1 heure</option>
+                    <option value="1440">1 jour</option>
+                    <option value="4320">3 jours</option>
+                    <option value="10080">1 semaine</option>
+                    <option value="20160">2 semaines</option>
+                    <option value="43200">1 mois</option>
+                    <option value="129600">3 mois</option>
+                    <option value="525600">1 an</option>
+                    <option value="0">À vie</option>
+                </select>
                 <select id="vip-code-pack-select" class="admin-input" style="flex:1;background:var(--bg-input); border:1px solid var(--border-color); color:#fff; padding:12px; border-radius:10px;">
                     <option value="journalier">Pack Journalier (1 jour)</option>
                     <option value="hebdo">Pack Hebdo (7 jours)</option>
@@ -7858,6 +7871,26 @@ async function fetchMatchesFromAPI() {
         }
     }
 
+    // Durée choisie dans le sélecteur, en minutes. Renvoie :
+    //   null  -> durée par défaut du type de code
+    //   0     -> à vie
+    //   n     -> n minutes
+    function selectedCodeMinutes() {
+        var sel = document.getElementById('vip-code-duration-select');
+        if (!sel || sel.value === '') return null;
+        return parseInt(sel.value, 10);
+    }
+
+    function codeDurationLabel(minutes) {
+        if (minutes === 0) return 'à vie';
+        if (minutes < 60) return minutes + ' min';
+        if (minutes < 1440) return Math.round(minutes / 60) + ' h';
+        if (minutes < 10080) return Math.round(minutes / 1440) + ' j';
+        if (minutes < 43200) return Math.round(minutes / 10080) + ' sem.';
+        if (minutes < 525600) return Math.round(minutes / 43200) + ' mois';
+        return Math.round(minutes / 525600) + ' an(s)';
+    }
+
     async function adminGeneratePackCode() {
         var select = document.getElementById('vip-code-pack-select');
         var packType = select ? select.value : 'journalier';
@@ -7865,14 +7898,17 @@ async function fetchMatchesFromAPI() {
         if (!info) return;
 
         var code = generateOrderCode(info.prefix);
+        var minutes = selectedCodeMinutes();
         try {
             const { error } = await supabaseClient.from('vip_access_codes').insert([{
                 pack_type: packType,
                 code: code,
-                duration_days: info.durationDays
+                duration_days: minutes === null ? info.durationDays : (minutes === 0 ? null : Math.round(minutes / 1440) || null),
+                duration_minutes: minutes === null ? null : (minutes === 0 ? null : minutes)
             }]);
             if (error) throw error;
-            showToast(`Code généré : ${code} — à transmettre manuellement au client.`);
+            var duree = minutes === null ? (info.durationDays ? info.durationDays + ' j' : 'à vie') : codeDurationLabel(minutes);
+            showToast(`Code généré : ${code} (${duree}) — à transmettre manuellement au client.`);
             loadAdminVipCodes();
         } catch (error) {
             console.error('Erreur génération code pack:', error);
@@ -8056,11 +8092,13 @@ async function fetchMatchesFromAPI() {
     // un Membre SM voit exactement la même chose qu'un visiteur.
     async function adminGenerateMemberCode() {
         var code = generateOrderCode('SMM');
+        var minutes = selectedCodeMinutes();
         try {
             const { error } = await supabaseClient.from('vip_access_codes').insert([{
                 pack_type: 'membre',
                 code: code,
-                duration_days: null
+                duration_days: null,
+                duration_minutes: (minutes === null || minutes === 0) ? null : minutes
             }]);
             if (error) throw error;
         } catch (error) {
@@ -8069,7 +8107,7 @@ async function fetchMatchesFromAPI() {
             return;
         }
         if (navigator.clipboard) navigator.clipboard.writeText(code).catch(function () {});
-        showToast('Code ' + code + ' copié — Membre SM à vie, une seule utilisation.');
+        showToast('Code ' + code + ' copié — Membre SM ' + ((minutes === null || minutes === 0) ? 'à vie' : codeDurationLabel(minutes)) + ', une seule utilisation.');
         loadAdminVipCodes();
     }
 
@@ -8078,11 +8116,13 @@ async function fetchMatchesFromAPI() {
     // débloqué, aucun accès VIP : les droits restent ceux d'un visiteur.
     async function adminGenerateTesterCode() {
         var code = generateOrderCode('SMT');
+        var minutes = selectedCodeMinutes();
         try {
             const { error } = await supabaseClient.from('vip_access_codes').insert([{
                 pack_type: 'testeur',
                 code: code,
-                duration_days: null
+                duration_days: null,
+                duration_minutes: (minutes === null || minutes === 0) ? (minutes === 0 ? null : 5) : minutes
             }]);
             if (error) throw error;
         } catch (error) {
@@ -8091,7 +8131,7 @@ async function fetchMatchesFromAPI() {
             return;
         }
         if (navigator.clipboard) navigator.clipboard.writeText(code).catch(function () {});
-        showToast('Code ' + code + ' copié — valable 5 minutes, une seule utilisation.');
+        showToast('Code ' + code + ' copié — ' + (minutes === null ? '5 min' : codeDurationLabel(minutes)) + ', une seule utilisation.');
         loadAdminVipCodes();
     }
 
@@ -8428,7 +8468,7 @@ async function fetchMatchesFromAPI() {
         window.currentAuthUser = user;
         var profile = null;
         try {
-            var profileRes = await supabaseClient.from('profiles').select('is_vip, is_admin, username, vip_expires_at, vip_pack_type, email_confirmed, avatar_key, tester_until, is_member').eq('id', user.id).single();
+            var profileRes = await supabaseClient.from('profiles').select('is_vip, is_admin, username, vip_expires_at, vip_pack_type, email_confirmed, avatar_key, tester_until, is_member, member_until').eq('id', user.id).single();
             profile = profileRes.data;
         } catch(e) {}
 
@@ -8460,7 +8500,8 @@ async function fetchMatchesFromAPI() {
         // Le rôle affiché reflète le pack exact (journalier/hebdo/vip), pas
         // un "VIP+" générique — sauf pour un admin, qui garde son propre badge.
         // Un Visiteur qui a confirmé son email passe Membre SM (sans VIP).
-        window.isMemberSM = !!(profile && profile.is_member);
+        window.isMemberSM = !!(profile && profile.is_member
+            && (!profile.member_until || new Date(profile.member_until).getTime() > Date.now()));
         var role = window.isAdmin ? 'admin' : (window.isUserVip ? (window.userVipPackType || 'vip') : ((window.isEmailConfirmed || window.isMemberSM) ? 'membre' : 'visiteur'));
 
         window.currentUserProfile = {
