@@ -54,32 +54,6 @@ module.exports = async function handler(req, res) {
     try {
         const rows = await sbFetch(`vip_access_codes?code=eq.${encodeURIComponent(code)}&used=eq.false&select=*`);
         const packCode = rows && rows[0];
-
-        // Code de test partageable : accès temporaire à UN combiné, pour
-        // n'importe quel compte connecté. N'accorde aucun rôle (is_vip et
-        // vip_pack_type ne sont pas touchés) — le membre reste un visiteur.
-        // Le contenu n'est jamais lisible via la clé anon : il ne sort que par
-        // ici, et seulement contre le bon code, avant expiration.
-        if (!packCode) {
-            const openRows = await sbFetch(`orders?unlock_code=eq.${encodeURIComponent(code)}&unlock_open=is.true&select=reference,unlock_content,unlock_expires_at`);
-            const open = openRows && openRows[0];
-            if (open) {
-                const expires = open.unlock_expires_at ? new Date(open.unlock_expires_at) : null;
-                if (!expires || expires.getTime() <= Date.now()) {
-                    return res.status(410).json({ error: 'Ce code de test a expiré.' });
-                }
-                let snapshot = null;
-                try { snapshot = JSON.parse(open.unlock_content); } catch (e) { snapshot = null; }
-                if (!snapshot || !snapshot.matches) {
-                    return res.status(404).json({ error: 'Contenu introuvable pour ce code.' });
-                }
-                return res.status(200).json({
-                    ok: true, test_unlock: true, snapshot: snapshot,
-                    reference: open.reference, expires_at: open.unlock_expires_at
-                });
-            }
-        }
-
         if (!packCode) return res.status(404).json({ error: 'Code invalide, déjà utilisé, ou expiré.' });
 
         // Verrou optimiste : la condition used=eq.false dans l'URL fait que

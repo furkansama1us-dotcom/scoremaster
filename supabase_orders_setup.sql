@@ -522,14 +522,3 @@ grant execute on function public.admin_sm_points_history(integer) to authenticat
 
 alter table public.combineds_public
   add column if not exists end_notified_at timestamptz;
-
--- ============================================================
--- Code de test partageable (5 min) : un code de déblocage temporaire
--- utilisable par N'IMPORTE QUEL compte connecté, et non par le seul
--- acheteur. N'accorde aucun rôle (is_vip/vip_pack_type inchangés) —
--- la rédemption passe par api/redeem-code.js (clé service_role), le
--- contenu n'est donc jamais lisible avec la clé anon.
--- ============================================================
-
-alter table public.orders
-  add column if not exists unlock_open boolean not null default false;
