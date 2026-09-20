@@ -700,6 +700,7 @@
         .hc-leg-pick { font-size:15px; color:var(--tk-gray); display:flex; align-items:center; gap:7px; min-width:0; }
         .hc-leg-pick i { font-size:18px; }
         .hc-leg-pick b { font-size:17px; font-weight:700; letter-spacing:.6px; margin-left:4px; }
+        .hc-leg-pick .hc-real { font-size:13px; font-weight:400; color:#e06a6a; letter-spacing:0; }
         .hc-leg-pick.termine i, .hc-leg-pick.termine b { color:var(--tk-green); }
         .hc-leg-pick.perdu i { color:var(--tk-red); }
         .hc-leg-pick.perdu b, .hc-leg-pick.en-cours b { color:var(--tk-text); }
@@ -8912,8 +8913,9 @@ async function autoFetchFinalScores(combined) {
         document.querySelectorAll('.validation-score-input').forEach(input => {
             let index = parseInt(input.getAttribute('data-index'));
             if(updatedMatches[index]) {
-                updatedMatches[index].score = input.value.trim();
-                updatedMatches[index].match_status = finalStatus; 
+                // score = pronostic publié (conservé) ; final_score = score réel constaté
+                updatedMatches[index].final_score = input.value.trim();
+                updatedMatches[index].match_status = finalStatus;
             }
         });
 
@@ -8926,7 +8928,7 @@ async function autoFetchFinalScores(combined) {
         });
 
         let publicMatches = updatedMatches.map(m => ({
-            teams: m.teams, time: m.time, score: m.score, odds: m.odds, logo: m.logo, league_flag: m.league_flag, match_status: finalStatus
+            teams: m.teams, time: m.time, score: m.score, final_score: m.final_score || null, odds: m.odds, logo: m.logo, league_flag: m.league_flag, match_status: finalStatus
         }));
 
         // Recalcul du total global et des gains pour mettre à jour le ticket
@@ -9477,12 +9479,18 @@ function buildTicketCardHtml(c) {
             ? `<i class="fas fa-check-circle"></i> ${kept}`
             : (sc === 'perdu' ? `<i class="fas fa-times-circle"></i> ${kept}` : `<i class="fas fa-clock"></i> ${kept}`);
 
-        var legsHtml = matches.map(function (m) {
+        var legsHtml = matches.map(function (m, i) {
             var hasScore = m.score && m.score.indexOf('?') === -1;
             var parts = (m.teams || 'Équipes').split(' - ');
             var home = parts[0];
             var away = parts.slice(1).join(' - ');
-            var scoreParts = hasScore ? m.score.split('-').map(function (s) { return s.trim(); }) : null;
+            // Pronostic et score réel sont deux données distinctes : un combiné
+            // perdu affiche les deux, pour montrer l'écart qui a coûté le ticket.
+            var reel = (c.detected_scores && c.detected_scores[i]) || m.final_score || null;
+            var reelLabel = reel ? String(reel).replace('-', ' - ') : null;
+            var legWon = (reel && hasScore) ? String(reel).replace(/\s/g, '') === String(m.score).replace(/\s/g, '') : null;
+            var affiche = reel || (sc === 'termine' && hasScore ? m.score : null);
+            var scoreParts = affiche ? String(affiche).split('-').map(function (s) { return s.trim(); }) : null;
             var mid = scoreParts && scoreParts.length === 2
                 ? `<span class="sc">${scoreParts[0]} - ${scoreParts[1]}</span>`
                 : `<span class="sc">-</span>`;
@@ -9494,7 +9502,7 @@ function buildTicketCardHtml(c) {
             var pick;
             if (m.match_status === 'reporte') pick = `<i class="fas fa-calendar-xmark"></i> Match reporté <b class="locked">hors combiné</b>`;
             else if (sc === 'termine') pick = `<i class="fas fa-check-circle"></i> Score exact <b>${scoreLabel}</b>`;
-            else if (sc === 'perdu') pick = `<i class="fas fa-times-circle"></i> Score final <b>${scoreLabel}</b>`;
+            else if (sc === 'perdu') pick = `<i class="fas ${legWon === true ? 'fa-check-circle' : 'fa-times-circle'}"></i> Pronostic <b>${scoreLabel}</b>${reelLabel ? ' <span class="hc-real">· réel ' + reelLabel + '</span>' : ''}`;
             else pick = hasScore
                 ? `<i class="fas fa-clock"></i> Score exact <b>${scoreLabel}</b>`
                 : `<i class="fas fa-clock"></i> Score exact <b class="locked"><i class="fas fa-lock" style="font-size:12px;color:inherit;"></i> Réservé VIP</b>`;
@@ -10880,8 +10888,12 @@ let quickEditCombinedId = null;
                     </div>
                     <div style="display:flex; gap:10px;">
                         <div class="admin-field" style="margin-bottom:0; flex:1;">
-                            <div class="admin-label">Score :</div>
+                            <div class="admin-label">Pronostic :</div>
                             <input type="text" class="admin-input quickedit-score-input" data-index="${index}" value="${m.score}" style="font-size:16px; font-weight:bold; text-align:center; letter-spacing:2px;">
+                        </div>
+                        <div class="admin-field" style="margin-bottom:0; flex:1;">
+                            <div class="admin-label">Score réel :</div>
+                            <input type="text" class="admin-input quickedit-final-input" data-index="${index}" value="${m.final_score || ''}" placeholder="—" style="font-size:16px; font-weight:bold; text-align:center; letter-spacing:2px; color:var(--green);">
                         </div>
                         <div class="admin-field" style="margin-bottom:0; flex:1;">
                             <div class="admin-label">Cote :</div>
@@ -10926,6 +10938,11 @@ let quickEditCombinedId = null;
             if(updatedMatches[index]) updatedMatches[index].score = input.value.trim();
         });
 
+        document.querySelectorAll('.quickedit-final-input').forEach(input => {
+            let index = parseInt(input.getAttribute('data-index'));
+            if(updatedMatches[index]) updatedMatches[index].final_score = input.value.trim() || null;
+        });
+
         document.querySelectorAll('.quickedit-odds-input').forEach(input => {
             let index = parseInt(input.getAttribute('data-index'));
             let val = parseFloat(input.value.replace(',', '.'));
@@ -10939,7 +10956,7 @@ let quickEditCombinedId = null;
         // Préparation version publique (on masque si c'est encore "en-cours")
         let publicMatches = updatedMatches.map(m => {
             let isFinished = (originalCombined.status === 'termine' || originalCombined.status === 'perdu');
-            return { teams: m.teams, time: m.time, score: isFinished ? m.score : '?-?', odds: isFinished ? m.odds : 0, logo: m.logo, match_status: m.match_status };
+            return { teams: m.teams, time: m.time, score: isFinished ? m.score : '?-?', final_score: isFinished ? (m.final_score || null) : null, odds: isFinished ? m.odds : 0, logo: m.logo, match_status: m.match_status };
         });
 
         try {
