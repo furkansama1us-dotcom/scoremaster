@@ -7174,12 +7174,13 @@ async function fetchMatchesFromAPI() {
             var conf = isVipPick
                 ? Math.round(95 + seededScore(seed + '#vipconf') * 4)
                 : Math.round(51 + seededScore(seed + '#normconf') * 22);
-            pred = redistributeConfidence(pred, winnerKey, conf);
-
             if (reelle) {
-                // Avec une vraie analyse, la confiance affichée est la probabilité
-                // du pronostic retenu — plus aucun chiffre inventé.
-                conf = Math.max(pred.homeProb, pred.drawProb, pred.awayProb);
+                // Analyse réelle : on affiche les probabilités d'API-Football
+                // telles quelles, et la confiance est celle du pronostic retenu.
+                // Aucune redistribution, sinon le chiffre annoncé serait inventé.
+                conf = maxProb;
+            } else {
+                pred = redistributeConfidence(pred, winnerKey, conf);
             }
 
             var confClass = isVipPick ? 'vip' : (conf >= 65 ? 'high' : 'mid');
