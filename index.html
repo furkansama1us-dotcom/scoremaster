@@ -3847,13 +3847,57 @@ function pollCarouselStoryGeneration(id, statusUrls, done, attempt) {
 // logo Score Master), puis passage en "pending" pour validation. La ligne
 // Telegram jumelle (même calendar_id) reçoit la première slide en visuel.
 // ------------------------------------------------------------
+// Retrouve la mise en page de chaque image : la routine la transmet avec les
+// slides, et à défaut on la relit dans le calendrier par calendar_id.
+async function calendarSlideLayout(row) {
+    var slides = row.overlay_data.slides || [];
+    if (slides.length && slides.every(function (s) { return s.position && s.page; })) return slides;
+    var cal = await cpLoadCalendar();
+    var entry = (cal || []).find(function (e) { return e.id === row.overlay_data.calendar_id; });
+    if (!entry || entry.mise_en_page !== 'duo' || entry.slides.length !== slides.length) return null;
+    return slides.map(function (s, i) {
+        return Object.assign({}, s, { page: entry.slides[i].page, position: entry.slides[i].position });
+    });
+}
+
+async function finishCalendarDuoCarousel(row, slides) {
+    // Regroupe les images par page, dans l'ordre : { haut, bas } ou { cta }.
+    var pages = [];
+    slides.forEach(function (s) {
+        var pg = pages.find(function (x) { return x.page === s.page; });
+        if (!pg) { pg = { page: s.page }; pages.push(pg); }
+        pg[s.position] = s;
+    });
+    pages.sort(function (a, b) { return a.page - b.page; });
+
+    var firstSlideDataUri = null;
+    for (var i = 0; i < pages.length; i++) {
+        var pg = pages[i];
+        var dataUri;
+        if (pg.cta) {
+            var fond = await adminApiCall('/api/image-bridge', { action: 'proxy', url: pg.cta.image_url });
+            dataUri = await compositeDuoCtaSlide(fond.dataUri, pg.cta.texte, i, pages.length);
+        } else {
+            var haut = await adminApiCall('/api/image-bridge', { action: 'proxy', url: pg.haut.image_url });
+            var bas = await adminApiCall('/api/image-bridge', { action: 'proxy', url: pg.bas.image_url });
+            dataUri = await compositeDuoSlide(haut.dataUri, bas.dataUri, pg.haut.texte, pg.bas.texte, i, pages.length);
+        }
+        if (i === 0) firstSlideDataUri = dataUri;
+        await adminApiCall('/api/image-bridge', { action: 'upload', id: row.id, imageDataUri: dataUri, field: 'carousel:' + i });
+    }
+    return firstSlideDataUri;
+}
+
 async function finishCalendarCarousel(row) {
     try {
         var slides = row.overlay_data.slides;
         var kicker = row.overlay_data.format_nom || 'Score Master';
         var firstSlideDataUri = null;
 
-        for (var i = 0; i < slides.length; i++) {
+        var duo = await calendarSlideLayout(row);
+        if (duo) firstSlideDataUri = await finishCalendarDuoCarousel(row, duo);
+
+        for (var i = 0; !duo && i < slides.length; i++) {
             var proxied = await adminApiCall('/api/image-bridge', { action: 'proxy', url: slides[i].image_url });
             var dataUri = await compositeCarouselSlide(proxied.dataUri, {
                 kicker: i === 0 ? kicker : '',
@@ -3918,6 +3962,156 @@ async function finishCarouselStoryComposite(id, bgUrls) {
         showToast('Erreur : ' + (error && error.message ? error.message : 'inconnue'), true);
         await markPublicationFailed(id, error);
     }
+}
+
+// Légende avec mots dorés : le texte entre astérisques (*comme ceci*) passe en
+// or. Renvoie des lignes de segments { t, or } déjà coupées à la largeur voulue.
+function wrapRichCanvasText(ctx, text, maxWidth) {
+    var mots = [];
+    String(text || '').split('*').forEach(function (morceau, i) {
+        morceau.split(' ').forEach(function (m) { if (m) mots.push({ t: m, or: i % 2 === 1 }); });
+    });
+    var lignes = [], ligne = [], largeur = 0;
+    var espace = ctx.measureText(' ').width;
+    mots.forEach(function (m) {
+        var w = ctx.measureText(m.t).width;
+        if (ligne.length && largeur + espace + w > maxWidth) { lignes.push(ligne); ligne = []; largeur = 0; }
+        largeur += (ligne.length ? espace : 0) + w;
+        ligne.push(m);
+    });
+    if (ligne.length) lignes.push(ligne);
+    return lignes;
+}
+
+function drawRichCenteredLines(ctx, lignes, cx, yPremiere, interligne) {
+    var espace = ctx.measureText(' ').width;
+    lignes.forEach(function (ligne, n) {
+        var total = ligne.reduce(function (s, m, i) { return s + ctx.measureText(m.t).width + (i ? espace : 0); }, 0);
+        var x = cx - total / 2;
+        ligne.forEach(function (m, i) {
+            if (i) x += espace;
+            ctx.fillStyle = m.or ? '#f4c542' : '#ffffff';
+            ctx.fillText(m.t, x, yPremiere + n * interligne);
+            x += ctx.measureText(m.t).width;
+        });
+    });
+}
+
+function drawCoverImage(ctx, img, x, y, w, h) {
+    var scale = Math.max(w / img.width, h / img.height);
+    var dw = img.width * scale, dh = img.height * scale;
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+    ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+    ctx.restore();
+}
+
+// En-tête commun aux slides duo : logo en haut à gauche, index en haut à droite.
+async function drawDuoHeader(ctx, W, marginX, index, total) {
+    var logo = await loadImg('logo-dark.png');
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = 16;
+    ctx.drawImage(logo, marginX, 56, 78, 78);
+    ctx.restore();
+
+    ctx.font = '800 26px Montserrat, sans-serif';
+    var idx = (index + 1) + '/' + total;
+    var w = ctx.measureText(idx).width + 34;
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.beginPath();
+    if (ctx.roundRect) ctx.roundRect(W - marginX - w, 70, w, 48, 999); else ctx.rect(W - marginX - w, 70, w, 48);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(idx, W - marginX - w / 2, 95);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+}
+
+// Slide « duo » : deux scènes empilées, une légende centrée en bas de chacune
+// (même grammaire que les carrousels « question / conseil »). 1080x1920.
+function compositeDuoSlide(hautDataUri, basDataUri, texteHaut, texteBas, index, total) {
+    return Promise.all([loadImg(hautDataUri), loadImg(basDataUri),
+        document.fonts.load('800 60px Montserrat'), document.fonts.load('800 26px Montserrat')
+    ]).then(async function (r) {
+        var W = 1080, H = 1920, demi = H / 2;
+        // Même marge que les autres carrousels : la conversion en Reel rogne
+        // environ 10 % de chaque côté.
+        var marginX = W * 0.13;
+        var canvas = document.createElement('canvas');
+        canvas.width = W; canvas.height = H;
+        var ctx = canvas.getContext('2d');
+
+        drawCoverImage(ctx, r[0], 0, 0, W, demi);
+        drawCoverImage(ctx, r[1], 0, demi, W, demi);
+
+        // Voile sombre sous chaque légende pour la lisibilité
+        [0, demi].forEach(function (y0) {
+            var g = ctx.createLinearGradient(0, y0 + demi * 0.55, 0, y0 + demi);
+            g.addColorStop(0, 'rgba(0,0,0,0)');
+            g.addColorStop(1, 'rgba(0,0,0,0.62)');
+            ctx.fillStyle = g; ctx.fillRect(0, y0 + demi * 0.55, W, demi * 0.45);
+        });
+        var gh = ctx.createLinearGradient(0, 0, 0, 190);
+        gh.addColorStop(0, 'rgba(0,0,0,0.45)'); gh.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = gh; ctx.fillRect(0, 0, W, 190);
+
+        // Filet de séparation entre les deux scènes
+        ctx.fillStyle = '#0a0e1a';
+        ctx.fillRect(0, demi - 3, W, 6);
+
+        await drawDuoHeader(ctx, W, marginX, index, total);
+
+        ctx.font = '800 60px Montserrat, sans-serif';
+        ctx.shadowColor = 'rgba(0,0,0,0.75)'; ctx.shadowBlur = 22; ctx.shadowOffsetY = 3;
+        [[texteHaut, demi], [texteBas, H]].forEach(function (x) {
+            var lignes = wrapRichCanvasText(ctx, x[0], W - marginX * 2).slice(0, 3);
+            var interligne = 70;
+            var yPremiere = x[1] - 110 - (lignes.length - 1) * interligne;
+            drawRichCenteredLines(ctx, lignes, W / 2, yPremiere, interligne);
+        });
+        ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+
+        return canvas.toDataURL('image/jpeg', 0.95);
+    });
+}
+
+// Slide finale : visuel plein écran, appel à l'action en grand, mention de jeu
+// responsable en pied de page.
+function compositeDuoCtaSlide(fondDataUri, texte, index, total) {
+    return Promise.all([loadImg(fondDataUri),
+        document.fonts.load('400 84px Anton'), document.fonts.load('800 26px Montserrat'), document.fonts.load('700 24px Montserrat')
+    ]).then(async function (r) {
+        var W = 1080, H = 1920;
+        var marginX = W * 0.13;
+        var canvas = document.createElement('canvas');
+        canvas.width = W; canvas.height = H;
+        var ctx = canvas.getContext('2d');
+
+        drawCoverImage(ctx, r[0], 0, 0, W, H);
+        var g = ctx.createLinearGradient(0, H * 0.42, 0, H);
+        g.addColorStop(0, 'rgba(6,8,16,0)');
+        g.addColorStop(0.45, 'rgba(6,8,16,0.82)');
+        g.addColorStop(1, 'rgba(6,8,16,0.96)');
+        ctx.fillStyle = g; ctx.fillRect(0, H * 0.42, W, H * 0.58);
+
+        await drawDuoHeader(ctx, W, marginX, index, total);
+
+        ctx.font = '400 84px Anton, Impact, sans-serif';
+        var lignes = wrapRichCanvasText(ctx, String(texte || '').toUpperCase(), W - marginX * 2).slice(0, 5);
+        var interligne = 96;
+        var yPremiere = H - 330 - (lignes.length - 1) * interligne;
+        ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 18;
+        drawRichCenteredLines(ctx, lignes, W / 2, yPremiere, interligne);
+        ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+
+        ctx.font = '700 24px Montserrat, sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.textAlign = 'center';
+        ctx.fillText('18+ · Jouer comporte des risques · 09 74 75 13 13', W / 2, H - 170);
+        ctx.textAlign = 'left';
+
+        return canvas.toDataURL('image/jpeg', 0.95);
+    });
 }
 
 function compositeCarouselSlide(bgDataUri, slide, index, total) {
@@ -5540,7 +5734,8 @@ function cpDayNumber(dayStr) {
 // Entrées du calendrier prévues ce jour-là, fusionnées avec leur ligne en base.
 function cpCalendarEntries(dayStr) {
     var n = cpDayNumber(dayStr);
-    if (!_cpCalendar || n < 1 || n > 50) return [];
+    var dernierJour = (_cpCalendar || []).reduce(function (m, e) { return Math.max(m, e.jour || 0); }, 0);
+    if (!_cpCalendar || n < 1 || n > dernierJour) return [];
     var rows = window._cpRows || [];
     return _cpCalendar.filter(function (e) { return e.jour === n; }).map(function (e) {
         var row = rows.find(function (r) {
