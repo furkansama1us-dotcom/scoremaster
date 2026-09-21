@@ -642,3 +642,28 @@ CREATE TABLE IF NOT EXISTS public.ai_standings (
 );
 
 ALTER TABLE public.ai_standings ENABLE ROW LEVEL SECURITY;
+
+-- ============================================================
+-- AUTOMATISATION DES PUBLICATIONS (Content Planner > Réglages)
+-- Une seule ligne de réglages. Lecture et modification réservées à l'admin ;
+-- le serveur (cron de publication) y accède avec la clé service role.
+-- ============================================================
+create table if not exists public.automation_settings (
+    id              text primary key default 'singleton',
+    auto_publish    boolean not null default false,
+    auto_approve_at text not null default '07:00',
+    exclusions      jsonb not null default '[]'::jsonb,
+    updated_at      timestamptz default now()
+);
+insert into public.automation_settings (id) values ('singleton') on conflict do nothing;
+alter table public.automation_settings enable row level security;
+
+drop policy if exists "Admins can read automation settings" on public.automation_settings;
+create policy "Admins can read automation settings"
+  on public.automation_settings for select
+  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));
+
+drop policy if exists "Admins can update automation settings" on public.automation_settings;
+create policy "Admins can update automation settings"
+  on public.automation_settings for update
+  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));

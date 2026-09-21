@@ -2550,6 +2550,25 @@ async function fetchApiScore(id, dateRaw) {
         #content-planner-overlay .cp-big-cell{aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:13px;color:#5a5262;cursor:pointer;background:#fff;border:1px solid #efe9df;}
         #content-planner-overlay .cp-big-cell.cp-today{background:#c8963c;color:#fff;font-weight:800;border-color:#c8963c;}
         #content-planner-overlay .cp-big-cell.cp-empty{visibility:hidden;}
+        #content-planner-overlay .cp-switch{position:relative;flex:0 0 auto;width:46px;height:27px;display:inline-block;}
+        #content-planner-overlay .cp-switch input{opacity:0;width:0;height:0;}
+        #content-planner-overlay .cp-switch span{position:absolute;inset:0;border-radius:999px;background:#d9d1c4;transition:background .2s;cursor:pointer;}
+        #content-planner-overlay .cp-switch span::after{content:'';position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2);transition:transform .2s;}
+        #content-planner-overlay .cp-switch input:checked + span{background:#1f8a5b;}
+        #content-planner-overlay .cp-switch input:checked + span::after{transform:translateX(19px);}
+        #content-planner-overlay .cp-manage{flex:0 0 auto;padding:8px 14px;border-radius:10px;border:1.5px solid #c8963c;background:#fff;color:#8a5a13;font-weight:800;font-size:12px;cursor:pointer;font-family:'Manrope',sans-serif;}
+        #content-planner-overlay .cp-auto-day{background:#fff;border:1px solid #e7e0d5;border-radius:14px;padding:12px 13px;margin-bottom:12px;}
+        #content-planner-overlay .cp-auto-day > b{display:block;font-family:Anton,Impact,sans-serif;font-size:15px;color:#2a2430;margin-bottom:8px;text-transform:capitalize;}
+        #content-planner-overlay .cp-auto-item{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px dashed #e7e0d5;}
+        #content-planner-overlay .cp-auto-item:first-of-type{border-top:none;}
+        #content-planner-overlay .cp-auto-item .cp-time{font-size:12.5px;font-weight:800;width:42px;flex:none;color:#2a2430;padding-top:2px;}
+        #content-planner-overlay .cp-auto-item .cp-auto-mid{flex:1;min-width:0;}
+        #content-planner-overlay .cp-auto-item .cp-auto-ttl{font-size:12.5px;font-weight:800;color:#2a2430;}
+        #content-planner-overlay .cp-auto-item .cp-auto-etat{font-size:11.5px;color:#5a5262;margin-top:3px;line-height:1.45;}
+        #content-planner-overlay .cp-auto-item.exclu{opacity:.55;}
+        #content-planner-overlay .cp-auto-btn{flex:0 0 auto;border:1px solid #e7e0d5;background:#faf7f2;border-radius:9px;padding:6px 9px;font-size:11px;font-weight:800;color:#5a5262;cursor:pointer;font-family:'Manrope',sans-serif;}
+        #content-planner-overlay .cp-auto-thumbs{display:flex;gap:4px;margin-top:7px;overflow-x:auto;}
+        #content-planner-overlay .cp-auto-thumbs img{width:44px;height:78px;object-fit:cover;border-radius:6px;border:1px solid #e7e0d5;flex:0 0 auto;}
     </style>
     <div style="display:flex; align-items:center; justify-content:space-between; padding:calc(16px + var(--safe-top)) 20px 16px; border-bottom:1px solid #e7e0d5;">
         <span style="font-weight:900; font-size:16px; color:#2a2430;"><i class="fas fa-calendar-days" style="color:#c8963c;margin-right:8px;"></i>Content Planner</span>
@@ -2694,11 +2713,33 @@ async function fetchApiScore(id, dateRaw) {
             <div class="cp-tl" id="cpValList"></div>
         </div>
 
+        <!-- Réglages > Gérer : ce que l'automatisation va faire -->
+        <div class="cp-view" id="cp-view-auto">
+            <button class="cp-back" onclick="cpTab('settings')">‹ Réglages</button>
+            <div class="cp-eyebrow">Les 3 prochains jours</div>
+            <div class="cp-set-card" style="display:flex;align-items:center;gap:10px;">
+                <div style="flex:1;"><b>Heure d'approbation automatique</b><br><span style="font-size:11.5px;color:#8a8290;">Doit précéder la première publication (08:15).</span></div>
+                <select class="cp-input" id="cpAutoHeure" style="width:auto;" onchange="cpSetAutoHeure(this.value)">
+                    <option value="05:00">05h00</option><option value="06:00">06h00</option><option value="07:00">07h00</option><option value="07:30">07h30</option><option value="08:00">08h00</option>
+                </select>
+            </div>
+            <div id="cpAutoJours"></div>
+        </div>
+
         <!-- Onglet Réglages -->
         <div class="cp-view" id="cp-view-settings">
-            <div class="cp-eyebrow">Automatisation</div>
+            <div class="cp-eyebrow">Automatisation des publications</div>
             <div class="cp-set-card">
-                <b>Carrousels du calendrier</b><br>Générés chaque soir vers 21h pour le lendemain, avec la mascotte. Publication à <b>08:15</b> et <b>20:15</b>, uniquement après ta validation.<br><br>
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <label class="cp-switch"><input type="checkbox" id="cpAutoToggle" onchange="cpSetAutoPublish(this.checked)"><span></span></label>
+                    <div style="flex:1;min-width:0;"><b>Automatiser les publications</b><br><span style="font-size:11.5px;color:#8a8290;">Les carrousels générés le soir sont approuvés tout seuls à <b id="cpAutoHeureTxt">07h00</b>, sauf ceux que tu exclus.</span></div>
+                    <button class="cp-manage" onclick="cpOpenAuto()">Gérer</button>
+                </div>
+                <div id="cpAutoEtat" style="font-size:11.5px;margin-top:10px;"></div>
+            </div>
+            <div class="cp-eyebrow">Fonctionnement</div>
+            <div class="cp-set-card">
+                <b>Carrousels du calendrier</b><br>Générés et assemblés chaque soir vers 21h pour le lendemain, avec la mascotte. Publication à <b>08:15</b> et <b>20:15</b> sur Instagram, après ta validation ou après l'approbation automatique.<br><br>
                 <b>Carrousels de test</b><br>La file d'attente est traitée toutes les heures (à h40).<br><br>
                 <b>Remplacement automatique</b><br>Quand un nouveau carrousel arrive sur un créneau, l'ancien brouillon non publié de ce créneau est retiré.
             </div>
@@ -4127,7 +4168,10 @@ async function finishCarouselStoryComposite(id, bgUrls) {
 // or. Renvoie des lignes de segments { t, or } déjà coupées à la largeur voulue.
 function wrapRichCanvasText(ctx, text, maxWidth) {
     var mots = [];
-    String(text || '').split('*').forEach(function (morceau, i) {
+    // Espace insécable devant ? ! : ; » (et après «) : la ponctuation ne
+    // se retrouve jamais seule en début de ligne.
+    var propre = String(text || '').replace(/ ([?!:;»])/g, ' $1').replace(/« /g, '« ');
+    propre.split('*').forEach(function (morceau, i) {
         morceau.split(' ').forEach(function (m) { if (m) mots.push({ t: m, or: i % 2 === 1 }); });
     });
     var lignes = [], ligne = [], largeur = 0;
@@ -5787,6 +5831,7 @@ function cpTab(name) {
     if (name === 'generate') cpRenderGenerate();
     if (name === 'biblio') cpRenderBiblio();
     if (name === 'validate') cpRenderValidate();
+    if (name === 'settings') cpRenderAutoCard();
 }
 
 function cpBigCalShift(n) { _cpBigCalOffset += n; cpRenderBigCal(); }
@@ -5993,6 +6038,126 @@ function cpRenderValidate() {
     document.getElementById('cpValLabel').textContent = rows.length ? (rows.length + ' contenu' + (rows.length > 1 ? 's' : '') + ' à traiter') : 'À valider';
     document.getElementById('cpValList').innerHTML = rows.length ? rows.map(cpSlotHtml).join('')
         : '<div class="cp-txt-box" style="text-align:center;color:#8a8290;">Rien à valider pour le moment. ✨</div>';
+}
+
+// ---------- Automatisation des publications ----------
+window._cpAuto = null;
+
+async function cpLoadAuto() {
+    try {
+        const { data, error } = await supabaseClient.from('automation_settings').select('*').eq('id', 'singleton').maybeSingle();
+        if (error) throw error;
+        window._cpAuto = data || null;
+    } catch (e) {
+        console.error('Réglages d\'automatisation indisponibles :', e);
+        window._cpAuto = null;
+    }
+    return window._cpAuto;
+}
+
+function cpHeureTxt(v) { return String(v || '07:00').replace(':', 'h'); }
+
+async function cpRenderAutoCard() {
+    var r = await cpLoadAuto();
+    var toggle = document.getElementById('cpAutoToggle');
+    var etat = document.getElementById('cpAutoEtat');
+    if (!r) {
+        toggle.checked = false; toggle.disabled = true;
+        etat.innerHTML = '<span style="color:#c2334e;">Réglages introuvables : passe le SQL « automation_settings » dans Supabase.</span>';
+        return;
+    }
+    toggle.disabled = false;
+    toggle.checked = !!r.auto_publish;
+    document.getElementById('cpAutoHeureTxt').textContent = cpHeureTxt(r.auto_approve_at);
+    var nbExclus = (r.exclusions || []).length;
+    etat.innerHTML = r.auto_publish
+        ? '<span style="color:#1f8a5b;font-weight:800;">● Actif</span> — approbation chaque jour à ' + cpHeureTxt(r.auto_approve_at) + (nbExclus ? ' · ' + nbExclus + ' carrousel(s) exclu(s)' : '') + '.'
+        : '<span style="color:#8a8290;font-weight:800;">● Désactivé</span> — tu valides chaque carrousel toi-même.';
+}
+
+async function cpSaveAuto(patch) {
+    patch.updated_at = new Date().toISOString();
+    const { error } = await supabaseClient.from('automation_settings').update(patch).eq('id', 'singleton');
+    if (error) { showToast('Erreur : ' + error.message, true); return false; }
+    await cpLoadAuto();
+    return true;
+}
+
+async function cpSetAutoPublish(actif) {
+    if (actif && !confirm('Activer l\'automatisation ? Les carrousels générés le soir seront approuvés tout seuls le matin, sauf ceux que tu exclus dans « Gérer ».')) {
+        document.getElementById('cpAutoToggle').checked = false;
+        return;
+    }
+    if (await cpSaveAuto({ auto_publish: !!actif })) {
+        showToast(actif ? 'Automatisation activée.' : 'Automatisation désactivée.');
+    }
+    cpRenderAutoCard();
+}
+
+async function cpSetAutoHeure(v) {
+    if (await cpSaveAuto({ auto_approve_at: v })) showToast('Approbation automatique à ' + cpHeureTxt(v) + '.');
+    cpRenderAuto();
+}
+
+async function cpToggleExclusion(calId) {
+    var r = window._cpAuto || await cpLoadAuto();
+    if (!r) return;
+    var ex = (r.exclusions || []).slice();
+    var i = ex.indexOf(calId);
+    if (i === -1) ex.push(calId); else ex.splice(i, 1);
+    if (await cpSaveAuto({ exclusions: ex })) showToast(i === -1 ? 'Carrousel exclu : il ne sera pas publié automatiquement.' : 'Carrousel réintégré.');
+    cpRenderAuto();
+}
+
+async function cpOpenAuto() {
+    cpGo('auto');
+    var sc = document.getElementById('cpScroll');
+    if (sc) sc.scrollTop = 0;
+    await Promise.all([cpLoadAuto(), cpLoadCalendar(), cpFetchRows()]);
+    cpRenderAuto();
+}
+
+function cpRenderAuto() {
+    var r = window._cpAuto;
+    var box = document.getElementById('cpAutoJours');
+    if (!r) { box.innerHTML = '<div class="cp-txt-box">Réglages introuvables : passe le SQL « automation_settings » dans Supabase.</div>'; return; }
+    document.getElementById('cpAutoHeure').value = r.auto_approve_at || '07:00';
+    var heure = cpHeureTxt(r.auto_approve_at);
+    var exclus = r.exclusions || [];
+    var rows = window._cpRows || [];
+    var html = '';
+    if (!r.auto_publish) html += '<div class="cp-txt-box" style="margin-bottom:12px;">L\'automatisation est <b>désactivée</b> : voici ce qui se passerait si tu l\'activais.</div>';
+
+    for (var d = 0; d < 3; d++) {
+        var jour = new Date(); jour.setDate(jour.getDate() + d);
+        var ds = cpDstr(jour);
+        var n = cpDayNumber(ds);
+        var entrees = (_cpCalendar || []).filter(function (e) { return e.jour === n; });
+        html += '<div class="cp-auto-day"><b>' + (d === 0 ? 'Aujourd\'hui · ' : d === 1 ? 'Demain · ' : '') + cpFmtDayLabel(jour) + '</b>';
+        if (!entrees.length) html += '<div class="cp-auto-etat" style="font-size:12px;color:#8a8290;">Aucun carrousel prévu.</div>';
+        entrees.forEach(function (e) {
+            var row = rows.find(function (x) { return x.platform === 'instagram' && x.overlay_data && x.overlay_data.calendar_id === e.id; });
+            var estExclu = exclus.indexOf(e.id) !== -1;
+            var veille = new Date(jour); veille.setDate(veille.getDate() - 1);
+            var etat;
+            if (row && row.status === 'published') etat = '✅ Publié.';
+            else if (row && row.status === 'approved') etat = '🟢 Approuvé — publication à ' + e.heure.replace(':', 'h') + '.';
+            else if (estExclu) etat = '⛔ Exclu — ne sera pas approuvé automatiquement. Tu peux toujours le valider à la main.';
+            else if (row && row.status === 'pending') etat = r.auto_publish ? '⏳ Prêt — approuvé automatiquement à ' + heure + ', publié à ' + e.heure.replace(':', 'h') + '.' : '⏳ Prêt — en attente de ta validation.';
+            else if (row && row.status === 'generating') etat = '🎨 Images générées, assemblage en cours.';
+            else if (row && row.status === 'failed') etat = '❌ Échec — à régénérer depuis Valider.';
+            else etat = '🕘 Sera généré la veille (' + cpFmtDayLabel(veille) + ') vers 21h' + (r.auto_publish ? ', approuvé à ' + heure + ', publié à ' + e.heure.replace(':', 'h') + '.' : ', puis en attente de ta validation.');
+            var thumbs = (row && Array.isArray(row.carousel_images) && row.carousel_images.filter(Boolean).length)
+                ? '<div class="cp-auto-thumbs">' + row.carousel_images.filter(Boolean).map(function (u) { return '<img src="' + u + '" alt="">'; }).join('') + '</div>' : '';
+            var peutExclure = !(row && (row.status === 'published' || row.status === 'approved'));
+            html += '<div class="cp-auto-item' + (estExclu ? ' exclu' : '') + '"><span class="cp-time">' + e.heure.replace(':', 'h') + '</span>'
+                + '<div class="cp-auto-mid"><div class="cp-auto-ttl">' + e.titre + '</div><div class="cp-auto-etat">' + etat + '</div>' + thumbs + '</div>'
+                + (peutExclure ? '<button class="cp-auto-btn" onclick="cpToggleExclusion(\'' + e.id + '\')">' + (estExclu ? 'Réintégrer' : 'Exclure') + '</button>' : '')
+                + '</div>';
+        });
+        html += '</div>';
+    }
+    box.innerHTML = html;
 }
 
 // ---------- Réglages ----------

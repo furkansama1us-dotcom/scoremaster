@@ -149,6 +149,71 @@ async function postizPublish(item, integrations) {
 // Heure/date "maintenant" à Paris (pas le fuseau du serveur Vercel, qui
 // tourne en UTC) — comparée à scheduled_for/scheduled_time pour ne publier
 // une ligne "approved" qu'une fois son créneau réellement atteint.
+// ------------------------------------------------------------
+// Automatisation des publications (Content Planner > Réglages)
+// ------------------------------------------------------------
+async function lireReglagesAuto() {
+    try {
+        const rows = await sbFetch('automation_settings?id=eq.singleton&select=*');
+        return (rows && rows[0]) || null;
+    } catch (e) {
+        return null; // table absente : automatisation considérée comme désactivée
+    }
+}
+
+// Slides déjà assemblées par la routine (JPEG en base64) : stockées dans le
+// bucket public, dans l'ordre du carrousel.
+const BUCKET_IMAGES = 'content-images';
+async function televerserSlides(idLigne, composees) {
+    const urls = [];
+    for (let i = 0; i < composees.length; i++) {
+        const m = String(composees[i]).match(/^data:(image\/(?:jpeg|png));base64,(.+)$/);
+        if (!m) throw new Error('Slide ' + (i + 1) + ' : format d\'image invalide');
+        const ext = m[1] === 'image/png' ? 'png' : 'jpg';
+        const chemin = 'carrousels/' + idLigne + '-slide' + i + '.' + ext;
+        const r = await fetch(SUPABASE_URL + '/storage/v1/object/' + BUCKET_IMAGES + '/' + chemin, {
+            method: 'POST',
+            headers: {
+                apikey: SUPABASE_SERVICE_ROLE_KEY,
+                Authorization: 'Bearer ' + SUPABASE_SERVICE_ROLE_KEY,
+                'Content-Type': m[1],
+                'x-upsert': 'true'
+            },
+            body: Buffer.from(m[2], 'base64')
+        });
+        if (!r.ok) throw new Error('Stockage slide ' + (i + 1) + ' -> ' + r.status + ' : ' + (await r.text()));
+        urls.push(SUPABASE_URL + '/storage/v1/object/public/' + BUCKET_IMAGES + '/' + chemin);
+    }
+    return urls;
+}
+
+// Approbation automatique : à partir de l'heure réglée (7h00 par défaut), les
+// carrousels du calendrier prévus aujourd'hui, assemblés et non exclus, passent
+// en « approuvé ». Le balayage habituel les publie ensuite à leur heure.
+async function approuverAutomatiquement(now) {
+    const reglages = await lireReglagesAuto();
+    if (!reglages || !reglages.auto_publish) return { actif: false };
+    const [hh, mm] = String(reglages.auto_approve_at || '07:00').split(':').map(Number);
+    if (now.minutes < hh * 60 + mm) return { actif: true, enAttenteHeure: true };
+
+    const exclus = Array.isArray(reglages.exclusions) ? reglages.exclusions : [];
+    const candidats = await sbFetch('pending_publications?status=eq.pending&platform=eq.instagram'
+        + '&overlay_data->>source=eq.content-calendar&scheduled_for=eq.' + now.dateStr
+        + '&select=id,carousel_images,overlay_data') || [];
+    const approuves = [];
+    for (const c of candidats) {
+        const calId = c.overlay_data && c.overlay_data.calendar_id;
+        if (exclus.indexOf(calId) !== -1) continue;
+        if (!Array.isArray(c.carousel_images) || !c.carousel_images.length || c.carousel_images.some(u => !u)) continue;
+        await sbFetch('pending_publications?id=eq.' + c.id + '&status=eq.pending', {
+            method: 'PATCH',
+            body: JSON.stringify({ status: 'approved', overlay_data: Object.assign({}, c.overlay_data, { auto_approuve_le: new Date().toISOString() }) })
+        });
+        approuves.push(calId);
+    }
+    return { actif: true, approuves };
+}
+
 function parisNowParts() {
     const parts = new Intl.DateTimeFormat('en-CA', {
         timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit',
@@ -171,8 +236,13 @@ async function handleCronSweep(req, res) {
     if ((req.query.secret || '') !== CRON_SECRET) return res.status(401).json({ error: 'Secret invalide' });
 
     const summary = { checked: 0, published: [], waiting: [], errors: [] };
-    const approvedAll = await sbFetch(`pending_publications?status=eq.approved&select=*`);
     const now = parisNowParts();
+    try {
+        summary.automatisation = await approuverAutomatiquement(now);
+    } catch (e) {
+        summary.automatisation = { erreur: String(e) };
+    }
+    const approvedAll = await sbFetch(`pending_publications?status=eq.approved&select=*`);
     const approved = approvedAll.filter(item => isDue(item, now));
     summary.checked = approved.length;
     summary.waiting = approvedAll.filter(item => !isDue(item, now)).map(item => ({ id: item.id, scheduled_for: item.scheduled_for, scheduled_time: item.scheduled_time }));
@@ -293,6 +363,24 @@ async function handleCalendarDraft(req, res) {
 
     const nouvelId = inserted && inserted[0] && inserted[0].id;
 
+    // Slides déjà assemblées par la routine : plus besoin d'ouvrir l'app pour
+    // l'habillage, le carrousel est tout de suite prêt à valider.
+    let assemble = false;
+    if (nouvelId && Array.isArray(draft.composed) && draft.composed.length && draft.composed.length <= 10) {
+        try {
+            const urls = await televerserSlides(nouvelId, draft.composed);
+            await sbFetch('pending_publications?id=eq.' + nouvelId, {
+                method: 'PATCH',
+                body: JSON.stringify({ carousel_images: urls, status: 'pending' })
+            });
+            assemble = true;
+        } catch (e) {
+            // Échec du stockage : la ligne reste « generating » et l'app fera
+            // l'assemblage à l'ouverture, comme avant.
+            console.error('Slides assemblées non stockées :', e);
+        }
+    }
+
     if (draft.request_id) {
         // Carrousel de test : la demande d'origine est traitée, on la retire de la file.
         await sbFetch('pending_publications?id=eq.' + encodeURIComponent(draft.request_id) + '&status=eq.requested', { method: 'DELETE' }).catch(function () {});
@@ -313,10 +401,15 @@ async function handleCalendarDraft(req, res) {
         const quand = draft.scheduled_time ? (' à ' + String(draft.scheduled_time).replace(':', 'h')) : '';
         const message = draft.request_id
             ? `🧪 CARROUSEL DE TEST PRÊT\n\n« ${draft.titre || draft.calendar_id} »\nPrévu le ${draft.scheduled_for}${quand} s'il est approuvé.\n\nOuvre l'app : Content Planner > Valider.`
-            : `🗓️ CARROUSEL PRÊT À VALIDER\n\n« ${draft.titre || draft.calendar_id} »\nPrévu le ${draft.scheduled_for}${quand} — Instagram + Telegram.\n\nOuvre l'app : Content Planner > Valider. Les visuels s'habillent tout seuls à l'ouverture, puis tu approuves.`;
+            : `🗓️ CARROUSEL PRÊT À VALIDER\n\n« ${draft.titre || draft.calendar_id} »\nPrévu le ${draft.scheduled_for}${quand} sur Instagram.\n\nOuvre l'app : Content Planner > Valider.`;
+        const reglagesAuto = draft.request_id ? null : await lireReglagesAuto();
+        const complement = (reglagesAuto && reglagesAuto.auto_publish)
+            ? `\n\n🤖 Automatisation active : approuvé automatiquement le ${draft.scheduled_for} à ${String(reglagesAuto.auto_approve_at || '07:00').replace(':', 'h')}, sauf si tu l'exclus (Content Planner > Réglages > Gérer).`
+            : '';
+        const apercu = assemble ? '' : '\nLes visuels s\'assembleront à l\'ouverture de l\'app.';
         await sbFetch('telegram_queue', {
             method: 'POST',
-            body: JSON.stringify([{ message: message }])
+            body: JSON.stringify([{ message: message + apercu + complement }])
         }).catch(function () {});
     }
 
