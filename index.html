@@ -620,6 +620,9 @@
         .hc-cash .tk-sticker.g { left:0; }
         /* Second bouton invisible (admin) : message bookmaker sous le combiné. */
         .tk-promo-toggle { background:none; border:none; padding:0; min-width:52px; height:28px; cursor:default; -webkit-tap-highlight-color:transparent; }
+        /* Zone invisible juste en dessous : masque le message. */
+        .tk-promo-zone { position:relative; display:inline-flex; }
+        .tk-promo-off { position:absolute; left:0; top:100%; width:100%; height:26px; background:none; border:none; padding:0; cursor:default; z-index:3; -webkit-tap-highlight-color:transparent; }
         .hc-promo { margin:10px 0 0; padding:12px 14px; border-radius:12px; background:linear-gradient(135deg,rgba(255,255,255,.055),rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-left:3px solid var(--bk,#d0142c); display:flex; gap:11px; align-items:flex-start; animation:hcPromoIn .35s ease; }
         .hc-promo > i { color:var(--bk,#d0142c); font-size:15px; margin-top:2px; filter:brightness(1.25); }
         .hc-promo-txt { font-size:13px; line-height:1.45; color:var(--tk-text,#fff); font-weight:600; }
@@ -2429,7 +2432,7 @@ async function fetchApiScore(id, dateRaw) {
     <div class="tk-top">
         <button class="tk-back" onclick="closeTicketHistory()"><i class="fas fa-chevron-left"></i><img src="logo-dark.png" alt="">Retour sur Score Master</button>
         <div class="tk-title">
-            <span class="tk-brand">SCORE MASTER <span class="betclic-badge platform-badge-display tk-platform">BETCLIC</span><button class="tk-vip-toggle" onclick="toggleTicketVipMode()" aria-label="Mode SMVIP+"><span class="tk-vip-badge"><i class="fas fa-crown"></i>SMVIP+</span></button><button class="tk-promo-toggle" onclick="cycleTicketPromo()" aria-label="Message bookmaker"></button></span>
+            <span class="tk-brand">SCORE MASTER <span class="betclic-badge platform-badge-display tk-platform">BETCLIC</span><button class="tk-vip-toggle" onclick="toggleTicketVipMode()" aria-label="Mode SMVIP+"><span class="tk-vip-badge"><i class="fas fa-crown"></i>SMVIP+</span></button><span class="tk-promo-zone"><button class="tk-promo-toggle" onclick="cycleTicketPromo()" aria-label="Message bookmaker"></button><button class="tk-promo-off" onclick="hideTicketPromo()" aria-label="Masquer le message"></button></span></span>
             <span class="tk-sync" id="tk-sync"><i class="tk-dot"></i><span id="tk-sync-text">Chargement des dernières données…</span><b id="tk-sync-pct"></b></span>
         </div>
     </div>
@@ -10695,6 +10698,12 @@ function cycleTicketPromo() {
         couleur: couleur,
         texte: TICKET_PROMOS[i].replace('{BK}', '<b>' + nom.replace(/</g, '&lt;') + '</b>')
     };
+    filterTicketHistory(ticketFilter);
+}
+
+function hideTicketPromo() {
+    if (!window.isAdmin) return;
+    window.ticketPromo = null;
     filterTicketHistory(ticketFilter);
 }
 
