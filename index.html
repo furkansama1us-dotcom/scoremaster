@@ -618,6 +618,14 @@
         .tk-vip-mini i.fas { font-size:9px !important; color:#f4c542 !important; margin:0 !important; width:auto !important; }
         .tk-sticker i.fas { font-size:12px !important; }
         .hc-cash .tk-sticker.g { left:0; }
+        /* Second bouton invisible (admin) : message bookmaker sous le combiné. */
+        .tk-promo-toggle { background:none; border:none; padding:0; min-width:52px; height:28px; cursor:default; -webkit-tap-highlight-color:transparent; }
+        .hc-promo { margin:10px 0 0; padding:12px 14px; border-radius:12px; background:linear-gradient(135deg,rgba(255,255,255,.055),rgba(255,255,255,.02)); border:1px solid rgba(255,255,255,.08); border-left:3px solid var(--bk,#d0142c); display:flex; gap:11px; align-items:flex-start; animation:hcPromoIn .35s ease; }
+        .hc-promo > i { color:var(--bk,#d0142c); font-size:15px; margin-top:2px; filter:brightness(1.25); }
+        .hc-promo-txt { font-size:13px; line-height:1.45; color:var(--tk-text,#fff); font-weight:600; }
+        .hc-promo-txt b { color:#fff; background:var(--bk,#d0142c); padding:1px 6px; border-radius:4px; font-weight:800; letter-spacing:.3px; }
+        .hc-promo small { display:block; margin-top:6px; font-size:10px; color:rgba(255,255,255,.45); line-height:1.35; }
+        @keyframes hcPromoIn { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:none; } }
         .tk-title { display:flex; flex-direction:column; gap:5px; min-width:0; }
         #ticket-loader { background:radial-gradient(120% 65% at 78% 18%,#262a34 0%,#15161c 45%,#0A0A0F 80%); font-family:Supreme,Roboto,-apple-system,'Segoe UI',Arial,sans-serif; }
         .tl-inner { height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:0 40px; }
@@ -2421,7 +2429,7 @@ async function fetchApiScore(id, dateRaw) {
     <div class="tk-top">
         <button class="tk-back" onclick="closeTicketHistory()"><i class="fas fa-chevron-left"></i><img src="logo-dark.png" alt="">Retour sur Score Master</button>
         <div class="tk-title">
-            <span class="tk-brand">SCORE MASTER <span class="betclic-badge platform-badge-display tk-platform">BETCLIC</span><button class="tk-vip-toggle" onclick="toggleTicketVipMode()" aria-label="Mode SMVIP+"><span class="tk-vip-badge"><i class="fas fa-crown"></i>SMVIP+</span></button></span>
+            <span class="tk-brand">SCORE MASTER <span class="betclic-badge platform-badge-display tk-platform">BETCLIC</span><button class="tk-vip-toggle" onclick="toggleTicketVipMode()" aria-label="Mode SMVIP+"><span class="tk-vip-badge"><i class="fas fa-crown"></i>SMVIP+</span></button><button class="tk-promo-toggle" onclick="cycleTicketPromo()" aria-label="Message bookmaker"></button></span>
             <span class="tk-sync" id="tk-sync"><i class="tk-dot"></i><span id="tk-sync-text">Chargement des dernières données…</span><b id="tk-sync-pct"></b></span>
         </div>
     </div>
@@ -10646,6 +10654,7 @@ function buildTicketCardHtml(c) {
                     : ''}
                 <div class="hc-foot"><span>Réf : ${ticketRef(c)}</span><span>${ticketStamp(c)}</span></div>
             </div>
+            ${(window.ticketPromo && sc === 'en-cours') ? `<div class="hc-promo" style="--bk:${window.ticketPromo.couleur}"><i class="fas fa-bullhorn"></i><div><div class="hc-promo-txt">${window.ticketPromo.texte}</div><small>18+ · Jouer comporte des risques : endettement, dépendance… Appelez le 09 74 75 13 13 (appel non surtaxé).</small></div></div>` : ''}
         </div>`;
 }
 
@@ -10653,6 +10662,41 @@ function buildTicketCardHtml(c) {
 // « Terminés » = gagnés + perdus ; les deux boutons de gauche déplient / replient toutes les cartes.
 var ticketView = 'open';
 var ticketFilter = 'finished';
+
+// Messages affichés sous le combiné en cours ({BK} = bookmaker de l'en-tête).
+// Ton de conseil Score Master : aucune promesse de gain, aucune comparaison
+// invérifiable, et la mention de jeu responsable est toujours ajoutée dessous.
+var TICKET_PROMOS = [
+    'Pariez sur {BK} pour profiter de cotes élevées sur les scores exacts.',
+    'Joue ce combiné sur {BK} et profite de cotes attractives.',
+    'Ce combiné est disponible dès maintenant sur {BK}.',
+    'Notre bookmaker de référence pour ce combiné : {BK}.',
+    'Astuce Score Master : vérifie toujours la cote {BK} avant de valider.',
+    'Envie de suivre ce combiné ? Il est jouable sur {BK}.',
+    'Les scores exacts offrent des cotes élevées sur {BK} — joue avec modération.',
+    'Suis nos analyses et place ton combiné sur {BK}, à ton rythme.',
+    'Ton combiné du jour t\'attend sur {BK}. Mise toujours dans ton budget.',
+    'Retrouve cette sélection sur {BK} et compare les cotes avant de jouer.',
+    'Sur {BK}, les scores exacts, c\'est là que les cotes montent.',
+    'Place ce combiné sur {BK} en quelques secondes.'
+];
+
+function cycleTicketPromo() {
+    if (!window.isAdmin) return;
+    var badge = document.querySelector('#ticket-history-overlay .tk-platform');
+    var brut = badge ? badge.textContent.trim() : 'ton bookmaker';
+    var nom = brut.charAt(0).toUpperCase() + brut.slice(1).toLowerCase();
+    var couleur = badge ? getComputedStyle(badge).backgroundColor : '#d0142c';
+    var precedent = window.ticketPromo ? window.ticketPromo.index : -1;
+    var i;
+    do { i = Math.floor(Math.random() * TICKET_PROMOS.length); } while (i === precedent && TICKET_PROMOS.length > 1);
+    window.ticketPromo = {
+        index: i,
+        couleur: couleur,
+        texte: TICKET_PROMOS[i].replace('{BK}', '<b>' + nom.replace(/</g, '&lt;') + '</b>')
+    };
+    filterTicketHistory(ticketFilter);
+}
 
 // Réservé à l'admin : pour tout autre compte, la zone reste inerte et invisible.
 function toggleTicketVipMode() {
@@ -10959,6 +11003,7 @@ function openTicketHistory() {
 
 function closeTicketHistory() {
     stopTicketSync();
+    window.ticketPromo = null;
     var overlay = document.getElementById('ticket-history-overlay');
     overlay.style.opacity = '0';
     setTimeout(function () { overlay.style.display = 'none'; }, 300);
