@@ -2749,6 +2749,10 @@ async function fetchApiScore(id, dateRaw) {
                     <div style="flex:1;min-width:0;"><b>Combiné automatique</b><br><span style="font-size:11.5px;color:#8a8290;">Un seul combiné en cours à la fois. Le suivant est généré 1 h au plus tôt après ta validation, entre 23h et minuit (pour le lendemain soir) ou avant 14h (pour le soir même). Tu as 20 min pour l'annuler.</span></div>
                 </div>
                 <div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:14px;border-top:1px dashed #e7e0d5;">
+                    <label class="cp-switch"><input type="checkbox" id="cpPromoToggle" onchange="cpSetPromo(this.checked)"><span></span></label>
+                    <div style="flex:1;min-width:0;"><b>Promotion quotidienne de l'app</b><br><span style="font-size:11.5px;color:#8a8290;">Chaque jour à 12h30, une affiche Score Master sur Telegram et en story Instagram (pronostics gratuits, VIP+, parrainage, transparence…), jamais la même deux jours de suite.</span></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:14px;border-top:1px dashed #e7e0d5;">
                     <label class="cp-switch"><input type="checkbox" id="cpRapportToggle" onchange="cpSetRapport(this.checked)"><span></span></label>
                     <div style="flex:1;min-width:0;"><b>Rapport quotidien sur Telegram</b><br><span style="font-size:11.5px;color:#8a8290;">Chaque soir à 23h45, l'agenda complet du lendemain : carrousels, combiné, séquence, pronostics et points d'attention.</span></div>
                 </div>
@@ -6089,6 +6093,8 @@ async function cpRenderAutoCard() {
     if (seq) { seq.disabled = !('auto_sequence' in r); seq.checked = !!r.auto_sequence; }
     var combo = document.getElementById('cpComboToggle');
     if (combo) { combo.disabled = !('auto_combo' in r); combo.checked = !!r.auto_combo; }
+    var promo = document.getElementById('cpPromoToggle');
+    if (promo) { promo.disabled = !('auto_promo' in r); promo.checked = !!r.auto_promo; }
     var rapport = document.getElementById('cpRapportToggle');
     if (rapport) { rapport.disabled = !('auto_rapport' in r); rapport.checked = !!r.auto_rapport; }
     document.getElementById('cpAutoHeureTxt').textContent = cpHeureTxt(r.auto_approve_at);
@@ -6172,6 +6178,11 @@ async function cpRenderComboAuto() {
     box.innerHTML = '<div class="cp-txt-box" style="font-size:12px;">' + etat + '</div>';
 }
 
+async function cpSetPromo(actif) {
+    if (await cpSaveAuto({ auto_promo: !!actif })) showToast(actif ? 'Promotion quotidienne activée (12h30).' : 'Promotion quotidienne désactivée.');
+    cpRenderAutoCard();
+}
+
 async function cpSetRapport(actif) {
     if (await cpSaveAuto({ auto_rapport: !!actif })) showToast(actif ? 'Rapport quotidien activé (23h45).' : 'Rapport quotidien désactivé.');
     cpRenderAutoCard();
@@ -6235,6 +6246,7 @@ async function cpRenderSequenceJour() {
             return s === 'published' ? '✅ Publié' : s === 'approved' ? '🟢 En cours d\'envoi' : s === 'failed' ? '❌ Échec' : (r && r.auto_sequence ? '🕘 Prévu' : '⏸️ Séquence désactivée');
         };
         var lignes = [];
+        if (r && r.auto_promo) lignes.push(['Promotion de l\'app', '12h30', 'Telegram + story', etat('promo:' + aujourdhui + ':telegram')]);
         lignes.push(['Annonce du combiné', 'Dès publication', 'Telegram + story', r && r.auto_sequence ? '✅ Envoyée dès que les visuels sont prêts' : '⏸️ Séquence désactivée']);
         if (coup !== null) {
             var bonjour = Math.max(coup - 300, 540);

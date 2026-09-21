@@ -230,6 +230,18 @@ const PIED_JEU = '18+ · Jouer comporte des risques : endettement, dépendance�
 const LIEN_APP = '🌐 scoremaster.fr';
 
 const SEQ_TELEGRAM = {
+    promo: [
+        "⚽ Chaque jour, des pronostics analysés GRATUITEMENT sur l'app Score Master.\n\nProbabilités, forme des équipes, classements : tout est expliqué, match par match. 📊",
+        "📖 Chez Score Master, tous nos résultats restent visibles : les victoires comme les défaites.\n\nC'est la seule façon de juger une méthode sur la durée. Consulte l'historique complet dans l'app. 🔍",
+        "👑 L'espace VIP+ Score Master : le combiné du jour avec les scores exacts, les cotes et le suivi en direct.\n\nToutes les infos sur l'app. 🔥",
+        "🧠 Nos analyses partent de données réelles : forme, confrontations, enjeux, compositions.\n\nPas d'intuition, une méthode. Découvre-la sur l'app. 📈",
+        "📲 Pas d'application à télécharger : Score Master s'ouvre directement dans ton navigateur.\n\nAjoute-la à ton écran d'accueil en deux secondes. ⚡",
+        "🎁 Parrainage Score Master : invite 3 amis sur le canal et débloque un pronostic VIP+ gratuit.\n\nRécompense répétable à chaque palier de 3. Ton lien t'attend dans ton profil. 🔗",
+        "💡 Un conseil par jour pour jouer plus malin : erreurs à éviter, bons réflexes, idées reçues.\n\nRetrouve-les sur notre Instagram et dans l'app. 📚",
+        "🔔 Rejoins le canal Telegram Score Master pour ne rater aucune annonce : combiné du jour, relances, résultats. 📣",
+        "🧘 Un budget, une méthode, zéro précipitation.\n\nChez Score Master, on préfère peu de paris bien choisis à beaucoup de paris au hasard. 🎯",
+        "🗓️ Tous les matchs du jour au même endroit : horaires, classements et analyses gratuites.\n\nOuvre l'onglet Matchs de l'app. ⚽"
+    ],
     bonjour: [
         "☀️ Bonjour l'équipe ! J'espère que vous passez une bonne journée.\n\nDe notre côté, on termine l'analyse des matchs du jour : premier coup d'envoi à {HEURE}. On vous a préparé du solide. 🔍",
         "👋 Salut à tous !\n\nLe combiné du jour est prêt : {N} passés au crible. Coup d'envoi à {HEURE}.\n\nOn reste concentrés jusqu'au bout. 🎯",
@@ -266,6 +278,18 @@ const SEQ_TELEGRAM = {
 };
 
 const SEQ_STORY = {
+    promo: [
+        { badge: 'GRATUIT', texte: 'Des pronostics analysés *chaque jour*' },
+        { badge: 'TRANSPARENCE', texte: 'Tous nos résultats, *sans filtre*' },
+        { badge: 'ESPACE VIP+', texte: 'Le combiné du jour, *scores exacts* inclus' },
+        { badge: 'MÉTHODE', texte: 'Des analyses sur *données réelles*' },
+        { badge: 'SCOREMASTER.FR', texte: 'Aucune appli à installer. *Ouvre et c\'est parti*' },
+        { badge: 'PARRAINAGE', texte: 'Invite 3 amis, débloque un *pronostic VIP+*' },
+        { badge: 'CONSEILS', texte: 'Un conseil par jour pour *jouer plus malin*' },
+        { badge: 'TELEGRAM', texte: 'Rejoins le canal : *ne rate aucune annonce*' },
+        { badge: 'JEU RESPONSABLE', texte: 'Un budget, une méthode, *zéro précipitation*' },
+        { badge: 'MATCHS DU JOUR', texte: 'Tous les matchs *au même endroit*' }
+    ],
     bonjour: [
         { badge: "AUJOURD'HUI · {HEURE}", texte: "On termine l'analyse des matchs *du jour*" },
         { badge: "AUJOURD'HUI · {HEURE}", texte: "Le combiné du jour est *prêt*" },
@@ -354,6 +378,19 @@ async function creerEtapeSequence(cle, canal, etape, v, now) {
     }
     await sbFetch('pending_publications', { method: 'POST', body: JSON.stringify([ligne]) });
     return true;
+}
+
+// Promotion de l'app : une affiche par jour (Telegram + story), à 12h30.
+const HEURE_PROMO = 12 * 60 + 30;
+async function promotionQuotidienne(now) {
+    const reglages = await lireReglagesAuto();
+    if (!reglages || !reglages.auto_promo) return { actif: false };
+    if (now.minutes < HEURE_PROMO || now.minutes >= HEURE_PROMO + 90) return { actif: true, attente: '12h30' };
+    const creees = [];
+    for (const canal of ['telegram', 'story']) {
+        if (await creerEtapeSequence('promo:' + now.dateStr + ':' + canal, canal, 'promo', {}, now)) creees.push(canal);
+    }
+    return { actif: true, creees };
 }
 
 async function sequenceMarketing(now) {
@@ -729,6 +766,7 @@ async function construireRapport(cible) {
 
     // 3) Séquence marketing
     lignes.push('📣 SÉQUENCE TELEGRAM + STORIES');
+    if (reglages.auto_promo) lignes.push('• 12h30 — Promotion de l\'app Score Master (Telegram + story)');
     if (!reglages.auto_sequence) lignes.push('• Désactivée.');
     else if (coupEnvoi === null) lignes.push('• En attente du combiné : elle se calera sur son premier coup d\'envoi.');
     else {
@@ -807,6 +845,11 @@ async function handleCronSweep(req, res) {
         summary.combine = await combineAutomatique(now);
     } catch (e) {
         summary.combine = { erreur: String(e) };
+    }
+    try {
+        summary.promotion = await promotionQuotidienne(now);
+    } catch (e) {
+        summary.promotion = { erreur: String(e) };
     }
     try {
         summary.rapport = await rapportAutomatique(now);
