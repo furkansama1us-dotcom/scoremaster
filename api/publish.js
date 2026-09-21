@@ -251,6 +251,14 @@ async function handleCalendarDraft(req, res) {
         return res.status(400).json({ error: 'Chaque slide doit avoir image_url et texte.' });
     }
 
+    // Les carrousels ne sont jamais publiés sur Telegram : un dépôt Telegram est
+    // ignoré, et les éventuels brouillons Telegram de carrousels encore en attente
+    // sont retirés au passage.
+    if ((draft.platform || 'instagram') === 'telegram') {
+        await sbFetch('pending_publications?overlay_data->>source=eq.content-calendar&platform=eq.telegram&status=neq.published', { method: 'DELETE' }).catch(function () {});
+        return res.status(200).json({ ok: true, skipped: 'telegram' });
+    }
+
     // Idempotence : une même publication du calendrier n'est jamais déposée deux
     // fois pour la même plateforme (Instagram et Telegram ont chacun leur ligne).
     const query = 'pending_publications?select=id&overlay_data->>calendar_id=eq.'
@@ -350,8 +358,8 @@ async function handleManualRequest(req, res) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(heure)) {
         return res.status(400).json({ error: 'Date (AAAA-MM-JJ) et heure (HH:MM) requises.' });
     }
-    const plateformes = (Array.isArray(r.platforms) ? r.platforms : ['instagram']).filter(p => p === 'instagram' || p === 'telegram');
-    if (!plateformes.length) return res.status(400).json({ error: 'Choisis au moins une plateforme.' });
+    // Carrousels : Instagram uniquement.
+    const plateformes = ['instagram'];
 
     let demande;
     if (r.mode === 'banque') {

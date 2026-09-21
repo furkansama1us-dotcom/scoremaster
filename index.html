@@ -2650,11 +2650,7 @@ async function fetchApiScore(id, dateRaw) {
                 <div><label class="cp-field">Date</label><input type="date" class="cp-input" id="cpGenDate"></div>
                 <div><label class="cp-field">Heure</label><input type="time" class="cp-input" id="cpGenHeure" value="12:00"></div>
             </div>
-            <label class="cp-field">Plateformes</label>
-            <div style="display:flex;gap:16px;font-size:13px;font-weight:700;color:#2a2430;">
-                <label><input type="checkbox" id="cpGenIg" checked> Instagram</label>
-                <label><input type="checkbox" id="cpGenTg" checked> Telegram</label>
-            </div>
+            <div style="font-size:11.5px;color:#8a8290;margin-top:10px;"><i class="fab fa-instagram"></i> Publication sur Instagram uniquement (les carrousels ne vont jamais sur Telegram).</div>
             <button class="cp-primary" id="cpGenSubmit" onclick="cpGenSubmit()"><i class="fas fa-wand-magic-sparkles"></i> Lancer la génération</button>
             <div style="font-size:11px;color:#8a8290;margin-top:8px;text-align:center;line-height:1.5;">Les images avec la mascotte sont générées par la routine cloud, qui passe toutes les heures (à h40). Le carrousel arrive ensuite dans « Valider » : rien n'est publié sans ton accord.</div>
             <div class="cp-eyebrow" style="margin-top:22px;">File d'attente</div>
@@ -5562,9 +5558,18 @@ async function cpFetchRows() {
             .order('created_at', { ascending: false })
             .limit(60);
         if (error) throw error;
-        resumeOrphanedGenerations(data);
-        cpAssignScheduleTimes(data);
-        window._cpRows = data || [];
+        // Les carrousels ne vont jamais sur Telegram : on retire les brouillons
+        // Telegram de carrousels encore en attente (anciens dépôts).
+        var tgCarrousels = (data || []).filter(function (r) {
+            return r.platform === 'telegram' && r.status !== 'published' && r.overlay_data && r.overlay_data.source === 'content-calendar';
+        });
+        if (tgCarrousels.length) {
+            await supabaseClient.from('pending_publications').delete().in('id', tgCarrousels.map(function (r) { return r.id; }));
+        }
+        var lignes = (data || []).filter(function (r) { return tgCarrousels.indexOf(r) === -1; });
+        resumeOrphanedGenerations(lignes);
+        cpAssignScheduleTimes(lignes);
+        window._cpRows = lignes;
     } catch (error) {
         console.error('Erreur chargement Content Planner:', error);
         window._cpRows = [];
@@ -5868,9 +5873,7 @@ function cpGenPreview() {
 }
 
 async function cpGenSubmit() {
-    var plateformes = [];
-    if (document.getElementById('cpGenIg').checked) plateformes.push('instagram');
-    if (document.getElementById('cpGenTg').checked) plateformes.push('telegram');
+    var plateformes = ['instagram'];
     var demande = {
         mode: _cpGenModeCourant,
         scheduled_for: document.getElementById('cpGenDate').value,
