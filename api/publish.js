@@ -660,6 +660,121 @@ async function combineAutomatique(now) {
     return { actif: true, brouillon: 'créé pour le ' + cible };
 }
 
+// ------------------------------------------------------------
+// Rapport quotidien : l'agenda du lendemain, envoyé à l'admin sur Telegram
+// (automatiquement à 23h45 si activé, ou à la demande depuis les Réglages).
+// ------------------------------------------------------------
+const HEURE_RAPPORT = 23 * 60 + 45;
+const JOURS_FR = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+const MOIS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+
+function dateLongue(dateStr) {
+    const d = new Date(dateStr + 'T12:00:00Z');
+    return JOURS_FR[d.getUTCDay()] + ' ' + d.getUTCDate() + ' ' + MOIS_FR[d.getUTCMonth()];
+}
+
+async function construireRapport(cible) {
+    const reglages = await lireReglagesAuto() || {};
+    const lignes = [];
+    const titre = dateLongue(cible);
+    lignes.push('📅 AGENDA DE DEMAIN — ' + titre.charAt(0).toUpperCase() + titre.slice(1));
+    lignes.push('');
+
+    // 1) Carrousels Instagram
+    let calendrier = [];
+    try { calendrier = await (await fetch('https://scoremaster.fr/content-calendar.json', { cache: 'no-store' })).json(); } catch (e) { calendrier = []; }
+    const debut = Date.parse('2026-09-21T12:00:00Z');
+    const numero = Math.round((Date.parse(cible + 'T12:00:00Z') - debut) / 86400000) + 1;
+    const entrees = (calendrier || []).filter(e => e.jour === numero);
+    const lignesCal = await sbFetch('pending_publications?overlay_data->>source=eq.content-calendar&platform=eq.instagram&scheduled_for=eq.' + cible + '&select=status,carousel_images,overlay_data') || [];
+    const exclus = Array.isArray(reglages.exclusions) ? reglages.exclusions : [];
+    lignes.push('🖼️ CARROUSELS INSTAGRAM');
+    if (!entrees.length) lignes.push('• Aucun carrousel prévu.');
+    entrees.forEach(e => {
+        const l = lignesCal.find(x => x.overlay_data && x.overlay_data.calendar_id === e.id);
+        let etat;
+        if (exclus.indexOf(e.id) !== -1) etat = '⛔ exclu de l\'automatisation';
+        else if (!l) etat = '⚠️ pas encore généré';
+        else if (l.status === 'published') etat = '✅ publié';
+        else if (l.status === 'approved') etat = '🟢 approuvé';
+        else if (l.status === 'pending') etat = reglages.auto_publish ? '⏳ prêt — approuvé automatiquement à ' + String(reglages.auto_approve_at || '07:00').replace(':', 'h') : '⏳ prêt — à valider par toi';
+        else if (l.status === 'failed') etat = '❌ échec — à régénérer';
+        else etat = '🎨 en préparation';
+        lignes.push('• ' + e.heure.replace(':', 'h') + ' — « ' + e.titre + ' » : ' + etat);
+    });
+    lignes.push('');
+
+    // 2) Combiné
+    lignes.push('🏆 COMBINÉ');
+    const combos = await sbFetch('combineds_public?date=eq.' + cible + '&select=id,time,status,matches') || [];
+    const brouillon = reglages.combo_brouillon && !reglages.combo_brouillon.annule && reglages.combo_brouillon.cible === cible ? reglages.combo_brouillon : null;
+    let coupEnvoi = null;
+    if (combos.length) {
+        combos.forEach(c => {
+            (c.matches || []).forEach(m => lignes.push('• ' + (m.time || '') + ' — ' + (m.teams || '')));
+            [minutesDe(c.time)].concat((c.matches || []).map(m => minutesDe(m.time))).filter(x => x !== null).forEach(x => { if (coupEnvoi === null || x < coupEnvoi) coupEnvoi = x; });
+        });
+        lignes.push('Statut : ' + (combos[0].status === 'en-cours' ? 'publié, en cours' : combos[0].status === 'termine' ? 'gagné' : 'perdu'));
+    } else if (brouillon) {
+        brouillon.matches.forEach(m => lignes.push('• ' + m.time + ' — ' + m.teams + ' (score exact ' + m.score + ' @ ' + m.odds + ')'));
+        lignes.push('Statut : brouillon, publication automatique à ' + heureParisDe(brouillon.publier_a) + ' sauf annulation.');
+        coupEnvoi = minutesDe(brouillon.matches[0].time);
+    } else {
+        const enCours = await sbFetch('combineds_public?status=eq.en-cours&select=date&limit=1') || [];
+        if (enCours.length) lignes.push('• Pas encore de combiné : celui du ' + enCours[0].date + ' est en cours. Le suivant sera généré 1 h après ta validation' + (reglages.auto_combo ? '.' : ' (combiné automatique désactivé).'));
+        else if (reglages.auto_combo) lignes.push('• Pas encore de combiné : l\'agent en proposera un dès que des matchs du soir exploitables seront disponibles (fenêtre 23h–minuit, ou avant 14h pour le soir même).');
+        else lignes.push('• Aucun combiné publié pour cette date (combiné automatique désactivé).');
+    }
+    lignes.push('');
+
+    // 3) Séquence marketing
+    lignes.push('📣 SÉQUENCE TELEGRAM + STORIES');
+    if (!reglages.auto_sequence) lignes.push('• Désactivée.');
+    else if (coupEnvoi === null) lignes.push('• En attente du combiné : elle se calera sur son premier coup d\'envoi.');
+    else {
+        const bonjour = Math.max(coupEnvoi - 300, 9 * 60);
+        if (bonjour < coupEnvoi - 150) lignes.push('• ' + hhmm(bonjour).replace(':', 'h') + ' — « Bonjour l\'équipe » (Telegram + story)');
+        lignes.push('• ' + hhmm(coupEnvoi - 120).replace(':', 'h') + ' — Relance J-2h (Telegram + story)');
+        lignes.push('• ' + hhmm(coupEnvoi - 15).replace(':', 'h') + ' — « C\'est parti » (Telegram)');
+        lignes.push('• Coup d\'envoi à ' + hhmm(coupEnvoi).replace(':', 'h') + ', puis message victoire ou défaite après ta validation');
+    }
+    lignes.push('');
+
+    // 4) Pronostics gratuits et points d'attention
+    const pronos = await sbFetch('ai_predictions?fixture_date=eq.' + cible + '&select=home') || [];
+    lignes.push('⚽ PRONOSTICS GRATUITS');
+    lignes.push('• ' + (pronos.length ? pronos.length + ' matchs analysés pour la page Pronostics AI.' : 'Pas encore d\'analyses (le cron les prépare à 18h la veille et au matin).'));
+    const echecs = await sbFetch('pending_publications?status=eq.failed&created_at=gte.' + encodeURIComponent(new Date(Date.now() - 48 * 3600000).toISOString()) + '&select=content_type') || [];
+    if (echecs.length) {
+        lignes.push('');
+        lignes.push('⚠️ À SURVEILLER');
+        lignes.push('• ' + echecs.length + ' publication(s) en échec ces dernières 48 h : Content Planner > Valider.');
+    }
+    lignes.push('');
+    lignes.push('Réglages : Content Planner > Réglages > Gérer.');
+    return lignes.join('\n');
+}
+
+async function rapportAutomatique(now) {
+    const reglages = await lireReglagesAuto();
+    if (!reglages || !reglages.auto_rapport) return { actif: false };
+    if (now.minutes < HEURE_RAPPORT) return { actif: true, attente: '23h45' };
+    if (reglages.rapport_envoye_le === now.dateStr) return { actif: true, deja: true };
+    await enregistrerReglages({ rapport_envoye_le: now.dateStr });
+    await prevenirAdmin(await construireRapport(lendemain(now.dateStr)));
+    return { actif: true, envoye: true };
+}
+
+// POST { action: 'rapport' } (admin) : envoie tout de suite le rapport de demain.
+async function handleRapport(req, res) {
+    const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    if (!(await verifyAdmin(accessToken))) return res.status(403).json({ error: 'Accès refusé' });
+    const now = parisNowParts();
+    const texte = await construireRapport(lendemain(now.dateStr));
+    await prevenirAdmin(texte);
+    res.status(200).json({ ok: true, texte });
+}
+
 function parisNowParts() {
     const parts = new Intl.DateTimeFormat('en-CA', {
         timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit',
@@ -692,6 +807,11 @@ async function handleCronSweep(req, res) {
         summary.combine = await combineAutomatique(now);
     } catch (e) {
         summary.combine = { erreur: String(e) };
+    }
+    try {
+        summary.rapport = await rapportAutomatique(now);
+    } catch (e) {
+        summary.rapport = { erreur: String(e) };
     }
     try {
         summary.sequence = await sequenceMarketing(now);
@@ -1030,6 +1150,7 @@ module.exports = async function handler(req, res) {
         if (req.method === 'GET') return await handleCronSweep(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'calendar-draft') return await handleCalendarDraft(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'manual-request') return await handleManualRequest(req, res);
+        if (req.method === 'POST' && req.body && req.body.action === 'rapport') return await handleRapport(req, res);
         if (req.method === 'POST') return await handleForcePublish(req, res);
         return res.status(405).json({ error: 'Méthode non autorisée' });
     } catch (error) {

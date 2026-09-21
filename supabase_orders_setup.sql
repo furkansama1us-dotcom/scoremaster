@@ -696,3 +696,7 @@ create trigger trg_combineds_validated_at
 alter table public.automation_settings add column if not exists auto_combo boolean not null default false;
 alter table public.automation_settings add column if not exists combo_brouillon jsonb;
 alter table public.automation_settings add column if not exists combo_essai_le timestamptz;
+
+-- Rapport quotidien sur Telegram (agenda du lendemain, 23h45).
+alter table public.automation_settings add column if not exists auto_rapport boolean not null default false;
+alter table public.automation_settings add column if not exists rapport_envoye_le date;
