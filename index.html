@@ -2740,7 +2740,7 @@ async function fetchApiScore(id, dateRaw) {
                 <div id="cpAutoEtat" style="font-size:11.5px;margin-top:10px;"></div>
                 <div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:14px;border-top:1px dashed #e7e0d5;">
                     <label class="cp-switch"><input type="checkbox" id="cpSeqToggle" onchange="cpSetSequence(this.checked)"><span></span></label>
-                    <div style="flex:1;min-width:0;"><b>Séquence marketing du combiné</b><br><span style="font-size:11.5px;color:#8a8290;">Relances avant le coup d'envoi puis message victoire ou défaite après ta validation, sur Telegram et en story Instagram.</span></div>
+                    <div style="flex:1;min-width:0;"><b>Séquence marketing du combiné</b><br><span style="font-size:11.5px;color:#8a8290;">Annonce du combiné dès sa publication, relances avant le coup d'envoi, puis message victoire ou défaite après ta validation, sur Telegram et en story Instagram.</span></div>
                 </div>
             </div>
             <div class="cp-eyebrow">Fonctionnement</div>
@@ -6147,6 +6147,7 @@ async function cpRenderSequenceJour() {
             return s === 'published' ? '✅ Publié' : s === 'approved' ? '🟢 En cours d\'envoi' : s === 'failed' ? '❌ Échec' : (r && r.auto_sequence ? '🕘 Prévu' : '⏸️ Séquence désactivée');
         };
         var lignes = [];
+        lignes.push(['Annonce du combiné', 'Dès publication', 'Telegram + story', r && r.auto_sequence ? '✅ Envoyée dès que les visuels sont prêts' : '⏸️ Séquence désactivée']);
         if (coup !== null) {
             var bonjour = Math.max(coup - 300, 540);
             if (bonjour < coup - 150) lignes.push(['« Bonjour l\'équipe »', cpHhmm(bonjour), 'Telegram + story', etat('seq:' + aujourdhui + ':bonjour:telegram')]);

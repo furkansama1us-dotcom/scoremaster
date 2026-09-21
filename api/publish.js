@@ -361,6 +361,31 @@ async function sequenceMarketing(now) {
     if (!reglages || !reglages.auto_sequence) return { actif: false };
     const bilan = { actif: true, creees: [] };
 
+    // 0) Annonce du combiné : dès que ses visuels sont prêts (le combiné vient
+    //    d'être lancé, en général entre 23h et minuit), l'annonce Telegram et la
+    //    story Instagram préparées par l'app partent immédiatement.
+    try {
+        const annonces = await sbFetch('pending_publications?status=eq.pending&content_type=eq.' + encodeURIComponent('Combiné du jour')
+            + '&created_at=gte.' + encodeURIComponent(new Date(Date.now() - 12 * 3600000).toISOString())
+            + '&select=id,platform,image_url,image_url_story,overlay_data') || [];
+        for (const an of annonces) {
+            const pret = an.platform === 'telegram' ? !!an.image_url : !!an.image_url_story;
+            if (!pret) continue;
+            await sbFetch('pending_publications?id=eq.' + an.id + '&status=eq.pending', {
+                method: 'PATCH',
+                body: JSON.stringify({
+                    status: 'approved',
+                    scheduled_for: now.dateStr,
+                    scheduled_time: hhmm(now.minutes),
+                    publish_as_story: true,
+                    publish_as_post: false,
+                    overlay_data: Object.assign({}, an.overlay_data, { auto_approuve_le: new Date().toISOString() })
+                })
+            });
+            bilan.creees.push('annonce:' + an.platform);
+        }
+    } catch (err) { bilan.erreurAnnonce = String(err); }
+
     // 1) Relances autour du combiné du jour
     const combos = await sbFetch('combineds_public?date=eq.' + now.dateStr + '&status=eq.en-cours&select=id,time,nombre_matchs,matches') || [];
     let coupEnvoi = null, nbMatchs = 0;
