@@ -607,7 +607,8 @@
         @keyframes tkVipGlow { 0%,100% { box-shadow:0 0 0 1px rgba(244,197,66,.35), 0 4px 14px rgba(208,20,44,.35); } 50% { box-shadow:0 0 0 1px rgba(244,197,66,.7), 0 4px 20px rgba(208,20,44,.6); } }
         @keyframes tkVipCrown { 0%,100% { transform:translateY(0) rotate(0); } 30% { transform:translateY(-2px) rotate(-10deg); } 60% { transform:translateY(0) rotate(6deg); } }
         @keyframes tkVipShine { 0%,55% { left:-60%; } 100% { left:130%; } }
-        .tk-mask { filter:blur(5px); user-select:none; -webkit-user-select:none; pointer-events:none; }
+        .tk-vip-mini { display:inline-flex; align-items:center; gap:4px; padding:3px 7px; border-radius:5px; background:linear-gradient(135deg,#d0142c,#7a0a17); color:#f4c542; font-size:10px; font-weight:900; letter-spacing:.5px; line-height:1.2; white-space:nowrap; box-shadow:0 0 0 1px rgba(244,197,66,.3); vertical-align:middle; user-select:none; -webkit-user-select:none; }
+        .tk-vip-mini i { font-size:9px; animation:tkVipCrown 1.8s ease-in-out infinite; }
         .tk-title { display:flex; flex-direction:column; gap:5px; min-width:0; }
         #ticket-loader { background:radial-gradient(120% 65% at 78% 18%,#262a34 0%,#15161c 45%,#0A0A0F 80%); font-family:Supreme,Roboto,-apple-system,'Segoe UI',Arial,sans-serif; }
         .tl-inner { height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:0 40px; }
@@ -10508,7 +10509,7 @@ function buildTicketCardHtml(c) {
         // Mode SMVIP+ (bouton caché de l'en-tête) : les vraies valeurs ne sont
         // même pas écrites dans la page, seulement des valeurs factices floutées.
         var masque = !!window.ticketVipMode;
-        var mk = function (t) { return '<span class="tk-mask">' + t + '</span>'; };
+        var mk = function () { return '<span class="tk-vip-mini"><i class="fas fa-crown"></i>SMVIP+</span>'; };
         var matches = c.matches || [];
 
         // Un match reporté ne compte pas dans la cote totale : on recalcule
@@ -10524,7 +10525,7 @@ function buildTicketCardHtml(c) {
             ? (hasValidOdds ? calcOdds : 0)
             : (parseFloat(c.total_odds || c.totalOdds) || (hasValidOdds ? calcOdds : 0));
         var fmtOdd = function (v) { return Number(v).toFixed(2).replace('.', ','); };
-        var displayOdds = masque ? mk('000,00') : (finalOdds > 0 ? fmtOdd(finalOdds) : '***.**');
+        var displayOdds = masque ? mk() : (finalOdds > 0 ? fmtOdd(finalOdds) : '***.**');
 
         var kept = matches.filter(function (m) { return m.match_status !== 'reporte'; }).length;
         var pillLabel = sc === 'termine' ? 'Gagné' : (sc === 'perdu' ? 'Perdu' : 'En cours');
@@ -10547,10 +10548,10 @@ function buildTicketCardHtml(c) {
             var affiche = reel || (sc === 'termine' && hasScore ? m.score : null);
             var scoreParts = affiche ? String(affiche).split('-').map(function (s) { return s.trim(); }) : null;
             var mid = scoreParts && scoreParts.length === 2
-                ? `<span class="sc">${masque ? mk('0 - 0') : scoreParts[0] + ' - ' + scoreParts[1]}</span>`
+                ? `<span class="sc">${masque ? mk() : scoreParts[0] + ' - ' + scoreParts[1]}</span>`
                 : `<span class="sc">-</span>`;
             var teamsLine = away ? (sc === 'en-cours' ? `${home} - ${away}` : `${home}${mid}${away}`) : home;
-            var scoreLabel = masque ? mk('0 - 0') : (hasScore ? m.score.replace('-', ' - ') : '-');
+            var scoreLabel = masque ? mk() : (hasScore ? m.score.replace('-', ' - ') : '-');
 
             var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" alt="">` : (m.league_flag ? `<span style="display:inline-flex; align-items:center;">${m.league_flag}</span>` : ''));
 
@@ -10564,7 +10565,7 @@ function buildTicketCardHtml(c) {
             var kick = sc === 'en-cours' ? `<span class="hc-kick">${ticketKickoff(c.date, m.time)}</span>` : '';
 
             // Cote annulée sur un match reporté : elle ne compte plus, on ne l'affiche plus.
-            var odd = (m.match_status !== 'reporte' && m.odds && m.odds > 0) ? `<span class="hc-odd">${masque ? mk('00,00') : fmtOdd(m.odds)}</span>` : '';
+            var odd = (m.match_status !== 'reporte' && m.odds && m.odds > 0) ? (masque ? mk() : `<span class="hc-odd">${fmtOdd(m.odds)}</span>`) : '';
 
             return `<div class="hc-leg">
                 <div class="hc-leg-top"><div class="hc-leg-pick ${sc}">${pick}</div>${odd}</div>
@@ -10580,11 +10581,11 @@ function buildTicketCardHtml(c) {
             gainHtml = '';
         } else if (finalOdds > 0 && sc === 'en-cours') {
             gainHtml = `<div class="hc-row"><span>Mise <small></small></span><strong>${ticketEuros(stake)}</strong></div>
-                <div class="hc-row hc-gain pot"><span>Gains potentiels <small></small></span><strong>${masque ? mk('00 000,00 €') : ticketEuros(stake * finalOdds)}</strong></div>`;
+                <div class="hc-row hc-gain pot"><span>Gains potentiels <small></small></span><strong>${masque ? mk() : ticketEuros(stake * finalOdds)}</strong></div>`;
         } else if (finalOdds > 0) {
             var gain = sc === 'termine' ? stake * finalOdds : 0;
             gainHtml = `<div class="hc-row"><span>Mise <small></small></span><strong>${ticketEuros(stake)}</strong></div>
-                <div class="hc-row hc-gain ${sc}"><span>Gains <small></small></span><strong>${masque ? mk('00 000,00 €') : ticketEuros(gain)}</strong></div>`;
+                <div class="hc-row hc-gain ${sc}"><span>Gains <small></small></span><strong>${masque ? mk() : ticketEuros(gain)}</strong></div>`;
         }
 
         return `<div class="hc ${sc}">
@@ -10602,12 +10603,12 @@ function buildTicketCardHtml(c) {
                 </div>
                 <div class="hc-legs">${legsHtml}</div>
                 <div class="hc-sum">
-                    <div class="hc-row"><span>Cote totale</span><span class="hc-odd">${displayOdds}</span></div>
+                    <div class="hc-row"><span>Cote totale</span>${masque ? displayOdds : `<span class="hc-odd">${displayOdds}</span>`}</div>
                     ${gainHtml}
                 </div>
                 ${sc === 'en-cours'
                     ? `<div class="hc-cta-row">
-                        ${finalOdds > 0 ? `<button class="hc-cash" onclick="cashoutTicket()">Cashout${TICKET_SHOW_AMOUNTS ? ' ' + (masque ? mk('00,00 €') : ticketEuros(ticketCashout(c, stake))) : ''}</button>` : ''}
+                        ${finalOdds > 0 ? `<button class="hc-cash" onclick="cashoutTicket()">Cashout${TICKET_SHOW_AMOUNTS ? ' ' + (masque ? mk() : ticketEuros(ticketCashout(c, stake))) : ''}</button>` : ''}
                         <button class="hc-cta" onclick="completeTicket('${String(c.id || '').replace(/[^\w-]/g, '')}')">Compléter</button>
                     </div>`
                     : ''}
@@ -10621,7 +10622,9 @@ function buildTicketCardHtml(c) {
 var ticketView = 'open';
 var ticketFilter = 'finished';
 
+// Réservé à l'admin : pour tout autre compte, la zone reste inerte et invisible.
 function toggleTicketVipMode() {
+    if (!window.isAdmin) return;
     window.ticketVipMode = !window.ticketVipMode;
     var ov = document.getElementById('ticket-history-overlay');
     if (ov) ov.classList.toggle('tk-vipmode', window.ticketVipMode);
