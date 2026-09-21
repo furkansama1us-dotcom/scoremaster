@@ -106,10 +106,16 @@ function memeEquipe(a, b) {
     return x === y || x.includes(y) || y.includes(x);
 }
 
+// Quota journalier restant, tel qu'annoncé par API-Football dans l'en-tête de
+// sa dernière réponse. null tant qu'aucun appel n'a été fait.
+let quotaRestant = null;
+
 async function apiFootball(path) {
     const r = await fetch('https://v3.football.api-sports.io' + path, {
         headers: { 'x-apisports-key': APIFOOTBALL_KEY }
     });
+    const q = parseInt(r.headers.get('x-ratelimit-requests-remaining'), 10);
+    if (!isNaN(q)) quotaRestant = q;
     if (!r.ok) {
         const err = new Error('API-Football ' + path + ' -> ' + r.status);
         err.status = r.status;
@@ -182,90 +188,127 @@ async function matchsDepuisCache(dateFrom) {
     };
 }
 
+// Économie de crédits API-Football (100 requêtes/jour sur le plan gratuit) :
+// - un passage qui trouve la journée déjà complète s'arrête sans aucun appel ;
+// - la liste des rencontres est réutilisée tant qu'elle a moins de 6 heures ;
+// - une réserve n'est jamais entamée, pour garder de la marge en cas d'imprévu.
+const FRAICHEUR_LISTE_MS = 6 * 60 * 60 * 1000;
+const RESERVE_QUOTA = 15;
+const SEUIL_ALERTE_QUOTA = 25;
+
+// Alerte privée Telegram, envoyée au plus une fois par jour et par sujet.
+async function alerterAdmin(sujet, message) {
+    try {
+        const debutJour = new Date(); debutJour.setUTCHours(0, 0, 0, 0);
+        const deja = await sbFetch('telegram_queue?select=id&created_at=gte.' + debutJour.toISOString()
+            + '&message=like.' + encodeURIComponent('*' + sujet + '*') + '&limit=1');
+        if (deja && deja.length) return;
+        await sbFetch('telegram_queue', {
+            method: 'POST',
+            body: JSON.stringify([{ message: sujet + '\n\n' + message }])
+        });
+    } catch (e) { /* une alerte manquée ne doit pas faire échouer le passage */ }
+}
+
 // GET /api/football?type=refresh-predictions&secret=...&date=AAAA-MM-JJ
-// Récupère les matchs du jour (football-data.org), les relie aux fixtures
-// API-Football, puis stocke les probabilités en base. Idempotent : un match
-// déjà analysé le jour même n'est pas redemandé.
+// Met en cache les rencontres de la journée et leurs analyses API-Football.
+// Idempotent : un match déjà analysé n'est jamais redemandé.
 async function refreshPredictions(req, res) {
     if (!APIFOOTBALL_KEY) return res.status(500).json({ error: 'APIFOOTBALL_KEY manquante côté serveur.' });
     if (!SUPABASE_SERVICE_ROLE_KEY) return res.status(500).json({ error: 'SUPABASE_SERVICE_ROLE_KEY manquante.' });
     if (!CRON_SECRET || req.query.secret !== CRON_SECRET) return res.status(401).json({ error: 'Secret invalide' });
 
     const date = req.query.date || new Date().toISOString().slice(0, 10);
-    const resume = { date, analyses: 0, deja: 0, sansCorrespondance: 0, restant: 0, quotaAtteint: false, erreurs: [] };
+    const resume = { date, appelsApi: 0, analyses: 0, deja: 0, sansCorrespondance: 0, restant: 0, quotaAtteint: false, erreurs: [] };
     let appels = 0;
 
     try {
-        // Matchs affichés par l'app ce jour-là (même source que la page publique)
-        const dTo = new Date(date + 'T00:00:00Z');
-        dTo.setUTCDate(dTo.getUTCDate() + 1);
-        const fdRes = await fetch('https://api.football-data.org/v4/matches?dateFrom=' + date + '&dateTo=' + dTo.toISOString().slice(0, 10), {
-            headers: { 'X-Auth-Token': FOOTBALL_DATA_API_KEY }
-        });
-        const fdData = await fdRes.json();
-        const matchs = (fdData.matches || [])
-            .filter(m => m.utcDate && m.utcDate.slice(0, 10) === date)
-            .slice(0, MAX_MATCHS_PAR_JOUR);
+        // Ce qu'on a déjà : analyses et liste des rencontres
+        const enCache = await sbFetch('ai_predictions?select=home,away&fixture_date=eq.' + date) || [];
+        let liste = await sbFetch('ai_fixtures?select=*&fixture_date=eq.' + date) || [];
+        const estEnCache = (h, a) => enCache.some(c => memeEquipe(c.home, h) && memeEquipe(c.away, a));
 
-        // Déjà en cache pour cette date ?
-        const enCache = await sbFetch('ai_predictions?select=home,away&fixture_date=eq.' + date);
-        const estEnCache = (h, a) => (enCache || []).some(c => memeEquipe(c.home, h) && memeEquipe(c.away, a));
-
-        // Une seule requête pour toutes les fixtures du jour
-        const fixtures = (await apiFootball('/fixtures?date=' + date)).response || [];
-
-        // Les rencontres des ligues suivies sont mises en cache : elles servent
-        // de source de repli quand football-data.org ne renvoie rien (trêves).
-        const suivies = fixtures
-            .filter(f => GRANDES_LIGUES[f.league && f.league.id])
-            .sort((a, b) => (prioriteLigue(GRANDES_LIGUES[a.league.id].code) - prioriteLigue(GRANDES_LIGUES[b.league.id].code))
-                || (new Date(a.fixture.date) - new Date(b.fixture.date)));
-
-        if (suivies.length) {
-            await sbFetch('ai_fixtures', {
-                method: 'POST',
-                headers: { Prefer: 'resolution=merge-duplicates' },
-                body: JSON.stringify(suivies.map(f => ({
-                    fixture_id: f.fixture.id,
-                    fixture_date: date,
-                    kickoff: f.fixture.date,
-                    home: f.teams.home.name,
-                    away: f.teams.away.name,
-                    league_code: GRANDES_LIGUES[f.league.id].code,
-                    league_name: GRANDES_LIGUES[f.league.id].nom,
-                    country: f.league.country || null,
-                    flag: f.league.flag || null
-                })))
+        // Matchs de football-data (gratuit, sans quota journalier) : ce sont
+        // eux que la page affiche en saison, ils doivent donc être analysés.
+        let matchsFd = [];
+        try {
+            const dTo = new Date(date + 'T00:00:00Z');
+            dTo.setUTCDate(dTo.getUTCDate() + 1);
+            const fdRes = await fetch('https://api.football-data.org/v4/matches?dateFrom=' + date + '&dateTo=' + dTo.toISOString().slice(0, 10), {
+                headers: { 'X-Auth-Token': FOOTBALL_DATA_API_KEY }
             });
-            resume.matchsEnCache = suivies.length;
+            const fdData = JSON.parse(await fdRes.text());
+            matchsFd = (fdData.matches || []).filter(m => m.utcDate && m.utcDate.slice(0, 10) === date).slice(0, MAX_MATCHS_PAR_JOUR);
+        } catch (e) { /* football-data indisponible : on s'appuie sur API-Football */ }
+
+        // Journée complète : aucun appel à API-Football.
+        const attendus = matchsFd.length ? matchsFd.length : Math.min(MAX_MATCHS_PAR_JOUR, liste.length);
+        if (liste.length && attendus > 0 && enCache.length >= attendus) {
+            resume.complet = true;
+            resume.deja = enCache.length;
+            return res.status(200).json(resume);
         }
 
-        // Source des matchs à analyser : football-data quand il en a, le cache
-        // API-Football sinon.
-        const cibles = matchs.length
-            ? matchs.map(m => ({ home: m.homeTeam && m.homeTeam.name, away: m.awayTeam && m.awayTeam.name, fixtureId: null }))
-            : suivies.slice(0, MAX_MATCHS_PAR_JOUR).map(f => ({ home: f.teams.home.name, away: f.teams.away.name, fixtureId: f.fixture.id }));
-        resume.source = matchs.length ? 'football-data' : 'api-football';
+        // Liste des rencontres : redemandée seulement si absente ou vieillie.
+        const plusRecente = liste.reduce((t, r) => Math.max(t, new Date(r.created_at).getTime() || 0), 0);
+        if (!liste.length || (Date.now() - plusRecente) > FRAICHEUR_LISTE_MS) {
+            const fixtures = (await apiFootball('/fixtures?date=' + date)).response || [];
+            appels++;
+            const maintenant = new Date().toISOString();
+            const lignes = fixtures
+                .filter(fx => GRANDES_LIGUES[fx.league && fx.league.id])
+                .map(fx => ({
+                    fixture_id: fx.fixture.id,
+                    fixture_date: date,
+                    kickoff: fx.fixture.date,
+                    home: fx.teams.home.name,
+                    away: fx.teams.away.name,
+                    league_code: GRANDES_LIGUES[fx.league.id].code,
+                    league_name: GRANDES_LIGUES[fx.league.id].nom,
+                    country: fx.league.country || null,
+                    flag: fx.league.flag || null,
+                    created_at: maintenant
+                }));
+            if (lignes.length) {
+                await sbFetch('ai_fixtures', {
+                    method: 'POST',
+                    headers: { Prefer: 'resolution=merge-duplicates' },
+                    body: JSON.stringify(lignes)
+                });
+            }
+            liste = lignes;
+            resume.listeRafraichie = true;
+        }
+        resume.matchsEnCache = liste.length;
+
+        // Rencontres à analyser, les plus importantes d'abord
+        liste.sort((a, b) => (prioriteLigue(a.league_code) - prioriteLigue(b.league_code)) || (new Date(a.kickoff) - new Date(b.kickoff)));
+        const cibles = matchsFd.length
+            ? matchsFd.map(m => {
+                const home = m.homeTeam && m.homeTeam.name, away = m.awayTeam && m.awayTeam.name;
+                const fx = liste.find(r => memeEquipe(r.home, home) && memeEquipe(r.away, away));
+                return { home, away, fixtureId: fx ? fx.fixture_id : null };
+            })
+            : liste.slice(0, MAX_MATCHS_PAR_JOUR).map(r => ({ home: r.home, away: r.away, fixtureId: r.fixture_id }));
+        resume.source = matchsFd.length ? 'football-data' : 'api-football';
 
         for (const m of cibles) {
-            const home = m.home;
-            const away = m.away;
-            if (!home || !away) continue;
-            if (estEnCache(home, away)) { resume.deja++; continue; }
+            if (!m.home || !m.away) continue;
+            if (estEnCache(m.home, m.away)) { resume.deja++; continue; }
+            if (!m.fixtureId) { resume.sansCorrespondance++; continue; }
 
-            const fx = m.fixtureId
-                ? { fixture: { id: m.fixtureId } }
-                : fixtures.find(f => memeEquipe(f.teams.home.name, home) && memeEquipe(f.teams.away.name, away));
-            if (!fx) { resume.sansCorrespondance++; continue; }
-
-            // Budget de requêtes épuisé : on s'arrête proprement, le passage
-            // suivant reprendra là où on en est.
-            if (appels >= MAX_APPELS_PAR_PASSAGE) { resume.restant++; continue; }
+            // Limite de débit (10/min) ou réserve de quota : on laisse le reste
+            // au passage suivant.
+            if (appels >= MAX_APPELS_PAR_PASSAGE || (quotaRestant !== null && quotaRestant <= RESERVE_QUOTA)) {
+                if (quotaRestant !== null && quotaRestant <= RESERVE_QUOTA) resume.quotaAtteint = true;
+                resume.restant++;
+                continue;
+            }
 
             try {
                 if (appels > 0) await pause(PAUSE_ENTRE_APPELS_MS);
                 appels++;
-                const pred = ((await apiFootball('/predictions?fixture=' + fx.fixture.id)).response || [])[0];
+                const pred = ((await apiFootball('/predictions?fixture=' + m.fixtureId)).response || [])[0];
                 if (!pred) { resume.sansCorrespondance++; continue; }
                 const pourcent = p => parseInt(String(p || '0').replace('%', ''), 10) || 0;
 
@@ -274,8 +317,8 @@ async function refreshPredictions(req, res) {
                     headers: { Prefer: 'resolution=merge-duplicates' },
                     body: JSON.stringify([{
                         fixture_date: date,
-                        home: home,
-                        away: away,
+                        home: m.home,
+                        away: m.away,
                         home_prob: pourcent(pred.predictions.percent.home),
                         draw_prob: pourcent(pred.predictions.percent.draw),
                         away_prob: pourcent(pred.predictions.percent.away),
@@ -290,20 +333,32 @@ async function refreshPredictions(req, res) {
                 resume.analyses++;
             } catch (e) {
                 if (e && e.status === 429) {
-                    // Limite de débit atteinte : inutile d'insister, le cron
-                    // repassera. On note les matchs restants sans les compter
-                    // comme des erreurs.
+                    // Limite de débit : le passage suivant reprendra.
                     resume.quotaAtteint = true;
                     appels = MAX_APPELS_PAR_PASSAGE;
                     resume.restant++;
                     continue;
                 }
-                resume.erreurs.push({ match: home + ' - ' + away, erreur: String(e) });
+                resume.erreurs.push({ match: m.home + ' - ' + m.away, erreur: String(e) });
             }
+        }
+
+        resume.appelsApi = appels;
+        resume.quotaRestant = quotaRestant;
+
+        if (quotaRestant !== null && quotaRestant < SEUIL_ALERTE_QUOTA) {
+            await alerterAdmin('⚠️ QUOTA API-FOOTBALL BAS',
+                'Il reste ' + quotaRestant + ' requêtes pour aujourd\'hui. Les analyses sont suspendues sous ' + RESERVE_QUOTA
+                + ' et reprendront automatiquement demain.');
+        }
+        if (resume.erreurs.length) {
+            await alerterAdmin('❌ PRONOSTICS : ERREURS',
+                resume.erreurs.length + ' analyse(s) en échec pour le ' + date + '.\n' + resume.erreurs.slice(0, 3).map(x => '• ' + x.match + ' — ' + x.erreur).join('\n'));
         }
 
         res.status(200).json(resume);
     } catch (e) {
+        await alerterAdmin('❌ PRONOSTICS : PASSAGE EN ÉCHEC', 'Date ' + date + ' : ' + String(e).slice(0, 300));
         res.status(502).json({ error: 'Erreur rafraîchissement prédictions', details: String(e) });
     }
 }
