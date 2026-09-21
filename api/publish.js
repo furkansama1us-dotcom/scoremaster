@@ -428,6 +428,238 @@ async function sequenceMarketing(now) {
     return bilan;
 }
 
+// ------------------------------------------------------------
+// Combiné automatique (Content Planner > Réglages)
+//
+// Règles fixées par l'admin :
+// - un seul combiné en cours à la fois : tant que le combiné en cours n'est
+//   pas validé (gagné ou perdu) par l'admin, rien n'est généré ;
+// - le suivant est généré au plus tôt 1 h après cette validation, et
+//   seulement entre 23h et minuit (pour le lendemain soir) ou entre minuit et
+//   14h (pour le soir même) ; entre 14h et 23h, on attend 23h ;
+// - uniquement des matchs du soir (coup d'envoi à 18h ou plus).
+// Le combiné est d'abord un brouillon : l'admin est prévenu sur Telegram et
+// peut l'annuler pendant 20 minutes, puis il est publié et annoncé.
+//
+// Choix des scores : pour chaque match, le score exact le plus probable selon
+// les vraies cotes des bookmakers (API-Football), parmi ceux qui correspondent
+// à l'issue prédite par l'analyse API-Football. Les cotes affichées sont ces
+// vraies cotes.
+// ------------------------------------------------------------
+const { GRANDES_LIGUES, prioriteLigue } = require('./_ligues.js');
+const APIFOOTBALL_KEY = process.env.APIFOOTBALL_KEY;
+const VETO_MINUTES = 20;
+const MISE_COMBINE = 100;
+const BOOKMAKERS_PREFERES = [8, 3, 2, 36, 11]; // Bet365, Betfair, Marathonbet, BetVictor, 1xBet
+
+async function apiFootballPublish(chemin) {
+    const r = await fetch('https://v3.football.api-sports.io' + chemin, { headers: { 'x-apisports-key': APIFOOTBALL_KEY } });
+    if (!r.ok) throw new Error('API-Football ' + chemin + ' -> ' + r.status);
+    return r.json();
+}
+
+function heureParisDe(iso) {
+    return new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(iso));
+}
+function lendemain(dateStr) {
+    const d = new Date(dateStr + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + 1);
+    return d.toISOString().slice(0, 10);
+}
+function normaliser(s) {
+    return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+}
+function memesEquipes(a, b) {
+    const x = normaliser(a), y = normaliser(b);
+    return !!x && !!y && (x === y || x.includes(y) || y.includes(x));
+}
+
+async function enregistrerReglages(patch) {
+    await sbFetch('automation_settings?id=eq.singleton', { method: 'PATCH', body: JSON.stringify(Object.assign({ updated_at: new Date().toISOString() }, patch)) });
+}
+
+async function prevenirAdmin(message) {
+    await sbFetch('telegram_queue', { method: 'POST', body: JSON.stringify([{ message }]) }).catch(function () {});
+}
+
+async function derniereValidation() {
+    try {
+        const rows = await sbFetch('combineds_public?validated_at=not.is.null&select=validated_at&order=validated_at.desc&limit=1');
+        return rows && rows[0] ? Date.parse(rows[0].validated_at) : null;
+    } catch (e) {
+        return null; // colonne absente : la règle d'1 h ne peut pas s'appliquer
+    }
+}
+
+// Rencontres du soir de la date visée, depuis le cache (ou l'API si vide).
+async function rencontresDuSoir(cible) {
+    let lignes = await sbFetch('ai_fixtures?fixture_date=eq.' + cible + '&select=*') || [];
+    if (!lignes.length && APIFOOTBALL_KEY) {
+        const fx = (await apiFootballPublish('/fixtures?date=' + cible)).response || [];
+        lignes = fx.filter(x => GRANDES_LIGUES[x.league && x.league.id]).map(x => ({
+            fixture_id: x.fixture.id, fixture_date: cible, kickoff: x.fixture.date,
+            home: x.teams.home.name, away: x.teams.away.name,
+            league_code: GRANDES_LIGUES[x.league.id].code, league_name: GRANDES_LIGUES[x.league.id].nom,
+            country: x.league.country || null, flag: x.league.flag || null
+        }));
+    }
+    const limite = Date.now() + 60 * 60000;
+    return lignes.filter(l => {
+        const heure = heureParisDe(l.kickoff);
+        return heure >= '18:00' && Date.parse(l.kickoff) > limite && prioriteLigue(l.league_code) <= 2;
+    }).sort((a, b) => (prioriteLigue(a.league_code) - prioriteLigue(b.league_code)) || (Date.parse(a.kickoff) - Date.parse(b.kickoff)));
+}
+
+// Score exact retenu pour une rencontre, avec sa vraie cote.
+async function scoreExact(rencontre, pronostics) {
+    const r = ((await apiFootballPublish('/odds?fixture=' + rencontre.fixture_id + '&bet=10')).response || [])[0];
+    if (!r || !r.bookmakers || !r.bookmakers.length) return null;
+    const bk = BOOKMAKERS_PREFERES.map(id => r.bookmakers.find(b => b.id === id)).find(Boolean) || r.bookmakers[0];
+    const valeurs = ((bk.bets || [])[0] || {}).values || [];
+    const p = pronostics.find(x => memesEquipes(x.home, rencontre.home) && memesEquipes(x.away, rencontre.away));
+    let issue = null;
+    if (p) {
+        const max = Math.max(p.home_prob, p.draw_prob, p.away_prob);
+        issue = p.home_prob === max ? 'domicile' : p.away_prob === max ? 'exterieur' : 'nul';
+    }
+    const coherent = v => {
+        const m = String(v.value).match(/^(\d+):(\d+)$/);
+        if (!m) return false;
+        const a = +m[1], b = +m[2];
+        if (issue === 'domicile') return a > b;
+        if (issue === 'exterieur') return b > a;
+        if (issue === 'nul') return a === b;
+        return true;
+    };
+    const choix = valeurs.filter(coherent)
+        .map(v => ({ score: String(v.value).replace(':', '-'), cote: parseFloat(v.odd) }))
+        .filter(v => v.cote >= 4 && v.cote <= 20)
+        .sort((a, b) => a.cote - b.cote)[0];
+    return choix ? Object.assign({ bookmaker: bk.name }, choix) : null;
+}
+
+async function construireCombine(cible) {
+    const candidats = (await rencontresDuSoir(cible)).slice(0, 8);
+    if (candidats.length < 2) return null;
+    const pronostics = await sbFetch('ai_predictions?fixture_date=eq.' + cible + '&select=home,away,home_prob,draw_prob,away_prob') || [];
+    const retenus = [];
+    let appels = 0;
+    for (const c of candidats) {
+        if (retenus.length >= 4 || appels >= 6) break;
+        appels++;
+        try {
+            const s = await scoreExact(c, pronostics);
+            if (s) retenus.push(Object.assign({ rencontre: c }, s));
+        } catch (e) { /* cote indisponible pour ce match : on passe au suivant */ }
+    }
+    if (retenus.length < 2) return null;
+    // Deux matchs aux coups d'envoi les plus proches, comme le générateur de l'app.
+    let paire = [retenus[0], retenus[1]], ecart = Infinity;
+    for (let i = 0; i < retenus.length; i++) for (let j = i + 1; j < retenus.length; j++) {
+        const e = Math.abs(Date.parse(retenus[i].rencontre.kickoff) - Date.parse(retenus[j].rencontre.kickoff));
+        if (e < ecart) { ecart = e; paire = [retenus[i], retenus[j]]; }
+    }
+    paire.sort((a, b) => Date.parse(a.rencontre.kickoff) - Date.parse(b.rencontre.kickoff));
+    return paire.map(x => ({
+        teams: x.rencontre.home + ' - ' + x.rencontre.away,
+        score: x.score,
+        odds: x.cote,
+        time: heureParisDe(x.rencontre.kickoff),
+        ligue: x.rencontre.league_name,
+        flag: x.rencontre.flag || '',
+        bookmaker: x.bookmaker
+    }));
+}
+
+function drapeauHtml(url) {
+    return url ? '<img src="' + url + '" style="width:16px;height:12px;object-fit:cover;border-radius:2px;vertical-align:middle;">' : '';
+}
+
+async function publierCombineAuto(b, now) {
+    const matches = b.matches.map(m => ({ teams: m.teams, score: m.score, odds: m.odds, time: m.time, logo: '', league_flag: drapeauHtml(m.flag), match_status: 'en-cours', source: 'auto' }));
+    const publics = b.matches.map(m => ({ teams: m.teams, time: m.time, score: '?-?', odds: 0, logo: '', league_flag: drapeauHtml(m.flag), match_status: 'en-cours' }));
+    const total = Math.round(b.matches.reduce((t, m) => t * m.odds, 1) * 100) / 100;
+    const pub = await sbFetch('combineds_public', {
+        method: 'POST', headers: { Prefer: 'return=representation' },
+        body: JSON.stringify([{ date: b.cible, time: b.matches[0].time, status: 'en-cours', nombre_matchs: matches.length, matches: publics }])
+    });
+    const id = pub && pub[0] && pub[0].id;
+    await sbFetch('combineds_vip', { method: 'POST', body: JSON.stringify([{ id, matches, mise: MISE_COMBINE, gains: Math.round(MISE_COMBINE * total * 100) / 100, total_odds: total }]) });
+
+    // Annonce : même esprit que l'annonce de l'app, visuel assemblé ici.
+    const lignesTexte = b.matches.map(m => '🏆 ' + m.teams + ' (' + m.time + ')').join('\n');
+    const legende = '🏆 LE COMBINÉ DU JOUR EST DISPONIBLE !\n\nVoici les affiches retenues :\n' + lignesTexte
+        + '\n\n⏰ Coup d\'envoi à ' + b.matches[0].time + '.\n\nComme toujours, l\'analyse complète est disponible dès maintenant dans votre espace VIP+ Score Master. 🙌'
+        + '\n\n🌐 Site Web : https://scoremaster.fr/\n➡️ Telegram : @ScoreMasterOfficiel\n\n' + PIED_JEU;
+    try {
+        const { composerStory } = await import('./_compositeur.mjs');
+        const image = await composerStory({
+            fondUrl: await fondStoryRecent(now.dateStr, 3),
+            badge: 'COMBINÉ DU JOUR',
+            texte: 'Le combiné est *disponible*',
+            lignes: b.matches.map(m => m.teams + ' · ' + m.time.replace(':', 'h'))
+        });
+        const [url] = await televerserSlides('annonce-' + id, ['data:image/jpeg;base64,' + image.toString('base64')]);
+        const base = { scheduled_for: now.dateStr, scheduled_time: hhmm(now.minutes), content_type: 'Combiné du jour', status: 'approved', overlay_data: { source: 'combo-auto', combo_id: id } };
+        await sbFetch('pending_publications', {
+            method: 'POST', body: JSON.stringify([
+                Object.assign({}, base, { platform: 'telegram', image_url: url, caption: legende }),
+                Object.assign({}, base, { platform: 'instagram', image_url: url, image_url_story: url, publish_as_story: true, publish_as_post: false, caption: 'Le combiné du jour est disponible' })
+            ])
+        });
+    } catch (e) {
+        await prevenirAdmin('⚠️ Combiné publié, mais l\'annonce n\'a pas pu être préparée : ' + String(e).slice(0, 200));
+    }
+    await prevenirAdmin('✅ COMBINÉ AUTOMATIQUE PUBLIÉ (' + b.cible + ')\n\n' + b.matches.map(m => '• ' + m.teams + ' · ' + m.time + ' · ' + m.score + ' @ ' + m.odds).join('\n')
+        + '\nCote totale : ' + total + '\n\nAnnonce envoyée sur Telegram et en story. La validation du résultat reste à toi.');
+    return id;
+}
+
+async function combineAutomatique(now) {
+    const reglages = await lireReglagesAuto();
+    if (!reglages || !reglages.auto_combo) return { actif: false };
+    const enCours = await sbFetch('combineds_public?status=eq.en-cours&select=id&limit=1') || [];
+    const brouillon = reglages.combo_brouillon;
+
+    if (brouillon) {
+        if (brouillon.annule || enCours.length) {
+            await enregistrerReglages({ combo_brouillon: null });
+            return { actif: true, brouillon: brouillon.annule ? 'annulé par l\'admin' : 'abandonné : un combiné a été publié entre-temps' };
+        }
+        if (Date.now() >= Date.parse(brouillon.publier_a)) {
+            await enregistrerReglages({ combo_brouillon: null });
+            const id = await publierCombineAuto(brouillon, now);
+            return { actif: true, publie: id };
+        }
+        return { actif: true, brouillon: 'publication à ' + heureParisDe(brouillon.publier_a) };
+    }
+
+    if (enCours.length) return { actif: true, attente: 'combiné en cours non validé' };
+    let cible;
+    if (now.minutes >= 23 * 60) cible = lendemain(now.dateStr);
+    else if (now.minutes < 14 * 60) cible = now.dateStr;
+    else return { actif: true, attente: 'fenêtre de 23h' };
+
+    const validation = await derniereValidation();
+    if (validation && Date.now() < validation + 60 * 60000) return { actif: true, attente: '1 h après la validation' };
+    const existe = await sbFetch('combineds_public?date=eq.' + cible + '&select=id&limit=1') || [];
+    if (existe.length) return { actif: true, attente: 'combiné déjà publié pour le ' + cible };
+    if (reglages.combo_essai_le && Date.now() - Date.parse(reglages.combo_essai_le) < 60 * 60000) return { actif: true, attente: 'nouvel essai dans l\'heure' };
+
+    await enregistrerReglages({ combo_essai_le: new Date().toISOString() });
+    const matches = await construireCombine(cible);
+    if (!matches) {
+        await prevenirAdmin('ℹ️ Combiné automatique : aucun couple de matchs du soir exploitable pour le ' + cible + ' (cotes score exact indisponibles ou pas assez de rencontres). Nouvel essai dans une heure si la fenêtre le permet.');
+        return { actif: true, rien: cible };
+    }
+    const publierA = new Date(Date.now() + VETO_MINUTES * 60000).toISOString();
+    const total = Math.round(matches.reduce((t, m) => t * m.odds, 1) * 100) / 100;
+    await enregistrerReglages({ combo_brouillon: { cible, matches, total, genere_le: new Date().toISOString(), publier_a: publierA } });
+    await prevenirAdmin('🤖 COMBINÉ AUTOMATIQUE PRÊT — pour le ' + cible + '\n\n'
+        + matches.map(m => '• ' + m.teams + ' (' + m.ligue + ') · ' + m.time + '\n   Score exact ' + m.score + ' @ ' + m.odds + ' (' + m.bookmaker + ')').join('\n')
+        + '\n\nCote totale : ' + total + '\nPublication automatique à ' + heureParisDe(publierA) + ', sauf si tu l\'annules : Content Planner > Réglages > Gérer.');
+    return { actif: true, brouillon: 'créé pour le ' + cible };
+}
+
 function parisNowParts() {
     const parts = new Intl.DateTimeFormat('en-CA', {
         timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit',
@@ -455,6 +687,11 @@ async function handleCronSweep(req, res) {
         summary.automatisation = await approuverAutomatiquement(now);
     } catch (e) {
         summary.automatisation = { erreur: String(e) };
+    }
+    try {
+        summary.combine = await combineAutomatique(now);
+    } catch (e) {
+        summary.combine = { erreur: String(e) };
     }
     try {
         summary.sequence = await sequenceMarketing(now);

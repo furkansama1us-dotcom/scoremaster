@@ -670,3 +670,29 @@ create policy "Admins can update automation settings"
 
 -- Séquence marketing du combiné (relances + résultat), désactivée par défaut.
 alter table public.automation_settings add column if not exists auto_sequence boolean not null default false;
+
+-- ============================================================
+-- COMBINÉ AUTOMATIQUE
+-- validated_at : horodatage de la validation (gagné/perdu) par l'admin, posé
+-- automatiquement par un trigger, quel que soit l'écran utilisé.
+-- ============================================================
+alter table public.combineds_public add column if not exists validated_at timestamptz;
+
+create or replace function public.set_combined_validated_at() returns trigger
+language plpgsql as $$
+begin
+  if new.status in ('termine', 'perdu') and old.status is distinct from new.status then
+    new.validated_at := now();
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_combineds_validated_at on public.combineds_public;
+create trigger trg_combineds_validated_at
+  before update on public.combineds_public
+  for each row execute function public.set_combined_validated_at();
+
+alter table public.automation_settings add column if not exists auto_combo boolean not null default false;
+alter table public.automation_settings add column if not exists combo_brouillon jsonb;
+alter table public.automation_settings add column if not exists combo_essai_le timestamptz;

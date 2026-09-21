@@ -228,7 +228,7 @@ export async function assembler(draft) {
 // mascotte en fond, pastille de contexte, texte en grand, mention 18+.
 // Sans fond disponible, un dégradé aux couleurs de la marque prend le relais.
 // ------------------------------------------------------------
-export async function composerStory({ fondUrl, badge, texte }) {
+export async function composerStory({ fondUrl, badge, texte, lignes: lignesSup }) {
     await chargerPolices();
     const logo = await loadImage(await fichierDuDepot('logo-dark.png'));
     const canvas = createCanvas(W, H);
@@ -258,7 +258,10 @@ export async function composerStory({ fondUrl, badge, texte }) {
     ctx.font = '84px Anton';
     const lignes = decouper(ctx, String(texte || '').toUpperCase(), W - MARGE_X * 2).slice(0, 5);
     const interligne = 96;
-    const yPremiere = H - 420 - (lignes.length - 1) * interligne;
+    // Lignes complémentaires (ex. matchs du combiné) : le titre remonte d'autant.
+    const sup = Array.isArray(lignesSup) ? lignesSup.slice(0, 4) : [];
+    const hauteurSup = sup.length ? sup.length * 58 + 30 : 0;
+    const yPremiere = H - 420 - hauteurSup - (lignes.length - 1) * interligne;
 
     if (badge) {
         ctx.font = '30px MontserratXB';
@@ -277,6 +280,18 @@ export async function composerStory({ fondUrl, badge, texte }) {
     ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 18;
     dessinerLignes(ctx, lignes, W / 2, yPremiere, interligne);
     ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+
+    if (sup.length) {
+        ctx.font = '36px MontserratB';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 10;
+        sup.forEach((l, i) => {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillText(l, W / 2, yPremiere + (lignes.length - 1) * interligne + 90 + i * 58, W - MARGE_X * 2);
+        });
+        ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+        ctx.textAlign = 'left';
+    }
 
     ctx.font = '24px MontserratB';
     ctx.fillStyle = 'rgba(255,255,255,0.7)';

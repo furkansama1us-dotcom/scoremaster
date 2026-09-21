@@ -2716,6 +2716,8 @@ async function fetchApiScore(id, dateRaw) {
         <!-- Réglages > Gérer : ce que l'automatisation va faire -->
         <div class="cp-view" id="cp-view-auto">
             <button class="cp-back" onclick="cpTab('settings')">‹ Réglages</button>
+            <div class="cp-eyebrow">Combiné automatique</div>
+            <div id="cpComboAuto" style="margin-bottom:18px;"></div>
             <div class="cp-eyebrow">Séquence du combiné — aujourd'hui</div>
             <div id="cpSeqJour" style="margin-bottom:18px;"></div>
             <div class="cp-eyebrow">Carrousels — les 3 prochains jours</div>
@@ -2741,6 +2743,10 @@ async function fetchApiScore(id, dateRaw) {
                 <div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:14px;border-top:1px dashed #e7e0d5;">
                     <label class="cp-switch"><input type="checkbox" id="cpSeqToggle" onchange="cpSetSequence(this.checked)"><span></span></label>
                     <div style="flex:1;min-width:0;"><b>Séquence marketing du combiné</b><br><span style="font-size:11.5px;color:#8a8290;">Annonce du combiné dès sa publication, relances avant le coup d'envoi, puis message victoire ou défaite après ta validation, sur Telegram et en story Instagram.</span></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:14px;border-top:1px dashed #e7e0d5;">
+                    <label class="cp-switch"><input type="checkbox" id="cpComboToggle" onchange="cpSetComboAuto(this.checked)"><span></span></label>
+                    <div style="flex:1;min-width:0;"><b>Combiné automatique</b><br><span style="font-size:11.5px;color:#8a8290;">Un seul combiné en cours à la fois. Le suivant est généré 1 h au plus tôt après ta validation, entre 23h et minuit (pour le lendemain soir) ou avant 14h (pour le soir même). Tu as 20 min pour l'annuler.</span></div>
                 </div>
             </div>
             <div class="cp-eyebrow">Fonctionnement</div>
@@ -6076,6 +6082,8 @@ async function cpRenderAutoCard() {
     toggle.checked = !!r.auto_publish;
     var seq = document.getElementById('cpSeqToggle');
     if (seq) { seq.disabled = !('auto_sequence' in r); seq.checked = !!r.auto_sequence; }
+    var combo = document.getElementById('cpComboToggle');
+    if (combo) { combo.disabled = !('auto_combo' in r); combo.checked = !!r.auto_combo; }
     document.getElementById('cpAutoHeureTxt').textContent = cpHeureTxt(r.auto_approve_at);
     var nbExclus = (r.exclusions || []).length;
     etat.innerHTML = r.auto_publish
@@ -6100,6 +6108,61 @@ async function cpSetAutoPublish(actif) {
         showToast(actif ? 'Automatisation activée.' : 'Automatisation désactivée.');
     }
     cpRenderAutoCard();
+}
+
+async function cpSetComboAuto(actif) {
+    if (actif && !confirm('Activer le combiné automatique ? Quand le combiné en cours aura été validé par toi, le suivant sera généré sur de vraies cotes, envoyé sur Telegram pour relecture, puis publié 20 minutes plus tard sauf annulation.')) {
+        document.getElementById('cpComboToggle').checked = false;
+        return;
+    }
+    if (await cpSaveAuto({ auto_combo: !!actif })) showToast(actif ? 'Combiné automatique activé.' : 'Combiné automatique désactivé.');
+    cpRenderAutoCard();
+}
+
+async function cpComboBrouillon(action) {
+    var r = window._cpAuto || await cpLoadAuto();
+    if (!r || !r.combo_brouillon) { showToast('Aucun combiné en attente.', true); return; }
+    var b = Object.assign({}, r.combo_brouillon);
+    if (action === 'annuler') {
+        if (!confirm('Annuler ce combiné ? Il ne sera pas publié.')) return;
+        b.annule = true;
+    } else {
+        if (!confirm('Publier ce combiné maintenant ? Il partira au prochain passage du cron (15 min au plus).')) return;
+        b.publier_a = new Date().toISOString();
+    }
+    if (await cpSaveAuto({ combo_brouillon: b })) showToast(action === 'annuler' ? 'Combiné annulé.' : 'Publication avancée au prochain passage.');
+    cpRenderComboAuto();
+}
+
+async function cpRenderComboAuto() {
+    var box = document.getElementById('cpComboAuto');
+    if (!box) return;
+    var r = window._cpAuto;
+    if (!r || !('auto_combo' in r)) { box.innerHTML = '<div class="cp-txt-box" style="font-size:12px;">Passe le SQL du combiné automatique dans Supabase pour activer cette partie.</div>'; return; }
+    var b = r.combo_brouillon;
+    if (b && !b.annule) {
+        var heure = new Date(b.publier_a).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', 'h');
+        box.innerHTML = '<div class="cp-auto-day"><b>Prêt pour le ' + b.cible + ' · publication à ' + heure + '</b>'
+            + (b.matches || []).map(function (m) {
+                return '<div class="cp-auto-item"><span class="cp-time">' + m.time.replace(':', 'h') + '</span><div class="cp-auto-mid"><div class="cp-auto-ttl">' + m.teams + '</div><div class="cp-auto-etat">' + (m.ligue || '') + ' · score exact <b>' + m.score + '</b> @ ' + m.odds + ' (' + (m.bookmaker || '') + ')</div></div></div>';
+            }).join('')
+            + '<div class="cp-auto-etat" style="margin:6px 0 10px;">Cote totale : <b>' + b.total + '</b></div>'
+            + '<div style="display:flex;gap:8px;"><button class="cp-auto-btn" style="flex:1;color:#c2334e;" onclick="cpComboBrouillon(\'annuler\')">Annuler</button><button class="cp-auto-btn" style="flex:1;" onclick="cpComboBrouillon(\'publier\')">Publier maintenant</button></div></div>';
+        return;
+    }
+    var etat;
+    if (!r.auto_combo) etat = '⏸️ Désactivé.';
+    else {
+        const enCours = await supabaseClient.from('combineds_public').select('id, date').eq('status', 'en-cours').limit(1);
+        if (enCours.data && enCours.data.length) etat = '🔒 Un combiné est en cours (' + enCours.data[0].date + ') : le suivant sera généré 1 h après ta validation.';
+        else {
+            var h = new Date().getHours();
+            etat = (h >= 23 || h < 14)
+                ? '🔎 Fenêtre ouverte : un combiné sera proposé au prochain passage (s\'il y a des matchs du soir exploitables).'
+                : '🕘 En attente de la fenêtre de 23h (combiné pour le lendemain soir).';
+        }
+    }
+    box.innerHTML = '<div class="cp-txt-box" style="font-size:12px;">' + etat + '</div>';
 }
 
 async function cpSetSequence(actif) {
@@ -6187,6 +6250,7 @@ async function cpOpenAuto() {
     if (sc) sc.scrollTop = 0;
     await Promise.all([cpLoadAuto(), cpLoadCalendar(), cpFetchRows()]);
     cpRenderAuto();
+    cpRenderComboAuto();
     cpRenderSequenceJour();
 }
 
