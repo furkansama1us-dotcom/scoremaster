@@ -69,8 +69,32 @@ const GRANDES_LIGUES = {
     62: { code: 'FL2', nom: 'Ligue 2' },
     79: { code: 'BL2', nom: '2. Bundesliga' },
     136: { code: 'SB', nom: 'Serie B' },
-    141: { code: 'SD', nom: 'Segunda Division' }
+    141: { code: 'SD', nom: 'Segunda Division' },
+    72: { code: 'BSB', nom: 'Serie B (Brésil)' },
+    // Coupes nationales : les soirs de semaine, ce sont souvent les seules
+    // rencontres disponibles.
+    45: { code: 'FAC', nom: 'FA Cup' },
+    48: { code: 'EFL', nom: 'League Cup' },
+    66: { code: 'CDF', nom: 'Coupe de France' },
+    143: { code: 'CDR', nom: 'Copa del Rey' },
+    137: { code: 'CI', nom: 'Coppa Italia' },
+    81: { code: 'DFB', nom: 'DFB-Pokal' },
+    90: { code: 'KNVB', nom: 'Coupe des Pays-Bas' },
+    96: { code: 'TP', nom: 'Coupe du Portugal' },
+    181: { code: 'SCUP', nom: 'Coupe d\'Écosse' },
+    73: { code: 'CDB', nom: 'Copa do Brasil' }
 };
+
+// Ordre de préférence quand il y a plus de rencontres que de places (15 par
+// jour) : les grandes compétitions d'abord, les deuxièmes divisions en dernier.
+const LIGUES_PRIORITAIRES = ['PL', 'PD', 'SA', 'BL1', 'FL1', 'UCL', 'UEL', 'UECL', 'UNL', 'WC', 'EC', 'CA', 'CLI', 'WCQE', 'WCQS', 'WCQA', 'WCQAS'];
+const LIGUES_SECONDAIRES = ['FL2', 'BL2', 'SB', 'SD', 'BSB'];
+
+function prioriteLigue(code) {
+    if (LIGUES_PRIORITAIRES.indexOf(code) !== -1) return 1;
+    if (LIGUES_SECONDAIRES.indexOf(code) !== -1) return 3;
+    return 2;
+}
 
 function normaliseNom(s) {
     return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
@@ -138,9 +162,16 @@ async function ecrireCacheClassement(code, payload) {
 async function matchsDepuisCache(dateFrom) {
     const rows = await sbFetch('ai_fixtures?select=*&fixture_date=eq.' + encodeURIComponent(dateFrom) + '&order=kickoff.asc');
     if (!rows || !rows.length) return null;
+    // Même sélection que le rafraîchissement, pour que chaque match affiché
+    // ait bien son analyse réelle.
+    const retenues = rows
+        .slice()
+        .sort((a, b) => (prioriteLigue(a.league_code) - prioriteLigue(b.league_code)) || (new Date(a.kickoff) - new Date(b.kickoff)))
+        .slice(0, MAX_MATCHS_PAR_JOUR)
+        .sort((a, b) => new Date(a.kickoff) - new Date(b.kickoff));
     return {
         source: 'api-football',
-        matches: rows.map(f => ({
+        matches: retenues.map(f => ({
             id: f.fixture_id,
             utcDate: f.kickoff,
             homeTeam: { name: f.home },
@@ -187,7 +218,8 @@ async function refreshPredictions(req, res) {
         // de source de repli quand football-data.org ne renvoie rien (trêves).
         const suivies = fixtures
             .filter(f => GRANDES_LIGUES[f.league && f.league.id])
-            .sort((a, b) => new Date(a.fixture.date) - new Date(b.fixture.date));
+            .sort((a, b) => (prioriteLigue(GRANDES_LIGUES[a.league.id].code) - prioriteLigue(GRANDES_LIGUES[b.league.id].code))
+                || (new Date(a.fixture.date) - new Date(b.fixture.date)));
 
         if (suivies.length) {
             await sbFetch('ai_fixtures', {
