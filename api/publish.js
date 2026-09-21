@@ -136,7 +136,7 @@ async function postizPublish(item, integrations) {
                 type: 'now', date: new Date().toISOString(), shortLink: false, tags: [],
                 posts: [{
                     integration: { id: tg.id },
-                    value: [{ content: item.caption, image: [{ id: item.id, path: item.image_url }] }],
+                    value: [{ content: item.caption, image: item.image_url ? [{ id: item.id, path: item.image_url }] : [] }],
                     settings: { __type: 'telegram' }
                 }]
             })
@@ -321,6 +321,16 @@ async function handleCalendarDraft(req, res) {
         return res.status(400).json({ error: 'Chaque slide doit avoir image_url et texte.' });
     }
 
+    // Mode essai (diagnostic) : assemble et stocke les visuels, renvoie leurs
+    // URLs, sans créer aucune publication.
+    if (draft.essai === true) {
+        const debut = Date.now();
+        const { assembler } = await import('./_compositeur.mjs');
+        const images = await assembler(draft);
+        const urls = await televerserSlides('essai-' + debut, images.map(function (b) { return 'data:image/jpeg;base64,' + b.toString('base64'); }));
+        return res.status(200).json({ ok: true, essai: true, duree_ms: Date.now() - debut, urls });
+    }
+
     // Les carrousels ne sont jamais publiés sur Telegram : un dépôt Telegram est
     // ignoré, et les éventuels brouillons Telegram de carrousels encore en attente
     // sont retirés au passage.
@@ -366,9 +376,22 @@ async function handleCalendarDraft(req, res) {
     // Slides déjà assemblées par la routine : plus besoin d'ouvrir l'app pour
     // l'habillage, le carrousel est tout de suite prêt à valider.
     let assemble = false;
-    if (nouvelId && Array.isArray(draft.composed) && draft.composed.length && draft.composed.length <= 10) {
+    let composees = Array.isArray(draft.composed) ? draft.composed : null;
+    // Carrousel duo déposé sans visuels assemblés (cas normal de la routine) :
+    // le serveur les assemble lui-même avec le même rendu que l'app.
+    const estDuo = draft.slides.every(function (s) { return s.page && s.position; });
+    if (nouvelId && !composees && estDuo) {
         try {
-            const urls = await televerserSlides(nouvelId, draft.composed);
+            const { assembler } = await import('./_compositeur.mjs');
+            const images = await assembler(draft);
+            composees = images.map(function (b) { return 'data:image/jpeg;base64,' + b.toString('base64'); });
+        } catch (e) {
+            console.error('Assemblage serveur impossible :', e);
+        }
+    }
+    if (nouvelId && composees && composees.length && composees.length <= 10) {
+        try {
+            const urls = await televerserSlides(nouvelId, composees);
             await sbFetch('pending_publications?id=eq.' + nouvelId, {
                 method: 'PATCH',
                 body: JSON.stringify({ carousel_images: urls, status: 'pending' })

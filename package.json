@@ -1,0 +1,8 @@
+{
+  "name": "scoremaster",
+  "private": true,
+  "description": "Dépendances des fonctions serveur (api/). Le site lui-même n'a pas d'étape de build.",
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.65"
+  }
+}

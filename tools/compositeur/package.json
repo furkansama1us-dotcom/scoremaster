@@ -1,9 +1,0 @@
-{
-  "name": "scoremaster-compositeur",
-  "private": true,
-  "type": "module",
-  "description": "Assemble les carrousels duo Score Master (utilisé par la routine cloud).",
-  "dependencies": {
-    "@napi-rs/canvas": "^0.1.65"
-  }
-}

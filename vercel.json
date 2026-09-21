@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/publish.js": {
+      "maxDuration": 60
+    }
+  }
+}
