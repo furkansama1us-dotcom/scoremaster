@@ -612,9 +612,9 @@
         /* Badge collé par-dessus la valeur : l'emplacement garde sa taille d'origine
            (valeur factice de même format, rendue transparente), le badge flotte au-dessus. */
         .tk-cover { position:relative; display:inline-block; }
-        .tk-sticker { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%) rotate(-4deg); z-index:2; justify-content:center; box-sizing:border-box; min-width:calc(100% + 18px); min-height:calc(100% + 10px); font-size:12.5px; padding:5px 11px; gap:5px; border-radius:6px; box-shadow:0 3px 10px rgba(0,0,0,.55), 0 0 0 1px rgba(244,197,66,.4); pointer-events:none; }
-        .tk-sticker.g { left:-8px; transform:translate(0,-50%) rotate(-4deg); }
-        .tk-sticker.d { left:auto; right:-9px; transform:translate(0,-50%) rotate(-4deg); }
+        .tk-sticker { position:absolute; left:50%; top:50%; transform:translate(calc(-50% + var(--dx,0px)), calc(-50% + var(--dy,0px))) rotate(var(--r,-4deg)) scale(var(--s,1)); z-index:2; justify-content:center; box-sizing:border-box; min-width:calc(100% + 18px); min-height:calc(100% + 10px); font-size:12.5px; padding:5px 11px; gap:5px; border-radius:6px; box-shadow:0 3px 10px rgba(0,0,0,.55), 0 0 0 1px rgba(244,197,66,.4); pointer-events:none; }
+        .tk-sticker.g { left:-8px; transform:translate(var(--dx,0px), calc(-50% + var(--dy,0px))) rotate(var(--r,-4deg)) scale(var(--s,1)); transform-origin:left center; }
+        .tk-sticker.d { left:auto; right:-9px; transform:translate(var(--dx,0px), calc(-50% + var(--dy,0px))) rotate(var(--r,-4deg)) scale(var(--s,1)); transform-origin:right center; }
         .tk-vip-mini i.fas { font-size:9px !important; color:#f4c542 !important; margin:0 !important; width:auto !important; }
         .tk-sticker i.fas { font-size:12px !important; }
         .hc-cash .tk-sticker.g { left:0; }
@@ -10523,8 +10523,24 @@ function buildTicketCardHtml(c) {
         var masque = !!window.ticketVipMode;
         // La vraie valeur reste en place, l'autocollant la recouvre entièrement.
         // cote : 'g' = autocollant calé à gauche de la valeur, 'd' = à droite, sinon centré.
+        // Chaque autocollant a sa propre imperfection (angle, décalage, taille),
+        // tirée d'un hash stable du ticket : collé « à la main », mais il ne
+        // bouge pas d'un affichage à l'autre.
+        var nAutocollant = 0;
+        var alea = function (graine) {
+            var x = 0;
+            for (var k = 0; k < graine.length; k++) x = (x * 31 + graine.charCodeAt(k)) | 0;
+            x = Math.sin(x) * 10000;
+            return x - Math.floor(x);
+        };
         var mk = function (t, cote) {
-            return '<span class="tk-cover">' + t + '<span class="tk-vip-mini tk-sticker ' + (cote || '') + '"><i class="fas fa-crown"></i>SMVIP+</span></span>';
+            var g = String(c.id || c.date || '') + '#' + (nAutocollant++);
+            var angle = (-8 + alea(g + 'r') * 13).toFixed(1);
+            var dx = Math.round(-4 + alea(g + 'x') * 8);
+            var dy = Math.round(-3 + alea(g + 'y') * 6);
+            var echelle = (0.94 + alea(g + 's') * 0.14).toFixed(2);
+            var style = '--r:' + angle + 'deg;--dx:' + dx + 'px;--dy:' + dy + 'px;--s:' + echelle;
+            return '<span class="tk-cover">' + t + '<span class="tk-vip-mini tk-sticker ' + (cote || '') + '" style="' + style + '"><i class="fas fa-crown"></i>SMVIP+</span></span>';
         };
         var matches = c.matches || [];
 
