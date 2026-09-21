@@ -595,6 +595,19 @@
         .tk-top { display:flex; flex-direction:column; align-items:flex-start; gap:12px; padding:calc(12px + var(--safe-top)) 16px 10px; background:#000; }
         .tk-top .tk-brand { display:flex; align-items:center; gap:10px; font-weight:800; font-size:18px; letter-spacing:.5px; color:var(--tk-text); }
         .tk-top .tk-platform { font-size:11px; padding:4px 8px; }
+        /* Bouton invisible à droite du bookmaker : il révèle le badge SMVIP+ et
+           masque scores, cotes et gains (seule la mise reste lisible). */
+        .tk-vip-toggle { background:none; border:none; padding:0; margin-left:-2px; min-width:78px; height:28px; display:inline-flex; align-items:center; cursor:default; -webkit-tap-highlight-color:transparent; }
+        .tk-vip-badge { position:relative; overflow:hidden; display:inline-flex; align-items:center; gap:5px; padding:4px 9px; border-radius:6px; background:linear-gradient(135deg,#d0142c,#7a0a17); color:#f4c542; font-size:11px; font-weight:900; letter-spacing:.6px; box-shadow:0 0 0 1px rgba(244,197,66,.35), 0 4px 14px rgba(208,20,44,.35); opacity:0; transform:scale(.4) rotate(-8deg); transition:opacity .25s, transform .35s cubic-bezier(.2,1.6,.4,1); }
+        .tk-vip-badge i { font-size:10px; }
+        .tk-vip-badge::after { content:''; position:absolute; top:0; left:-60%; width:40%; height:100%; background:linear-gradient(100deg,transparent,rgba(255,236,170,.55),transparent); transform:skewX(-20deg); }
+        .tk-vipmode .tk-vip-badge { opacity:1; transform:scale(1) rotate(0); animation:tkVipGlow 2.4s ease-in-out infinite; }
+        .tk-vipmode .tk-vip-badge i { animation:tkVipCrown 1.8s ease-in-out infinite; }
+        .tk-vipmode .tk-vip-badge::after { animation:tkVipShine 2.6s ease-in-out infinite; }
+        @keyframes tkVipGlow { 0%,100% { box-shadow:0 0 0 1px rgba(244,197,66,.35), 0 4px 14px rgba(208,20,44,.35); } 50% { box-shadow:0 0 0 1px rgba(244,197,66,.7), 0 4px 20px rgba(208,20,44,.6); } }
+        @keyframes tkVipCrown { 0%,100% { transform:translateY(0) rotate(0); } 30% { transform:translateY(-2px) rotate(-10deg); } 60% { transform:translateY(0) rotate(6deg); } }
+        @keyframes tkVipShine { 0%,55% { left:-60%; } 100% { left:130%; } }
+        .tk-mask { filter:blur(5px); user-select:none; -webkit-user-select:none; pointer-events:none; }
         .tk-title { display:flex; flex-direction:column; gap:5px; min-width:0; }
         #ticket-loader { background:radial-gradient(120% 65% at 78% 18%,#262a34 0%,#15161c 45%,#0A0A0F 80%); font-family:Supreme,Roboto,-apple-system,'Segoe UI',Arial,sans-serif; }
         .tl-inner { height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:0 40px; }
@@ -2398,7 +2411,7 @@ async function fetchApiScore(id, dateRaw) {
     <div class="tk-top">
         <button class="tk-back" onclick="closeTicketHistory()"><i class="fas fa-chevron-left"></i><img src="logo-dark.png" alt="">Retour sur Score Master</button>
         <div class="tk-title">
-            <span class="tk-brand">SCORE MASTER <span class="betclic-badge platform-badge-display tk-platform">BETCLIC</span></span>
+            <span class="tk-brand">SCORE MASTER <span class="betclic-badge platform-badge-display tk-platform">BETCLIC</span><button class="tk-vip-toggle" onclick="toggleTicketVipMode()" aria-label="Mode SMVIP+"><span class="tk-vip-badge"><i class="fas fa-crown"></i>SMVIP+</span></button></span>
             <span class="tk-sync" id="tk-sync"><i class="tk-dot"></i><span id="tk-sync-text">Chargement des dernières données…</span><b id="tk-sync-pct"></b></span>
         </div>
     </div>
@@ -2485,12 +2498,43 @@ async function fetchApiScore(id, dateRaw) {
         #content-planner-overlay .cp-fold{width:100%;text-align:left;background:none;border:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8a8290;font-weight:800;cursor:pointer;padding:0 2px 10px;}
         #content-planner-overlay .cp-view{display:none;}
         #content-planner-overlay .cp-view.active{display:block;}
+        #content-planner-overlay .cp-tabbar{flex:0 0 auto;display:grid;grid-template-columns:repeat(6,1fr);background:#12151e;border-top:1px solid #232838;padding:8px 4px calc(8px + env(safe-area-inset-bottom));}
+        #content-planner-overlay .cp-tab{background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:#8a90a2;font-family:'Manrope',sans-serif;font-size:10.5px;font-weight:800;padding:4px 0;}
+        #content-planner-overlay .cp-tab .ic{font-size:19px;line-height:1;filter:grayscale(.35);opacity:.85;transition:transform .2s;}
+        #content-planner-overlay .cp-tab.active{color:#e8a13a;}
+        #content-planner-overlay .cp-tab.active .ic{filter:none;opacity:1;transform:translateY(-1px) scale(1.08);}
+        #content-planner-overlay .cp-field{display:block;font-size:11px;font-weight:800;color:#8a8290;letter-spacing:.06em;text-transform:uppercase;margin:12px 2px 6px;}
+        #content-planner-overlay .cp-input{width:100%;box-sizing:border-box;padding:11px 12px;border-radius:11px;border:1px solid #e7e0d5;background:#fff;color:#2a2430;font-family:'Manrope',sans-serif;font-size:13px;}
+        #content-planner-overlay textarea.cp-input{min-height:74px;resize:vertical;}
+        #content-planner-overlay .cp-seg{display:flex;background:#efe9df;border-radius:12px;padding:4px;gap:4px;}
+        #content-planner-overlay .cp-seg button{flex:1;border:none;background:none;padding:9px;border-radius:9px;font-weight:800;font-size:12.5px;color:#8a8290;cursor:pointer;font-family:'Manrope',sans-serif;}
+        #content-planner-overlay .cp-seg button.active{background:#fff;color:#2a2430;box-shadow:0 2px 8px rgba(42,36,48,.08);}
+        #content-planner-overlay .cp-duo-row{display:grid;grid-template-columns:22px 1fr;gap:8px;align-items:start;margin-bottom:8px;}
+        #content-planner-overlay .cp-duo-row b{font-family:Anton,Impact,sans-serif;color:#c8963c;font-size:15px;padding-top:9px;text-align:center;}
+        #content-planner-overlay .cp-duo-row .cp-input{margin-bottom:5px;}
+        #content-planner-overlay .cp-primary{width:100%;padding:14px;border-radius:14px;border:none;background:linear-gradient(135deg,#a855f7,#e8b84b);color:#141821;font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;}
+        #content-planner-overlay .cp-secondary{width:100%;padding:12px;border-radius:12px;border:1.5px solid #c8963c;background:#fff;color:#8a5a13;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;}
+        #content-planner-overlay .cp-danger{width:100%;padding:12px;border-radius:12px;border:1.5px solid rgba(194,51,78,.5);background:#fff;color:#c2334e;font-weight:800;font-size:13px;cursor:pointer;margin-top:10px;}
+        #content-planner-overlay .cp-lib-item{background:#fff;border:1px solid #e7e0d5;border-radius:12px;padding:12px 13px;margin-bottom:8px;}
+        #content-planner-overlay .cp-lib-item summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;}
+        #content-planner-overlay .cp-lib-item summary::-webkit-details-marker{display:none;}
+        #content-planner-overlay .cp-lib-item summary b{flex:1;font-size:13px;color:#2a2430;}
+        #content-planner-overlay .cp-lib-duo{font-size:12.5px;color:#5a5262;padding:7px 0;border-top:1px dashed #e7e0d5;line-height:1.45;}
+        #content-planner-overlay .cp-lib-duo span{color:#8a5a13;font-weight:800;}
+        #content-planner-overlay .cp-chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;margin-bottom:10px;}
+        #content-planner-overlay .cp-chips button{flex:0 0 auto;border:1px solid #e7e0d5;background:#fff;border-radius:999px;padding:7px 11px;font-size:11.5px;font-weight:800;color:#5a5262;cursor:pointer;font-family:'Manrope',sans-serif;}
+        #content-planner-overlay .cp-chips button.active{background:#2a2430;color:#f7f3ec;border-color:#2a2430;}
+        #content-planner-overlay .cp-set-card{background:#fff;border:1px solid #e7e0d5;border-radius:14px;padding:14px;margin-bottom:12px;font-size:12.5px;color:#5a5262;line-height:1.55;}
+        #content-planner-overlay .cp-set-card b{color:#2a2430;}
+        #content-planner-overlay .cp-big-cell{aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:13px;color:#5a5262;cursor:pointer;background:#fff;border:1px solid #efe9df;}
+        #content-planner-overlay .cp-big-cell.cp-today{background:#c8963c;color:#fff;font-weight:800;border-color:#c8963c;}
+        #content-planner-overlay .cp-big-cell.cp-empty{visibility:hidden;}
     </style>
     <div style="display:flex; align-items:center; justify-content:space-between; padding:calc(16px + var(--safe-top)) 20px 16px; border-bottom:1px solid #e7e0d5;">
         <span style="font-weight:900; font-size:16px; color:#2a2430;"><i class="fas fa-calendar-days" style="color:#c8963c;margin-right:8px;"></i>Content Planner</span>
         <i class="fas fa-times" onclick="closeContentPlanner()" style="color:#8a8290; font-size:20px; cursor:pointer;"></i>
     </div>
-    <div style="flex:1; overflow-y:auto; padding:18px 16px 30px;">
+    <div style="flex:1; overflow-y:auto; padding:18px 16px 24px;" id="cpScroll">
         <div class="cp-view active" id="cp-view-home">
             <div class="cp-sec">
                 <div class="cp-dash">
@@ -2522,7 +2566,6 @@ async function fetchApiScore(id, dateRaw) {
                 <button onclick="cpOpenMultiSelect()" style="width:100%;margin-top:10px;padding:12px;border-radius:12px;border:1.5px solid #c8963c;background:#fff;color:#8a5a13;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">
                     <i class="fas fa-calendar-check"></i> Générer sur plusieurs jours
                 </button>
-            </div>
                 </div>
             </div>
             <div class="cp-sec"><div class="cp-eyebrow">Prochain contenu</div><div class="cp-hero" id="cpHeroNext"></div></div>
@@ -2559,7 +2602,106 @@ async function fetchApiScore(id, dateRaw) {
                 <i class="fas fa-wand-magic-sparkles"></i> Générer
             </button>
         </div>
+
+        <!-- Onglet Calendrier -->
+        <div class="cp-view" id="cp-view-calendar">
+            <div class="cp-dash" style="margin-bottom:14px;">
+                <div class="cp-dash-head">
+                    <button class="cp-nav" onclick="cpBigCalShift(-1)" aria-label="Mois précédent"><i class="fas fa-chevron-left"></i></button>
+                    <div class="cp-dash-day"><b id="cpBigCalTitle">—</b><small>Touche un jour pour voir son programme</small></div>
+                    <button class="cp-nav" onclick="cpBigCalShift(1)" aria-label="Mois suivant"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+            <div class="cp-mini-grid" id="cpBigCal"></div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:#8a8290;margin-top:12px;justify-content:center;">
+                <span>● <b style="color:#c8963c;">2</b> carrousels prévus par jour</span><span>Pastilles = contenus générés</span>
+            </div>
+        </div>
+
+        <!-- Onglet Générer -->
+        <div class="cp-view" id="cp-view-generate">
+            <div class="cp-eyebrow">Carrousel de test</div>
+            <div class="cp-seg">
+                <button id="cpGenModeBanque" class="active" onclick="cpGenMode('banque')">Depuis la banque</button>
+                <button id="cpGenModePerso" onclick="cpGenMode('perso')">Personnalisé</button>
+            </div>
+            <div id="cpGenBanque">
+                <label class="cp-field">Famille</label>
+                <select class="cp-input" id="cpGenFamille" onchange="cpGenFillCarrousels()"></select>
+                <label class="cp-field">Carrousel</label>
+                <select class="cp-input" id="cpGenCarrousel" onchange="cpGenPreview()"></select>
+                <div class="cp-txt-box" id="cpGenPreview" style="margin-top:10px;white-space:normal;"></div>
+            </div>
+            <div id="cpGenPerso" style="display:none;">
+                <label class="cp-field">Famille</label>
+                <select class="cp-input" id="cpGenPersoFamille"></select>
+                <label class="cp-field">Titre interne</label>
+                <input class="cp-input" id="cpGenTitre" maxlength="80" placeholder="Ex. : Les pièges du vendredi soir">
+                <label class="cp-field">Slides duo (haut / bas) — *mot* = doré</label>
+                <div id="cpGenDuos"></div>
+                <button class="cp-secondary" style="margin-top:4px;" onclick="cpGenAddDuo()"><i class="fas fa-plus"></i> Ajouter une slide</button>
+                <label class="cp-field">Texte de la slide finale</label>
+                <input class="cp-input" id="cpGenCta" maxlength="120" placeholder="Un conseil par jour. *Zéro promesse.* Abonne-toi.">
+                <label class="cp-field">Légende du post (facultatif)</label>
+                <textarea class="cp-input" id="cpGenLegende" maxlength="1500" placeholder="Laisse vide pour une légende automatique"></textarea>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                <div><label class="cp-field">Date</label><input type="date" class="cp-input" id="cpGenDate"></div>
+                <div><label class="cp-field">Heure</label><input type="time" class="cp-input" id="cpGenHeure" value="12:00"></div>
+            </div>
+            <label class="cp-field">Plateformes</label>
+            <div style="display:flex;gap:16px;font-size:13px;font-weight:700;color:#2a2430;">
+                <label><input type="checkbox" id="cpGenIg" checked> Instagram</label>
+                <label><input type="checkbox" id="cpGenTg" checked> Telegram</label>
+            </div>
+            <button class="cp-primary" id="cpGenSubmit" onclick="cpGenSubmit()"><i class="fas fa-wand-magic-sparkles"></i> Lancer la génération</button>
+            <div style="font-size:11px;color:#8a8290;margin-top:8px;text-align:center;line-height:1.5;">Les images avec la mascotte sont générées par la routine cloud, qui passe toutes les heures (à h40). Le carrousel arrive ensuite dans « Valider » : rien n'est publié sans ton accord.</div>
+            <div class="cp-eyebrow" style="margin-top:22px;">File d'attente</div>
+            <div id="cpGenQueue"></div>
+            <div class="cp-eyebrow" style="margin-top:22px;">Autres formats</div>
+            <button class="cp-secondary" onclick="cpPlanAhead(3,1)"><i class="fas fa-lightbulb"></i> Conseil IA + Carrousel Story (3 jours)</button>
+            <button class="cp-secondary" onclick="cpOpenMultiSelect()"><i class="fas fa-calendar-check"></i> Générer sur plusieurs jours</button>
+        </div>
+
+        <!-- Onglet Biblio -->
+        <div class="cp-view" id="cp-view-biblio">
+            <div class="cp-eyebrow">Banque de carrousels</div>
+            <input class="cp-input" id="cpLibSearch" placeholder="Rechercher un titre ou un texte…" oninput="cpRenderBiblio()" style="margin-bottom:10px;">
+            <div class="cp-chips" id="cpLibChips"></div>
+            <div id="cpLibList"></div>
+        </div>
+
+        <!-- Onglet Valider -->
+        <div class="cp-view" id="cp-view-validate">
+            <div class="cp-eyebrow" id="cpValLabel">À valider</div>
+            <div class="cp-tl" id="cpValList"></div>
+        </div>
+
+        <!-- Onglet Réglages -->
+        <div class="cp-view" id="cp-view-settings">
+            <div class="cp-eyebrow">Automatisation</div>
+            <div class="cp-set-card">
+                <b>Carrousels du calendrier</b><br>Générés chaque soir vers 21h pour le lendemain, avec la mascotte. Publication à <b>08:15</b> et <b>20:15</b>, uniquement après ta validation.<br><br>
+                <b>Carrousels de test</b><br>La file d'attente est traitée toutes les heures (à h40).<br><br>
+                <b>Remplacement automatique</b><br>Quand un nouveau carrousel arrive sur un créneau, l'ancien brouillon non publié de ce créneau est retiré.
+            </div>
+            <div class="cp-eyebrow">Maintenance</div>
+            <div class="cp-set-card">
+                <button class="cp-secondary" style="margin-top:0;" onclick="cpResetCalendarDrafts('ancien')"><i class="fas fa-broom"></i> Retirer les carrousels à l'ancien format</button>
+                <button class="cp-danger" onclick="cpResetCalendarDrafts('tous')"><i class="fas fa-rotate-left"></i> Réinitialiser tous les carrousels non publiés</button>
+                <button class="cp-danger" onclick="cpResetCalendarDrafts('file')"><i class="fas fa-trash"></i> Vider la file de tests</button>
+                <div style="font-size:11px;color:#8a8290;margin-top:10px;line-height:1.5;">Les contenus déjà publiés ne sont jamais touchés. Après une réinitialisation, les créneaux supprimés sont régénérés par la routine du soir.</div>
+            </div>
+        </div>
     </div>
+    <nav class="cp-tabbar" id="cpTabbar">
+        <button class="cp-tab active" data-tab="home" onclick="cpTab('home')"><span class="ic">🏠</span>Accueil</button>
+        <button class="cp-tab" data-tab="calendar" onclick="cpTab('calendar')"><span class="ic">📅</span>Calendrier</button>
+        <button class="cp-tab" data-tab="generate" onclick="cpTab('generate')"><span class="ic">✨</span>Générer</button>
+        <button class="cp-tab" data-tab="biblio" onclick="cpTab('biblio')"><span class="ic">📚</span>Biblio</button>
+        <button class="cp-tab" data-tab="validate" onclick="cpTab('validate')"><span class="ic">✅</span>Valider</button>
+        <button class="cp-tab" data-tab="settings" onclick="cpTab('settings')"><span class="ic">⚙️</span>Réglages</button>
+    </nav>
 </div>
 <div class="overlay" id="cp-sheet-overlay" style="position:fixed;inset:0;background:rgba(6,8,14,.6);z-index:10004;opacity:0;pointer-events:none;transition:opacity .28s;" onclick="cpCloseSheet()"></div>
 <div id="cp-sheet" style="position:fixed;left:50%;transform:translateX(-50%) translateY(100%);bottom:0;width:100%;max-width:480px;z-index:10005;background:#0e111a;border-radius:20px 20px 0 0;box-shadow:0 -14px 40px rgba(0,0,0,.5);max-height:88vh;display:flex;flex-direction:column;transition:transform .32s cubic-bezier(.2,.8,.2,1);border:1px solid #232838;border-bottom:none;font-family:'Manrope',sans-serif;color:#f0f1f4;">
@@ -5320,7 +5462,9 @@ async function loadAdminPublications() {
         // Exclut uniquement les générations lancées via "Planifier les prochains
         // jours" (Content Planner) — tout ce qui est généré manuellement depuis
         // Notifs (ou ailleurs) reste visible ici comme avant.
-        var data = (rawData || []).filter(function (p) { return !(p.overlay_data && p.overlay_data.origin === 'planner'); }).slice(0, 30);
+        // Les demandes de test en file d'attente n'ont pas encore de visuel : elles
+        // se suivent dans Content Planner > Générer, pas ici.
+        var data = (rawData || []).filter(function (p) { return !(p.overlay_data && p.overlay_data.origin === 'planner') && p.status !== 'requested'; }).slice(0, 30);
 
         resumeOrphanedGenerations(data);
         window.adminPublicationsCache = {};
@@ -5430,7 +5574,7 @@ async function openContentPlanner() {
     var overlay = document.getElementById('content-planner-overlay');
     overlay.style.display = 'flex';
     setTimeout(function () { overlay.style.opacity = '1'; }, 10);
-    cpGo('home');
+    cpTab('home');
 
     await Promise.all([cpFetchRows(), cpLoadCalendar()]);
     cpRenderHome();
@@ -5596,6 +5740,266 @@ function closeContentPlanner() {
     cpCloseSheet();
 }
 
+// ------------------------------------------------------------
+// Onglets du Content Planner (barre du bas)
+// ------------------------------------------------------------
+var CP_FAMILLES_DUO = {
+    R: 'Le bon réflexe', C: "Ce que tu vois / Ce qu'on calcule", E: "L'erreur / Le réflexe",
+    M: 'Idée reçue / Réalité', P: 'Pressé / Patient', S: 'Coulisses Score Master'
+};
+var _cpBigCalOffset = 0;
+var _cpLibFamille = '';
+
+function cpTab(name) {
+    document.querySelectorAll('#cpTabbar .cp-tab').forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-tab') === name);
+    });
+    cpGo(name);
+    var sc = document.getElementById('cpScroll');
+    if (sc) sc.scrollTop = 0;
+    if (name === 'calendar') cpRenderBigCal();
+    if (name === 'generate') cpRenderGenerate();
+    if (name === 'biblio') cpRenderBiblio();
+    if (name === 'validate') cpRenderValidate();
+}
+
+function cpBigCalShift(n) { _cpBigCalOffset += n; cpRenderBigCal(); }
+
+function cpRenderBigCal() {
+    var rows = window._cpRows || [];
+    var base = new Date();
+    var ref = new Date(base.getFullYear(), base.getMonth() + _cpBigCalOffset, 1);
+    var y = ref.getFullYear(), m = ref.getMonth();
+    var startOffset = (ref.getDay() + 6) % 7;
+    var daysInMonth = new Date(y, m + 1, 0).getDate();
+    var todayStr = cpDstr(base);
+    var byDay = {};
+    rows.forEach(function (r) { var ds = cpRowDay(r); if (ds) (byDay[ds] = byDay[ds] || []).push(r); });
+    document.getElementById('cpBigCalTitle').textContent = ref.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    var html = '';
+    ['L', 'M', 'M', 'J', 'V', 'S', 'D'].forEach(function (d) { html += '<div class="cp-dow">' + d + '</div>'; });
+    for (var i = 0; i < startOffset; i++) html += '<div class="cp-big-cell cp-empty"></div>';
+    for (var day = 1; day <= daysInMonth; day++) {
+        var ds = cpDstr(new Date(y, m, day));
+        var items = byDay[ds] || [];
+        var prevus = cpDayNumber(ds) >= 1 && (_cpCalendar || []).some(function (e) { return e.jour === cpDayNumber(ds); });
+        var dots = items.slice(0, 4).map(function (r) { return '<i style="background:' + CP_TYPES[cpTypeKey(r.content_type)].chip + '"></i>'; }).join('');
+        html += '<div class="cp-big-cell' + (ds === todayStr ? ' cp-today' : '') + '" onclick="cpOpenDay(\'' + ds + '\')"><span>' + day + '</span><div class="cp-dots">' + dots + '</div>'
+            + (prevus && !items.length ? '<small style="font-size:8.5px;color:' + (ds === todayStr ? '#fff' : '#c8963c') + ';">prévu</small>' : '') + '</div>';
+    }
+    document.getElementById('cpBigCal').innerHTML = html;
+}
+
+// ---------- Générer ----------
+var _cpGenModeCourant = 'banque';
+
+function cpGenMode(mode) {
+    _cpGenModeCourant = mode;
+    document.getElementById('cpGenModeBanque').classList.toggle('active', mode === 'banque');
+    document.getElementById('cpGenModePerso').classList.toggle('active', mode === 'perso');
+    document.getElementById('cpGenBanque').style.display = mode === 'banque' ? '' : 'none';
+    document.getElementById('cpGenPerso').style.display = mode === 'perso' ? '' : 'none';
+}
+
+function cpGenDuoRowHtml(i) {
+    return '<div class="cp-duo-row"><b>' + (i + 1) + '</b><div>'
+        + '<input class="cp-input cp-gen-haut" maxlength="90" placeholder="En haut : la situation ou la question">'
+        + '<input class="cp-input cp-gen-bas" maxlength="90" placeholder="En bas : le conseil (ex. Regarde *son calendrier*)">'
+        + '</div></div>';
+}
+
+function cpGenAddDuo() {
+    var box = document.getElementById('cpGenDuos');
+    var n = box.querySelectorAll('.cp-duo-row').length;
+    if (n >= 6) { showToast('6 slides duo maximum.', true); return; }
+    box.insertAdjacentHTML('beforeend', cpGenDuoRowHtml(n));
+}
+
+async function cpRenderGenerate() {
+    await cpLoadCalendar();
+    var fam = document.getElementById('cpGenFamille');
+    if (!fam.options.length) {
+        var opts = '<option value="">Toutes les familles</option>' + Object.keys(CP_FAMILLES_DUO).map(function (k) {
+            return '<option value="' + k + '">' + CP_FAMILLES_DUO[k] + '</option>';
+        }).join('');
+        fam.innerHTML = opts;
+        document.getElementById('cpGenPersoFamille').innerHTML = Object.keys(CP_FAMILLES_DUO).map(function (k) {
+            return '<option value="' + k + '">' + CP_FAMILLES_DUO[k] + '</option>';
+        }).join('');
+        var box = document.getElementById('cpGenDuos');
+        box.innerHTML = [0, 1, 2, 3].map(cpGenDuoRowHtml).join('');
+        var demain = new Date(); demain.setDate(demain.getDate() + 1);
+        document.getElementById('cpGenDate').value = cpDstr(demain);
+        cpGenFillCarrousels();
+    }
+    cpRenderGenQueue();
+}
+
+function cpGenFillCarrousels(selectId) {
+    var f = document.getElementById('cpGenFamille').value;
+    var liste = (_cpCalendar || []).filter(function (e) { return e.mise_en_page === 'duo' && (!f || e.format === f); });
+    var sel = document.getElementById('cpGenCarrousel');
+    sel.innerHTML = liste.map(function (e) {
+        return '<option value="' + e.id + '">J' + e.jour + ' · ' + e.titre.replace(/</g, '&lt;') + '</option>';
+    }).join('');
+    if (selectId) sel.value = selectId;
+    cpGenPreview();
+}
+
+function cpDuoTexteHtml(t) {
+    return String(t || '').replace(/</g, '&lt;').replace(/\*([^*]+)\*/g, '<span style="color:#c8963c;font-weight:800;">$1</span>');
+}
+
+function cpGenPreview() {
+    var id = document.getElementById('cpGenCarrousel').value;
+    var e = (_cpCalendar || []).find(function (x) { return x.id === id; });
+    var box = document.getElementById('cpGenPreview');
+    if (!e) { box.innerHTML = 'Aucun carrousel.'; return; }
+    var html = '<b style="color:#2a2430;">' + e.titre + '</b><br><span style="font-size:11px;color:#8a8290;">' + e.format_nom + ' · prévu le jour ' + e.jour + '</span>';
+    [1, 2, 3, 4, 5, 6].forEach(function (pg) {
+        var hS = e.slides.find(function (s) { return s.page === pg && s.position === 'haut'; });
+        var bS = e.slides.find(function (s) { return s.page === pg && s.position === 'bas'; });
+        if (hS && bS) html += '<div class="cp-lib-duo">' + pg + '. ' + cpDuoTexteHtml(hS.texte) + ' → ' + cpDuoTexteHtml(bS.texte) + '</div>';
+    });
+    var cta = e.slides.find(function (s) { return s.position === 'cta'; });
+    if (cta) html += '<div class="cp-lib-duo">Fin : ' + cpDuoTexteHtml(cta.texte) + '</div>';
+    box.innerHTML = html;
+}
+
+async function cpGenSubmit() {
+    var plateformes = [];
+    if (document.getElementById('cpGenIg').checked) plateformes.push('instagram');
+    if (document.getElementById('cpGenTg').checked) plateformes.push('telegram');
+    var demande = {
+        mode: _cpGenModeCourant,
+        scheduled_for: document.getElementById('cpGenDate').value,
+        scheduled_time: document.getElementById('cpGenHeure').value,
+        platforms: plateformes
+    };
+    if (_cpGenModeCourant === 'banque') {
+        demande.calendar_id = document.getElementById('cpGenCarrousel').value;
+    } else {
+        var hauts = document.querySelectorAll('#cpGenDuos .cp-gen-haut');
+        var bas = document.querySelectorAll('#cpGenDuos .cp-gen-bas');
+        demande.duos = Array.prototype.map.call(hauts, function (el, i) { return { haut: el.value.trim(), bas: (bas[i].value || '').trim() }; })
+            .filter(function (d) { return d.haut && d.bas; });
+        demande.famille = document.getElementById('cpGenPersoFamille').value;
+        demande.titre = document.getElementById('cpGenTitre').value.trim();
+        demande.cta = document.getElementById('cpGenCta').value.trim();
+        demande.legende = document.getElementById('cpGenLegende').value.trim();
+        if (!demande.duos.length) { showToast('Remplis au moins une slide (haut + bas).', true); return; }
+    }
+    var btn = document.getElementById('cpGenSubmit');
+    btn.disabled = true;
+    try {
+        await adminApiCall('/api/publish', { action: 'manual-request', request: demande });
+        showToast('Demande envoyée : le carrousel sera généré au prochain passage de la routine (h40).');
+        await cpFetchRows();
+        cpRenderGenQueue();
+    } catch (e) {
+        showToast('Erreur : ' + e.message, true);
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+function cpRenderGenQueue() {
+    var file = (window._cpRows || []).filter(function (r) { return r.status === 'requested'; });
+    var box = document.getElementById('cpGenQueue');
+    if (!box) return;
+    box.innerHTML = file.length ? file.map(function (r) {
+        var od = r.overlay_data || {};
+        return '<div class="cp-slot" style="cursor:default;"><span class="cp-time">' + String(r.scheduled_time || '').slice(0, 5) + '</span>'
+            + '<div class="cp-mid"><div class="cp-top">' + cpPill('requested') + '</div><div class="cp-ttl">' + String(od.titre || 'Carrousel de test').replace(/</g, '&lt;') + ' · ' + (r.scheduled_for || '') + '</div></div>'
+            + '<button onclick="cpCancelRequest(\'' + r.id + '\')" style="border:none;background:none;color:#c2334e;font-size:15px;cursor:pointer;" aria-label="Annuler"><i class="fas fa-times"></i></button></div>';
+    }).join('') : '<div class="cp-txt-box" style="text-align:center;color:#8a8290;">Aucune demande en attente.</div>';
+}
+
+async function cpCancelRequest(id) {
+    if (!confirm('Annuler cette demande de génération ?')) return;
+    const { error } = await supabaseClient.from('pending_publications').delete().eq('id', id).eq('status', 'requested');
+    if (error) { showToast('Erreur : ' + error.message, true); return; }
+    await cpFetchRows();
+    cpRenderGenQueue();
+}
+
+// ---------- Biblio ----------
+function cpRenderBiblio() {
+    var chips = document.getElementById('cpLibChips');
+    chips.innerHTML = '<button class="' + (!_cpLibFamille ? 'active' : '') + '" onclick="_cpLibFamille=\'\';cpRenderBiblio()">Toutes</button>'
+        + Object.keys(CP_FAMILLES_DUO).map(function (k) {
+            return '<button class="' + (_cpLibFamille === k ? 'active' : '') + '" onclick="_cpLibFamille=\'' + k + '\';cpRenderBiblio()">' + CP_FAMILLES_DUO[k] + '</button>';
+        }).join('');
+    var q = (document.getElementById('cpLibSearch').value || '').toLowerCase();
+    var rows = window._cpRows || [];
+    var liste = (_cpCalendar || []).filter(function (e) {
+        if (e.mise_en_page !== 'duo') return false;
+        if (_cpLibFamille && e.format !== _cpLibFamille) return false;
+        if (!q) return true;
+        return (e.titre + ' ' + e.slides.map(function (s) { return s.texte; }).join(' ')).toLowerCase().indexOf(q) !== -1;
+    });
+    document.getElementById('cpLibList').innerHTML = liste.length ? liste.map(function (e) {
+        var genere = rows.find(function (r) { return r.overlay_data && r.overlay_data.calendar_id === e.id && r.platform === 'instagram'; });
+        var duos = '';
+        [1, 2, 3, 4, 5, 6].forEach(function (pg) {
+            var hS = e.slides.find(function (s) { return s.page === pg && s.position === 'haut'; });
+            var bS = e.slides.find(function (s) { return s.page === pg && s.position === 'bas'; });
+            if (hS && bS) duos += '<div class="cp-lib-duo">' + cpDuoTexteHtml(hS.texte) + '<br><span>→</span> ' + cpDuoTexteHtml(bS.texte) + '</div>';
+        });
+        return '<details class="cp-lib-item"><summary><span class="cp-pill" style="background:#efe9df;color:#8a8290;">J' + e.jour + '</span><b>' + e.titre + '</b>'
+            + (genere ? cpPill(genere.status) : '') + '</summary>'
+            + '<div style="font-size:11px;color:#8a8290;margin:8px 0 4px;">' + e.format_nom + ' · ' + e.heure + '</div>' + duos
+            + '<button class="cp-secondary" onclick="cpGenFromBiblio(\'' + e.id + '\')"><i class="fas fa-wand-magic-sparkles"></i> Générer ce carrousel en test</button></details>';
+    }).join('') : '<div class="cp-txt-box" style="text-align:center;color:#8a8290;">Aucun résultat.</div>';
+}
+
+async function cpGenFromBiblio(id) {
+    var e = (_cpCalendar || []).find(function (x) { return x.id === id; });
+    cpTab('generate');
+    await cpRenderGenerate();
+    cpGenMode('banque');
+    document.getElementById('cpGenFamille').value = e ? e.format : '';
+    cpGenFillCarrousels(id);
+}
+
+// ---------- Valider ----------
+function cpRenderValidate() {
+    var rows = (window._cpRows || []).filter(function (r) { return r.status === 'pending' || r.status === 'generating'; });
+    rows.sort(function (a, b) { return String(cpRowDay(a) + (a.scheduled_time || '')).localeCompare(String(cpRowDay(b) + (b.scheduled_time || ''))); });
+    document.getElementById('cpValLabel').textContent = rows.length ? (rows.length + ' contenu' + (rows.length > 1 ? 's' : '') + ' à traiter') : 'À valider';
+    document.getElementById('cpValList').innerHTML = rows.length ? rows.map(cpSlotHtml).join('')
+        : '<div class="cp-txt-box" style="text-align:center;color:#8a8290;">Rien à valider pour le moment. ✨</div>';
+}
+
+// ---------- Réglages ----------
+async function cpResetCalendarDrafts(portee) {
+    var messages = {
+        ancien: 'Retirer tous les carrousels à l\'ancien format qui ne sont pas encore publiés ?',
+        tous: 'Supprimer TOUS les carrousels du calendrier non publiés (y compris approuvés) ? Ils seront régénérés par la routine du soir.',
+        file: 'Vider la file des carrousels de test en attente ?'
+    };
+    if (!confirm(messages[portee])) return;
+    try {
+        var q = supabaseClient.from('pending_publications').select('id, status, overlay_data');
+        q = portee === 'file' ? q.eq('status', 'requested') : q.filter('overlay_data->>source', 'eq', 'content-calendar').neq('status', 'published');
+        const { data, error } = await q;
+        if (error) throw error;
+        var cibles = (data || []).filter(function (r) {
+            if (portee !== 'ancien') return true;
+            // Les carrousels duo ont un identifiant « D + famille + numéro » (ex. DR001).
+            return !/^D[RCEMPS]\d/.test((r.overlay_data && r.overlay_data.calendar_id) || '');
+        }).map(function (r) { return r.id; });
+        if (!cibles.length) { showToast('Rien à retirer.'); return; }
+        const del = await supabaseClient.from('pending_publications').delete().in('id', cibles);
+        if (del.error) throw del.error;
+        showToast(cibles.length + ' élément(s) retiré(s).');
+        await cpFetchRows();
+        cpRenderHome();
+    } catch (e) {
+        showToast('Erreur : ' + (e.message || e), true);
+    }
+}
+
 function cpGo(view) {
     document.querySelectorAll('#content-planner-overlay .cp-view').forEach(function (v) { v.classList.remove('active'); });
     var el = document.getElementById('cp-view-' + view);
@@ -5752,6 +6156,7 @@ var CP_STATUS_PILLS = {
     published: { label: 'Publié', bg: 'rgba(62,207,142,.16)', fg: '#1f8a5b' },
     failed: { label: 'Échec', bg: 'rgba(244,63,94,.14)', fg: '#c2334e' },
     rejected: { label: 'Rejeté', bg: '#efe9df', fg: '#8a8290' },
+    requested: { label: 'En file', bg: 'rgba(168,85,247,.10)', fg: '#7c3aed' },
     none: { label: 'Prévu', bg: '#efe9df', fg: '#8a8290' }
 };
 
@@ -10100,6 +10505,10 @@ function completeTicket(id) {
 
 function buildTicketCardHtml(c) {
         var sc = c.status || 'en-cours';
+        // Mode SMVIP+ (bouton caché de l'en-tête) : les vraies valeurs ne sont
+        // même pas écrites dans la page, seulement des valeurs factices floutées.
+        var masque = !!window.ticketVipMode;
+        var mk = function (t) { return '<span class="tk-mask">' + t + '</span>'; };
         var matches = c.matches || [];
 
         // Un match reporté ne compte pas dans la cote totale : on recalcule
@@ -10115,7 +10524,7 @@ function buildTicketCardHtml(c) {
             ? (hasValidOdds ? calcOdds : 0)
             : (parseFloat(c.total_odds || c.totalOdds) || (hasValidOdds ? calcOdds : 0));
         var fmtOdd = function (v) { return Number(v).toFixed(2).replace('.', ','); };
-        var displayOdds = finalOdds > 0 ? fmtOdd(finalOdds) : '***.**';
+        var displayOdds = masque ? mk('000,00') : (finalOdds > 0 ? fmtOdd(finalOdds) : '***.**');
 
         var kept = matches.filter(function (m) { return m.match_status !== 'reporte'; }).length;
         var pillLabel = sc === 'termine' ? 'Gagné' : (sc === 'perdu' ? 'Perdu' : 'En cours');
@@ -10138,10 +10547,10 @@ function buildTicketCardHtml(c) {
             var affiche = reel || (sc === 'termine' && hasScore ? m.score : null);
             var scoreParts = affiche ? String(affiche).split('-').map(function (s) { return s.trim(); }) : null;
             var mid = scoreParts && scoreParts.length === 2
-                ? `<span class="sc">${scoreParts[0]} - ${scoreParts[1]}</span>`
+                ? `<span class="sc">${masque ? mk('0 - 0') : scoreParts[0] + ' - ' + scoreParts[1]}</span>`
                 : `<span class="sc">-</span>`;
             var teamsLine = away ? (sc === 'en-cours' ? `${home} - ${away}` : `${home}${mid}${away}`) : home;
-            var scoreLabel = hasScore ? m.score.replace('-', ' - ') : '-';
+            var scoreLabel = masque ? mk('0 - 0') : (hasScore ? m.score.replace('-', ' - ') : '-');
 
             var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" alt="">` : (m.league_flag ? `<span style="display:inline-flex; align-items:center;">${m.league_flag}</span>` : ''));
 
@@ -10155,7 +10564,7 @@ function buildTicketCardHtml(c) {
             var kick = sc === 'en-cours' ? `<span class="hc-kick">${ticketKickoff(c.date, m.time)}</span>` : '';
 
             // Cote annulée sur un match reporté : elle ne compte plus, on ne l'affiche plus.
-            var odd = (m.match_status !== 'reporte' && m.odds && m.odds > 0) ? `<span class="hc-odd">${fmtOdd(m.odds)}</span>` : '';
+            var odd = (m.match_status !== 'reporte' && m.odds && m.odds > 0) ? `<span class="hc-odd">${masque ? mk('00,00') : fmtOdd(m.odds)}</span>` : '';
 
             return `<div class="hc-leg">
                 <div class="hc-leg-top"><div class="hc-leg-pick ${sc}">${pick}</div>${odd}</div>
@@ -10171,11 +10580,11 @@ function buildTicketCardHtml(c) {
             gainHtml = '';
         } else if (finalOdds > 0 && sc === 'en-cours') {
             gainHtml = `<div class="hc-row"><span>Mise <small></small></span><strong>${ticketEuros(stake)}</strong></div>
-                <div class="hc-row hc-gain pot"><span>Gains potentiels <small></small></span><strong>${ticketEuros(stake * finalOdds)}</strong></div>`;
+                <div class="hc-row hc-gain pot"><span>Gains potentiels <small></small></span><strong>${masque ? mk('00 000,00 €') : ticketEuros(stake * finalOdds)}</strong></div>`;
         } else if (finalOdds > 0) {
             var gain = sc === 'termine' ? stake * finalOdds : 0;
             gainHtml = `<div class="hc-row"><span>Mise <small></small></span><strong>${ticketEuros(stake)}</strong></div>
-                <div class="hc-row hc-gain ${sc}"><span>Gains <small></small></span><strong>${ticketEuros(gain)}</strong></div>`;
+                <div class="hc-row hc-gain ${sc}"><span>Gains <small></small></span><strong>${masque ? mk('00 000,00 €') : ticketEuros(gain)}</strong></div>`;
         }
 
         return `<div class="hc ${sc}">
@@ -10198,7 +10607,7 @@ function buildTicketCardHtml(c) {
                 </div>
                 ${sc === 'en-cours'
                     ? `<div class="hc-cta-row">
-                        ${finalOdds > 0 ? `<button class="hc-cash" onclick="cashoutTicket()">Cashout${TICKET_SHOW_AMOUNTS ? ' ' + ticketEuros(ticketCashout(c, stake)) : ''}</button>` : ''}
+                        ${finalOdds > 0 ? `<button class="hc-cash" onclick="cashoutTicket()">Cashout${TICKET_SHOW_AMOUNTS ? ' ' + (masque ? mk('00,00 €') : ticketEuros(ticketCashout(c, stake))) : ''}</button>` : ''}
                         <button class="hc-cta" onclick="completeTicket('${String(c.id || '').replace(/[^\w-]/g, '')}')">Compléter</button>
                     </div>`
                     : ''}
@@ -10211,6 +10620,13 @@ function buildTicketCardHtml(c) {
 // « Terminés » = gagnés + perdus ; les deux boutons de gauche déplient / replient toutes les cartes.
 var ticketView = 'open';
 var ticketFilter = 'finished';
+
+function toggleTicketVipMode() {
+    window.ticketVipMode = !window.ticketVipMode;
+    var ov = document.getElementById('ticket-history-overlay');
+    if (ov) ov.classList.toggle('tk-vipmode', window.ticketVipMode);
+    filterTicketHistory(ticketFilter);
+}
 
 function filterTicketHistory(filter) {
     ticketFilter = filter;

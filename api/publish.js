@@ -283,18 +283,161 @@ async function handleCalendarDraft(req, res) {
         body: JSON.stringify([row])
     });
 
+    const nouvelId = inserted && inserted[0] && inserted[0].id;
+
+    if (draft.request_id) {
+        // Carrousel de test : la demande d'origine est traitée, on la retire de la file.
+        await sbFetch('pending_publications?id=eq.' + encodeURIComponent(draft.request_id) + '&status=eq.requested', { method: 'DELETE' }).catch(function () {});
+    } else if (nouvelId && draft.scheduled_for && draft.scheduled_time) {
+        // Un nouveau carrousel du calendrier remplace tout brouillon non publié
+        // déjà posé sur le même créneau (ex. ancien format déjà approuvé) : un
+        // créneau ne publie jamais deux carrousels.
+        await sbFetch('pending_publications?overlay_data->>source=eq.content-calendar'
+            + '&scheduled_for=eq.' + encodeURIComponent(draft.scheduled_for)
+            + '&scheduled_time=eq.' + encodeURIComponent(draft.scheduled_time)
+            + '&platform=eq.' + encodeURIComponent(draft.platform || 'instagram')
+            + '&status=neq.published&id=neq.' + encodeURIComponent(nouvelId), { method: 'DELETE' }).catch(function () {});
+    }
+
     // Notification Telegram privée à l'admin : une seule par publication (sur la
     // ligne Instagram, pas sur sa jumelle Telegram), pour ne pas doubler l'alerte.
     if ((draft.platform || 'instagram') === 'instagram') {
         const quand = draft.scheduled_time ? (' à ' + String(draft.scheduled_time).replace(':', 'h')) : '';
-        const message = `🗓️ CARROUSEL PRÊT À VALIDER\n\n« ${draft.titre || draft.calendar_id} »\nPrévu le ${draft.scheduled_for}${quand} — Instagram + Telegram.\n\nOuvre l'app : Panel Admin > Publications. Les visuels s'habillent tout seuls à l'ouverture, puis tu approuves.`;
+        const message = draft.request_id
+            ? `🧪 CARROUSEL DE TEST PRÊT\n\n« ${draft.titre || draft.calendar_id} »\nPrévu le ${draft.scheduled_for}${quand} s'il est approuvé.\n\nOuvre l'app : Content Planner > Valider.`
+            : `🗓️ CARROUSEL PRÊT À VALIDER\n\n« ${draft.titre || draft.calendar_id} »\nPrévu le ${draft.scheduled_for}${quand} — Instagram + Telegram.\n\nOuvre l'app : Content Planner > Valider. Les visuels s'habillent tout seuls à l'ouverture, puis tu approuves.`;
         await sbFetch('telegram_queue', {
             method: 'POST',
             body: JSON.stringify([{ message: message }])
         }).catch(function () {});
     }
 
-    res.status(200).json({ ok: true, id: inserted && inserted[0] && inserted[0].id });
+    res.status(200).json({ ok: true, id: nouvelId });
+}
+
+// ------------------------------------------------------------
+// Carrousels de test demandés à la main depuis le Content Planner.
+// L'app dépose une demande (statut "requested") ; la routine cloud
+// « Carrousels manuels » la récupère, génère les images avec la mascotte, puis
+// dépose le brouillon via calendar-draft (avec request_id).
+// ------------------------------------------------------------
+const MASCOTTE = '<<<5367a632-1402-4f89-8713-824bedb14457>>>';
+const PERSONNAGE = 'the friendly grey and gold robot mascot with a golden crown, glowing yellow eyes behind a dark visor and a small golden shield crest on its chest, is the main character';
+const INTERDITS = 'ABSOLUTE RULE: no text, no letters, no numbers, no logos and no readable signage anywhere in the image — captions and the Score Master logo are added separately afterwards. No real club crests, no real person\'s face.';
+const JEU_RESPONSABLE = '18+ · Jouer comporte des risques : endettement, dépendance… Appelez le 09 74 75 13 13 (appel non surtaxé).';
+const FAMILLES_DUO = {
+    R: 'Le bon réflexe', C: "Ce que tu vois / Ce qu'on calcule", E: "L'erreur / Le réflexe",
+    M: 'Idée reçue / Réalité', P: 'Pressé / Patient', S: 'Coulisses Score Master'
+};
+
+function promptMoitie(scene, position) {
+    const ambiance = position === 'haut'
+        ? 'slightly cooler and muted color grading, a hint of tension'
+        : 'warm golden color grading, calm and confident mood';
+    return `${MASCOTTE} The mascot ${scene}. ${PERSONNAGE}, soft 3D toon character integrated into a realistic cinematic environment, ${ambiance}, rich environmental detail, eye-level shot, square 1:1 composition, subject centered, keep the lower fifth of the frame visually simple. ${INTERDITS}`;
+}
+function promptCta(scene) {
+    return `${MASCOTTE} The mascot ${scene}. ${PERSONNAGE}, soft 3D toon character integrated into a realistic cinematic environment, warm golden color grading, vertical 9:16 composition, mascot in the upper half of the frame, the lower half darker and visually simple. ${INTERDITS}`;
+}
+
+async function handleManualRequest(req, res) {
+    const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    if (!(await verifyAdmin(accessToken))) return res.status(403).json({ error: 'Accès refusé' });
+
+    const r = (req.body && req.body.request) || {};
+    const date = String(r.scheduled_for || '');
+    const heure = String(r.scheduled_time || '');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}$/.test(heure)) {
+        return res.status(400).json({ error: 'Date (AAAA-MM-JJ) et heure (HH:MM) requises.' });
+    }
+    const plateformes = (Array.isArray(r.platforms) ? r.platforms : ['instagram']).filter(p => p === 'instagram' || p === 'telegram');
+    if (!plateformes.length) return res.status(400).json({ error: 'Choisis au moins une plateforme.' });
+
+    let demande;
+    if (r.mode === 'banque') {
+        if (!r.calendar_id) return res.status(400).json({ error: 'Choisis un carrousel de la banque.' });
+        demande = { mode: 'banque', calendar_id: String(r.calendar_id) };
+    } else if (r.mode === 'perso') {
+        const duos = (Array.isArray(r.duos) ? r.duos : [])
+            .map(d => ({ haut: String((d && d.haut) || '').trim().slice(0, 90), bas: String((d && d.bas) || '').trim().slice(0, 90) }))
+            .filter(d => d.haut && d.bas);
+        if (duos.length < 1 || duos.length > 6) return res.status(400).json({ error: 'Entre 1 et 6 slides duo, avec un texte en haut et en bas.' });
+        demande = {
+            mode: 'perso',
+            famille: FAMILLES_DUO[r.famille] ? r.famille : 'R',
+            titre: String(r.titre || 'Carrousel de test').slice(0, 80),
+            duos,
+            cta: String(r.cta || 'Un conseil par jour. *Zéro promesse.* Abonne-toi.').slice(0, 120),
+            legende: String(r.legende || '').slice(0, 1500)
+        };
+    } else {
+        return res.status(400).json({ error: 'Mode inconnu.' });
+    }
+
+    const lignes = await sbFetch('pending_publications', {
+        method: 'POST',
+        headers: { Prefer: 'return=representation' },
+        body: JSON.stringify([{
+            scheduled_for: date,
+            scheduled_time: heure,
+            content_type: 'Carrousel Calendrier',
+            platform: 'instagram',
+            caption: 'Carrousel de test en attente de génération',
+            status: 'requested',
+            overlay_data: { source: 'manual-request', titre: demande.titre || demande.calendar_id, platforms: plateformes, demande }
+        }])
+    });
+    res.status(200).json({ ok: true, id: lignes && lignes[0] && lignes[0].id });
+}
+
+// GET ?action=manual-queue&secret=CALENDAR_SECRET — demandes en attente, prêtes
+// à générer : chaque slide porte son prompt final, sauf en mode personnalisé où
+// la routine écrit la scène ({{SCENE}}) d'après la légende.
+async function handleManualQueue(req, res) {
+    if (!CALENDAR_SECRET || req.query.secret !== CALENDAR_SECRET) return res.status(401).json({ error: 'Secret invalide' });
+    const demandes = await sbFetch('pending_publications?status=eq.requested&select=id,scheduled_for,scheduled_time,overlay_data&order=created_at.asc&limit=4') || [];
+    if (!demandes.length) return res.status(200).json({ jobs: [] });
+
+    let calendrier = null;
+    const jobs = [];
+    for (const d of demandes) {
+        const od = d.overlay_data || {};
+        const dem = od.demande || {};
+        const base = {
+            request_id: d.id,
+            calendar_id: 'TEST-' + String(d.id).slice(0, 8),
+            scheduled_for: d.scheduled_for,
+            scheduled_time: d.scheduled_time,
+            platforms: od.platforms || ['instagram']
+        };
+        if (dem.mode === 'banque') {
+            if (!calendrier) {
+                const r = await fetch('https://scoremaster.fr/content-calendar.json', { cache: 'no-store' });
+                calendrier = await r.json();
+            }
+            const e = (calendrier || []).find(x => x.id === dem.calendar_id);
+            if (!e) continue;
+            jobs.push(Object.assign(base, {
+                titre: e.titre, format: e.format, format_nom: e.format_nom,
+                caption: [e.accroche, e.corps, e.cta, e.jeu_responsable, e.hashtags].filter(Boolean).join('\n\n'),
+                slides: e.slides.map(s => ({ page: s.page, position: s.position, ratio: s.ratio || '9:16', prompt: s.prompt, texte: s.texte }))
+            }));
+        } else if (dem.mode === 'perso') {
+            const slides = [];
+            dem.duos.forEach((x, i) => {
+                slides.push({ page: i + 1, position: 'haut', ratio: '1:1', prompt: promptMoitie('{{SCENE}}', 'haut'), texte: x.haut, scene_a_ecrire: true });
+                slides.push({ page: i + 1, position: 'bas', ratio: '1:1', prompt: promptMoitie('{{SCENE}}', 'bas'), texte: x.bas, scene_a_ecrire: true });
+            });
+            slides.push({ page: dem.duos.length + 1, position: 'cta', ratio: '9:16', prompt: promptCta('waving at the viewer in front of a stadium at golden hour'), texte: dem.cta });
+            const legende = dem.legende || (dem.titre + '\n\n' + dem.cta.replace(/\*/g, ''));
+            jobs.push(Object.assign(base, {
+                titre: dem.titre, format: dem.famille, format_nom: FAMILLES_DUO[dem.famille] || 'Test',
+                caption: legende + '\n\n' + JEU_RESPONSABLE + '\n\n#ScoreMaster #Football #PronosticsFootball #JeuResponsable',
+                slides
+            }));
+        }
+    }
+    res.status(200).json({ jobs });
 }
 
 module.exports = async function handler(req, res) {
@@ -303,8 +446,10 @@ module.exports = async function handler(req, res) {
     }
 
     try {
+        if (req.method === 'GET' && req.query.action === 'manual-queue') return await handleManualQueue(req, res);
         if (req.method === 'GET') return await handleCronSweep(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'calendar-draft') return await handleCalendarDraft(req, res);
+        if (req.method === 'POST' && req.body && req.body.action === 'manual-request') return await handleManualRequest(req, res);
         if (req.method === 'POST') return await handleForcePublish(req, res);
         return res.status(405).json({ error: 'Méthode non autorisée' });
     } catch (error) {
