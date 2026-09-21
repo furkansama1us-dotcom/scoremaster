@@ -667,3 +667,6 @@ drop policy if exists "Admins can update automation settings" on public.automati
 create policy "Admins can update automation settings"
   on public.automation_settings for update
   using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));
+
+-- Séquence marketing du combiné (relances + résultat), désactivée par défaut.
+alter table public.automation_settings add column if not exists auto_sequence boolean not null default false;

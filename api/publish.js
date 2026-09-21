@@ -214,6 +214,195 @@ async function approuverAutomatiquement(now) {
     return { actif: true, approuves };
 }
 
+// ------------------------------------------------------------
+// Séquence marketing du combiné (Content Planner > Réglages)
+//
+// Calée sur le premier coup d'envoi du combiné du jour :
+//   - « Bonjour l'équipe » ~5 h avant (jamais avant 9h), Telegram + story ;
+//   - relance 2 h avant, Telegram + story ;
+//   - « c'est parti » 15 min avant, Telegram ;
+//   - après la validation du résultat par l'admin : message victoire ou
+//     défaite, Telegram + story (jamais la nuit : entre 8h et minuit).
+// Chaque étape est créée une seule fois (clé de séquence) et déjà approuvée :
+// le balayage la publie dans la foulée. L'agent ne valide jamais un résultat.
+// ------------------------------------------------------------
+const PIED_JEU = '18+ · Jouer comporte des risques : endettement, dépendance… Appelez le 09 74 75 13 13 (appel non surtaxé).';
+const LIEN_APP = '🌐 scoremaster.fr';
+
+const SEQ_TELEGRAM = {
+    bonjour: [
+        "☀️ Bonjour l'équipe ! J'espère que vous passez une bonne journée.\n\nDe notre côté, on termine l'analyse des matchs du jour : premier coup d'envoi à {HEURE}. On vous a préparé du solide. 🔍",
+        "👋 Salut à tous !\n\nLe combiné du jour est prêt : {N} passés au crible. Coup d'envoi à {HEURE}.\n\nOn reste concentrés jusqu'au bout. 🎯",
+        "🔎 Bonjour la team !\n\nOn peaufine les derniers détails avant le coup d'envoi de {HEURE} : compositions, dynamique, enjeux, tout est vérifié.",
+        "💬 Bonne journée à tous !\n\nAu programme de notre combiné : {N}. On vous en dit plus dans l'app, avant le coup d'envoi à {HEURE}.",
+        "📊 Hello l'équipe !\n\nJournée d'analyse chez Score Master : le combiné est bouclé. Premier match à {HEURE}.\n\nComme toujours : mise raisonnable, esprit clair.",
+        "⚽ Bonjour à tous !\n\nOn continue d'analyser les rencontres du jour, et on vous réserve une belle sélection. Coup d'envoi à {HEURE}. 🔥"
+    ],
+    relance: [
+        "⏳ Plus que 2 heures avant le coup d'envoi ({HEURE}) !\n\nLe combiné du jour est disponible dans l'app. Dernière ligne droite. 🎯",
+        "🚨 J-2h ! Les compositions tombent bientôt, on vérifie tout une dernière fois.\n\nCoup d'envoi à {HEURE}. Le combiné vous attend dans l'app.",
+        "🔥 Ça approche ! {N}, un seul objectif.\n\nRendez-vous à {HEURE}. Pensez à fixer votre budget avant de jouer.",
+        "📲 Petit rappel : le combiné du jour est en ligne dans l'app.\n\nPremier match à {HEURE}. Restez concentrés, restez raisonnables.",
+        "⏰ Dernier rappel !\n\nCoup d'envoi à {HEURE}. Tout est prêt de notre côté."
+    ],
+    depart: [
+        "🟢 C'est parti dans 15 minutes ! Bon match à tous. ⚽",
+        "⚽ Coup d'envoi imminent. On croise les doigts avec vous !",
+        "🎬 Les équipes entrent sur le terrain. Bon match à tous !",
+        "🔔 C'est l'heure ! Bon match, et restez raisonnables. ⚽"
+    ],
+    victoire: [
+        "✅ COMBINÉ VALIDÉ !\n\nBravo à toute l'équipe, l'analyse a payé. 🎉\n\n{STAT}Merci pour votre confiance. On se retrouve demain pour la suite.",
+        "🏆 C'EST GAGNÉ !\n\nLe combiné du jour passe : le travail d'analyse paie. 💪\n\n{STAT}Rendez-vous demain, même rigueur.",
+        "🎯 Dans le mille !\n\nCombiné validé.\n\n{STAT}Merci à tous ceux qui nous suivent. À demain !",
+        "✅ Victoire !\n\nUne sélection bien pensée, des matchs bien lus.\n\n{STAT}On reste humbles et on continue demain."
+    ],
+    defaite: [
+        "❌ Pas cette fois.\n\nLe combiné du jour ne passe pas. Ça fait partie du jeu, et on l'assume.\n\n{STAT}On analyse ce qui a manqué et on revient demain avec la même rigueur. Pas de précipitation : mise toujours dans ton budget.",
+        "😤 Raté.\n\nLe football reste imprévisible, même avec une bonne analyse.\n\n{STAT}On ne cherche pas à « se refaire » : on reprend demain, tranquillement, avec méthode.",
+        "❌ Combiné perdu.\n\nOn vous le dit franchement, comme toujours.\n\n{STAT}On repasse les matchs en revue et on revient demain. Restez raisonnables. 🙏",
+        "Ça n'a pas voulu. ❌\n\nUne défaite ne change pas notre méthode.\n\n{STAT}Merci pour votre confiance, on se retrouve demain."
+    ]
+};
+
+const SEQ_STORY = {
+    bonjour: [
+        { badge: "AUJOURD'HUI · {HEURE}", texte: "On termine l'analyse des matchs *du jour*" },
+        { badge: "AUJOURD'HUI · {HEURE}", texte: "Le combiné du jour est *prêt*" },
+        { badge: "AUJOURD'HUI · {HEURE}", texte: "On vous a préparé *du solide*" }
+    ],
+    relance: [
+        { badge: 'J-2H', texte: "Plus que *2 heures* avant le coup d'envoi" },
+        { badge: 'J-2H', texte: "Dernière ligne droite : coup d'envoi à *{HEURE}*" },
+        { badge: 'J-2H', texte: "Le combiné est *en ligne* dans l'app" }
+    ],
+    victoire: [
+        { badge: 'RÉSULTAT', texte: 'Combiné *validé*' },
+        { badge: 'RÉSULTAT', texte: "C'est *gagné*. Merci pour votre confiance" },
+        { badge: 'RÉSULTAT', texte: "L'analyse a *payé*" }
+    ],
+    defaite: [
+        { badge: 'RÉSULTAT', texte: 'Pas cette fois. On revient *demain*' },
+        { badge: 'RÉSULTAT', texte: 'Combiné perdu. Même *méthode* demain' },
+        { badge: 'RÉSULTAT', texte: 'On analyse, on apprend, on *revient*' }
+    ]
+};
+
+function minutesDe(hhmm) {
+    const m = String(hhmm || '').match(/(\d{1,2}):(\d{2})/);
+    return m ? (+m[1]) * 60 + (+m[2]) : null;
+}
+function hhmm(minutes) {
+    const m = ((minutes % 1440) + 1440) % 1440;
+    return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+}
+// Rotation sans répétition d'un jour sur l'autre.
+function choisir(liste, dateStr, decalage) {
+    const jour = Math.floor(Date.parse(dateStr + 'T12:00:00Z') / 86400000);
+    return liste[(jour + (decalage || 0)) % liste.length];
+}
+function remplir(t, v) {
+    return String(t).replace(/\{HEURE\}/g, v.heure || '').replace(/\{N\}/g, v.n || 'plusieurs matchs').replace(/\{STAT\}/g, v.stat || '');
+}
+
+// Vrai taux de réussite sur 30 jours (affiché seulement à partir de 5 combinés).
+async function statTrenteJours(dateStr) {
+    const d = new Date(dateStr + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() - 30);
+    const rows = await sbFetch('combineds_public?date=gte.' + d.toISOString().slice(0, 10) + '&status=in.(termine,perdu)&select=status') || [];
+    if (rows.length < 5) return '';
+    const g = rows.filter(r => r.status === 'termine').length;
+    return '📈 Sur les 30 derniers jours : ' + g + ' combiné' + (g > 1 ? 's' : '') + ' gagné' + (g > 1 ? 's' : '') + ' sur ' + rows.length + '.\n\n';
+}
+
+// Fond de story : un visuel 9:16 récent de la mascotte (slides finales des carrousels).
+async function fondStoryRecent(dateStr, decalage) {
+    try {
+        const rows = await sbFetch('pending_publications?overlay_data->>source=eq.content-calendar&select=overlay_data&order=created_at.desc&limit=12') || [];
+        const fonds = [];
+        rows.forEach(r => ((r.overlay_data && r.overlay_data.slides) || []).forEach(s => {
+            if (s.position === 'cta' && s.image_url && fonds.indexOf(s.image_url) === -1) fonds.push(s.image_url);
+        }));
+        return fonds.length ? choisir(fonds, dateStr, decalage) : null;
+    } catch (e) { return null; }
+}
+
+async function creerEtapeSequence(cle, canal, etape, v, now) {
+    const deja = await sbFetch('pending_publications?overlay_data->>sequence_key=eq.' + encodeURIComponent(cle) + '&select=id&limit=1');
+    if (deja && deja.length) return false;
+
+    const base = {
+        scheduled_for: now.dateStr,
+        scheduled_time: hhmm(now.minutes),
+        content_type: 'Séquence combiné',
+        status: 'approved',
+        overlay_data: { source: 'sequence', sequence_key: cle, etape }
+    };
+    let ligne;
+    if (canal === 'telegram') {
+        const texte = remplir(choisir(SEQ_TELEGRAM[etape], now.dateStr, etape.length), v);
+        ligne = Object.assign(base, { platform: 'telegram', image_url: '', caption: texte + '\n\n' + LIEN_APP + '\n' + PIED_JEU });
+    } else {
+        const modele = choisir(SEQ_STORY[etape], now.dateStr, etape.length);
+        const { composerStory } = await import('./_compositeur.mjs');
+        const image = await composerStory({
+            fondUrl: await fondStoryRecent(now.dateStr, etape.length),
+            badge: remplir(modele.badge, v),
+            texte: remplir(modele.texte, v)
+        });
+        const [url] = await televerserSlides('story-' + cle.replace(/[^\w-]/g, '_'), ['data:image/jpeg;base64,' + image.toString('base64')]);
+        ligne = Object.assign(base, { platform: 'instagram', image_url: url, image_url_story: url, caption: remplir(modele.texte, v).replace(/\*/g, '') });
+    }
+    await sbFetch('pending_publications', { method: 'POST', body: JSON.stringify([ligne]) });
+    return true;
+}
+
+async function sequenceMarketing(now) {
+    const reglages = await lireReglagesAuto();
+    if (!reglages || !reglages.auto_sequence) return { actif: false };
+    const bilan = { actif: true, creees: [] };
+
+    // 1) Relances autour du combiné du jour
+    const combos = await sbFetch('combineds_public?date=eq.' + now.dateStr + '&status=eq.en-cours&select=id,time,nombre_matchs,matches') || [];
+    let coupEnvoi = null, nbMatchs = 0;
+    combos.forEach(c => {
+        const heures = [minutesDe(c.time)].concat((c.matches || []).map(m => minutesDe(m.time))).filter(x => x !== null);
+        heures.forEach(x => { if (coupEnvoi === null || x < coupEnvoi) coupEnvoi = x; });
+        nbMatchs += c.nombre_matchs || (c.matches || []).length || 0;
+    });
+    if (coupEnvoi !== null) {
+        const v = { heure: hhmm(coupEnvoi).replace(':', 'h'), n: nbMatchs ? nbMatchs + ' match' + (nbMatchs > 1 ? 's' : '') : '' };
+        const etapes = [
+            { etape: 'bonjour', debut: Math.max(coupEnvoi - 300, 9 * 60), fin: coupEnvoi - 150, canaux: ['telegram', 'story'] },
+            { etape: 'relance', debut: coupEnvoi - 120, fin: coupEnvoi - 30, canaux: ['telegram', 'story'] },
+            { etape: 'depart', debut: coupEnvoi - 15, fin: coupEnvoi + 10, canaux: ['telegram'] }
+        ];
+        for (const e of etapes) {
+            if (e.debut >= e.fin || now.minutes < e.debut || now.minutes >= e.fin) continue;
+            for (const canal of e.canaux) {
+                try {
+                    if (await creerEtapeSequence('seq:' + now.dateStr + ':' + e.etape + ':' + canal, canal, e.etape, v, now)) bilan.creees.push(e.etape + ':' + canal);
+                } catch (err) { bilan.erreur = String(err); }
+            }
+        }
+    }
+
+    // 2) Résultat, une fois validé par l'admin (jamais la nuit)
+    if (now.minutes >= 8 * 60) {
+        const hier = new Date(now.dateStr + 'T12:00:00Z'); hier.setUTCDate(hier.getUTCDate() - 1);
+        const valides = await sbFetch('combineds_public?date=gte.' + hier.toISOString().slice(0, 10) + '&status=in.(termine,perdu)&select=id,status,date') || [];
+        for (const c of valides) {
+            const etape = c.status === 'termine' ? 'victoire' : 'defaite';
+            const v = { stat: await statTrenteJours(now.dateStr) };
+            for (const canal of ['telegram', 'story']) {
+                try {
+                    if (await creerEtapeSequence('res:' + c.id + ':' + canal, canal, etape, v, now)) bilan.creees.push(etape + ':' + canal);
+                } catch (err) { bilan.erreur = String(err); }
+            }
+        }
+    }
+    return bilan;
+}
+
 function parisNowParts() {
     const parts = new Intl.DateTimeFormat('en-CA', {
         timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit',
@@ -241,6 +430,11 @@ async function handleCronSweep(req, res) {
         summary.automatisation = await approuverAutomatiquement(now);
     } catch (e) {
         summary.automatisation = { erreur: String(e) };
+    }
+    try {
+        summary.sequence = await sequenceMarketing(now);
+    } catch (e) {
+        summary.sequence = { erreur: String(e) };
     }
     const approvedAll = await sbFetch(`pending_publications?status=eq.approved&select=*`);
     const approved = approvedAll.filter(item => isDue(item, now));

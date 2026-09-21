@@ -2716,7 +2716,9 @@ async function fetchApiScore(id, dateRaw) {
         <!-- Réglages > Gérer : ce que l'automatisation va faire -->
         <div class="cp-view" id="cp-view-auto">
             <button class="cp-back" onclick="cpTab('settings')">‹ Réglages</button>
-            <div class="cp-eyebrow">Les 3 prochains jours</div>
+            <div class="cp-eyebrow">Séquence du combiné — aujourd'hui</div>
+            <div id="cpSeqJour" style="margin-bottom:18px;"></div>
+            <div class="cp-eyebrow">Carrousels — les 3 prochains jours</div>
             <div class="cp-set-card" style="display:flex;align-items:center;gap:10px;">
                 <div style="flex:1;"><b>Heure d'approbation automatique</b><br><span style="font-size:11.5px;color:#8a8290;">Doit précéder la première publication (08:15).</span></div>
                 <select class="cp-input" id="cpAutoHeure" style="width:auto;" onchange="cpSetAutoHeure(this.value)">
@@ -2736,6 +2738,10 @@ async function fetchApiScore(id, dateRaw) {
                     <button class="cp-manage" onclick="cpOpenAuto()">Gérer</button>
                 </div>
                 <div id="cpAutoEtat" style="font-size:11.5px;margin-top:10px;"></div>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:14px;border-top:1px dashed #e7e0d5;">
+                    <label class="cp-switch"><input type="checkbox" id="cpSeqToggle" onchange="cpSetSequence(this.checked)"><span></span></label>
+                    <div style="flex:1;min-width:0;"><b>Séquence marketing du combiné</b><br><span style="font-size:11.5px;color:#8a8290;">Relances avant le coup d'envoi puis message victoire ou défaite après ta validation, sur Telegram et en story Instagram.</span></div>
+                </div>
             </div>
             <div class="cp-eyebrow">Fonctionnement</div>
             <div class="cp-set-card">
@@ -6068,6 +6074,8 @@ async function cpRenderAutoCard() {
     }
     toggle.disabled = false;
     toggle.checked = !!r.auto_publish;
+    var seq = document.getElementById('cpSeqToggle');
+    if (seq) { seq.disabled = !('auto_sequence' in r); seq.checked = !!r.auto_sequence; }
     document.getElementById('cpAutoHeureTxt').textContent = cpHeureTxt(r.auto_approve_at);
     var nbExclus = (r.exclusions || []).length;
     etat.innerHTML = r.auto_publish
@@ -6094,6 +6102,69 @@ async function cpSetAutoPublish(actif) {
     cpRenderAutoCard();
 }
 
+async function cpSetSequence(actif) {
+    if (actif && !confirm('Activer la séquence marketing ? Les relances et les messages de résultat partiront tout seuls sur Telegram et en story Instagram. La validation des résultats reste toujours à toi.')) {
+        document.getElementById('cpSeqToggle').checked = false;
+        return;
+    }
+    if (await cpSaveAuto({ auto_sequence: !!actif })) showToast(actif ? 'Séquence marketing activée.' : 'Séquence marketing désactivée.');
+    cpRenderAutoCard();
+}
+
+function cpMinutes(hhmm) {
+    var m = String(hhmm || '').match(/(\d{1,2}):(\d{2})/);
+    return m ? (+m[1]) * 60 + (+m[2]) : null;
+}
+function cpHhmm(min) {
+    var m = ((min % 1440) + 1440) % 1440;
+    return String(Math.floor(m / 60)).padStart(2, '0') + 'h' + String(m % 60).padStart(2, '0');
+}
+
+// Programme de la séquence du jour, calculé comme le fait le serveur.
+async function cpRenderSequenceJour() {
+    var box = document.getElementById('cpSeqJour');
+    if (!box) return;
+    var r = window._cpAuto;
+    var aujourdhui = cpDstr(new Date());
+    try {
+        const combos = await supabaseClient.from('combineds_public').select('id, time, status, nombre_matchs, matches').eq('date', aujourdhui);
+        const faits = await supabaseClient.from('pending_publications').select('status, overlay_data').eq('content_type', 'Séquence combiné').eq('scheduled_for', aujourdhui);
+        var cles = {};
+        (faits.data || []).forEach(function (x) { if (x.overlay_data && x.overlay_data.sequence_key) cles[x.overlay_data.sequence_key] = x.status; });
+        var liste = combos.data || [];
+        if (!liste.length) {
+            box.innerHTML = '<div class="cp-txt-box" style="font-size:12px;">Pas de combiné publié aujourd\'hui : aucune relance prévue. La séquence démarre dès qu\'un combiné du jour est en ligne.</div>';
+            return;
+        }
+        var coup = null;
+        liste.forEach(function (c) {
+            [cpMinutes(c.time)].concat((c.matches || []).map(function (m) { return cpMinutes(m.time); })).forEach(function (x) {
+                if (x !== null && (coup === null || x < coup)) coup = x;
+            });
+        });
+        var etat = function (cle) {
+            var s = cles[cle];
+            return s === 'published' ? '✅ Publié' : s === 'approved' ? '🟢 En cours d\'envoi' : s === 'failed' ? '❌ Échec' : (r && r.auto_sequence ? '🕘 Prévu' : '⏸️ Séquence désactivée');
+        };
+        var lignes = [];
+        if (coup !== null) {
+            var bonjour = Math.max(coup - 300, 540);
+            if (bonjour < coup - 150) lignes.push(['« Bonjour l\'équipe »', cpHhmm(bonjour), 'Telegram + story', etat('seq:' + aujourdhui + ':bonjour:telegram')]);
+            lignes.push(['Relance J-2h', cpHhmm(coup - 120), 'Telegram + story', etat('seq:' + aujourdhui + ':relance:telegram')]);
+            lignes.push(['« C\'est parti »', cpHhmm(coup - 15), 'Telegram', etat('seq:' + aujourdhui + ':depart:telegram')]);
+        }
+        var valide = liste.find(function (c) { return c.status === 'termine' || c.status === 'perdu'; });
+        lignes.push(['Message de résultat', valide ? (valide.status === 'termine' ? 'Victoire' : 'Défaite') : 'Après ta validation', 'Telegram + story',
+            valide ? etat('res:' + valide.id + ':telegram') : '⏳ En attente de ta validation']);
+        box.innerHTML = '<div class="cp-auto-day"><b>Premier coup d\'envoi : ' + (coup !== null ? cpHhmm(coup) : '—') + '</b>'
+            + lignes.map(function (l) {
+                return '<div class="cp-auto-item"><span class="cp-time" style="width:52px;">' + l[1] + '</span><div class="cp-auto-mid"><div class="cp-auto-ttl">' + l[0] + '</div><div class="cp-auto-etat">' + l[2] + ' · ' + l[3] + '</div></div></div>';
+            }).join('') + '</div>';
+    } catch (e) {
+        box.innerHTML = '<div class="cp-txt-box">Programme indisponible : ' + (e.message || e) + '</div>';
+    }
+}
+
 async function cpSetAutoHeure(v) {
     if (await cpSaveAuto({ auto_approve_at: v })) showToast('Approbation automatique à ' + cpHeureTxt(v) + '.');
     cpRenderAuto();
@@ -6115,6 +6186,7 @@ async function cpOpenAuto() {
     if (sc) sc.scrollTop = 0;
     await Promise.all([cpLoadAuto(), cpLoadCalendar(), cpFetchRows()]);
     cpRenderAuto();
+    cpRenderSequenceJour();
 }
 
 function cpRenderAuto() {

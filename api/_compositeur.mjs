@@ -222,3 +222,66 @@ export async function assembler(draft) {
     }
     return images;
 }
+
+// ------------------------------------------------------------
+// Story de la séquence du combiné (relances, résultat) : visuel 9:16 avec la
+// mascotte en fond, pastille de contexte, texte en grand, mention 18+.
+// Sans fond disponible, un dégradé aux couleurs de la marque prend le relais.
+// ------------------------------------------------------------
+export async function composerStory({ fondUrl, badge, texte }) {
+    await chargerPolices();
+    const logo = await loadImage(await fichierDuDepot('logo-dark.png'));
+    const canvas = createCanvas(W, H);
+    const ctx = canvas.getContext('2d');
+
+    let fond = null;
+    if (fondUrl) { try { fond = await imageDepuisUrl(fondUrl); } catch (e) { fond = null; } }
+    if (fond) {
+        couvrir(ctx, fond, 0, 0, W, H);
+    } else {
+        const d = ctx.createLinearGradient(0, 0, W, H);
+        d.addColorStop(0, '#1b1530'); d.addColorStop(1, '#0a0e1a');
+        ctx.fillStyle = d; ctx.fillRect(0, 0, W, H);
+        ctx.drawImage(logo, W / 2 - 200, H * 0.18, 400, 400);
+    }
+    const g = ctx.createLinearGradient(0, H * 0.38, 0, H);
+    g.addColorStop(0, 'rgba(6,8,16,0)');
+    g.addColorStop(0.4, 'rgba(6,8,16,0.8)');
+    g.addColorStop(1, 'rgba(6,8,16,0.96)');
+    ctx.fillStyle = g; ctx.fillRect(0, H * 0.38, W, H * 0.62);
+
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = 16;
+    ctx.drawImage(logo, MARGE_X, 150, 90, 90);
+    ctx.restore();
+
+    ctx.font = '84px Anton';
+    const lignes = decouper(ctx, String(texte || '').toUpperCase(), W - MARGE_X * 2).slice(0, 5);
+    const interligne = 96;
+    const yPremiere = H - 420 - (lignes.length - 1) * interligne;
+
+    if (badge) {
+        ctx.font = '30px MontserratXB';
+        const lb = ctx.measureText(badge).width + 44;
+        ctx.fillStyle = OR;
+        ctx.beginPath();
+        ctx.roundRect(W / 2 - lb / 2, yPremiere - 150, lb, 56, 999);
+        ctx.fill();
+        ctx.fillStyle = '#141821';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(badge, W / 2, yPremiere - 121);
+        ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    }
+
+    ctx.font = '84px Anton';
+    ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 18;
+    dessinerLignes(ctx, lignes, W / 2, yPremiere, interligne);
+    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+
+    ctx.font = '24px MontserratB';
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.textAlign = 'center';
+    ctx.fillText('18+ · Jouer comporte des risques · 09 74 75 13 13', W / 2, H - 250);
+    ctx.textAlign = 'left';
+    return canvas.encode('jpeg', 88);
+}
