@@ -570,6 +570,19 @@ module.exports = async function handler(req, res) {
     }
 
     try {
+        // DIAGNOSTIC TEMPORAIRE : assemblage de deux images fixes, rien n'est stocké.
+        if (req.method === 'GET' && req.query.action === 'diag-assemblage') {
+            const debut = Date.now();
+            const { assembler } = await import('./_compositeur.mjs');
+            const A = 'https://d8j0ntlcm91z4.cloudfront.net/user_36r1Sd27b0AgLQYnLJh6jY21XYG/hf_20260921_211106_4ccd5330-f130-41a2-a155-fd979df4a2e2.png';
+            const B = 'https://d8j0ntlcm91z4.cloudfront.net/user_36r1Sd27b0AgLQYnLJh6jY21XYG/hf_20260921_211155_2a386fe7-4048-4bdf-8508-395d7e270d4d.png';
+            const images = await assembler({ slides: [
+                { page: 1, position: 'haut', texte: 'Le favori joue à domicile ?', image_url: A },
+                { page: 1, position: 'bas', texte: 'Regarde *son calendrier*', image_url: B },
+                { page: 2, position: 'cta', texte: '*Enregistre* ce post.', image_url: A }
+            ] });
+            return res.status(200).json({ ok: true, duree_ms: Date.now() - debut, tailles: images.map(function (b) { return b.length; }) });
+        }
         if (req.method === 'GET' && req.query.action === 'manual-queue') return await handleManualQueue(req, res);
         if (req.method === 'GET') return await handleCronSweep(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'calendar-draft') return await handleCalendarDraft(req, res);
