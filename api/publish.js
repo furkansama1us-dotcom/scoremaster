@@ -424,6 +424,56 @@ async function promotionQuotidienne(now) {
     return { actif: true, creees };
 }
 
+// ------------------------------------------------------------
+// Récapitulatif des résultats, envoyé en privé à l'admin, au format des
+// messages qu'il transfère ensuite sur le canal : une ligne par match avec sa
+// cote réelle et le symbole du résultat. Tout vient des combinés validés par
+// l'admin : aucune ligne n'est inventée.
+// ------------------------------------------------------------
+function dateCourte(dateStr) {
+    const [a, m, j] = String(dateStr).split('-');
+    return j + '.' + m + '.' + a;
+}
+
+async function recapResultats(dateStr) {
+    const combos = await sbFetch('combineds_public?date=eq.' + dateStr + '&status=in.(termine,perdu)&select=id,status,matches,detected_scores') || [];
+    if (!combos.length) return null;
+
+    const blocs = [];
+    for (const c of combos) {
+        let vip = null;
+        try { vip = (await sbFetch('combineds_vip?id=eq.' + c.id + '&select=matches,total_odds'))[0]; } catch (e) { vip = null; }
+        const paris = (vip && vip.matches) || c.matches || [];
+        const lignes = paris.map((m, i) => {
+            const reel = (c.detected_scores && c.detected_scores[i]) || m.final_score || null;
+            const gagne = reel && m.score
+                ? String(reel).replace(/\s/g, '') === String(m.score).replace(/\s/g, '')
+                : c.status === 'termine';
+            const cote = Number(m.odds) > 0 ? Number(m.odds).toFixed(2) : null;
+            return (cote || m.teams) + ' ' + (gagne ? '✅' : '❌');
+        });
+        const total = vip && vip.total_odds ? Number(vip.total_odds).toFixed(2) : null;
+        blocs.push(lignes.join('\n') + (c.status === 'termine'
+            ? '\n\nClean Sweep ! 💰' + (total ? '\nCote totale : ' + total : '')
+            : '\n\nCombiné non validé cette fois.'));
+    }
+
+    // Bilan réel des 7 derniers jours (aucun chiffre arrondi ni embelli).
+    const d = new Date(dateStr + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() - 6);
+    const semaine = await sbFetch('combineds_public?date=gte.' + d.toISOString().slice(0, 10) + '&date=lte.' + dateStr + '&status=in.(termine,perdu)&select=status') || [];
+    const gagnes = semaine.filter(x => x.status === 'termine').length;
+    const bilan = semaine.length >= 2 ? '\n\n📊 Sur 7 jours : ' + gagnes + '/' + semaine.length + ' combinés validés.' : '';
+
+    return '📅 ' + dateCourte(dateStr) + ' — SM VIP ⚽ Combiné 💰\n\n' + blocs.join('\n\n———\n\n') + bilan;
+}
+
+async function envoyerRecap(dateStr) {
+    const texte = await recapResultats(dateStr);
+    if (!texte) return null;
+    await prevenirAdmin('📋 RÉCAP PRÊT À TRANSFÉRER\n\n— — — — —\n' + texte + '\n— — — — —\n\nCopie le bloc ci-dessus pour le transférer sur le canal.');
+    return texte;
+}
+
 async function sequenceMarketing(now) {
     const reglages = await lireReglagesAuto();
     if (!reglages || !reglages.auto_sequence) return { actif: false };
@@ -491,11 +541,13 @@ async function sequenceMarketing(now) {
         for (const c of valides) {
             const etape = c.status === 'termine' ? 'victoire' : 'defaite';
             const v = { stat: await statTrenteJours(now.dateStr), matchs: await infosMatchs(c.date), dateMatchs: c.date };
+            let nouveau = false;
             for (const canal of ['telegram', 'story']) {
                 try {
-                    if (await creerEtapeSequence('res:' + c.id + ':' + canal, canal, etape, v, now)) bilan.creees.push(etape + ':' + canal);
+                    if (await creerEtapeSequence('res:' + c.id + ':' + canal, canal, etape, v, now)) { bilan.creees.push(etape + ':' + canal); nouveau = true; }
                 } catch (err) { bilan.erreur = String(err); }
             }
+            if (nouveau) { try { await envoyerRecap(c.date); } catch (err) { /* récap au mieux */ } }
         }
     }
     return bilan;
@@ -839,6 +891,22 @@ async function rapportAutomatique(now) {
     await enregistrerReglages({ rapport_envoye_le: now.dateStr });
     await prevenirAdmin(await construireRapport(lendemain(now.dateStr)));
     return { actif: true, envoye: true };
+}
+
+// POST { action: 'recap', date? } (admin) : récapitulatif des résultats d'un jour.
+async function handleRecap(req, res) {
+    const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    if (!(await verifyAdmin(accessToken))) return res.status(403).json({ error: 'Accès refusé' });
+    const now = parisNowParts();
+    let date = (req.body && req.body.date) || now.dateStr;
+    let texte = await envoyerRecap(date);
+    if (!texte) {
+        // Rien aujourd'hui : on prend le dernier jour validé.
+        const dernier = await sbFetch('combineds_public?status=in.(termine,perdu)&select=date&order=date.desc&limit=1');
+        if (dernier && dernier[0]) { date = dernier[0].date; texte = await envoyerRecap(date); }
+    }
+    if (!texte) return res.status(200).json({ ok: false, message: 'Aucun combiné validé à récapituler.' });
+    res.status(200).json({ ok: true, date, texte });
 }
 
 // POST { action: 'rapport' } (admin) : envoie tout de suite le rapport de demain.
@@ -1246,6 +1314,7 @@ module.exports = async function handler(req, res) {
         if (req.method === 'POST' && req.body && req.body.action === 'calendar-draft') return await handleCalendarDraft(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'manual-request') return await handleManualRequest(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'rapport') return await handleRapport(req, res);
+        if (req.method === 'POST' && req.body && req.body.action === 'recap') return await handleRecap(req, res);
         if (req.method === 'POST') return await handleForcePublish(req, res);
         return res.status(405).json({ error: 'Méthode non autorisée' });
     } catch (error) {

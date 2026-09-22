@@ -2757,6 +2757,7 @@ async function fetchApiScore(id, dateRaw) {
                     <div style="flex:1;min-width:0;"><b>Rapport quotidien sur Telegram</b><br><span style="font-size:11.5px;color:#8a8290;">Chaque soir à 23h45, l'agenda complet du lendemain : carrousels, combiné, séquence, pronostics et points d'attention.</span></div>
                 </div>
                 <button class="cp-secondary" id="cpRapportBtn" onclick="cpEnvoyerRapport()"><i class="fab fa-telegram-plane"></i> M'envoyer le rapport de demain maintenant</button>
+                <button class="cp-secondary" id="cpRecapBtn" onclick="cpEnvoyerRecap()"><i class="fas fa-clipboard-check"></i> M'envoyer le récap des résultats à transférer</button>
             </div>
             <div class="cp-eyebrow">Fonctionnement</div>
             <div class="cp-set-card">
@@ -6171,6 +6172,19 @@ async function cpRenderComboAuto() {
         }
     }
     box.innerHTML = '<div class="cp-txt-box" style="font-size:12px;">' + etat + '</div>';
+}
+
+async function cpEnvoyerRecap() {
+    var btn = document.getElementById('cpRecapBtn');
+    btn.disabled = true;
+    try {
+        var r = await adminApiCall('/api/publish', { action: 'recap' });
+        showToast(r.ok ? 'Récap du ' + r.date + ' envoyé sur Telegram.' : r.message);
+    } catch (e) {
+        showToast('Envoi impossible : ' + e.message, true);
+    } finally {
+        btn.disabled = false;
+    }
 }
 
 async function cpSetPromo(actif) {
