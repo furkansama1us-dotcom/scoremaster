@@ -586,6 +586,10 @@ async function apiFootballPublish(chemin) {
 function heureParisDe(iso) {
     return new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(iso));
 }
+function veille(dateStr) {
+    const d = new Date(dateStr + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() - 1);
+    return d.toISOString().slice(0, 10);
+}
 function lendemain(dateStr) {
     const d = new Date(dateStr + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + 1);
     return d.toISOString().slice(0, 10);
@@ -910,6 +914,7 @@ function analyserLignesReseau(brut) {
 
 // Brouillon du soir : quatre cotes dans la fourchette habituelle, envoyées en
 // privé pour que l'admin n'ait plus qu'à remplacer par celles de son réseau.
+// Les sélections diffusées portent la date de la veille, jamais celle du jour.
 function trameReseau(dateStr) {
     const paris = [];
     for (let i = 0; i < 4; i++) paris.push({ cote: 1.5 + Math.random() * 0.5, perdu: false, libelle: '' });
@@ -922,7 +927,7 @@ async function trameAutomatique(now) {
     if (now.minutes < HEURE_TRAME) return { actif: true, attente: '19h00' };
     if (reglages.trame_envoyee_le === now.dateStr) return { actif: true, deja: true };
     await enregistrerReglages({ trame_envoyee_le: now.dateStr });
-    await prevenirAdmin(trameReseau(now.dateStr));
+    await prevenirAdmin(trameReseau(veille(now.dateStr)));
     return { actif: true, envoye: true };
 }
 
@@ -1035,7 +1040,7 @@ async function handleRecapReseau(req, res) {
     if (!paris.length) return res.status(400).json({ error: 'Aucune ligne exploitable : mets une cote par ligne, par exemple « 1.91 ✅ ».' });
 
     const now = parisNowParts();
-    const date = /^\d{4}-\d{2}-\d{2}$/.test(corps.date || '') ? corps.date : now.dateStr;
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(corps.date || '') ? corps.date : veille(now.dateStr);
     const source = String(corps.source || '').trim().slice(0, 40);
     const msg = construireMessageReseau(paris, date, source, corps.variante);
 

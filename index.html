@@ -2769,7 +2769,7 @@ async function fetchApiScore(id, dateRaw) {
             <div class="cp-set-card">
                 <span style="font-size:11.5px;color:#8a8290;">Colle ce que tes pronostiqueurs t'ont envoyé, une ligne par pari : la cote, et le résultat (✅ ou ❌). Le message est mis en forme avec une accroche différente à chaque fois : tu peux le régénérer, te l'envoyer sur Telegram ou le publier en post + story.</span>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-                    <div><label class="cp-field">Date</label><input type="date" class="cp-input" id="cpReseauDate"></div>
+                    <div><label class="cp-field">Date (la veille)</label><input type="date" class="cp-input" id="cpReseauDate"></div>
                     <div><label class="cp-field">Source (facultatif)</label><input class="cp-input" id="cpReseauSource" maxlength="40" placeholder="SM VIP"></div>
                 </div>
                 <label class="cp-field">Lignes reçues</label>
@@ -5869,7 +5869,12 @@ function cpTab(name) {
     if (name === 'settings') {
         cpRenderAutoCard();
         var dateReseau = document.getElementById('cpReseauDate');
-        if (dateReseau && !dateReseau.value) dateReseau.value = cpDstr(new Date());
+        if (dateReseau && !dateReseau.value) {
+            // Les sélections diffusées portent toujours la date de la veille.
+            var hier = new Date();
+            hier.setDate(hier.getDate() - 1);
+            dateReseau.value = cpDstr(hier);
+        }
     }
 }
 
