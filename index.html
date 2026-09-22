@@ -2765,6 +2765,19 @@ async function fetchApiScore(id, dateRaw) {
                 <b>Carrousels de test</b><br>La file d'attente est traitée toutes les heures (à h40).<br><br>
                 <b>Remplacement automatique</b><br>Quand un nouveau carrousel arrive sur un créneau, l'ancien brouillon non publié de ce créneau est retiré.
             </div>
+            <div class="cp-eyebrow">Pronostics du réseau</div>
+            <div class="cp-set-card">
+                <span style="font-size:11.5px;color:#8a8290;">Colle ce que tes pronostiqueurs t'ont envoyé, une ligne par pari : la cote, et le résultat (✅ ou ❌). Tu reçois le message mis en forme sur Telegram, prêt à transférer.</span>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <div><label class="cp-field">Date</label><input type="date" class="cp-input" id="cpReseauDate"></div>
+                    <div><label class="cp-field">Source (facultatif)</label><input class="cp-input" id="cpReseauSource" maxlength="40" placeholder="SM VIP"></div>
+                </div>
+                <label class="cp-field">Lignes reçues</label>
+                <button class="cp-secondary" style="margin-bottom:8px;" onclick="cpPrereRemplirReseau()"><i class="fas fa-wand-magic-sparkles"></i> Pré-remplir 4 cotes (1.50 – 2.00)</button>
+                <textarea class="cp-input" id="cpReseauLignes" style="min-height:110px;" placeholder="1.91 ✅&#10;1.78 ✅&#10;1.58 ✅"></textarea>
+                <button class="cp-secondary" id="cpReseauBtn" onclick="cpEnvoyerRecapReseau()"><i class="fab fa-telegram-plane"></i> M'envoyer le message mis en forme</button>
+                <div id="cpReseauApercu" class="cp-txt-box" style="margin-top:10px;display:none;"></div>
+            </div>
             <div class="cp-eyebrow">Maintenance</div>
             <div class="cp-set-card">
                 <button class="cp-secondary" style="margin-top:0;" onclick="cpResetCalendarDrafts('ancien')"><i class="fas fa-broom"></i> Retirer les carrousels à l'ancien format</button>
@@ -5848,7 +5861,11 @@ function cpTab(name) {
     if (name === 'generate') cpRenderGenerate();
     if (name === 'biblio') cpRenderBiblio();
     if (name === 'validate') cpRenderValidate();
-    if (name === 'settings') cpRenderAutoCard();
+    if (name === 'settings') {
+        cpRenderAutoCard();
+        var dateReseau = document.getElementById('cpReseauDate');
+        if (dateReseau && !dateReseau.value) dateReseau.value = cpDstr(new Date());
+    }
 }
 
 function cpBigCalShift(n) { _cpBigCalOffset += n; cpRenderBigCal(); }
@@ -6172,6 +6189,40 @@ async function cpRenderComboAuto() {
         }
     }
     box.innerHTML = '<div class="cp-txt-box" style="font-size:12px;">' + etat + '</div>';
+}
+
+// Trame de départ : quatre cotes dans la fourchette habituelle, à remplacer par
+// les cotes réelles reçues du réseau avant l'envoi.
+function cpPrereRemplirReseau() {
+    var lignes = [];
+    for (var i = 0; i < 4; i++) {
+        lignes.push((1.5 + Math.random() * 0.5).toFixed(2) + ' ✅');
+    }
+    document.getElementById('cpReseauLignes').value = lignes.join(String.fromCharCode(10));
+    showToast("Trame pré-remplie : ajuste les cotes avant d'envoyer.");
+}
+
+async function cpEnvoyerRecapReseau() {
+    var btn = document.getElementById('cpReseauBtn');
+    var lignes = document.getElementById('cpReseauLignes').value;
+    if (!lignes.trim()) { showToast('Colle d\'abord les lignes reçues.', true); return; }
+    btn.disabled = true;
+    try {
+        var r = await adminApiCall('/api/publish', {
+            action: 'recap-reseau',
+            date: document.getElementById('cpReseauDate').value,
+            source: document.getElementById('cpReseauSource').value,
+            lignes: lignes
+        });
+        var box = document.getElementById('cpReseauApercu');
+        box.style.display = 'block';
+        box.textContent = r.texte;
+        showToast('Message envoyé sur Telegram (' + r.gagnes + '/' + r.total + ').');
+    } catch (e) {
+        showToast('Erreur : ' + e.message, true);
+    } finally {
+        btn.disabled = false;
+    }
 }
 
 async function cpEnvoyerRecap() {

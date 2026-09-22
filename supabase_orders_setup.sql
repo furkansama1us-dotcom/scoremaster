@@ -704,6 +704,11 @@ alter table public.automation_settings add column if not exists rapport_envoye_l
 -- Promotion quotidienne de l'app (Telegram + story, 12h30).
 alter table public.automation_settings add column if not exists auto_promo boolean not null default false;
 
+-- Trame du soir : cotes pré-remplies envoyées en privé à 19h00, à ajuster
+-- avec les cotes réellement reçues du réseau de pronostiqueurs.
+alter table public.automation_settings add column if not exists auto_trame boolean not null default true;
+alter table public.automation_settings add column if not exists trame_envoyee_le date;
+
 -- ============================================================
 -- SÉCURITÉ (alerte Supabase « table publicly accessible »)
 --

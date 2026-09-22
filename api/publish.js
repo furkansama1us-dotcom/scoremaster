@@ -792,6 +792,7 @@ async function combineAutomatique(now) {
 // (automatiquement à 23h45 si activé, ou à la demande depuis les Réglages).
 // ------------------------------------------------------------
 const HEURE_RAPPORT = 23 * 60 + 45;
+const HEURE_TRAME = 19 * 60;   // 19h00 : trame des cotes à ajuster
 const JOURS_FR = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
 const MOIS_FR = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
 
@@ -893,6 +894,65 @@ async function rapportAutomatique(now) {
     return { actif: true, envoye: true };
 }
 
+// POST { action: 'recap-reseau' } (admin) : met en forme les pronostics
+// transmis par le réseau de pronostiqueurs partenaires. L'admin colle ce qu'il
+// a reçu (une ligne par pari : la cote, puis le résultat) ; rien n'est inventé
+// ici, on ne fait que reprendre ses lignes dans le format du canal.
+function analyserLignesReseau(brut) {
+    return String(brut || '').split('\n').map(l => l.trim()).filter(Boolean).map(l => {
+        const cote = (l.match(/(\d+[.,]\d+)/) || [])[1];
+        if (!cote) return null;
+        const perdu = /❌|✖|✗|perdu|lost|ko\b/i.test(l);
+        const libelle = l.replace(/(\d+[.,]\d+)/, '').replace(/[✅✔☑❌✖✗]/g, '').replace(/\b(perdu|lost|gagn[ée]|won|ok|ko)\b/gi, '').replace(/^[\s\-–—:|]+|[\s\-–—:|]+$/g, '').replace(/\s{2,}/g, ' ').trim();
+        return { cote: parseFloat(String(cote).replace(',', '.')), perdu, libelle };
+    }).filter(Boolean).slice(0, 12);
+}
+
+// Brouillon du soir : quatre cotes dans la fourchette habituelle, envoyées en
+// privé pour que l'admin n'ait plus qu'à remplacer par celles de son réseau.
+function trameReseau(dateStr) {
+    const lignes = [];
+    for (let i = 0; i < 4; i++) lignes.push((1.5 + Math.random() * 0.5).toFixed(2) + ' ✅');
+    return '📝 TRAME DU SOIR — remplace les cotes par celles de ton réseau\n\n— — — — —\n📅 '
+        + dateCourte(dateStr) + ' — SM VIP ⚽ Chat 💰\n\n' + lignes.join('\n')
+        + '\n\nClean Sweep ! 💰\n— — — — —';
+}
+
+async function trameAutomatique(now) {
+    const reglages = await lireReglagesAuto();
+    if (!reglages || reglages.auto_trame === false) return { actif: false };
+    if (now.minutes < HEURE_TRAME) return { actif: true, attente: '19h00' };
+    if (reglages.trame_envoyee_le === now.dateStr) return { actif: true, deja: true };
+    await enregistrerReglages({ trame_envoyee_le: now.dateStr });
+    await prevenirAdmin(trameReseau(now.dateStr));
+    return { actif: true, envoye: true };
+}
+
+async function handleRecapReseau(req, res) {
+    const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    if (!(await verifyAdmin(accessToken))) return res.status(403).json({ error: 'Accès refusé' });
+
+    const corps = req.body || {};
+    const paris = analyserLignesReseau(corps.lignes);
+    if (!paris.length) return res.status(400).json({ error: 'Aucune ligne exploitable : mets une cote par ligne, par exemple « 1.91 ✅ ».' });
+
+    const now = parisNowParts();
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(corps.date || '') ? corps.date : now.dateStr;
+    const source = String(corps.source || '').trim().slice(0, 40);
+    const gagnes = paris.filter(x => !x.perdu).length;
+
+    const entete = '📅 ' + dateCourte(date) + ' — ' + (source ? source : 'SM VIP') + ' ⚽ Chat 💰';
+    const lignes = paris.map(x => x.cote.toFixed(2) + (x.libelle ? ' — ' + x.libelle : '') + ' ' + (x.perdu ? '❌' : '✅'));
+    const total = paris.reduce((t, x) => t * (x.perdu ? 1 : x.cote), 1);
+    const pied = gagnes === paris.length
+        ? '\n\nClean Sweep ! 💰' + (paris.length > 1 ? '\nCote cumulée : ' + total.toFixed(2) : '')
+        : '\n\n' + gagnes + '/' + paris.length + ' validés.';
+
+    const texte = entete + '\n\n' + lignes.join('\n') + pied;
+    await prevenirAdmin('📋 RÉCAP RÉSEAU — prêt à transférer\n\n— — — — —\n' + texte + '\n— — — — —');
+    res.status(200).json({ ok: true, texte, gagnes, total: paris.length });
+}
+
 // POST { action: 'recap', date? } (admin) : récapitulatif des résultats d'un jour.
 async function handleRecap(req, res) {
     const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
@@ -959,6 +1019,7 @@ async function handleCronSweep(req, res) {
     }
     try {
         summary.rapport = await rapportAutomatique(now);
+        summary.trame = await trameAutomatique(now);
     } catch (e) {
         summary.rapport = { erreur: String(e) };
     }
@@ -1315,6 +1376,7 @@ module.exports = async function handler(req, res) {
         if (req.method === 'POST' && req.body && req.body.action === 'manual-request') return await handleManualRequest(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'rapport') return await handleRapport(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'recap') return await handleRecap(req, res);
+        if (req.method === 'POST' && req.body && req.body.action === 'recap-reseau') return await handleRecapReseau(req, res);
         if (req.method === 'POST') return await handleForcePublish(req, res);
         return res.status(405).json({ error: 'Méthode non autorisée' });
     } catch (error) {
