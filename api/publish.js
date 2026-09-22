@@ -899,6 +899,21 @@ async function handleCronSweep(req, res) {
     } catch (e) {
         summary.sequence = { erreur: String(e) };
     }
+    // Légendes préparées avant le changement de ligne éditoriale : la mention de
+    // jeu responsable y figure encore, on la retire avant publication.
+    try {
+        const aNettoyer = await sbFetch('pending_publications?status=in.(pending,approved)&caption=like.*Jouer%20comporte%20des%20risques*&select=id,caption') || [];
+        for (const l of aNettoyer) {
+            const propre = String(l.caption)
+                .split('\n')
+                .filter(x => !/Jouer comporte des risques/i.test(x))
+                .join('\n')
+                .trim();
+            await sbFetch('pending_publications?id=eq.' + l.id, { method: 'PATCH', body: JSON.stringify({ caption: propre }) });
+        }
+        if (aNettoyer.length) summary.legendesNettoyees = aNettoyer.length;
+    } catch (e) { /* nettoyage au mieux : ne doit jamais bloquer la publication */ }
+
     const approvedAll = await sbFetch(`pending_publications?status=eq.approved&select=*`);
     const approved = approvedAll.filter(item => isDue(item, now));
     summary.checked = approved.length;
