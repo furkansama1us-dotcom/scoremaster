@@ -275,6 +275,10 @@ async function dessinerMatchs(ctx, matchs, yDepart, dateTexte) {
 
 export async function composerStory({ fondUrl, badge, texte, lignes: lignesSup, matchs, dateTexte }) {
     await chargerPolices();
+    // Les polices du serveur n'ont pas d'émojis : ils sortaient en carrés vides.
+    badge = sansEmoji(badge);
+    texte = sansEmoji(texte);
+    if (Array.isArray(lignesSup)) lignesSup = lignesSup.map(sansEmoji);
     const logo = await loadImage(await fichierDuDepot('logo-dark.png'));
     const canvas = createCanvas(W, H);
     const ctx = canvas.getContext('2d');
@@ -544,6 +548,169 @@ export async function composerTicket({ matchs, accroche, fiabilite, format, fond
             ctx.fillStyle = degrade; ctx.fillRect(0, photoY, w, couture);
         } catch (e) { /* pas de bandeau : l'aplat suffit */ }
     }
+
+    return canvas.toBuffer('image/jpeg', 92);
+}
+
+// ------------------------------------------------------------
+// Affiche « sélections validées » : une vraie affiche publicitaire plutôt
+// qu'une liste de cotes. Les polices du serveur n'ont pas d'émojis (ils
+// sortaient en carrés vides) : les coches sont dessinées à la main.
+// ------------------------------------------------------------
+function sansEmoji(texte) {
+    return String(texte || '')
+        .replace(/[←-⯿☀-➿️‍]/g, '')
+        .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
+}
+
+function coche(ctx, x, y, taille, couleur) {
+    ctx.save();
+    ctx.strokeStyle = couleur;
+    ctx.lineWidth = Math.max(3, taille * 0.16);
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + taille * 0.34, y + taille * 0.34);
+    ctx.lineTo(x + taille, y - taille * 0.42);
+    ctx.stroke();
+    ctx.restore();
+}
+
+export async function composerAffiche({ fondUrl, badge, titreHaut, titreBas, paris, resume, accroche, cta, dateTexte }) {
+    await chargerPolices();
+    const logo = await loadImage(await fichierDuDepot('logo-dark.png'));
+    const canvas = createCanvas(W, H);
+    const ctx = canvas.getContext('2d');
+
+    let fond = null;
+    if (fondUrl) { try { fond = await imageDepuisUrl(fondUrl); } catch (e) { fond = null; } }
+    if (fond) {
+        couvrir(ctx, fond, 0, 0, W, H);
+    } else {
+        const d = ctx.createLinearGradient(0, 0, W, H);
+        d.addColorStop(0, '#1b1530'); d.addColorStop(1, '#0a0e1a');
+        ctx.fillStyle = d; ctx.fillRect(0, 0, W, H);
+    }
+
+    // Voile bas : tout le bloc marketing reste lisible quelle que soit la photo.
+    const hautVoile = H * 0.34;
+    const voile = ctx.createLinearGradient(0, hautVoile, 0, H);
+    voile.addColorStop(0, 'rgba(6,8,16,0)');
+    voile.addColorStop(0.32, 'rgba(6,8,16,0.88)');
+    voile.addColorStop(1, 'rgba(6,8,16,0.97)');
+    ctx.fillStyle = voile; ctx.fillRect(0, hautVoile, W, H - hautVoile);
+
+    ctx.drawImage(logo, 54, 54, 108, 108);
+
+    const marge = 92;
+    const largeur = W - marge * 2;
+    // Le bloc est construit du bas vers le haut : la liste des cotes grandit
+    // vers le haut sans jamais pousser le pied de l'affiche hors cadre.
+    let y = H - 150;
+
+    if (cta) {
+        ctx.font = '34px MontserratB';
+        ctx.fillStyle = '#c9cede';
+        ctx.textAlign = 'center';
+        ctx.fillText(sansEmoji(cta), W / 2, y);
+        y -= 74;
+    }
+
+    if (accroche) {
+        ctx.font = '40px MontserratXB';
+        ctx.fillStyle = OR;
+        ctx.textAlign = 'center';
+        const lignes = decouperTexte(ctx, sansEmoji(accroche), largeur);
+        lignes.reverse().forEach((l, i) => ctx.fillText(l, W / 2, y - i * 50));
+        y -= lignes.length * 50 + 34;
+    }
+
+    if (resume) {
+        const hBloc = 104;
+        y -= hBloc;
+        ctx.fillStyle = 'rgba(244,197,66,0.12)';
+        ctx.strokeStyle = 'rgba(244,197,66,0.45)';
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(marge, y, largeur, hBloc, 16); ctx.fill(); ctx.stroke();
+        ctx.font = '40px MontserratXB';
+        ctx.fillStyle = OR;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(sansEmoji(resume), W / 2, y + hBloc / 2);
+        ctx.textBaseline = 'alphabetic';
+        y -= 46;
+    }
+
+    // Cotes : une ligne par pari, cote en gros, libellé à côté, coche dessinée.
+    const lignesParis = (paris || []).slice(0, 5);
+    const hLigne = 92;
+    y -= lignesParis.length * hLigne;
+    const yListe = y;
+    lignesParis.forEach((pari, i) => {
+        const ly = yListe + i * hLigne;
+        ctx.fillStyle = 'rgba(255,255,255,0.06)';
+        ctx.beginPath(); ctx.roundRect(marge, ly, largeur, hLigne - 16, 14); ctx.fill();
+
+        ctx.font = '46px Anton';
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+        ctx.fillText(Number(pari.cote).toFixed(2), marge + 30, ly + (hLigne - 16) / 2);
+
+        if (pari.libelle) {
+            ctx.font = '28px MontserratB';
+            ctx.fillStyle = '#c9cede';
+            const dispo = largeur - 260;
+            const [texte] = decouperTexte(ctx, sansEmoji(pari.libelle), dispo);
+            ctx.fillText(texte || '', marge + 170, ly + (hLigne - 16) / 2 + 2);
+        }
+
+        if (pari.perdu) {
+            ctx.font = '40px MontserratXB';
+            ctx.fillStyle = '#f43f5e';
+            ctx.textAlign = 'right';
+            ctx.fillText('X', W - marge - 34, ly + (hLigne - 16) / 2 + 2);
+        } else {
+            coche(ctx, W - marge - 74, ly + (hLigne - 16) / 2, 40, '#3ecf8e');
+        }
+        ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    });
+    y -= 40;
+
+    // Titre en deux temps, la seconde moitié en doré
+    ctx.textAlign = 'center';
+    if (titreBas) {
+        ctx.font = '86px Anton';
+        ctx.fillStyle = OR;
+        ctx.fillText(sansEmoji(titreBas).toUpperCase(), W / 2, y);
+        y -= 92;
+    }
+    if (titreHaut) {
+        ctx.font = '86px Anton';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(sansEmoji(titreHaut).toUpperCase(), W / 2, y);
+        y -= 122;
+    }
+
+    if (badge) {
+        ctx.font = '30px MontserratXB';
+        const lb = ctx.measureText(badge).width + 48;
+        ctx.fillStyle = OR;
+        ctx.beginPath(); ctx.roundRect(W / 2 - lb / 2, y - 58, lb, 58, 999); ctx.fill();
+        ctx.fillStyle = '#141821';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(badge, W / 2, y - 28);
+        ctx.textBaseline = 'alphabetic';
+        y -= 108;
+    }
+
+    if (dateTexte) {
+        ctx.font = '28px MontserratB';
+        ctx.fillStyle = 'rgba(255,255,255,0.72)';
+        ctx.fillText(sansEmoji(dateTexte), W / 2, y);
+    }
+    ctx.textAlign = 'left';
 
     return canvas.toBuffer('image/jpeg', 92);
 }

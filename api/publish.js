@@ -375,15 +375,39 @@ async function statTrenteJours(dateStr) {
 }
 
 // Fond de story : un visuel 9:16 récent de la mascotte (slides finales des carrousels).
+// Réservoir de fonds : toutes les illustrations produites récemment pour les
+// carrousels, pas seulement leur dernière slide — la même photo revenait sinon
+// plusieurs jours de suite. Le tirage dépend du jour ET de l'étape, donc deux
+// visuels publiés le même jour ne se ressemblent pas.
 async function fondStoryRecent(dateStr, decalage) {
     try {
-        const rows = await sbFetch('pending_publications?overlay_data->>source=eq.content-calendar&select=overlay_data&order=created_at.desc&limit=12') || [];
+        const rows = await sbFetch('pending_publications?overlay_data->>source=eq.content-calendar&select=overlay_data&order=created_at.desc&limit=60') || [];
         const fonds = [];
         rows.forEach(r => ((r.overlay_data && r.overlay_data.slides) || []).forEach(s => {
-            if (s.position === 'cta' && s.image_url && fonds.indexOf(s.image_url) === -1) fonds.push(s.image_url);
+            if (s.image_url && fonds.indexOf(s.image_url) === -1) fonds.push(s.image_url);
         }));
-        return fonds.length ? choisir(fonds, dateStr, decalage) : null;
+        if (!fonds.length) return null;
+        const jour = Math.floor(Date.parse(dateStr + 'T12:00:00Z') / 86400000);
+        // Pas premier avec la taille du réservoir : on le parcourt en entier
+        // avant de repasser sur une image déjà utilisée.
+        return fonds[((jour * 7 + (decalage || 0) * 3) % fonds.length + fonds.length) % fonds.length];
     } catch (e) { return null; }
+}
+
+// Les fournisseurs renvoient parfois un nom tout en minuscules ou mal
+// capitalisé, ce qui fait « bricolé » sur une affiche. On remet chaque mot en
+// capitale initiale, en respectant le digramme néerlandais IJ.
+// Sigles de clubs à laisser en capitales même écrits en minuscules.
+const SIGLES_CLUBS = new Set(['sc', 'fc', 'ac', 'as', 'af', 'afc', 'vv', 'vvv', 'sv', 'bv', 'bsc', 'psv', 'az', 'rkc', 'nec', 'pec', 'go', 'nac', 'rc', 'cd', 'ud', 'cf', 'ss', 'ssc', 'us', 'fk', 'nk', 'sk', 'hk', 'if', 'ik', 'tsg', 'vfb', 'vfl', 'psg', 'ogc', 'losc', 'asse', 'om']);
+
+function nomPropre(nom) {
+    return String(nom || '').trim().split(/\s+/).map(mot => {
+        if (!mot) return mot;
+        if (mot === mot.toUpperCase()) return mot;                  // TOGB, ROHDA, AZ
+        if (SIGLES_CLUBS.has(mot.toLowerCase())) return mot.toUpperCase();
+        const capitale = mot.charAt(0).toUpperCase() + mot.slice(1);
+        return /^Ij/.test(capitale) ? 'IJ' + capitale.slice(2) : capitale;
+    }).join(' ');
 }
 
 // Rencontres du combiné d'une date, avec les logos venant du cache.
@@ -394,7 +418,7 @@ async function infosMatchs(dateStr) {
         combos.forEach(c => (c.matches || []).forEach(m => {
             const parts = String(m.teams || '').split(' - ');
             if (parts.length < 2) return;
-            rencontres.push({ home: parts[0].trim(), away: parts.slice(1).join(' - ').trim(), heure: m.time || c.time || '' });
+            rencontres.push({ home: nomPropre(parts[0]), away: nomPropre(parts.slice(1).join(' - ')), heure: m.time || c.time || '' });
         }));
         if (!rencontres.length) return [];
         const cache = await sbFetch('ai_fixtures?fixture_date=eq.' + dateStr + '&select=home,away,home_logo,away_logo') || [];
@@ -459,8 +483,8 @@ async function donneesTicket(combo) {
 
     const matchs = paris.map(m => {
         const parts = String(m.teams || '').split(' - ');
-        const home = (parts[0] || '').trim();
-        const away = parts.slice(1).join(' - ').trim();
+        const home = nomPropre(parts[0]);
+        const away = nomPropre(parts.slice(1).join(' - '));
         const f = cache.find(x => memesEquipes(x.home, home) && memesEquipes(x.away, away));
         return Object.assign({
             home, away,
@@ -1140,14 +1164,30 @@ function construireMessageReseau(paris, date, source, variante) {
 }
 
 // Affiche 9:16 reprenant les cotes validées, publiée en post et en story.
+// Accroches de l'affiche : ce que le lecteur gagne à suivre le canal, jamais
+// une promesse de revenus.
+const AFFICHE_ACCROCHES = [
+    'Les membres SMVIP+ les ont reçues avant les matchs',
+    'Reçues en avance par les membres du pack hebdo',
+    'Analysées, sélectionnées, partagées avant le coup d\'envoi',
+    'Le travail d\'analyse, pas le hasard',
+    'Chaque sélection est envoyée avant les matchs, jamais après'
+];
+
 async function afficheReseau(paris, date, lignes, now) {
-    const { composerStory } = await import('./_compositeur.mjs');
+    const { composerAffiche } = await import('./_compositeur.mjs');
     const gagnes = paris.filter(x => !x.perdu).length;
-    const image = await composerStory({
+    const cumul = paris.reduce((t, x) => t * (x.perdu ? 1 : x.cote), 1);
+    const image = await composerAffiche({
         fondUrl: await fondStoryRecent(now.dateStr, 5),
         badge: 'SMVIP+',
-        texte: gagnes === paris.length ? 'Sélections *validées*' : 'Les dernières *sélections*',
-        lignes: lignes.slice(0, 4)
+        titreHaut: gagnes === paris.length ? 'Sélections' : 'Les dernières',
+        titreBas: gagnes === paris.length ? 'validées' : 'sélections',
+        dateTexte: dateLongue(date),
+        paris: paris.map(x => ({ cote: x.cote, libelle: nomPropre(x.libelle), perdu: x.perdu })),
+        resume: gagnes + '/' + paris.length + (gagnes === paris.length ? ' validées' : ' validées') + (gagnes > 1 ? '  ·  cote cumulée ' + cumul.toFixed(2) : ''),
+        accroche: choisir(AFFICHE_ACCROCHES, date, now.minutes),
+        cta: 'scoremaster.fr   ·   @ScoreMasterOfficiel'
     });
     const [url] = await televerserSlides('reseau-' + date + '-' + now.minutes, ['data:image/jpeg;base64,' + image.toString('base64')]);
     return url;
