@@ -671,6 +671,10 @@ create policy "Admins can update automation settings"
 -- Séquence marketing du combiné (relances + résultat), désactivée par défaut.
 alter table public.automation_settings add column if not exists auto_sequence boolean not null default false;
 
+-- Approbation automatique des contenus du script nocturne du VPS (reels,
+-- promo, écusson, relance…), indépendante de celle des carrousels.
+alter table public.automation_settings add column if not exists auto_publish_vps boolean not null default false;
+
 -- ============================================================
 -- COMBINÉ AUTOMATIQUE
 -- validated_at : horodatage de la validation (gagné/perdu) par l'admin, posé

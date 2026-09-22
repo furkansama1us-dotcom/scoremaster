@@ -2741,6 +2741,10 @@ async function fetchApiScore(id, dateRaw) {
                 </div>
                 <div id="cpAutoEtat" style="font-size:11.5px;margin-top:10px;"></div>
                 <div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:14px;border-top:1px dashed #e7e0d5;">
+                    <label class="cp-switch"><input type="checkbox" id="cpVpsToggle" onchange="cpSetVps(this.checked)"><span></span></label>
+                    <div style="flex:1;min-width:0;"><b>Contenus générés la nuit (reels, promo, écusson…)</b><br><span style="font-size:11.5px;color:#8a8290;">Les publications préparées par le script du soir (un type par jour : promo, affiche combiné, écusson, story, annonce VIP+, reels, relance) sont approuvées à la même heure, puis publiées à leur créneau prévu.</span></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:14px;border-top:1px dashed #e7e0d5;">
                     <label class="cp-switch"><input type="checkbox" id="cpSeqToggle" onchange="cpSetSequence(this.checked)"><span></span></label>
                     <div style="flex:1;min-width:0;"><b>Séquence marketing du combiné</b><br><span style="font-size:11.5px;color:#8a8290;">Annonce du combiné dès sa publication, relances avant le coup d'envoi, puis message victoire ou défaite après ta validation, sur Telegram et en story Instagram.</span></div>
                 </div>
@@ -6112,6 +6116,8 @@ async function cpRenderAutoCard() {
     }
     toggle.disabled = false;
     toggle.checked = !!r.auto_publish;
+    var vps = document.getElementById('cpVpsToggle');
+    if (vps) { vps.disabled = !('auto_publish_vps' in r); vps.checked = !!r.auto_publish_vps; }
     var seq = document.getElementById('cpSeqToggle');
     if (seq) { seq.disabled = !('auto_sequence' in r); seq.checked = !!r.auto_sequence; }
     var combo = document.getElementById('cpComboToggle');
@@ -6261,6 +6267,10 @@ async function cpEnvoyerRecap() {
     } finally {
         btn.disabled = false;
     }
+}
+
+async function cpSetVps(actif) {
+    if (await cpSaveAuto({ auto_publish_vps: !!actif })) showToast(actif ? 'Contenus de la nuit approuvés automatiquement.' : 'Contenus de la nuit à valider toi-même.');
 }
 
 async function cpSetPromo(actif) {
@@ -6961,6 +6971,21 @@ function cpCloseSheet() {
 
 var PLATFORM_LABELS = { instagram: { label: 'Instagram', icon: 'fab fa-instagram', color: '#e1306c' }, telegram: { label: 'Telegram', icon: 'fab fa-telegram-plane', color: '#0ea5e9' } };
 
+// Date et heure de création, pour savoir quand une publication a été préparée.
+function fmtDT(d) {
+    if (!d) return '';
+    var dt = new Date(d);
+    return String(dt.getDate()).padStart(2, '0') + '/' + String(dt.getMonth() + 1).padStart(2, '0')
+        + ' à ' + String(dt.getHours()).padStart(2, '0') + 'h' + String(dt.getMinutes()).padStart(2, '0');
+}
+
+// Ligne d'infos commune aux cartes : type, créneau prévu, moment de création.
+function ligneInfosPublication(p, extra) {
+    return 'Type : ' + (p.content_type || '?') + (extra ? ' · ' + extra : '')
+        + ' · Prévu pour le ' + (p.scheduled_for || '?') + (p.scheduled_time ? ' à ' + String(p.scheduled_time).slice(0, 5).replace(':', 'h') : '')
+        + ' · Créé le ' + fmtDT(p.created_at);
+}
+
 function renderPublicationCard(p) {
     var pf = PLATFORM_LABELS[p.platform] || { label: p.platform, icon: 'fas fa-share', color: 'var(--text-gray)' };
     var hasDualFormat = !!(p.image_url_story || p.image_url_post);
@@ -6979,7 +7004,7 @@ function renderPublicationCard(p) {
                 <span style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:800; color:${pf.color};"><i class="${pf.icon}"></i> ${pf.label}</span>
                 <span class="order-history-date">${fmtD(p.created_at)}</span>
             </div>
-            <div style="font-size:11px; color:var(--text-gray); margin:6px 0;">Type : ${p.content_type} · Carrousel ${p.carousel_images.length} slides · Prévu pour le ${p.scheduled_for}</div>
+            <div style="font-size:11px; color:var(--text-gray); margin:6px 0;">${ligneInfosPublication(p, 'Carrousel ' + p.carousel_images.length + ' slides')}</div>
             <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:10px;">${thumbs}</div>
             <div style="font-size:13px; color:#fff; line-height:1.5; white-space:pre-wrap; margin-bottom:12px;">${p.caption}</div>
             <button onclick="copyPublicationCaption('${p.id}')" style="width:100%;margin-bottom:8px;padding:9px;background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-copy"></i> Copier la description (# compris)</button>
@@ -6997,7 +7022,7 @@ function renderPublicationCard(p) {
                 <span style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:800; color:${pf.color};"><i class="${pf.icon}"></i> ${pf.label}</span>
                 <span class="order-history-date">${fmtD(p.created_at)}</span>
             </div>
-            <div style="font-size:11px; color:var(--text-gray); margin:6px 0;">Type : ${p.content_type} · Prévu pour le ${p.scheduled_for}</div>
+            <div style="font-size:11px; color:var(--text-gray); margin:6px 0;">${ligneInfosPublication(p)}</div>
             <img src="${p.image_url}" style="width:100%; border-radius:10px; margin-bottom:10px; display:block;" onerror="this.style.display='none'">
             <div style="font-size:13px; color:#fff; line-height:1.5; white-space:pre-wrap; margin-bottom:12px;">${p.caption}</div>
             <button onclick="copyPublicationCaption('${p.id}')" style="width:100%;margin-bottom:8px;padding:9px;background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-copy"></i> Copier la description (# compris)</button>
@@ -7022,7 +7047,7 @@ function renderPublicationCard(p) {
             <span style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:800; color:${pf.color};"><i class="${pf.icon}"></i> ${pf.label}</span>
             <span class="order-history-date">${fmtD(p.created_at)}</span>
         </div>
-        <div style="font-size:11px; color:var(--text-gray); margin:6px 0;">Type : ${p.content_type} · Prévu pour le ${p.scheduled_for}</div>
+        <div style="font-size:11px; color:var(--text-gray); margin:6px 0;">${ligneInfosPublication(p)}</div>
         <div style="display:flex; gap:10px; margin-bottom:10px;">
             <div style="flex:1;">
                 <img src="${p.image_url_story || ''}" style="width:100%; border-radius:10px; display:block; aspect-ratio:9/16; object-fit:cover; background:#0a0e1a;" onerror="this.style.display='none'">
@@ -7068,7 +7093,7 @@ function renderPublicationHistoryCard(p) {
             <span style="display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:800; color:${pf.color};"><i class="${pf.icon}"></i> ${pf.label}</span>
             <span class="order-history-date">${fmtD(p.created_at)}</span>
         </div>
-        <div style="font-size:11px; color:var(--text-gray); margin-top:4px;">Type : <b style="color:var(--text-light-gray);">${p.content_type || '?'}</b> · Prévu pour le ${p.scheduled_for || '?'}</div>
+        <div style="font-size:11px; color:var(--text-gray); margin-top:4px;">Type : <b style="color:var(--text-light-gray);">${p.content_type || '?'}</b> · Prévu pour le ${p.scheduled_for || '?'}${p.scheduled_time ? ' à ' + String(p.scheduled_time).slice(0, 5).replace(':', 'h') : ''} · Créé le ${fmtDT(p.created_at)}</div>
         <div style="font-size:11px; color:${st.color}; font-weight:700; margin-top:4px;">${st.label}</div>
         ${captionPreview ? `<div style="font-size:12px; color:var(--text-light-gray); margin-top:6px; line-height:1.4; white-space:pre-wrap;">${captionPreview}</div>` : ''}
         ${thumbHtml}

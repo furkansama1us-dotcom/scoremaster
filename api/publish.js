@@ -190,13 +190,28 @@ async function televerserSlides(idLigne, composees) {
 // Approbation automatique : à partir de l'heure réglée (7h00 par défaut), les
 // carrousels du calendrier prévus aujourd'hui, assemblés et non exclus, passent
 // en « approuvé ». Le balayage habituel les publie ensuite à leur heure.
+// Un contenu généré hors calendrier éditorial (script du VPS : reels, promo,
+// écusson, relance…) ne porte pas de source dans overlay_data. Ceux qui en
+// portent une sont pilotés par leurs propres automatismes.
+function estContenuVps(ligne) {
+    const src = ligne.overlay_data && ligne.overlay_data.source;
+    return !src;
+}
+
+// Une ligne n'est approuvable que si son visuel est réellement arrivé.
+function visuelPret(ligne) {
+    if (Array.isArray(ligne.carousel_images) && ligne.carousel_images.length) return ligne.carousel_images.every(Boolean);
+    return !!(ligne.image_url || ligne.image_url_story || ligne.image_url_post);
+}
+
 async function approuverAutomatiquement(now) {
     const reglages = await lireReglagesAuto();
-    if (!reglages || !reglages.auto_publish) return { actif: false };
+    if (!reglages || (!reglages.auto_publish && !reglages.auto_publish_vps)) return { actif: false };
     const [hh, mm] = String(reglages.auto_approve_at || '07:00').split(':').map(Number);
     if (now.minutes < hh * 60 + mm) return { actif: true, enAttenteHeure: true };
 
     const exclus = Array.isArray(reglages.exclusions) ? reglages.exclusions : [];
+    if (!reglages.auto_publish) return { actif: true, approuves: [], vps: await approuverContenusVps(reglages, now) };
     const candidats = await sbFetch('pending_publications?status=eq.pending&platform=eq.instagram'
         + '&overlay_data->>source=eq.content-calendar&scheduled_for=eq.' + now.dateStr
         + '&select=id,carousel_images,overlay_data') || [];
@@ -210,6 +225,27 @@ async function approuverAutomatiquement(now) {
             body: JSON.stringify({ status: 'approved', overlay_data: Object.assign({}, c.overlay_data, { auto_approuve_le: new Date().toISOString() }) })
         });
         approuves.push(calId);
+    }
+    return { actif: true, approuves, vps: await approuverContenusVps(reglages, now) };
+}
+
+// Contenus du script nocturne du VPS : approuvés en bloc si l'option est
+// active, puis publiés à leur créneau habituel par le balayage normal.
+async function approuverContenusVps(reglages, now) {
+    if (!reglages.auto_publish_vps) return { actif: false };
+    const lignes = await sbFetch('pending_publications?status=eq.pending&scheduled_for=eq.' + now.dateStr
+        + '&select=id,content_type,platform,image_url,image_url_story,image_url_post,carousel_images,overlay_data') || [];
+    const approuves = [];
+    for (const l of lignes) {
+        if (!estContenuVps(l) || !visuelPret(l)) continue;
+        await sbFetch('pending_publications?id=eq.' + l.id + '&status=eq.pending', {
+            method: 'PATCH',
+            body: JSON.stringify({
+                status: 'approved',
+                overlay_data: Object.assign({}, l.overlay_data, { source: 'vps', auto_approuve_le: new Date().toISOString() })
+            })
+        });
+        approuves.push(l.content_type + ':' + l.platform);
     }
     return { actif: true, approuves };
 }
