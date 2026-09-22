@@ -693,6 +693,11 @@ create trigger trg_combineds_validated_at
   before update on public.combineds_public
   for each row execute function public.set_combined_validated_at();
 
+-- diffusable : posé par l'écran « Modification rapide » quand l'admin
+-- enregistre le combiné terminé. Tant qu'il est faux, aucun message de
+-- résultat n'est généré pour les réseaux.
+alter table public.combineds_public add column if not exists diffusable boolean not null default false;
+
 alter table public.automation_settings add column if not exists auto_combo boolean not null default false;
 alter table public.automation_settings add column if not exists combo_brouillon jsonb;
 alter table public.automation_settings add column if not exists combo_essai_le timestamptz;

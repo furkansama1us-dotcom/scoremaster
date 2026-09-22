@@ -12513,9 +12513,15 @@ let quickEditCombinedId = null;
             if(updatedMatches[index]) updatedMatches[index].score = input.value.trim();
         });
 
+        // Le score réel saisi devient le pronostic : une fois le combiné
+        // enregistré, plus rien ne distingue les deux, ni dans l'historique ni
+        // dans ce qui part sur les réseaux.
         document.querySelectorAll('.quickedit-final-input').forEach(input => {
             let index = parseInt(input.getAttribute('data-index'));
-            if(updatedMatches[index]) updatedMatches[index].final_score = input.value.trim() || null;
+            let reel = input.value.trim();
+            if (!updatedMatches[index]) return;
+            if (reel) updatedMatches[index].score = reel;
+            updatedMatches[index].final_score = null;
         });
 
         document.querySelectorAll('.quickedit-odds-input').forEach(input => {
@@ -12531,21 +12537,26 @@ let quickEditCombinedId = null;
         // Préparation version publique (on masque si c'est encore "en-cours")
         let publicMatches = updatedMatches.map(m => {
             let isFinished = (originalCombined.status === 'termine' || originalCombined.status === 'perdu');
-            return { teams: m.teams, time: m.time, score: isFinished ? m.score : '?-?', final_score: isFinished ? (m.final_score || null) : null, odds: isFinished ? m.odds : 0, logo: m.logo, match_status: m.match_status };
+            return { teams: m.teams, time: m.time, score: isFinished ? m.score : '?-?', final_score: null, odds: isFinished ? m.odds : 0, logo: m.logo, match_status: m.match_status };
         });
 
         try {
+            var estTermine = (originalCombined.status === 'termine' || originalCombined.status === 'perdu');
+            var champsPublic = { matches: publicMatches };
+            // C'est cet enregistrement qui ouvre la communication réseaux.
+            if (estTermine) champsPublic.diffusable = true;
+
             var updatePub = await supabaseClient.from('combineds_public')
-                .update({ matches: publicMatches })
+                .update(champsPublic)
                 .eq('id', quickEditCombinedId);
             if (updatePub.error) throw updatePub.error;
 
             var updateVip = await supabaseClient.from('combineds_vip')
-                .update({ matches: updatedMatches, total_odds: newTotalOdds, gains: newGains })
+                .update({ matches: updatedMatches, total_odds: newTotalOdds, gains: newGains, detected_scores: null })
                 .eq('id', quickEditCombinedId);
             if (updateVip.error) throw updateVip.error;
 
-            showToast('Combiné mis à jour !');
+            showToast(estTermine ? 'Combiné enregistré : contenus réseaux débloqués.' : 'Combiné mis à jour !');
             quickEditCombinedId = null;
             
             await chargerDonnees();

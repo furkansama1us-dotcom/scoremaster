@@ -436,16 +436,16 @@ function dateCourte(dateStr) {
 }
 
 async function recapResultats(dateStr) {
-    const combos = await sbFetch('combineds_public?date=eq.' + dateStr + '&status=in.(termine,perdu)&select=id,status,matches,detected_scores') || [];
+    const combos = await sbFetch('combineds_public?date=eq.' + dateStr + '&status=in.(termine,perdu)&select=id,status,matches') || [];
     if (!combos.length) return null;
 
     const blocs = [];
     for (const c of combos) {
         let vip = null;
-        try { vip = (await sbFetch('combineds_vip?id=eq.' + c.id + '&select=matches,total_odds'))[0]; } catch (e) { vip = null; }
+        try { vip = (await sbFetch('combineds_vip?id=eq.' + c.id + '&select=matches,total_odds,detected_scores'))[0]; } catch (e) { vip = null; }
         const paris = (vip && vip.matches) || c.matches || [];
         const lignes = paris.map((m, i) => {
-            const reel = (c.detected_scores && c.detected_scores[i]) || m.final_score || null;
+            const reel = (vip && vip.detected_scores && vip.detected_scores[i]) || m.final_score || null;
             const gagne = reel && m.score
                 ? String(reel).replace(/\s/g, '') === String(m.score).replace(/\s/g, '')
                 : c.status === 'termine';
@@ -537,7 +537,7 @@ async function sequenceMarketing(now) {
     // 2) Résultat, une fois validé par l'admin (jamais la nuit)
     if (now.minutes >= 8 * 60) {
         const hier = new Date(now.dateStr + 'T12:00:00Z'); hier.setUTCDate(hier.getUTCDate() - 1);
-        const valides = await sbFetch('combineds_public?date=gte.' + hier.toISOString().slice(0, 10) + '&status=in.(termine,perdu)&select=id,status,date') || [];
+        const valides = await sbFetch('combineds_public?date=gte.' + hier.toISOString().slice(0, 10) + '&status=in.(termine,perdu)&diffusable=is.true&select=id,status,date') || [];
         for (const c of valides) {
             const etape = c.status === 'termine' ? 'victoire' : 'defaite';
             const v = { stat: await statTrenteJours(now.dateStr), matchs: await infosMatchs(c.date), dateMatchs: c.date };
