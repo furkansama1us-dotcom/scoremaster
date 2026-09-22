@@ -703,3 +703,33 @@ alter table public.automation_settings add column if not exists rapport_envoye_l
 
 -- Promotion quotidienne de l'app (Telegram + story, 12h30).
 alter table public.automation_settings add column if not exists auto_promo boolean not null default false;
+
+-- ============================================================
+-- SÉCURITÉ (alerte Supabase « table publicly accessible »)
+--
+-- telegram_queue contient les notifications envoyées à l'admin, dont des
+-- informations sur les prospects du bot de vente (pseudo Telegram, chat id).
+-- Elle était lisible avec la clé anon, présente dans l'app publique.
+-- L'app doit pouvoir y DÉPOSER un message (demande de pack, etc.) mais
+-- jamais en lire : seul le serveur (clé service role) lit la file.
+-- ============================================================
+alter table public.telegram_queue enable row level security;
+
+do $$
+declare p record;
+begin
+  for p in select policyname from pg_policies where schemaname = 'public' and tablename = 'telegram_queue' loop
+    execute format('drop policy %I on public.telegram_queue', p.policyname);
+  end loop;
+end $$;
+
+create policy "App can queue telegram messages"
+  on public.telegram_queue for insert
+  to anon, authenticated
+  with check (true);
+
+-- Les codes d'accès non utilisés étaient lisibles par n'importe qui, et donc
+-- utilisables. L'échange d'un code passe désormais par api/redeem-code.js
+-- (clé service role) : le navigateur n'a plus besoin d'y accéder.
+drop policy if exists "Users can look up an unused code to redeem it" on public.vip_access_codes;
+drop policy if exists "Users can redeem an unused code" on public.vip_access_codes;
