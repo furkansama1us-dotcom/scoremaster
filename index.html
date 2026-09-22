@@ -2767,7 +2767,7 @@ async function fetchApiScore(id, dateRaw) {
             </div>
             <div class="cp-eyebrow">Pronostics du réseau</div>
             <div class="cp-set-card">
-                <span style="font-size:11.5px;color:#8a8290;">Colle ce que tes pronostiqueurs t'ont envoyé, une ligne par pari : la cote, et le résultat (✅ ou ❌). Tu reçois le message mis en forme sur Telegram, prêt à transférer.</span>
+                <span style="font-size:11.5px;color:#8a8290;">Colle ce que tes pronostiqueurs t'ont envoyé, une ligne par pari : la cote, et le résultat (✅ ou ❌). Le message est mis en forme avec une accroche différente à chaque fois : tu peux le régénérer, te l'envoyer sur Telegram ou le publier en post + story.</span>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
                     <div><label class="cp-field">Date</label><input type="date" class="cp-input" id="cpReseauDate"></div>
                     <div><label class="cp-field">Source (facultatif)</label><input class="cp-input" id="cpReseauSource" maxlength="40" placeholder="SM VIP"></div>
@@ -2775,8 +2775,13 @@ async function fetchApiScore(id, dateRaw) {
                 <label class="cp-field">Lignes reçues</label>
                 <button class="cp-secondary" style="margin-bottom:8px;" onclick="cpPrereRemplirReseau()"><i class="fas fa-wand-magic-sparkles"></i> Pré-remplir 4 cotes (1.50 – 2.00)</button>
                 <textarea class="cp-input" id="cpReseauLignes" style="min-height:110px;" placeholder="1.91 ✅&#10;1.78 ✅&#10;1.58 ✅"></textarea>
-                <button class="cp-secondary" id="cpReseauBtn" onclick="cpEnvoyerRecapReseau()"><i class="fab fa-telegram-plane"></i> M'envoyer le message mis en forme</button>
-                <div id="cpReseauApercu" class="cp-txt-box" style="margin-top:10px;display:none;"></div>
+                <button class="cp-secondary" id="cpReseauBtn" onclick="cpReseauMessage('apercu')"><i class="fas fa-pen-nib"></i> Générer le message</button>
+                <div id="cpReseauApercu" class="cp-txt-box" style="margin-top:10px;display:none;white-space:pre-wrap;"></div>
+                <div id="cpReseauActions" style="display:none;margin-top:8px;">
+                    <button class="cp-secondary" onclick="cpReseauMessage('apercu', true)"><i class="fas fa-rotate"></i> Régénérer un autre message</button>
+                    <button class="cp-secondary" onclick="cpReseauMessage('telegram')"><i class="fab fa-telegram-plane"></i> M'envoyer sur Telegram</button>
+                    <button class="cp-secondary" onclick="cpReseauMessage('instagram')"><i class="fab fa-instagram"></i> Publier en post + story (9:16)</button>
+                </div>
             </div>
             <div class="cp-eyebrow">Maintenance</div>
             <div class="cp-set-card">
@@ -6199,17 +6204,29 @@ function cpPrereRemplirReseau() {
         lignes.push((1.5 + Math.random() * 0.5).toFixed(2) + ' ✅');
     }
     document.getElementById('cpReseauLignes').value = lignes.join(String.fromCharCode(10));
+    cpReseauVariante = null;
+    document.getElementById('cpReseauActions').style.display = 'none';
+    document.getElementById('cpReseauApercu').style.display = 'none';
     showToast("Trame pré-remplie : ajuste les cotes avant d'envoyer.");
 }
 
-async function cpEnvoyerRecapReseau() {
-    var btn = document.getElementById('cpReseauBtn');
+// Variante d'accroche en cours : conservée pour que l'envoi reprenne
+// exactement le texte affiché dans l'aperçu.
+var cpReseauVariante = null;
+
+async function cpReseauMessage(mode, nouvelle) {
     var lignes = document.getElementById('cpReseauLignes').value;
     if (!lignes.trim()) { showToast('Colle d\'abord les lignes reçues.', true); return; }
-    btn.disabled = true;
+    if (nouvelle || cpReseauVariante === null) cpReseauVariante = Math.floor(Math.random() * 40);
+    if (nouvelle) cpReseauVariante = (cpReseauVariante + 1 + Math.floor(Math.random() * 39)) % 40;
+
+    var boutons = document.querySelectorAll('#cpReseauBtn, #cpReseauActions button');
+    boutons.forEach(function (b) { b.disabled = true; });
     try {
         var r = await adminApiCall('/api/publish', {
             action: 'recap-reseau',
+            mode: mode,
+            variante: cpReseauVariante,
             date: document.getElementById('cpReseauDate').value,
             source: document.getElementById('cpReseauSource').value,
             lignes: lignes
@@ -6217,11 +6234,14 @@ async function cpEnvoyerRecapReseau() {
         var box = document.getElementById('cpReseauApercu');
         box.style.display = 'block';
         box.textContent = r.texte;
-        showToast('Message envoyé sur Telegram (' + r.gagnes + '/' + r.total + ').');
+        document.getElementById('cpReseauActions').style.display = 'block';
+        showToast(mode === 'telegram' ? 'Message envoyé sur Telegram.'
+            : mode === 'instagram' ? 'Affiche 9:16 mise en file : post + story.'
+            : 'Message généré (' + r.total + ' cotes).');
     } catch (e) {
         showToast('Erreur : ' + e.message, true);
     } finally {
-        btn.disabled = false;
+        boutons.forEach(function (b) { b.disabled = false; });
     }
 }
 

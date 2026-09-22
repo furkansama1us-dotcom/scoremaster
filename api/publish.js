@@ -911,11 +911,9 @@ function analyserLignesReseau(brut) {
 // Brouillon du soir : quatre cotes dans la fourchette habituelle, envoyées en
 // privé pour que l'admin n'ait plus qu'à remplacer par celles de son réseau.
 function trameReseau(dateStr) {
-    const lignes = [];
-    for (let i = 0; i < 4; i++) lignes.push((1.5 + Math.random() * 0.5).toFixed(2) + ' ✅');
-    return '📝 TRAME DU SOIR — remplace les cotes par celles de ton réseau\n\n— — — — —\n📅 '
-        + dateCourte(dateStr) + ' — SM VIP ⚽ Chat 💰\n\n' + lignes.join('\n')
-        + '\n\nClean Sweep ! 💰\n— — — — —';
+    const paris = [];
+    for (let i = 0; i < 4; i++) paris.push({ cote: 1.5 + Math.random() * 0.5, perdu: false, libelle: '' });
+    return construireMessageReseau(paris, dateStr, '', undefined).texte;
 }
 
 async function trameAutomatique(now) {
@@ -926,6 +924,106 @@ async function trameAutomatique(now) {
     await enregistrerReglages({ trame_envoyee_le: now.dateStr });
     await prevenirAdmin(trameReseau(now.dateStr));
     return { actif: true, envoye: true };
+}
+
+// Quarante accroches pour présenter les sélections validées : une variante
+// différente à chaque envoi, pour que le canal ne serve jamais deux fois le
+// même texte. {n} = nombre de paris, {date} = date au format court.
+const MSG_RESEAU = [
+    "🔥 Vous l'attendiez tous : le voilà !\nVoici un aperçu des combinés validés dernièrement sur notre groupe SMVIP+ 💎",
+    "💎 Petit aperçu de ce qui tombe côté SMVIP+ ces derniers jours.\n{n} sélections, et le travail paye ⚽",
+    "📊 Le point du jour sur les sélections passées dans le groupe SMVIP+.\nLa régularité avant tout 💪",
+    "⚡ Comme promis, on vous partage un extrait des dernières sélections SMVIP+ du {date} 🔥",
+    "🏆 Encore une belle série côté SMVIP+ !\nVoilà à quoi ressemblent les sélections partagées dans le groupe 💎",
+    "👀 Vous vouliez voir ce qui se passe dans le SMVIP+ ?\nVoici un aperçu, sans filtre ⚽",
+    "🚀 Les sélections SMVIP+ du {date} viennent de tomber.\nOn vous montre 👇",
+    "💬 On nous demande souvent ce qu'il y a dans le groupe SMVIP+.\nRéponse en images : voilà les dernières validées 🔥",
+    "🎯 {n} sélections, une méthode.\nUn aperçu de ce qui circule dans le SMVIP+ ⚽",
+    "📈 La constance, c'est ce qui fait la différence.\nAperçu des dernières sélections validées dans le SMVIP+ 💎",
+    "🔔 Nouvel aperçu SMVIP+ disponible !\nVoilà ce qui est tombé récemment côté groupe privé ⚽",
+    "💥 Ça continue de tourner côté SMVIP+ !\nPetit récap des dernières sélections validées 🔥",
+    "📅 {date} — un aperçu de ce que les membres SMVIP+ ont reçu.\nRien de plus, rien de moins 💎",
+    "⚽ Le football, c'est du travail d'analyse.\nVoici un aperçu des sélections validées dans le SMVIP+ 📊",
+    "🥇 On vous partage un extrait des dernières sélections SMVIP+.\n{n} paris, une même rigueur 💪",
+    "🧠 Analyse, patience, discipline.\nVoilà le résultat côté SMVIP+ ces derniers jours 🔥",
+    "👑 Le SMVIP+ tourne bien en ce moment.\nVoici un aperçu des sélections validées 💎",
+    "🎉 Encore une belle journée pour les membres SMVIP+ !\nUn aperçu de ce qui est tombé 👇",
+    "📣 Aperçu SMVIP+ du {date}.\nTransparence totale sur ce qui circule dans le groupe ⚽",
+    "🔥 Ceux qui suivent le SMVIP+ savent.\nPour les autres, voici un aperçu des dernières sélections 💎",
+    "💎 Nos membres SMVIP+ ont reçu ces sélections en avance.\nOn vous les montre maintenant ⚽",
+    "⏱️ Toujours en amont, jamais après coup.\nVoici les sélections validées côté SMVIP+ 🔥",
+    "📌 À garder en tête : voilà le type de sélections partagées dans le SMVIP+ 💎",
+    "🙌 Merci à tous les membres du SMVIP+ pour la confiance !\nVoici un aperçu des dernières validées ⚽",
+    "🧾 Récap' des sélections SMVIP+ du {date}.\n{n} lignes, et une méthode qui reste la même 📊",
+    "🌟 Un aperçu de ce que reçoivent les membres SMVIP+ chaque jour ⚽",
+    "🚨 Aperçu SMVIP+ : voilà ce qui vient d'être validé dans le groupe 🔥",
+    "🎬 Pas de promesse, juste ce qui est tombé.\nAperçu des dernières sélections SMVIP+ 💎",
+    "📲 Un aperçu du groupe SMVIP+ pour ceux qui hésitent encore ⚽",
+    "🏅 Le sérieux finit toujours par se voir.\nVoici les dernières sélections validées côté SMVIP+ 💪",
+    "🔎 Ce que vous ratez si vous n'êtes pas dans le SMVIP+ : un aperçu du {date} ⚽",
+    "🥂 Belle série en cours côté SMVIP+ !\nUn aperçu des sélections validées 🔥",
+    "📗 Le carnet SMVIP+ de ces derniers jours, en un coup d'œil 💎",
+    "⚙️ Une méthode, {n} sélections.\nVoici un aperçu de ce que reçoit le groupe SMVIP+ 📊",
+    "🎯 Objectif : de la régularité, pas du spectacle.\nAperçu des dernières sélections SMVIP+ ⚽",
+    "💡 Vous vous demandez ce que vaut le SMVIP+ ?\nVoici un aperçu concret du {date} 🔥",
+    "🛡️ Rigueur et transparence.\nUn aperçu des sélections validées dans le groupe SMVIP+ 💎",
+    "📤 On partage un extrait de ce qui est tombé côté SMVIP+ ces derniers jours ⚽",
+    "🔥 Encore du lourd côté SMVIP+ !\nAperçu des sélections validées du {date} 💎",
+    "🤝 Ceux qui suivent depuis le début le savent.\nVoici un aperçu des dernières sélections SMVIP+ ⚽"
+];
+
+// Chutes tournantes : rappel du pack hebdo et de l'app, sans promesse de gain.
+const FIN_RESEAU = [
+    "💎 Les VIP du pack hebdo ont également accès à ces infos !\n📲 Disponible via notre app : https://scoremaster.fr/",
+    "🔓 Le pack hebdo donne accès à ces sélections en direct.\n📲 Tout se passe sur https://scoremaster.fr/",
+    "💎 Envie de les recevoir avant tout le monde ?\nLe pack hebdo SMVIP+ est dispo sur https://scoremaster.fr/ 📲",
+    "📲 Retrouve l'intégralité des analyses sur https://scoremaster.fr/\n💎 Accès complet avec le pack hebdo VIP",
+    "🚀 Rejoins les VIP du pack hebdo pour recevoir ces infos en temps réel.\n📲 https://scoremaster.fr/",
+    "💬 Les membres du pack hebdo reçoivent tout ça en avance.\n📲 Infos et accès : https://scoremaster.fr/",
+    "🔔 Active ton pack hebdo pour ne plus rien rater.\n📲 https://scoremaster.fr/",
+    "📊 Analyses complètes et historique dans l'app : https://scoremaster.fr/\n💎 Accès VIP via le pack hebdo",
+    "⚡ Les VIP du pack hebdo reçoivent ces infos directement.\n📲 https://scoremaster.fr/",
+    "🏆 Passe en SMVIP+ avec le pack hebdo et suis tout en direct.\n📲 https://scoremaster.fr/"
+];
+
+// Mise en forme complète du message : accroche, lignes reçues, bilan, chute et
+// contacts. Le paramètre variante régénère un autre texte sur les mêmes cotes.
+function construireMessageReseau(paris, date, source, variante) {
+    const v = Number.isFinite(variante) ? Math.abs(Math.floor(variante)) : Math.floor(Math.random() * MSG_RESEAU.length);
+    const gagnes = paris.filter(x => !x.perdu).length;
+    const remplace = t => t.replace(/\{n\}/g, String(paris.length)).replace(/\{date\}/g, dateCourte(date));
+
+    const entete = '📅 ' + dateCourte(date) + ' — ' + (source || 'SM VIP') + ' ⚽ Chat 💰';
+    const lignes = paris.map(x => x.cote.toFixed(2) + (x.libelle ? ' — ' + x.libelle : '') + ' ' + (x.perdu ? '❌' : '✅'));
+    const total = paris.reduce((t, x) => t * (x.perdu ? 1 : x.cote), 1);
+    const bilan = gagnes === paris.length
+        ? 'Clean Sweep ! 💰' + (paris.length > 1 ? '\n📈 Cote cumulée : ' + total.toFixed(2) : '')
+        : '✅ ' + gagnes + '/' + paris.length + ' validés.' + (gagnes > 1 ? '\n📈 Cote cumulée : ' + total.toFixed(2) : '');
+
+    return {
+        variante: v % MSG_RESEAU.length,
+        lignes,
+        texte: remplace(MSG_RESEAU[v % MSG_RESEAU.length])
+            + '\n\n' + entete
+            + '\n\n' + lignes.join('\n')
+            + '\n\n' + bilan
+            + '\n\n' + remplace(FIN_RESEAU[v % FIN_RESEAU.length])
+            + '\n\n' + CONTACT
+    };
+}
+
+// Affiche 9:16 reprenant les cotes validées, publiée en post et en story.
+async function afficheReseau(paris, date, lignes, now) {
+    const { composerStory } = await import('./_compositeur.mjs');
+    const gagnes = paris.filter(x => !x.perdu).length;
+    const image = await composerStory({
+        fondUrl: await fondStoryRecent(now.dateStr, 5),
+        badge: 'SMVIP+',
+        texte: gagnes === paris.length ? 'Sélections *validées*' : 'Les dernières *sélections*',
+        lignes: lignes.slice(0, 4)
+    });
+    const [url] = await televerserSlides('reseau-' + date + '-' + now.minutes, ['data:image/jpeg;base64,' + image.toString('base64')]);
+    return url;
 }
 
 async function handleRecapReseau(req, res) {
@@ -939,18 +1037,32 @@ async function handleRecapReseau(req, res) {
     const now = parisNowParts();
     const date = /^\d{4}-\d{2}-\d{2}$/.test(corps.date || '') ? corps.date : now.dateStr;
     const source = String(corps.source || '').trim().slice(0, 40);
-    const gagnes = paris.filter(x => !x.perdu).length;
+    const msg = construireMessageReseau(paris, date, source, corps.variante);
 
-    const entete = '📅 ' + dateCourte(date) + ' — ' + (source ? source : 'SM VIP') + ' ⚽ Chat 💰';
-    const lignes = paris.map(x => x.cote.toFixed(2) + (x.libelle ? ' — ' + x.libelle : '') + ' ' + (x.perdu ? '❌' : '✅'));
-    const total = paris.reduce((t, x) => t * (x.perdu ? 1 : x.cote), 1);
-    const pied = gagnes === paris.length
-        ? '\n\nClean Sweep ! 💰' + (paris.length > 1 ? '\nCote cumulée : ' + total.toFixed(2) : '')
-        : '\n\n' + gagnes + '/' + paris.length + ' validés.';
-
-    const texte = entete + '\n\n' + lignes.join('\n') + pied;
-    await prevenirAdmin('📋 RÉCAP RÉSEAU — prêt à transférer\n\n— — — — —\n' + texte + '\n— — — — —');
-    res.status(200).json({ ok: true, texte, gagnes, total: paris.length });
+    // mode : 'apercu' (rien n'est envoyé), 'telegram' (défaut) ou 'instagram'.
+    const mode = corps.mode === 'apercu' || corps.mode === 'instagram' ? corps.mode : 'telegram';
+    if (mode === 'telegram') await prevenirAdmin(msg.texte);
+    if (mode === 'instagram') {
+        const url = await afficheReseau(paris, date, msg.lignes, now);
+        await sbFetch('pending_publications', {
+            method: 'POST',
+            body: JSON.stringify([{
+                scheduled_for: now.dateStr,
+                scheduled_time: hhmm(now.minutes),
+                content_type: 'Sélections SMVIP+',
+                status: 'approved',
+                platform: 'instagram',
+                image_url: url,
+                image_url_story: url,
+                image_url_post: url,
+                publish_as_story: true,
+                publish_as_post: true,
+                caption: msg.texte,
+                overlay_data: { source: 'reseau', date }
+            }])
+        });
+    }
+    res.status(200).json({ ok: true, texte: msg.texte, mode, variante: msg.variante, total: paris.length });
 }
 
 // POST { action: 'recap', date? } (admin) : récapitulatif des résultats d'un jour.
