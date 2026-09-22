@@ -186,11 +186,6 @@ function slideFinale(fond, texte, logo, index, total) {
     dessinerLignes(ctx, lignes, W / 2, H - 330 - (lignes.length - 1) * interligne, interligne);
     ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
 
-    ctx.font = '24px MontserratB';
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-    ctx.textAlign = 'center';
-    ctx.fillText('18+ · Jouer comporte des risques · 09 74 75 13 13', W / 2, H - 170);
-    ctx.textAlign = 'left';
     return canvas;
 }
 
@@ -225,7 +220,7 @@ export async function assembler(draft) {
 
 // ------------------------------------------------------------
 // Story de la séquence du combiné (relances, résultat) : visuel 9:16 avec la
-// mascotte en fond, pastille de contexte, texte en grand, mention 18+.
+// mascotte en fond, pastille de contexte, texte en grand.
 // Sans fond disponible, un dégradé aux couleurs de la marque prend le relais.
 // ------------------------------------------------------------
 export async function composerStory({ fondUrl, badge, texte, lignes: lignesSup }) {
@@ -293,10 +288,5 @@ export async function composerStory({ fondUrl, badge, texte, lignes: lignesSup }
         ctx.textAlign = 'left';
     }
 
-    ctx.font = '24px MontserratB';
-    ctx.fillStyle = 'rgba(255,255,255,0.7)';
-    ctx.textAlign = 'center';
-    ctx.fillText('18+ · Jouer comporte des risques · 09 74 75 13 13', W / 2, H - 250);
-    ctx.textAlign = 'left';
     return canvas.encode('jpeg', 88);
 }

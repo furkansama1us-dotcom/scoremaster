@@ -226,8 +226,8 @@ async function approuverAutomatiquement(now) {
 // Chaque étape est créée une seule fois (clé de séquence) et déjà approuvée :
 // le balayage la publie dans la foulée. L'agent ne valide jamais un résultat.
 // ------------------------------------------------------------
-const PIED_JEU = '18+ · Jouer comporte des risques : endettement, dépendance… Appelez le 09 74 75 13 13 (appel non surtaxé).';
-const LIEN_APP = '🌐 scoremaster.fr';
+// Bloc de contact repris au bas de chaque publication Telegram.
+const CONTACT = '🌐 Site : https://scoremaster.fr/\n📸 Instagram : @scoremaster.fr\n➡️ Telegram : @ScoreMasterOfficiel';
 
 const SEQ_TELEGRAM = {
     promo: [
@@ -364,7 +364,7 @@ async function creerEtapeSequence(cle, canal, etape, v, now) {
     let ligne;
     if (canal === 'telegram') {
         const texte = remplir(choisir(SEQ_TELEGRAM[etape], now.dateStr, etape.length), v);
-        ligne = Object.assign(base, { platform: 'telegram', image_url: '', caption: texte + '\n\n' + LIEN_APP + '\n' + PIED_JEU });
+        ligne = Object.assign(base, { platform: 'telegram', image_url: '', caption: texte + '\n\n' + CONTACT });
     } else {
         const modele = choisir(SEQ_STORY[etape], now.dateStr, etape.length);
         const { composerStory } = await import('./_compositeur.mjs');
@@ -626,7 +626,7 @@ async function publierCombineAuto(b, now) {
     const lignesTexte = b.matches.map(m => '🏆 ' + m.teams + ' (' + m.time + ')').join('\n');
     const legende = '🏆 LE COMBINÉ DU JOUR EST DISPONIBLE !\n\nVoici les affiches retenues :\n' + lignesTexte
         + '\n\n⏰ Coup d\'envoi à ' + b.matches[0].time + '.\n\nComme toujours, l\'analyse complète est disponible dès maintenant dans votre espace VIP+ Score Master. 🙌'
-        + '\n\n🌐 Site Web : https://scoremaster.fr/\n➡️ Telegram : @ScoreMasterOfficiel\n\n' + PIED_JEU;
+        + '\n\n' + CONTACT;
     try {
         const { composerStory } = await import('./_compositeur.mjs');
         const image = await composerStory({
@@ -1067,7 +1067,6 @@ async function handleCalendarDraft(req, res) {
 const MASCOTTE = '<<<5367a632-1402-4f89-8713-824bedb14457>>>';
 const PERSONNAGE = 'the friendly grey and gold robot mascot with a golden crown, glowing yellow eyes behind a dark visor and a small golden shield crest on its chest, is the main character';
 const INTERDITS = 'ABSOLUTE RULE: no text, no letters, no numbers, no logos and no readable signage anywhere in the image — captions and the Score Master logo are added separately afterwards. No real club crests, no real person\'s face.';
-const JEU_RESPONSABLE = '18+ · Jouer comporte des risques : endettement, dépendance… Appelez le 09 74 75 13 13 (appel non surtaxé).';
 const FAMILLES_DUO = {
     R: 'Le bon réflexe', C: "Ce que tu vois / Ce qu'on calcule", E: "L'erreur / Le réflexe",
     M: 'Idée reçue / Réalité', P: 'Pressé / Patient', S: 'Coulisses Score Master'
@@ -1162,7 +1161,7 @@ async function handleManualQueue(req, res) {
             if (!e) continue;
             jobs.push(Object.assign(base, {
                 titre: e.titre, format: e.format, format_nom: e.format_nom,
-                caption: [e.accroche, e.corps, e.cta, e.jeu_responsable, e.hashtags].filter(Boolean).join('\n\n'),
+                caption: [e.accroche, e.corps, e.cta, CONTACT, e.hashtags].filter(Boolean).join('\n\n'),
                 slides: e.slides.map(s => ({ page: s.page, position: s.position, ratio: s.ratio || '9:16', prompt: s.prompt, texte: s.texte }))
             }));
         } else if (dem.mode === 'perso') {
@@ -1175,7 +1174,7 @@ async function handleManualQueue(req, res) {
             const legende = dem.legende || (dem.titre + '\n\n' + dem.cta.replace(/\*/g, ''));
             jobs.push(Object.assign(base, {
                 titre: dem.titre, format: dem.famille, format_nom: FAMILLES_DUO[dem.famille] || 'Test',
-                caption: legende + '\n\n' + JEU_RESPONSABLE + '\n\n#ScoreMaster #Football #PronosticsFootball #JeuResponsable',
+                caption: legende + '\n\n' + CONTACT + '\n\n#ScoreMaster #Football #PronosticsFootball',
                 slides
             }));
         }

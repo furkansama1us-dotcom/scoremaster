@@ -4328,11 +4328,6 @@ function compositeDuoCtaSlide(fondDataUri, texte, index, total) {
         drawRichCenteredLines(ctx, lignes, W / 2, yPremiere, interligne);
         ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
 
-        ctx.font = '700 24px Montserrat, sans-serif';
-        ctx.fillStyle = 'rgba(255,255,255,0.7)';
-        ctx.textAlign = 'center';
-        ctx.fillText('18+ · Jouer comporte des risques · 09 74 75 13 13', W / 2, H - 170);
-        ctx.textAlign = 'left';
 
         return canvas.toDataURL('image/jpeg', 0.95);
     });
