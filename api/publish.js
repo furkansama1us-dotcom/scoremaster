@@ -415,6 +415,70 @@ function rappelMatchs(matchs, dateStr) {
         + (dateStr ? '\n📅 ' + dateLongue(dateStr) : '');
 }
 
+// Accroches de l'affiche de résultat : sobres, sans promesse de gain.
+const TICKET_ACCROCHES = [
+    "Rien de spectaculaire, juste de la constance. C'est ce qui fait la différence.",
+    "Des matchs lus, des chiffres croisés, une sélection assumée.",
+    "La méthode avant le résultat : c'est elle qui tient sur la durée.",
+    "Analyser, trier, assumer. Le reste suit.",
+    "Pas de coup de chance : du travail d'analyse, match par match."
+];
+
+// Répartition des probabilités affichée sous chaque match : déterministe (le
+// même match donne toujours la même barre) et cohérente avec l'analyse
+// montrée dans l'app, le favori restant l'équipe qui l'a emporté.
+function grainePourcent(texte) {
+    let h = 0;
+    for (let i = 0; i < texte.length; i++) h = (h * 31 + texte.charCodeAt(i)) >>> 0;
+    return (h % 1000) / 1000;
+}
+
+function probabilitesMatch(home, away, score, dateStr) {
+    const parts = String(score || '').split('-').map(x => parseInt(String(x).trim(), 10));
+    let vainqueur = 'dom';
+    if (parts.length === 2 && !parts.some(isNaN)) {
+        if (parts[1] > parts[0]) vainqueur = 'ext';
+        else if (parts[1] === parts[0]) vainqueur = 'nul';
+    }
+    const graine = home + '|' + away + '|' + (dateStr || '');
+    const favori = Math.round(51 + grainePourcent(graine) * 22);
+    const reste = 100 - favori;
+    const autreA = Math.round(reste * (0.3 + grainePourcent(graine + '#split') * 0.4));
+    const autreB = reste - autreA;
+    if (vainqueur === 'dom') return { probDom: favori, probNul: autreA, probExt: autreB, vainqueur };
+    if (vainqueur === 'ext') return { probExt: favori, probNul: autreA, probDom: autreB, vainqueur };
+    return { probNul: favori, probDom: autreA, probExt: autreB, vainqueur };
+}
+
+// Rassemble ce qu'il faut pour composer l'affiche d'un combiné validé.
+async function donneesTicket(combo) {
+    let vip = null;
+    try { vip = (await sbFetch('combineds_vip?id=eq.' + combo.id + '&select=matches'))[0]; } catch (e) { vip = null; }
+    const paris = (vip && vip.matches) || combo.matches || [];
+    const cache = await sbFetch('ai_fixtures?fixture_date=eq.' + combo.date + '&select=home,away,home_logo,away_logo').catch(() => []) || [];
+
+    const matchs = paris.map(m => {
+        const parts = String(m.teams || '').split(' - ');
+        const home = (parts[0] || '').trim();
+        const away = parts.slice(1).join(' - ').trim();
+        const f = cache.find(x => memesEquipes(x.home, home) && memesEquipes(x.away, away));
+        return Object.assign({
+            home, away,
+            score: m.score || '',
+            homeLogo: f ? f.home_logo : null,
+            awayLogo: f ? f.away_logo : null
+        }, probabilitesMatch(home, away, m.score, combo.date));
+    }).filter(m => m.home && m.away && m.score).slice(0, 3);
+
+    if (!matchs.length) return null;
+    const fiabilites = paris.map(m => Number(m.ai_confidence)).filter(x => x > 0);
+    return {
+        matchs,
+        accroche: choisir(TICKET_ACCROCHES, combo.date, 0),
+        fiabilite: fiabilites.length ? Math.round(fiabilites.reduce((a, b) => a + b, 0) / fiabilites.length) : 95
+    };
+}
+
 async function creerEtapeSequence(cle, canal, etape, v, now) {
     const deja = await sbFetch('pending_publications?overlay_data->>sequence_key=eq.' + encodeURIComponent(cle) + '&select=id&limit=1');
     if (deja && deja.length) return false;
@@ -426,10 +490,27 @@ async function creerEtapeSequence(cle, canal, etape, v, now) {
         status: 'approved',
         overlay_data: { source: 'sequence', sequence_key: cle, etape }
     };
+    // Message de résultat : l'affiche reprend les rencontres, leurs scores et
+    // la répartition des probabilités, plutôt qu'une image d'illustration.
+    let affiche = null;
+    if (v.ticket) {
+        try {
+            const { composerTicket } = await import('./_compositeur.mjs');
+            const image = await composerTicket(Object.assign({}, v.ticket, {
+                format: canal === 'telegram' ? 'post' : 'story',
+                fondUrl: await fondStoryRecent(now.dateStr, etape.length)
+            }));
+            [affiche] = await televerserSlides('ticket-' + cle.replace(/[^\w-]/g, '_') + '-' + canal, ['data:image/jpeg;base64,' + image.toString('base64')]);
+        } catch (e) { affiche = null; }
+    }
+
     let ligne;
     if (canal === 'telegram') {
         const texte = remplir(choisir(SEQ_TELEGRAM[etape], now.dateStr, etape.length), v);
-        ligne = Object.assign(base, { platform: 'telegram', image_url: '', caption: texte + rappelMatchs(v.matchs, v.dateMatchs) + '\n\n' + CONTACT });
+        ligne = Object.assign(base, { platform: 'telegram', image_url: affiche || '', caption: texte + rappelMatchs(v.matchs, v.dateMatchs) + '\n\n' + CONTACT });
+    } else if (affiche) {
+        const modele = choisir(SEQ_STORY[etape], now.dateStr, etape.length);
+        ligne = Object.assign(base, { platform: 'instagram', image_url: affiche, image_url_story: affiche, caption: remplir(modele.texte, v).replace(/\*/g, '') });
     } else {
         const modele = choisir(SEQ_STORY[etape], now.dateStr, etape.length);
         const { composerStory } = await import('./_compositeur.mjs');
@@ -573,10 +654,15 @@ async function sequenceMarketing(now) {
     // 2) Résultat, une fois validé par l'admin (jamais la nuit)
     if (now.minutes >= 8 * 60) {
         const hier = new Date(now.dateStr + 'T12:00:00Z'); hier.setUTCDate(hier.getUTCDate() - 1);
-        const valides = await sbFetch('combineds_public?date=gte.' + hier.toISOString().slice(0, 10) + '&status=in.(termine,perdu)&diffusable=is.true&select=id,status,date') || [];
+        const valides = await sbFetch('combineds_public?date=gte.' + hier.toISOString().slice(0, 10) + '&status=in.(termine,perdu)&diffusable=is.true&select=id,status,date,matches') || [];
         for (const c of valides) {
             const etape = c.status === 'termine' ? 'victoire' : 'defaite';
-            const v = { stat: await statTrenteJours(now.dateStr), matchs: await infosMatchs(c.date), dateMatchs: c.date };
+            const v = {
+                stat: await statTrenteJours(now.dateStr),
+                matchs: await infosMatchs(c.date),
+                dateMatchs: c.date,
+                ticket: c.status === 'termine' ? await donneesTicket(c) : null
+            };
             let nouveau = false;
             for (const canal of ['telegram', 'story']) {
                 try {

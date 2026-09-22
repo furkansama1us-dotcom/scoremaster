@@ -90,6 +90,10 @@ function decouper(ctx, texte, largeurMax) {
     return lignes;
 }
 
+function decouperTexte(ctx, texte, largeurMax) {
+    return decouper(ctx, texte, largeurMax).map(ligne => ligne.map(m => m.t).join(' '));
+}
+
 function dessinerLignes(ctx, lignes, cx, yPremiere, interligne) {
     const espace = ctx.measureText(' ').width;
     lignes.forEach((ligne, n) => {
@@ -341,4 +345,205 @@ export async function composerStory({ fondUrl, badge, texte, lignes: lignesSup, 
     }
 
     return canvas.encode('jpeg', 88);
+}
+
+// ------------------------------------------------------------
+// Affiche « ticket honoré » : reprend le visuel composé jusqu'ici dans le
+// navigateur (compositeVictoryStory de index.html) pour que les publications
+// de victoire portent les infos des matchs — écussons, score, répartition des
+// probabilités — au lieu d'une simple image générée.
+// ------------------------------------------------------------
+const NAVY = '#0a0e1a';
+const CREME = '#f5f5f2';
+const GRIS = '#a9b0c4';
+const VERT = '#3ecf8e';
+
+function texteEnCercle(ctx, texte, cx, cy, rayon, police, couleur, espacement) {
+    ctx.save();
+    ctx.font = police;
+    ctx.fillStyle = couleur;
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'center';
+
+    const largeurs = [];
+    let angleTotal = 0;
+    for (const lettre of texte) {
+        const l = ctx.measureText(lettre).width + espacement;
+        largeurs.push(l);
+        angleTotal += l / rayon;
+    }
+    let angle = -Math.PI / 2 - angleTotal / 2;
+    [...texte].forEach((lettre, i) => {
+        const demi = (largeurs[i] / rayon) / 2;
+        angle += demi;
+        ctx.save();
+        ctx.translate(cx + rayon * Math.cos(angle), cy + rayon * Math.sin(angle));
+        ctx.rotate(angle + Math.PI / 2);
+        ctx.fillText(lettre, 0, 0);
+        ctx.restore();
+        angle += demi;
+    });
+    ctx.restore();
+}
+
+function barreProbabilites(ctx, x, y, w, h, dom, nul, ext) {
+    let curseur = x;
+    ctx.fillStyle = '#8ab4f8'; ctx.fillRect(curseur, y, w * dom / 100, h); curseur += w * dom / 100;
+    ctx.fillStyle = '#e8b84b'; ctx.fillRect(curseur, y, w * nul / 100, h); curseur += w * nul / 100;
+    ctx.fillStyle = '#f43f5e'; ctx.fillRect(curseur, y, w * ext / 100, h);
+}
+
+// format : 'story' (1080x1920) ou 'post' (1080x1350, feed Instagram/Telegram).
+export async function composerTicket({ matchs, accroche, fiabilite, format, fondUrl }) {
+    await chargerPolices();
+    const logo = await loadImage(await fichierDuDepot('logo-dark.png'));
+    const estPost = format === 'post';
+    const w = 1080, h = estPost ? 1350 : 1920;
+    const canvas = createCanvas(w, h);
+    const ctx = canvas.getContext('2d');
+
+    // Le gabarit est pensé en 1920 de haut : en 4:5, tout est réduit d'un
+    // même facteur calculé sur la hauteur réellement occupée par le contenu.
+    let echelle = 1;
+    if (estPost) {
+        ctx.font = '30px MontserratXB';
+        const lignesAccroche = decouperTexte(ctx, accroche || '', w - (w * 0.09) * 2).length;
+        const hauteurNaturelle = 380 + matchs.length * 248 + lignesAccroche * 38 + 416;
+        echelle = Math.max(0.55, Math.min(1, (h - 150) / hauteurNaturelle));
+    }
+    const S = px => Math.round(px * echelle);
+
+    ctx.fillStyle = NAVY;
+    ctx.fillRect(0, 0, w, h);
+
+    // Sceau : texte en cercle autour du logo
+    const sceauY = S(150), rayon = S(92);
+    texteEnCercle(ctx, 'SCORE MASTER • TICKET HONORÉ • ', w / 2, sceauY, rayon, S(22) + 'px MontserratXB', CREME, S(5));
+    const tailleLogo = S(74);
+    ctx.drawImage(logo, w / 2 - tailleLogo / 2, sceauY - tailleLogo / 2, tailleLogo, tailleLogo);
+
+    const margeX = w * 0.09;
+    const largeurInterne = w - margeX * 2;
+    let y = S(230) + sceauY;
+    const tailleEcusson = S(84);
+
+    for (const m of matchs) {
+        const ligneY = y;
+
+        ctx.font = S(68) + 'px Anton';
+        ctx.fillStyle = '#e8b84b';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(String(m.score || '').replace('-', ' – '), w / 2, ligneY + tailleEcusson / 2);
+
+        for (const [url, x] of [[m.homeLogo, margeX], [m.awayLogo, w - margeX - tailleEcusson]]) {
+            if (!url) continue;
+            try {
+                const img = await imageDepuisUrl(url);
+                ctx.drawImage(img, x, ligneY, tailleEcusson, tailleEcusson);
+            } catch (e) { /* écusson indisponible : le nom suffit */ }
+        }
+
+        ctx.font = S(24) + 'px MontserratXB';
+        ctx.fillStyle = CREME;
+        const ecart = S(16);
+        const largeurNom = w / 2 - margeX - tailleEcusson - ecart - S(95);
+        const interligne = S(28);
+        const milieu = ligneY + tailleEcusson / 2;
+        const nom = (texte, align, x) => {
+            const lignes = decouperTexte(ctx, texte || '', largeurNom).slice(0, 2);
+            ctx.textAlign = align;
+            lignes.forEach((l, i) => ctx.fillText(l, x, milieu - (lignes.length - 1) * interligne / 2 + i * interligne));
+        };
+        nom(m.home, 'left', margeX + tailleEcusson + ecart);
+        nom(m.away, 'right', w - margeX - tailleEcusson - ecart);
+
+        const barreY = ligneY + tailleEcusson + S(34);
+        barreProbabilites(ctx, margeX, barreY, largeurInterne, S(12), m.probDom, m.probNul, m.probExt);
+
+        ctx.font = S(18) + 'px MontserratB';
+        ctx.fillStyle = GRIS;
+        ctx.textAlign = 'left';
+        ctx.fillText(m.probDom + '% ' + m.home, margeX, barreY + S(34));
+        ctx.textAlign = 'right';
+        ctx.fillStyle = m.vainqueur === 'ext' ? '#e8b84b' : GRIS;
+        ctx.fillText(m.probExt + '% ' + m.away, w - margeX, barreY + S(34));
+        ctx.textAlign = 'center';
+        ctx.fillStyle = GRIS;
+        ctx.fillText(m.probNul + '% Nul', w / 2, barreY + S(34));
+        ctx.textAlign = 'left';
+
+        y = barreY + S(130);
+    }
+
+    // Accroche
+    ctx.font = S(30) + 'px MontserratXB';
+    ctx.fillStyle = CREME;
+    ctx.textAlign = 'center';
+    const lignesAccroche = decouperTexte(ctx, accroche || '', largeurInterne);
+    lignesAccroche.forEach((l, i) => ctx.fillText(l, w / 2, y + i * S(38)));
+    y += lignesAccroche.length * S(38) + S(50);
+
+    // Ruban légèrement incliné
+    ctx.save();
+    ctx.translate(w / 2, y + S(30));
+    ctx.rotate(-3 * Math.PI / 180);
+    ctx.font = S(30) + 'px Anton';
+    const ruban = 'TICKET HONORÉ';
+    const largeurRuban = ctx.measureText(ruban).width + S(60);
+    ctx.fillStyle = '#e8b84b';
+    ctx.beginPath(); ctx.roundRect(-largeurRuban / 2, -S(30), largeurRuban, S(60), S(8)); ctx.fill();
+    ctx.fillStyle = '#0e1220';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(ruban, 0, 2);
+    ctx.restore();
+    y += S(150);
+
+    // Fiabilité annoncée
+    const hauteurBloc = S(96);
+    ctx.fillStyle = 'rgba(62,207,142,0.14)';
+    ctx.strokeStyle = 'rgba(62,207,142,0.4)';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(margeX, y, largeurInterne, hauteurBloc, S(14));
+    ctx.fill(); ctx.stroke();
+
+    ctx.font = S(24) + 'px MontserratB';
+    ctx.fillStyle = '#eafaf1';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText('Fiabilité IA annoncée', margeX + S(28), y + hauteurBloc / 2);
+    ctx.font = S(40) + 'px Anton';
+    ctx.fillStyle = VERT;
+    ctx.textAlign = 'right';
+    ctx.fillText(fiabilite + '%', w - margeX - S(28), y + hauteurBloc / 2 + 2);
+    ctx.textAlign = 'left';
+    y += hauteurBloc + S(60);
+
+    ctx.font = S(26) + 'px MontserratB';
+    ctx.fillStyle = '#d4d7e2';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText('scoremaster.fr   ·   @ScoreMasterOfficiel', w / 2, y);
+    y += S(60);
+
+    // Bandeau décoratif en bas, collé au bord : la photo n'habille plus que
+    // cette bande, jamais le contenu lisible.
+    const hauteurPhoto = Math.min(h - y - 20, S(340));
+    if (fondUrl && hauteurPhoto > 100) {
+        try {
+            const fond = await imageDepuisUrl(fondUrl);
+            const photoY = h - hauteurPhoto;
+            ctx.save();
+            ctx.beginPath(); ctx.rect(0, photoY, w, hauteurPhoto); ctx.clip();
+            couvrir(ctx, fond, 0, photoY, w, hauteurPhoto);
+            ctx.fillStyle = 'rgba(6,8,16,0.5)';
+            ctx.fillRect(0, photoY, w, hauteurPhoto);
+            ctx.restore();
+            const couture = Math.min(S(90), hauteurPhoto * 0.5);
+            const degrade = ctx.createLinearGradient(0, photoY, 0, photoY + couture);
+            degrade.addColorStop(0, NAVY);
+            degrade.addColorStop(1, 'rgba(10,14,26,0)');
+            ctx.fillStyle = degrade; ctx.fillRect(0, photoY, w, couture);
+        } catch (e) { /* pas de bandeau : l'aplat suffit */ }
+    }
+
+    return canvas.toBuffer('image/jpeg', 92);
 }
