@@ -191,6 +191,8 @@ async function refreshPredictions(req, res) {
                     kickoff: fx.fixture.date,
                     home: fx.teams.home.name,
                     away: fx.teams.away.name,
+                    home_logo: fx.teams.home.logo || null,
+                    away_logo: fx.teams.away.logo || null,
                     league_code: GRANDES_LIGUES[fx.league.id].code,
                     league_name: GRANDES_LIGUES[fx.league.id].nom,
                     country: fx.league.country || null,

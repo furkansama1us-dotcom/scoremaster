@@ -733,3 +733,7 @@ create policy "App can queue telegram messages"
 -- (clé service role) : le navigateur n'a plus besoin d'y accéder.
 drop policy if exists "Users can look up an unused code to redeem it" on public.vip_access_codes;
 drop policy if exists "Users can redeem an unused code" on public.vip_access_codes;
+
+-- Logos des équipes, pour les rappels de rencontres sur les stories.
+alter table public.ai_fixtures add column if not exists home_logo text;
+alter table public.ai_fixtures add column if not exists away_logo text;

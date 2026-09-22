@@ -223,7 +223,53 @@ export async function assembler(draft) {
 // mascotte en fond, pastille de contexte, texte en grand.
 // Sans fond disponible, un dégradé aux couleurs de la marque prend le relais.
 // ------------------------------------------------------------
-export async function composerStory({ fondUrl, badge, texte, lignes: lignesSup }) {
+// Rappel des rencontres : logos des deux équipes de part et d'autre du nom,
+// heure du coup d'envoi dessous. Une ligne de date commune ferme le bloc.
+async function dessinerMatchs(ctx, matchs, yDepart, dateTexte) {
+    const hauteurLigne = 132;
+    for (let i = 0; i < matchs.length; i++) {
+        const m = matchs[i];
+        const y = yDepart + i * hauteurLigne;
+        ctx.font = '34px MontserratXB';
+        const nom = (m.home || '') + '  -  ' + (m.away || '');
+        let largeur = ctx.measureText(nom).width;
+        const max = W - MARGE_X * 2 - 180;
+        const echelle = largeur > max ? max / largeur : 1;
+        if (echelle < 1) { ctx.font = Math.floor(34 * echelle) + 'px MontserratXB'; largeur = ctx.measureText(nom).width; }
+
+        ctx.shadowColor = 'rgba(0,0,0,0.65)'; ctx.shadowBlur = 14;
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.fillText(nom, W / 2, y);
+        ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
+
+        const taille = 62;
+        const yLogo = y - taille + 12;
+        for (const [url, x] of [[m.homeLogo, W / 2 - largeur / 2 - taille - 22], [m.awayLogo, W / 2 + largeur / 2 + 22]]) {
+            if (!url) continue;
+            try {
+                const img = await imageDepuisUrl(url);
+                ctx.drawImage(img, x, yLogo, taille, taille);
+            } catch (e) { /* logo indisponible : on garde juste les noms */ }
+        }
+
+        if (m.heure) {
+            ctx.font = '28px MontserratB';
+            ctx.fillStyle = OR;
+            ctx.fillText('Coup d\'envoi ' + String(m.heure).replace(':', 'h'), W / 2, y + 44);
+        }
+        ctx.textAlign = 'left';
+    }
+    if (dateTexte) {
+        ctx.font = '26px MontserratB';
+        ctx.fillStyle = 'rgba(255,255,255,0.75)';
+        ctx.textAlign = 'center';
+        ctx.fillText(dateTexte, W / 2, yDepart + matchs.length * hauteurLigne - 6);
+        ctx.textAlign = 'left';
+    }
+}
+
+export async function composerStory({ fondUrl, badge, texte, lignes: lignesSup, matchs, dateTexte }) {
     await chargerPolices();
     const logo = await loadImage(await fichierDuDepot('logo-dark.png'));
     const canvas = createCanvas(W, H);
@@ -239,11 +285,12 @@ export async function composerStory({ fondUrl, badge, texte, lignes: lignesSup }
         ctx.fillStyle = d; ctx.fillRect(0, 0, W, H);
         ctx.drawImage(logo, W / 2 - 200, H * 0.18, 400, 400);
     }
-    const g = ctx.createLinearGradient(0, H * 0.38, 0, H);
+    const hautVoile = (Array.isArray(matchs) && matchs.length) ? H * 0.30 : H * 0.38;
+    const g = ctx.createLinearGradient(0, hautVoile, 0, H);
     g.addColorStop(0, 'rgba(6,8,16,0)');
-    g.addColorStop(0.4, 'rgba(6,8,16,0.8)');
+    g.addColorStop(0.4, 'rgba(6,8,16,0.84)');
     g.addColorStop(1, 'rgba(6,8,16,0.96)');
-    ctx.fillStyle = g; ctx.fillRect(0, H * 0.38, W, H * 0.62);
+    ctx.fillStyle = g; ctx.fillRect(0, hautVoile, W, H - hautVoile);
 
     ctx.save();
     ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = 16;
@@ -255,7 +302,10 @@ export async function composerStory({ fondUrl, badge, texte, lignes: lignesSup }
     const interligne = 96;
     // Lignes complémentaires (ex. matchs du combiné) : le titre remonte d'autant.
     const sup = Array.isArray(lignesSup) ? lignesSup.slice(0, 4) : [];
-    const hauteurSup = sup.length ? sup.length * 58 + 30 : 0;
+    const rencontres = Array.isArray(matchs) ? matchs.slice(0, 2) : [];
+    const hauteurSup = rencontres.length
+        ? rencontres.length * 132 + (dateTexte ? 40 : 0)
+        : (sup.length ? sup.length * 58 + 30 : 0);
     const yPremiere = H - 420 - hauteurSup - (lignes.length - 1) * interligne;
 
     if (badge) {
@@ -276,7 +326,9 @@ export async function composerStory({ fondUrl, badge, texte, lignes: lignesSup }
     dessinerLignes(ctx, lignes, W / 2, yPremiere, interligne);
     ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0;
 
-    if (sup.length) {
+    if (rencontres.length) {
+        await dessinerMatchs(ctx, rencontres, yPremiere + (lignes.length - 1) * interligne + 130, dateTexte);
+    } else if (sup.length) {
         ctx.font = '36px MontserratB';
         ctx.textAlign = 'center';
         ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 10;

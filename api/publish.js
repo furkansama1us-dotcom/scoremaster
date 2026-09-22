@@ -350,6 +350,35 @@ async function fondStoryRecent(dateStr, decalage) {
     } catch (e) { return null; }
 }
 
+// Rencontres du combiné d'une date, avec les logos venant du cache.
+async function infosMatchs(dateStr) {
+    try {
+        const combos = await sbFetch('combineds_public?date=eq.' + dateStr + '&select=time,matches') || [];
+        const rencontres = [];
+        combos.forEach(c => (c.matches || []).forEach(m => {
+            const parts = String(m.teams || '').split(' - ');
+            if (parts.length < 2) return;
+            rencontres.push({ home: parts[0].trim(), away: parts.slice(1).join(' - ').trim(), heure: m.time || c.time || '' });
+        }));
+        if (!rencontres.length) return [];
+        const cache = await sbFetch('ai_fixtures?fixture_date=eq.' + dateStr + '&select=home,away,home_logo,away_logo') || [];
+        rencontres.forEach(r => {
+            const f = cache.find(x => memesEquipes(x.home, r.home) && memesEquipes(x.away, r.away));
+            if (f) { r.homeLogo = f.home_logo || null; r.awayLogo = f.away_logo || null; }
+        });
+        return rencontres.slice(0, 2);
+    } catch (e) {
+        return [];
+    }
+}
+
+// Rappel des rencontres ajouté aux messages Telegram.
+function rappelMatchs(matchs, dateStr) {
+    if (!matchs || !matchs.length) return '';
+    return '\n\n📋 Au programme :\n' + matchs.map(m => '⚽ ' + m.home + ' - ' + m.away + (m.heure ? ' · ' + String(m.heure).replace(':', 'h') : '')).join('\n')
+        + (dateStr ? '\n📅 ' + dateLongue(dateStr) : '');
+}
+
 async function creerEtapeSequence(cle, canal, etape, v, now) {
     const deja = await sbFetch('pending_publications?overlay_data->>sequence_key=eq.' + encodeURIComponent(cle) + '&select=id&limit=1');
     if (deja && deja.length) return false;
@@ -364,14 +393,16 @@ async function creerEtapeSequence(cle, canal, etape, v, now) {
     let ligne;
     if (canal === 'telegram') {
         const texte = remplir(choisir(SEQ_TELEGRAM[etape], now.dateStr, etape.length), v);
-        ligne = Object.assign(base, { platform: 'telegram', image_url: '', caption: texte + '\n\n' + CONTACT });
+        ligne = Object.assign(base, { platform: 'telegram', image_url: '', caption: texte + rappelMatchs(v.matchs, v.dateMatchs) + '\n\n' + CONTACT });
     } else {
         const modele = choisir(SEQ_STORY[etape], now.dateStr, etape.length);
         const { composerStory } = await import('./_compositeur.mjs');
         const image = await composerStory({
             fondUrl: await fondStoryRecent(now.dateStr, etape.length),
             badge: remplir(modele.badge, v),
-            texte: remplir(modele.texte, v)
+            texte: remplir(modele.texte, v),
+            matchs: v.matchs,
+            dateTexte: v.dateMatchs ? dateLongue(v.dateMatchs) : null
         });
         const [url] = await televerserSlides('story-' + cle.replace(/[^\w-]/g, '_'), ['data:image/jpeg;base64,' + image.toString('base64')]);
         ligne = Object.assign(base, { platform: 'instagram', image_url: url, image_url_story: url, caption: remplir(modele.texte, v).replace(/\*/g, '') });
@@ -432,7 +463,12 @@ async function sequenceMarketing(now) {
         nbMatchs += c.nombre_matchs || (c.matches || []).length || 0;
     });
     if (coupEnvoi !== null) {
-        const v = { heure: hhmm(coupEnvoi).replace(':', 'h'), n: nbMatchs ? nbMatchs + ' match' + (nbMatchs > 1 ? 's' : '') : '' };
+        const v = {
+            heure: hhmm(coupEnvoi).replace(':', 'h'),
+            n: nbMatchs ? nbMatchs + ' match' + (nbMatchs > 1 ? 's' : '') : '',
+            matchs: await infosMatchs(now.dateStr),
+            dateMatchs: now.dateStr
+        };
         const etapes = [
             { etape: 'bonjour', debut: Math.max(coupEnvoi - 300, 9 * 60), fin: coupEnvoi - 150, canaux: ['telegram', 'story'] },
             { etape: 'relance', debut: coupEnvoi - 120, fin: coupEnvoi - 30, canaux: ['telegram', 'story'] },
@@ -454,7 +490,7 @@ async function sequenceMarketing(now) {
         const valides = await sbFetch('combineds_public?date=gte.' + hier.toISOString().slice(0, 10) + '&status=in.(termine,perdu)&select=id,status,date') || [];
         for (const c of valides) {
             const etape = c.status === 'termine' ? 'victoire' : 'defaite';
-            const v = { stat: await statTrenteJours(now.dateStr) };
+            const v = { stat: await statTrenteJours(now.dateStr), matchs: await infosMatchs(c.date), dateMatchs: c.date };
             for (const canal of ['telegram', 'story']) {
                 try {
                     if (await creerEtapeSequence('res:' + c.id + ':' + canal, canal, etape, v, now)) bilan.creees.push(etape + ':' + canal);
@@ -535,6 +571,7 @@ async function rencontresDuSoir(cible) {
         lignes = fx.filter(x => GRANDES_LIGUES[x.league && x.league.id]).map(x => ({
             fixture_id: x.fixture.id, fixture_date: cible, kickoff: x.fixture.date,
             home: x.teams.home.name, away: x.teams.away.name,
+            home_logo: x.teams.home.logo || null, away_logo: x.teams.away.logo || null,
             league_code: GRANDES_LIGUES[x.league.id].code, league_name: GRANDES_LIGUES[x.league.id].nom,
             country: x.league.country || null, flag: x.league.flag || null
         }));
@@ -633,7 +670,8 @@ async function publierCombineAuto(b, now) {
             fondUrl: await fondStoryRecent(now.dateStr, 3),
             badge: 'COMBINÉ DU JOUR',
             texte: 'Le combiné est *disponible*',
-            lignes: b.matches.map(m => m.teams + ' · ' + m.time.replace(':', 'h'))
+            matchs: await infosMatchs(b.cible),
+            dateTexte: dateLongue(b.cible)
         });
         const [url] = await televerserSlides('annonce-' + id, ['data:image/jpeg;base64,' + image.toString('base64')]);
         const base = { scheduled_for: now.dateStr, scheduled_time: hhmm(now.minutes), content_type: 'Combiné du jour', status: 'approved', overlay_data: { source: 'combo-auto', combo_id: id } };
