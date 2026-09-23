@@ -2793,6 +2793,22 @@ async function fetchApiScore(id, dateRaw) {
                 <span style="font-size:11.5px;color:#8a8290;">La présence exigée est le délai pendant lequel un filleul doit rester sur le canal avant d'être compté. Le plafond par jour empêche qu'une série de comptes créés le même soir valide la campagne d'un coup.</span>
             </div>
 
+            <div class="cp-eyebrow">Relance quotidienne</div>
+            <div class="cp-set-card">
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <label class="cp-switch"><input type="checkbox" id="cpCampRelance" onchange="cpSaveCampagne({ campagne_relance: this.checked })"><span></span></label>
+                    <div style="flex:1;min-width:0;"><b>Publier une affiche chaque jour</b><br><span style="font-size:11.5px;color:#8a8290;">Une affiche publicitaire détaillée (étapes, récompense, conditions, échéance) en story <b>et</b> en post Instagram, plus le même message sur Telegram. Une seule fois par jour, avec une accroche différente à chaque fois.</span></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
+                    <div style="flex:1;"><b>Heure de publication</b></div>
+                    <select class="cp-input" id="cpCampHeure" style="width:auto;" onchange="cpSaveCampagne({ campagne_relance_heure: this.value })">
+                        <option value="09:30">09h30</option><option value="12:30">12h30</option><option value="14:30">14h30</option><option value="17:30">17h30</option><option value="19:30">19h30</option><option value="21:30">21h30</option>
+                    </select>
+                </div>
+                <button class="cp-secondary" id="cpCampRelanceBtn" onclick="cpEnvoyerRelanceCampagne()"><i class="fas fa-bullhorn"></i> Publier la relance maintenant</button>
+                <div id="cpCampRelanceEtat" style="font-size:11.5px;color:#8a8290;margin-top:8px;"></div>
+            </div>
+
             <div class="cp-eyebrow">Où en est la campagne</div>
             <div id="cpCampStats" style="margin-bottom:18px;"></div>
 
@@ -6400,6 +6416,13 @@ async function cpOpenCampagne() {
     document.getElementById('cpCampDelai').value = r.campagne_delai_h != null ? r.campagne_delai_h : 72;
     document.getElementById('cpCampMax').value = r.campagne_max_jour || 2;
     document.getElementById('cpCampRecompense').value = r.campagne_recompense || 'Combiné score exact offert';
+    var relance = document.getElementById('cpCampRelance');
+    relance.disabled = !('campagne_relance' in r);
+    relance.checked = !!r.campagne_relance;
+    document.getElementById('cpCampHeure').value = r.campagne_relance_heure || '17:30';
+    document.getElementById('cpCampRelanceEtat').textContent = r.campagne_relance_le === cpDstr(new Date())
+        ? 'La relance du jour est déjà partie.'
+        : (r.campagne_relance ? 'La relance du jour partira à ' + cpHeureTxt(r.campagne_relance_heure || '17:30') + '.' : 'Relance quotidienne désactivée.');
     await cpChargerParrainages();
 }
 
@@ -6409,6 +6432,21 @@ var CP_STATUT_PARRAIN = {
     a_verifier: { texte: 'À vérifier', couleur: '#b8860b' },
     rejete: { texte: 'Rejeté', couleur: '#c2334e' }
 };
+
+async function cpEnvoyerRelanceCampagne() {
+    var btn = document.getElementById('cpCampRelanceBtn');
+    btn.disabled = true;
+    try {
+        await adminApiCall('/api/publish', { action: 'campagne-relance' });
+        showToast('Affiche publiée : story + post Instagram et Telegram.');
+        await cpLoadAuto();
+        document.getElementById('cpCampRelanceEtat').textContent = 'La relance du jour est déjà partie.';
+    } catch (e) {
+        showToast('Erreur : ' + e.message, true);
+    } finally {
+        btn.disabled = false;
+    }
+}
 
 async function cpChargerParrainages() {
     var stats = document.getElementById('cpCampStats');

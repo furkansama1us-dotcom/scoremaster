@@ -1059,6 +1059,126 @@ async function rapportAutomatique(now) {
     return { actif: true, envoye: true };
 }
 
+// ------------------------------------------------------------
+// Relance quotidienne de la campagne de parrainage : une affiche publicitaire
+// en story et en post Instagram, et la même sur Telegram, une fois par jour.
+// ------------------------------------------------------------
+const RELANCE_CAMPAGNE = [
+    "🎁 *OPÉRATION PARRAINAGE — {FIN}*\n\nInvite {N} amis sur le canal et ton {RECOMPENSE} est crédité automatiquement. 🔥",
+    "👑 *{N} AMIS = {RECOMPENSE}*\n\nLa plus simple de nos offres : tu partages ton lien, ils rejoignent le canal, tu reçois. 💎",
+    "🚀 *TON RÉSEAU VAUT DE L'OR*\n\n{N} filleuls sur le canal et on t'offre {RECOMPENSE}. Offre valable {FIN}. ⚽",
+    "🔥 *ENCORE QUELQUES JOURS*\n\nL'opération parrainage se termine {FIN} : {N} amis invités, {RECOMPENSE} pour toi. 💎",
+    "💬 *PARRAINE, PARTAGE, PROFITE*\n\n{N} amis rejoignent le canal grâce à ton lien → {RECOMPENSE} débloqué. ⚽",
+    "🏆 *L'OFFRE QUI RÉCOMPENSE TA FIDÉLITÉ*\n\nAmène {N} amis sur le canal et repars avec {RECOMPENSE}. Jusqu'{FIN}. 👑"
+];
+
+function texteRelanceCampagne(reglages, dateStr) {
+    const seuil = reglages.campagne_seuil || 5;
+    const recompense = (reglages.campagne_recompense || 'un combiné score exact offert').toLowerCase();
+    const fin = "jusqu'au " + dateLongue(String(reglages.campagne_fin || '2026-10-31'));
+    const accroche = choisir(RELANCE_CAMPAGNE, dateStr, 0)
+        .replace(/\{N\}/g, String(seuil))
+        .replace(/\{RECOMPENSE\}/g, recompense)
+        .replace(/\{FIN\}/g, fin);
+
+    return accroche
+        + '\n\n📋 COMMENT PARTICIPER :'
+        + '\n1️⃣ Abonne-toi à notre compte Instagram et rejoins le canal Telegram'
+        + '\n2️⃣ Récupère ton lien de parrainage personnel dans l\'app'
+        + '\n3️⃣ Partage-le : chaque ami qui rejoint le canal compte'
+        + '\n4️⃣ À ' + seuil + ' filleuls validés, ta récompense est créditée'
+        + '\n\n⚠️ Un filleul compte s\'il reste au moins ' + (reglages.campagne_delai_h || 72) + ' h sur le canal, et chaque compte Telegram ne peut être parrainé qu\'une seule fois.'
+        + '\n\n⏳ Offre limitée : ' + fin + '.'
+        + '\n\n' + CONTACT;
+}
+
+async function visuelsCampagne(reglages, now) {
+    const { composerCampagne } = await import('./_compositeur.mjs');
+    const seuil = reglages.campagne_seuil || 5;
+    const commun = {
+        fondUrl: await fondStoryRecent(now.dateStr, 11),
+        badge: 'Offre limitée',
+        titreHaut: 'Parraine ' + seuil + ' amis',
+        titreBas: 'combiné offert',
+        etapes: [
+            'Récupère ton lien personnel dans l\'app Score Master',
+            'Partage-le : tes amis rejoignent le canal Telegram',
+            'À ' + seuil + ' filleuls validés, ta récompense est créditée'
+        ],
+        recompense: reglages.campagne_recompense || 'Un combiné score exact offert',
+        conditions: [
+            'Être abonné à notre compte Instagram',
+            'Avoir un compte sur scoremaster.fr',
+            'Chaque filleul reste ' + (reglages.campagne_delai_h || 72) + ' h sur le canal',
+            'Un compte Telegram ne compte qu\'une seule fois'
+        ],
+        echeance: "Jusqu'au " + dateLongue(String(reglages.campagne_fin || '2026-10-31')).replace(/^\w+ /, ''),
+        cta: 'scoremaster.fr   ·   @ScoreMasterOfficiel'
+    };
+    const [story, post] = await Promise.all([
+        composerCampagne(Object.assign({ format: 'story' }, commun)),
+        composerCampagne(Object.assign({ format: 'post' }, commun))
+    ]);
+    return await televerserSlides('campagne-' + now.dateStr, [
+        'data:image/jpeg;base64,' + story.toString('base64'),
+        'data:image/jpeg;base64,' + post.toString('base64')
+    ]);
+}
+
+async function publierRelanceCampagne(reglages, now) {
+    const [urlStory, urlPost] = await visuelsCampagne(reglages, now);
+    const legende = texteRelanceCampagne(reglages, now.dateStr);
+    const base = {
+        scheduled_for: now.dateStr,
+        scheduled_time: hhmm(now.minutes),
+        content_type: 'Campagne parrainage',
+        status: 'approved',
+        caption: legende,
+        overlay_data: { source: 'campagne', date: now.dateStr }
+    };
+    await sbFetch('pending_publications', {
+        method: 'POST',
+        body: JSON.stringify([
+            Object.assign({}, base, {
+                platform: 'instagram',
+                image_url: urlStory,
+                image_url_story: urlStory,
+                image_url_post: urlPost,
+                publish_as_story: true,
+                publish_as_post: true
+            }),
+            Object.assign({}, base, { platform: 'telegram', image_url: urlPost })
+        ])
+    });
+    return { story: urlStory, post: urlPost };
+}
+
+async function relanceCampagne(now) {
+    const reglages = await lireReglagesAuto();
+    if (!reglages || !reglages.campagne_active || !reglages.campagne_relance) return { actif: false };
+    if (now.dateStr > String(reglages.campagne_fin || '2026-10-31')) return { actif: true, terminee: true };
+
+    const [hh, mm] = String(reglages.campagne_relance_heure || '17:30').split(':').map(Number);
+    if (now.minutes < hh * 60 + mm) return { actif: true, attente: reglages.campagne_relance_heure };
+    if (reglages.campagne_relance_le === now.dateStr) return { actif: true, deja: true };
+
+    await enregistrerReglages({ campagne_relance_le: now.dateStr });
+    await publierRelanceCampagne(reglages, now);
+    return { actif: true, publiee: true };
+}
+
+// POST { action: 'campagne-relance' } (admin) : publie la relance tout de suite.
+async function handleCampagneRelance(req, res) {
+    const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    if (!(await verifyAdmin(accessToken))) return res.status(403).json({ error: 'Accès refusé' });
+    const reglages = await lireReglagesAuto();
+    if (!reglages) return res.status(400).json({ error: 'Réglages introuvables' });
+    const now = parisNowParts();
+    const urls = await publierRelanceCampagne(reglages, now);
+    await enregistrerReglages({ campagne_relance_le: now.dateStr });
+    res.status(200).json({ ok: true, image: urls.post });
+}
+
 // POST { action: 'campagne-filleul', id, decision } (admin) : arbitrage d'un
 // parrainage signalé. Le compteur du parrain suit la décision, et la
 // récompense éventuelle est versée au passage suivant du cron.
@@ -1347,6 +1467,7 @@ async function handleCronSweep(req, res) {
     try {
         summary.rapport = await rapportAutomatique(now);
         summary.trame = await trameAutomatique(now);
+        summary.campagne = await relanceCampagne(now);
     } catch (e) {
         summary.rapport = { erreur: String(e) };
     }
@@ -1705,6 +1826,7 @@ module.exports = async function handler(req, res) {
         if (req.method === 'POST' && req.body && req.body.action === 'recap') return await handleRecap(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'recap-reseau') return await handleRecapReseau(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'campagne-filleul') return await handleCampagneFilleul(req, res);
+        if (req.method === 'POST' && req.body && req.body.action === 'campagne-relance') return await handleCampagneRelance(req, res);
         if (req.method === 'POST') return await handleForcePublish(req, res);
         return res.status(405).json({ error: 'Méthode non autorisée' });
     } catch (error) {

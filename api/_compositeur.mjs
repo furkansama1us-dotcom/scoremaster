@@ -714,3 +714,142 @@ export async function composerAffiche({ fondUrl, badge, titreHaut, titreBas, par
 
     return canvas.toBuffer('image/jpeg', 92);
 }
+
+// ------------------------------------------------------------
+// Affiche publicitaire de la campagne de parrainage : titre, étapes
+// numérotées, récompense, conditions de participation et échéance.
+// format : 'story' (1080x1920) ou 'post' (1080x1350).
+// ------------------------------------------------------------
+export async function composerCampagne({ fondUrl, badge, titreHaut, titreBas, etapes, recompense, conditions, echeance, cta, format }) {
+    await chargerPolices();
+    const logo = await loadImage(await fichierDuDepot('logo-dark.png'));
+    const estPost = format === 'post';
+    const w = 1080, h = estPost ? 1350 : 1920;
+    const canvas = createCanvas(w, h);
+    const ctx = canvas.getContext('2d');
+    const S = px => Math.round(px * (estPost ? 0.78 : 1));
+
+    let fond = null;
+    if (fondUrl) { try { fond = await imageDepuisUrl(fondUrl); } catch (e) { fond = null; } }
+    if (fond) {
+        couvrir(ctx, fond, 0, 0, w, h);
+        ctx.fillStyle = 'rgba(6,8,16,0.72)';
+        ctx.fillRect(0, 0, w, h);
+    } else {
+        const d = ctx.createLinearGradient(0, 0, w, h);
+        d.addColorStop(0, '#1b1530'); d.addColorStop(1, '#0a0e1a');
+        ctx.fillStyle = d; ctx.fillRect(0, 0, w, h);
+    }
+
+    const marge = w * 0.085;
+    const largeur = w - marge * 2;
+    ctx.drawImage(logo, w / 2 - S(54), S(56), S(108), S(108));
+
+    const nbEtapes = Math.min((etapes || []).length, 3);
+    const nbConditions = Math.min((conditions || []).length, 4);
+    const hauteurContenu = (badge ? S(104) : 0)
+        + S(84) + S(118)
+        + nbEtapes * (S(104) + S(16)) + S(14)
+        + (recompense ? S(132) + S(30) : 0)
+        + nbConditions * S(48);
+    const hautZone = S(200), basZone = h - S(230);
+    let y = hautZone + Math.max(0, (basZone - hautZone - hauteurContenu) / 2);
+
+    if (badge) {
+        ctx.font = S(28) + 'px MontserratXB';
+        ctx.textAlign = 'center';
+        const lb = ctx.measureText(badge).width + S(52);
+        ctx.fillStyle = '#c2334e';
+        ctx.beginPath(); ctx.roundRect(w / 2 - lb / 2, y, lb, S(56), 999); ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(sansEmoji(badge).toUpperCase(), w / 2, y + S(29));
+        ctx.textBaseline = 'alphabetic';
+        y += S(104);
+    }
+
+    ctx.textAlign = 'center';
+    ctx.font = S(78) + 'px Anton';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(sansEmoji(titreHaut).toUpperCase(), w / 2, y + S(62));
+    y += S(84);
+    ctx.fillStyle = OR;
+    ctx.fillText(sansEmoji(titreBas).toUpperCase(), w / 2, y + S(62));
+    y += S(118);
+
+    // Étapes numérotées : le lecteur doit comprendre quoi faire sans réfléchir.
+    (etapes || []).slice(0, 3).forEach((etape, i) => {
+        const hCarte = S(104);
+        ctx.fillStyle = 'rgba(255,255,255,0.07)';
+        ctx.beginPath(); ctx.roundRect(marge, y, largeur, hCarte, S(16)); ctx.fill();
+
+        ctx.fillStyle = OR;
+        ctx.beginPath(); ctx.arc(marge + S(52), y + hCarte / 2, S(28), 0, Math.PI * 2); ctx.fill();
+        ctx.font = S(32) + 'px Anton';
+        ctx.fillStyle = '#141821';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(String(i + 1), marge + S(52), y + hCarte / 2 + S(2));
+
+        ctx.font = S(27) + 'px MontserratB';
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'left';
+        const lignes = decouperTexte(ctx, sansEmoji(etape), largeur - S(130)).slice(0, 2);
+        lignes.forEach((l, n) => ctx.fillText(l, marge + S(100), y + hCarte / 2 + (n - (lignes.length - 1) / 2) * S(32)));
+        ctx.textBaseline = 'alphabetic';
+        y += hCarte + S(16);
+    });
+
+    y += S(14);
+
+    // Récompense : le bloc qui doit accrocher l'œil.
+    if (recompense) {
+        const hBloc = S(132);
+        ctx.fillStyle = 'rgba(244,197,66,0.14)';
+        ctx.strokeStyle = OR;
+        ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(marge, y, largeur, hBloc, S(18)); ctx.fill(); ctx.stroke();
+        ctx.textAlign = 'center';
+        ctx.font = S(22) + 'px MontserratB';
+        ctx.fillStyle = '#c9cede';
+        ctx.fillText('TA RÉCOMPENSE', w / 2, y + S(42));
+        ctx.font = S(40) + 'px Anton';
+        ctx.fillStyle = OR;
+        const lignes = decouperTexte(ctx, sansEmoji(recompense).toUpperCase(), largeur - S(60)).slice(0, 2);
+        lignes.forEach((l, n) => ctx.fillText(l, w / 2, y + S(92) + n * S(42)));
+        y += hBloc + S(30);
+    }
+
+    // Conditions de participation, en petites lignes cochées.
+    (conditions || []).slice(0, 4).forEach(condition => {
+        coche(ctx, marge + S(6), y + S(10), S(26), '#3ecf8e');
+        ctx.font = S(24) + 'px MontserratB';
+        ctx.fillStyle = '#c9cede';
+        ctx.textAlign = 'left';
+        const [ligne] = decouperTexte(ctx, sansEmoji(condition), largeur - S(60));
+        ctx.fillText(ligne || '', marge + S(58), y + S(20));
+        y += S(48);
+    });
+
+    // Échéance et contacts, calés en bas du cadre.
+    if (echeance) {
+        const hRuban = S(64);
+        const yRuban = h - S(190);
+        ctx.font = S(30) + 'px Anton';
+        ctx.textAlign = 'center';
+        const lr = ctx.measureText(sansEmoji(echeance).toUpperCase()).width + S(70);
+        ctx.fillStyle = OR;
+        ctx.beginPath(); ctx.roundRect(w / 2 - lr / 2, yRuban, lr, hRuban, S(10)); ctx.fill();
+        ctx.fillStyle = '#141821';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(sansEmoji(echeance).toUpperCase(), w / 2, yRuban + hRuban / 2 + S(2));
+        ctx.textBaseline = 'alphabetic';
+    }
+
+    ctx.font = S(28) + 'px MontserratB';
+    ctx.fillStyle = '#c9cede';
+    ctx.textAlign = 'center';
+    ctx.fillText(sansEmoji(cta || 'scoremaster.fr   ·   @ScoreMasterOfficiel'), w / 2, h - S(78));
+    ctx.textAlign = 'left';
+
+    return canvas.toBuffer('image/jpeg', 92);
+}

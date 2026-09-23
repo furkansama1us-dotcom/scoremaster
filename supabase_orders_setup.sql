@@ -811,3 +811,9 @@ drop policy if exists "Les admins voient tous les parrainages" on public.referra
 create policy "Les admins voient tous les parrainages"
   on public.referral_joins for select
   using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));
+
+-- Relance quotidienne de la campagne (story + post Instagram et Telegram).
+alter table public.automation_settings
+  add column if not exists campagne_relance boolean not null default false,
+  add column if not exists campagne_relance_heure text not null default '17:30',
+  add column if not exists campagne_relance_le date;
