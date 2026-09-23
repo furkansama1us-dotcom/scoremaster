@@ -751,3 +751,47 @@ drop policy if exists "Users can redeem an unused code" on public.vip_access_cod
 -- Logos des équipes, pour les rappels de rencontres sur les stories.
 alter table public.ai_fixtures add column if not exists home_logo text;
 alter table public.ai_fixtures add column if not exists away_logo text;
+
+-- ============================================================
+-- CAMPAGNE PARRAINAGE « 5 FILLEULS = UN COMBINÉ SCORE EXACT »
+-- Ouverte jusqu'au 31/10/2026.
+--
+-- Chaque arrivée sur le canal via un lien personnel est enregistrée ici, une
+-- ligne par compte Telegram. L'unicité de telegram_user_id est la première
+-- barrière anti-triche : un compte ne peut jamais compter deux fois, ni pour
+-- deux parrains différents, ni après avoir quitté puis rejoint le canal.
+--
+-- statut : 'en_attente' (arrivé, pas encore confirmé), 'valide' (toujours
+-- présent après 72 h et conforme aux règles), 'a_verifier' (signalé à
+-- l'admin : compte sans pseudo, ou arrivées en rafale), 'rejete'.
+-- ============================================================
+create table if not exists public.referral_joins (
+  id uuid primary key default gen_random_uuid(),
+  parrain_id uuid not null references public.profiles(id) on delete cascade,
+  telegram_user_id bigint not null unique,
+  telegram_username text,
+  telegram_nom text,
+  statut text not null default 'en_attente',
+  motif text,
+  rejoint_le timestamptz not null default now(),
+  valide_le timestamptz
+);
+create index if not exists referral_joins_parrain_idx on public.referral_joins (parrain_id);
+
+alter table public.referral_joins enable row level security;
+
+-- Un membre ne voit que ses propres filleuls ; personne n'écrit depuis le
+-- navigateur, tout passe par le cron (clé de service).
+drop policy if exists "Un membre voit ses filleuls" on public.referral_joins;
+create policy "Un membre voit ses filleuls"
+  on public.referral_joins for select
+  using (parrain_id = auth.uid());
+
+-- Compteurs de la campagne, distincts du parrainage permanent (3 filleuls).
+alter table public.profiles
+  add column if not exists campagne_filleuls integer not null default 0,
+  add column if not exists campagne_recompense_le timestamptz;
+
+-- Identifiant Telegram du membre, quand on le connaît : sert à refuser qu'un
+-- parrain se compte lui-même parmi ses filleuls.
+alter table public.profiles add column if not exists telegram_user_id bigint;

@@ -1493,6 +1493,14 @@ async function fetchApiScore(id, dateRaw) {
                     </div>
                 </div>
             </div>
+            <div id="campagne-banner" onclick="openCampagneModal()" style="display:none; align-items:center; gap:10px; margin-top:10px; padding:12px 14px; background:linear-gradient(135deg, rgba(255,193,7,0.16), rgba(255,193,7,0.06)); border:1px solid rgba(255,193,7,0.35); border-radius:14px; cursor:pointer;">
+                <i class="fas fa-gift" style="color:var(--primary-yellow); font-size:18px;"></i>
+                <div style="flex:1; min-width:0;">
+                    <div style="font-size:12.5px; font-weight:800; color:#fff;">Parraine 5 amis, ton combiné score exact est offert</div>
+                    <div id="campagne-banner-sub" style="font-size:11px; color:var(--text-gray); margin-top:2px;">Membres parrainés : 0/5 · jusqu'au 31/10</div>
+                </div>
+                <i class="fas fa-chevron-right" style="color:var(--text-gray); font-size:12px;"></i>
+            </div>
             <div class="api-banner fade-in-up delay-2">
                 <div class="api-icon"><i class="fas fa-plug"></i></div>
                 <div class="api-info">
@@ -2388,6 +2396,44 @@ async function fetchApiScore(id, dateRaw) {
         </div>
 
         <button class="profile-logout-btn" onclick="logoutUser()"><i class="fas fa-sign-out-alt" style="margin-right:6px;"></i> Se déconnecter</button>
+    </div>
+</div>
+
+<!-- CAMPAGNE PARRAINAGE — 5 filleuls = un combiné score exact -->
+<div id="campagne-modal" class="profile-modal-overlay" style="display:none;">
+    <div class="profile-modal-box">
+        <div class="profile-modal-header">
+            <h3><i class="fas fa-gift" style="color:var(--primary-yellow);"></i> Campagne parrainage</h3>
+            <button class="profile-modal-close" onclick="closeCampagneModal()">✕</button>
+        </div>
+        <p style="font-size:12.5px; color:var(--text-gray); line-height:1.6; margin-bottom:14px;">
+            Invite 5 amis à rejoindre le canal Telegram avec ton lien personnel et reçois <b style="color:#fff;">un combiné score exact offert</b>. Offre valable jusqu'au <b style="color:var(--primary-yellow);">31 octobre</b>.
+        </p>
+
+        <div style="padding:14px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:14px; margin-bottom:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+                <span style="font-size:12px; font-weight:800; color:#fff;">Membres parrainés</span>
+                <span id="campagne-compteur" style="font-size:16px; font-weight:800; color:var(--primary-yellow);">0/5</span>
+            </div>
+            <div style="height:10px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden;">
+                <div id="campagne-barre" style="height:100%; width:0%; background:linear-gradient(90deg, var(--primary-yellow), var(--dark-yellow)); border-radius:999px; transition:width .4s;"></div>
+            </div>
+            <div id="campagne-etat" style="font-size:11.5px; color:var(--text-gray); margin-top:10px;">Chargement…</div>
+        </div>
+
+        <div id="campagne-lien-box" style="display:none; margin-bottom:14px;">
+            <div style="font-size:11.5px; color:var(--text-gray); margin-bottom:6px;">Ton lien personnel</div>
+            <input id="campagne-lien" readonly style="width:100%; padding:10px; background:var(--bg-input); border:1px solid var(--border-color); border-radius:8px; color:#fff; font-size:11px; margin-bottom:8px;">
+            <button onclick="copierLienCampagne()" style="width:100%; padding:11px; background:linear-gradient(135deg,var(--primary-yellow),var(--dark-yellow)); color:#000; border:none; border-radius:10px; font-size:13px; font-weight:800; font-family:'Montserrat',sans-serif; cursor:pointer;"><i class="fas fa-copy"></i> Copier mon lien</button>
+        </div>
+        <button id="campagne-generer" onclick="genererLienCampagne()" style="display:none; width:100%; padding:11px; background:linear-gradient(135deg,var(--primary-yellow),var(--dark-yellow)); color:#000; border:none; border-radius:10px; font-size:13px; font-weight:800; font-family:'Montserrat',sans-serif; cursor:pointer; margin-bottom:14px;"><i class="fas fa-link"></i> Obtenir mon lien de parrainage</button>
+
+        <div style="font-size:12px; font-weight:800; color:#fff; margin-bottom:8px;">Tes filleuls</div>
+        <div id="campagne-liste" style="font-size:12px; color:var(--text-gray);">—</div>
+
+        <p style="font-size:11px; color:var(--text-gray); line-height:1.6; margin-top:14px;">
+            Un filleul compte s'il reste sur le canal au moins 72 h, et chaque compte Telegram ne peut être parrainé qu'une seule fois. Les arrivées inhabituelles sont vérifiées avant d'être comptées.
+        </p>
     </div>
 </div>
 
@@ -7330,6 +7376,119 @@ async function clearAllPublicationHistory() {
     }
 
     // ============================================================
+    // CAMPAGNE PARRAINAGE — 5 filleuls = un combiné score exact (31/10)
+    // ============================================================
+    var campagneEtat = null;
+
+    async function chargerCampagne() {
+        if (!window.currentAuthUser) return null;
+        var session = await supabaseClient.auth.getSession();
+        var accessToken = session && session.data && session.data.session ? session.data.session.access_token : '';
+        var res = await fetch('/api/referral-get-link', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken },
+            body: JSON.stringify({ action: 'campagne' })
+        });
+        var data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+        campagneEtat = data;
+        return data;
+    }
+
+    // Bandeau d'accueil : visible tant que la campagne est ouverte.
+    async function majBandeauCampagne() {
+        var banner = document.getElementById('campagne-banner');
+        if (!banner || !window.currentAuthUser) return;
+        try {
+            var d = await chargerCampagne();
+            if (!d || !d.ouverte) { banner.style.display = 'none'; return; }
+            banner.style.display = 'flex';
+            document.getElementById('campagne-banner-sub').textContent = d.recompenseLe
+                ? 'Récompense débloquée — retrouve-la dans Mes commandes'
+                : 'Membres parrainés : ' + d.valides + '/' + d.seuil + ' · jusqu\'au 31/10';
+        } catch (e) {
+            banner.style.display = 'none';
+        }
+    }
+
+    function openCampagneModal() {
+        var modal = document.getElementById('campagne-modal');
+        modal.style.display = 'flex';
+        setTimeout(function () { modal.classList.add('visible'); }, 10);
+        rendreCampagne();
+    }
+
+    function closeCampagneModal() {
+        var modal = document.getElementById('campagne-modal');
+        modal.classList.remove('visible');
+        setTimeout(function () { modal.style.display = 'none'; }, 300);
+    }
+
+    var CAMPAGNE_STATUTS = {
+        valide: { texte: 'Validé', couleur: 'var(--green)', icone: 'fas fa-check-circle' },
+        en_attente: { texte: 'En attente de confirmation (72 h)', couleur: 'var(--text-gray)', icone: 'fas fa-hourglass-half' },
+        a_verifier: { texte: 'En cours de vérification', couleur: 'var(--primary-yellow)', icone: 'fas fa-user-shield' },
+        rejete: { texte: 'Non comptabilisé', couleur: 'var(--red)', icone: 'fas fa-times-circle' }
+    };
+
+    async function rendreCampagne() {
+        var etat = document.getElementById('campagne-etat');
+        var liste = document.getElementById('campagne-liste');
+        if (!window.currentAuthUser) { etat.textContent = 'Connecte-toi pour participer.'; return; }
+        try {
+            var d = campagneEtat || await chargerCampagne();
+            var pct = Math.min(100, Math.round(d.valides / d.seuil * 100));
+            document.getElementById('campagne-compteur').textContent = d.valides + '/' + d.seuil;
+            document.getElementById('campagne-barre').style.width = pct + '%';
+
+            if (d.recompenseLe) etat.innerHTML = '<span style="color:var(--green);font-weight:800;">🎁 Récompense débloquée !</span> Ton combiné offert t\'attend dans « Mes commandes ».';
+            else if (!d.ouverte) etat.textContent = 'La campagne est terminée (31 octobre).';
+            else etat.textContent = 'Encore ' + (d.seuil - d.valides) + ' filleul(s) pour débloquer ton combiné score exact.';
+
+            document.getElementById('campagne-lien-box').style.display = d.inviteLink ? 'block' : 'none';
+            document.getElementById('campagne-generer').style.display = d.inviteLink ? 'none' : 'block';
+            if (d.inviteLink) document.getElementById('campagne-lien').value = d.inviteLink;
+
+            liste.innerHTML = d.filleuls.length ? d.filleuls.map(function (f) {
+                var s = CAMPAGNE_STATUTS[f.statut] || CAMPAGNE_STATUTS.en_attente;
+                return '<div style="display:flex; align-items:center; gap:8px; padding:9px 0; border-bottom:1px solid var(--border-color);">'
+                    + '<i class="' + s.icone + '" style="color:' + s.couleur + ';"></i>'
+                    + '<span style="flex:1; color:#fff;">' + f.nom + '</span>'
+                    + '<span style="font-size:11px; color:' + s.couleur + ';">' + s.texte + '</span></div>';
+            }).join('') : 'Personne pour l\'instant — partage ton lien pour commencer.';
+        } catch (e) {
+            console.error('Erreur campagne parrainage:', e);
+            etat.textContent = 'Erreur de chargement.';
+        }
+    }
+
+    async function genererLienCampagne() {
+        var btn = document.getElementById('campagne-generer');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Génération…';
+        try {
+            var session = await supabaseClient.auth.getSession();
+            var accessToken = session && session.data && session.data.session ? session.data.session.access_token : '';
+            var res = await fetch('/api/referral-get-link', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + accessToken }
+            });
+            var data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Erreur');
+            campagneEtat = null;
+            await rendreCampagne();
+        } catch (e) {
+            showToast('Erreur lors de la génération du lien.', true);
+        }
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-link"></i> Obtenir mon lien de parrainage';
+    }
+
+    function copierLienCampagne() {
+        copyReferralLink(document.getElementById('campagne-lien').value);
+    }
+
+    // ============================================================
     // PARRAINAGE — lien Telegram personnel + suivi des filleuls
     // ============================================================
     async function loadReferralStatus() {
@@ -9876,6 +10035,9 @@ async function fetchMatchesFromAPI() {
 
         var homeName = document.querySelector('.home-username-text'); if (homeName) homeName.textContent = finalUsername;
         var vipName  = document.querySelector('.vip-username-text');  if (vipName)  vipName.textContent  = finalUsername;
+
+        // Bandeau de la campagne de parrainage, sous « Mes commandes ».
+        majBandeauCampagne();
 
         if (window.isAdmin) {
             var roleHtml = '<span style="color:var(--primary-yellow);">Administrateur</span>';

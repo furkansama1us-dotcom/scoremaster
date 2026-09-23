@@ -35,6 +35,10 @@ async function getUser(accessToken) {
     return (user && user.id) ? user : null;
 }
 
+// Campagne « 5 filleuls = un combiné score exact », ouverte jusqu'au 31/10.
+const CAMPAGNE_SEUIL = 5;
+const CAMPAGNE_FIN = '2026-10-31';
+
 module.exports = async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Méthode non autorisée' });
     if (!SUPABASE_SERVICE_ROLE_KEY || !REFERRAL_BOT_TOKEN) {
@@ -48,9 +52,30 @@ module.exports = async function handler(req, res) {
         const user = await getUser(accessToken);
         if (!user) return res.status(401).json({ error: 'Non authentifié' });
 
-        const rows = await sbFetch(`profiles?id=eq.${user.id}&select=referral_invite_link,referral_joins_count,referral_rewards_claimed,username`);
+        const rows = await sbFetch(`profiles?id=eq.${user.id}&select=referral_invite_link,referral_joins_count,referral_rewards_claimed,username,campagne_recompense_le`);
         const profile = rows && rows[0];
         if (!profile) return res.status(404).json({ error: 'Profil introuvable' });
+
+        // { action: 'campagne' } : avancement détaillé, filleul par filleul.
+        if (req.body && req.body.action === 'campagne') {
+            const filleuls = await sbFetch(`referral_joins?parrain_id=eq.${user.id}&select=telegram_username,telegram_nom,statut,motif,rejoint_le&order=rejoint_le.desc`).catch(() => []) || [];
+            const valides = filleuls.filter(f => f.statut === 'valide').length;
+            return res.status(200).json({
+                inviteLink: profile.referral_invite_link || null,
+                seuil: CAMPAGNE_SEUIL,
+                fin: CAMPAGNE_FIN,
+                ouverte: new Date().toISOString().slice(0, 10) <= CAMPAGNE_FIN,
+                valides,
+                recompenseLe: profile.campagne_recompense_le || null,
+                filleuls: filleuls.map(f => ({
+                    // On ne renvoie jamais l'identifiant Telegram du filleul.
+                    nom: f.telegram_username ? '@' + f.telegram_username : (f.telegram_nom || 'Invité'),
+                    statut: f.statut,
+                    motif: f.motif || null,
+                    le: f.rejoint_le
+                }))
+            });
+        }
 
         if (profile.referral_invite_link) {
             return res.status(200).json({

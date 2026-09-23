@@ -10,6 +10,19 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const CRON_SECRET = process.env.CRON_SECRET;
 const REFERRAL_BOT_TOKEN = process.env.REFERRAL_BOT_TOKEN;
 const REWARD_THRESHOLD = 3;
+const TELEGRAM_CHANNEL_ID = process.env.TELEGRAM_CHANNEL_ID || '-1001477645066';
+
+// Campagne « 5 filleuls = un combiné score exact », ouverte jusqu'au 31/10.
+const CAMPAGNE_SEUIL = 5;
+const CAMPAGNE_FIN = '2026-10-31';
+// Un filleul n'est compté qu'après ce délai de présence sur le canal : un
+// compte créé pour faire nombre et supprimé aussitôt ne passe pas la barre.
+const DELAI_CONFIRMATION_H = 72;
+// Au-delà, les arrivées ressemblent à une rafale de comptes créés à la suite.
+const RAFALE_MINUTES = 60;
+const RAFALE_SEUIL = 3;
+// Rythme maximal retenu pour un même parrain : un parrainage réel s'étale.
+const VALIDATIONS_PAR_JOUR = 2;
 
 async function sbFetch(path, options) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, Object.assign({}, options, {
@@ -94,6 +107,114 @@ async function grantReward(profile) {
     return true;
 }
 
+async function estEncoreMembre(telegramUserId) {
+    try {
+        const r = await fetch('https://api.telegram.org/bot' + REFERRAL_BOT_TOKEN
+            + '/getChatMember?chat_id=' + encodeURIComponent(TELEGRAM_CHANNEL_ID) + '&user_id=' + telegramUserId);
+        const d = await r.json();
+        if (!d || !d.ok || !d.result) return false;
+        return ['member', 'administrator', 'creator', 'restricted'].includes(d.result.status);
+    } catch (e) {
+        return false; // dans le doute, on ne valide pas : on réessaiera au passage suivant
+    }
+}
+
+async function prevenirAdminParrainage(message) {
+    try {
+        await sbFetch('telegram_queue', {
+            method: 'POST',
+            headers: { Prefer: 'return=minimal' },
+            body: JSON.stringify([{ message }])
+        });
+    } catch (e) { /* notification au mieux */ }
+}
+
+// Récompense de la campagne : un combiné score exact offert, une seule fois
+// par membre, et seulement si la campagne est encore ouverte.
+async function recompenseCampagne(profile) {
+    if (profile.campagne_recompense_le) return false;
+    if (new Date().toISOString().slice(0, 10) > CAMPAGNE_FIN) return false;
+
+    const snapshot = await getCurrentComboSnapshot();
+    if (!snapshot) return false;
+    const kickoff = comboKickoff(snapshot);
+    if (kickoff && kickoff.getTime() <= Date.now()) return false;
+
+    const unlockCode = generateCode('CAMPAGNE');
+    await sbFetch('orders', {
+        method: 'POST',
+        headers: { Prefer: 'return=minimal' },
+        body: JSON.stringify([{
+            user_id: profile.id,
+            reference: generateCode('REF'),
+            items: [{ name: 'Campagne parrainage — combiné score exact offert', price: 0 }],
+            total: 0,
+            status: 'confirmee',
+            unlock_code: unlockCode,
+            unlock_expires_at: new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString(),
+            unlock_content: JSON.stringify(snapshot)
+        }])
+    });
+    await sbFetch('profiles?id=eq.' + profile.id, {
+        method: 'PATCH',
+        body: JSON.stringify({ campagne_recompense_le: new Date().toISOString() })
+    });
+    await prevenirAdminParrainage('🎁 Campagne parrainage : ' + (profile.username || profile.id.slice(0, 8))
+        + ' a atteint ' + CAMPAGNE_SEUIL + ' filleuls validés. Le combiné offert vient d\'être crédité.');
+    return true;
+}
+
+// Passe de confirmation : ce qui attend depuis assez longtemps est validé si
+// le filleul est toujours sur le canal, dans la limite du rythme autorisé.
+async function confirmerFilleuls(summary) {
+    const limite = new Date(Date.now() - DELAI_CONFIRMATION_H * 3600000).toISOString();
+    const enAttente = await sbFetch('referral_joins?statut=eq.en_attente&rejoint_le=lt.' + limite
+        + '&select=id,parrain_id,telegram_user_id&order=rejoint_le.asc&limit=50') || [];
+    if (!enAttente.length) return;
+
+    const aujourdhui = new Date().toISOString().slice(0, 10);
+    const dejaAujourdhui = {};
+
+    for (const f of enAttente) {
+        try {
+            if (!(await estEncoreMembre(f.telegram_user_id))) {
+                await sbFetch('referral_joins?id=eq.' + f.id, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ statut: 'rejete', motif: 'A quitté le canal avant la confirmation' })
+                });
+                summary.filleulsRejetes++;
+                continue;
+            }
+
+            if (dejaAujourdhui[f.parrain_id] === undefined) {
+                const duJour = await sbFetch('referral_joins?parrain_id=eq.' + f.parrain_id
+                    + '&statut=eq.valide&valide_le=gte.' + aujourdhui + 'T00:00:00Z&select=id') || [];
+                dejaAujourdhui[f.parrain_id] = duJour.length;
+            }
+            if (dejaAujourdhui[f.parrain_id] >= VALIDATIONS_PAR_JOUR) continue; // repris demain
+            dejaAujourdhui[f.parrain_id]++;
+
+            await sbFetch('referral_joins?id=eq.' + f.id, {
+                method: 'PATCH',
+                body: JSON.stringify({ statut: 'valide', valide_le: new Date().toISOString(), motif: null })
+            });
+            summary.filleulsValides++;
+
+            const profils = await sbFetch('profiles?id=eq.' + f.parrain_id + '&select=id,username,campagne_filleuls,campagne_recompense_le');
+            const profil = profils && profils[0];
+            if (!profil) continue;
+            const total = (profil.campagne_filleuls || 0) + 1;
+            await sbFetch('profiles?id=eq.' + profil.id, {
+                method: 'PATCH',
+                body: JSON.stringify({ campagne_filleuls: total })
+            });
+            if (total >= CAMPAGNE_SEUIL && await recompenseCampagne(profil)) summary.campagneRecompenses++;
+        } catch (e) {
+            summary.errors.push(String(e));
+        }
+    }
+}
+
 module.exports = async function handler(req, res) {
     if (!SUPABASE_SERVICE_ROLE_KEY || !CRON_SECRET || !REFERRAL_BOT_TOKEN) {
         return res.status(500).json({ error: 'Variables d\'environnement manquantes (SUPABASE_SERVICE_ROLE_KEY, CRON_SECRET, REFERRAL_BOT_TOKEN).' });
@@ -102,7 +223,7 @@ module.exports = async function handler(req, res) {
         return res.status(401).json({ error: 'Secret invalide' });
     }
 
-    const summary = { updatesChecked: 0, joinsRecorded: 0, rewardsGranted: 0, errors: [] };
+    const summary = { updatesChecked: 0, joinsRecorded: 0, rewardsGranted: 0, filleulsValides: 0, filleulsRejetes: 0, filleulsDoublons: 0, filleulsAVerifier: 0, campagneRecompenses: 0, errors: [] };
 
     try {
         const stateRows = await sbFetch('referral_bot_state?id=eq.singleton&select=last_update_id');
@@ -128,9 +249,55 @@ module.exports = async function handler(req, res) {
             if (!inviteLink) continue;
 
             try {
-                const profiles = await sbFetch(`profiles?referral_invite_link=eq.${encodeURIComponent(inviteLink)}&select=id,referral_joins_count,referral_rewards_claimed`);
+                const profiles = await sbFetch(`profiles?referral_invite_link=eq.${encodeURIComponent(inviteLink)}&select=id,referral_joins_count,referral_rewards_claimed,telegram_user_id`).catch(async () =>
+                    await sbFetch(`profiles?referral_invite_link=eq.${encodeURIComponent(inviteLink)}&select=id,referral_joins_count,referral_rewards_claimed`));
                 const profile = profiles && profiles[0];
                 if (!profile) continue;
+
+                const filleul = (cm.new_chat_member && cm.new_chat_member.user) || {};
+
+                // On ne se parraine pas soi-même.
+                if (profile.telegram_user_id && String(profile.telegram_user_id) === String(filleul.id)) {
+                    summary.filleulsRejetes++;
+                    continue;
+                }
+
+                // Rafale : plusieurs arrivées en moins d'une heure chez le même
+                // parrain, c'est le motif typique des faux comptes créés à la
+                // chaîne. On n'écarte pas, on fait relire par l'admin.
+                const debutRafale = new Date(Date.now() - RAFALE_MINUTES * 60000).toISOString();
+                const recentes = await sbFetch('referral_joins?parrain_id=eq.' + profile.id
+                    + '&rejoint_le=gte.' + debutRafale + '&select=id') || [];
+                const suspect = !filleul.username || recentes.length >= RAFALE_SEUIL - 1;
+
+                // La contrainte d'unicité sur telegram_user_id fait le reste :
+                // un compte déjà compté, ici ou chez un autre parrain, repart
+                // en erreur et n'incrémente rien.
+                let nouveau = true;
+                try {
+                    await sbFetch('referral_joins', {
+                        method: 'POST',
+                        headers: { Prefer: 'return=minimal' },
+                        body: JSON.stringify([{
+                            parrain_id: profile.id,
+                            telegram_user_id: filleul.id,
+                            telegram_username: filleul.username || null,
+                            telegram_nom: [filleul.first_name, filleul.last_name].filter(Boolean).join(' ') || null,
+                            statut: suspect ? 'a_verifier' : 'en_attente',
+                            motif: suspect ? (!filleul.username ? 'Compte Telegram sans pseudo' : 'Plusieurs arrivées en moins d\'une heure') : null
+                        }])
+                    });
+                } catch (e) {
+                    nouveau = false; // compte déjà enregistré : il ne compte qu'une fois
+                }
+                if (!nouveau) { summary.filleulsDoublons++; continue; }
+                if (suspect) {
+                    summary.filleulsAVerifier++;
+                    await prevenirAdminParrainage('🕵️ Campagne parrainage : un filleul de '
+                        + (profile.username || profile.id.slice(0, 8)) + ' demande une vérification ('
+                        + (!filleul.username ? 'compte sans pseudo' : 'arrivées en rafale')
+                        + '). Table referral_joins, statut « a_verifier ».');
+                }
 
                 const newCount = profile.referral_joins_count + 1;
                 await sbFetch(`profiles?id=eq.${profile.id}`, {
@@ -147,6 +314,12 @@ module.exports = async function handler(req, res) {
             } catch (innerErr) {
                 summary.errors.push(String(innerErr));
             }
+        }
+
+        try {
+            await confirmerFilleuls(summary);
+        } catch (e) {
+            summary.errors.push('confirmation : ' + String(e));
         }
 
         if (maxUpdateId > lastUpdateId) {
