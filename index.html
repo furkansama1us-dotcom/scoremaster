@@ -179,6 +179,25 @@
         .home-user{display:flex;align-items:center;gap:12px}
         .home-greeting{font-size:12px;color:var(--text-gray)}
         .home-username{font-size:16px;font-weight:700;display:flex;align-items:center;gap:5px}
+        /* Bandeau de la campagne de parrainage : compact, avec un reflet qui
+           balaie la carte et un cadeau qui respire, pour attirer l'œil sans
+           prendre la place du combiné juste en dessous. */
+        .campagne-banner{display:none;align-items:center;gap:9px;margin-top:8px;padding:9px 12px;border-radius:12px;cursor:pointer;position:relative;overflow:hidden;
+            background:linear-gradient(135deg,rgba(255,193,7,.18),rgba(255,193,7,.05));border:1px solid rgba(255,193,7,.35);
+            animation:campagneGlow 3.2s ease-in-out infinite}
+        .campagne-banner::after{content:'';position:absolute;top:0;left:-60%;width:45%;height:100%;pointer-events:none;
+            background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);transform:skewX(-18deg);
+            animation:campagneBrillance 3.4s ease-in-out infinite}
+        .campagne-banner .campagne-gift{color:var(--primary-yellow);font-size:15px;animation:campagnePulse 2.2s ease-in-out infinite}
+        .campagne-banner .campagne-titre{font-size:11.5px;font-weight:800;color:#fff;line-height:1.3}
+        .campagne-banner .campagne-sub{font-size:10px;color:var(--text-gray);margin-top:1px}
+        .campagne-banner .campagne-chevron{color:var(--text-gray);font-size:10px}
+        @keyframes campagneBrillance{0%{left:-60%}55%,100%{left:120%}}
+        @keyframes campagneGlow{0%,100%{box-shadow:0 0 0 rgba(255,193,7,0)}50%{box-shadow:0 0 14px rgba(255,193,7,.22)}}
+        @keyframes campagnePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
+        @media (prefers-reduced-motion: reduce){
+            .campagne-banner,.campagne-banner::after,.campagne-banner .campagne-gift{animation:none}
+        }
         .home-notif{width:40px;height:40px;background:var(--bg-card);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
         .home-notif i{color:var(--text-white);font-size:18px}
         .home-notif .notif-dot{width:8px;height:8px;background:var(--red);border-radius:50%;position:absolute;top:10px;right:10px}
@@ -1493,13 +1512,13 @@ async function fetchApiScore(id, dateRaw) {
                     </div>
                 </div>
             </div>
-            <div id="campagne-banner" onclick="openCampagneModal()" style="display:none; align-items:center; gap:10px; margin-top:10px; padding:12px 14px; background:linear-gradient(135deg, rgba(255,193,7,0.16), rgba(255,193,7,0.06)); border:1px solid rgba(255,193,7,0.35); border-radius:14px; cursor:pointer;">
-                <i class="fas fa-gift" style="color:var(--primary-yellow); font-size:18px;"></i>
+            <div id="campagne-banner" class="campagne-banner" onclick="openCampagneModal()">
+                <i class="fas fa-gift campagne-gift"></i>
                 <div style="flex:1; min-width:0;">
-                    <div style="font-size:12.5px; font-weight:800; color:#fff;">Parraine 5 amis, ton combiné score exact est offert</div>
-                    <div id="campagne-banner-sub" style="font-size:11px; color:var(--text-gray); margin-top:2px;">Membres parrainés : 0/5 · jusqu'au 31/10</div>
+                    <div class="campagne-titre">Parraine 5 amis, ton combiné est offert</div>
+                    <div id="campagne-banner-sub" class="campagne-sub">Membres parrainés : 0/5 · jusqu'au 31/10</div>
                 </div>
-                <i class="fas fa-chevron-right" style="color:var(--text-gray); font-size:12px;"></i>
+                <i class="fas fa-chevron-right campagne-chevron"></i>
             </div>
             <div class="api-banner fade-in-up delay-2">
                 <div class="api-icon"><i class="fas fa-plug"></i></div>
