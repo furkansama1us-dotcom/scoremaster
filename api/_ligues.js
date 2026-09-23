@@ -65,14 +65,23 @@ const GRANDES_LIGUES = {
 };
 
 // Ordre de préférence quand il y a plus de rencontres que de places (15 par
-// jour) : les grandes compétitions d'abord, les deuxièmes divisions en dernier.
+// jour), et surtout quand le combiné automatique doit choisir : on veut des
+// affiches que le public reconnaît.
+//   1 — les cinq grands championnats et les compétitions européennes
+//   2 — les autres premières divisions connues
+//   3 — deuxièmes divisions
+//   4 — coupes nationales : souvent des clubs amateurs aux tours préliminaires
 const LIGUES_PRIORITAIRES = ['PL', 'PD', 'SA', 'BL1', 'FL1', 'UCL', 'UEL', 'UECL', 'UNL', 'WC', 'EC', 'CA', 'CLI', 'WCQE', 'WCQS', 'WCQA', 'WCQAS'];
+const LIGUES_CONNUES = ['DED', 'PPL', 'ELC', 'BSA', 'CSA', 'MX1', 'ARG', 'MLS', 'TR1', 'BE1', 'SC1', 'AT1', 'CH1', 'GR1', 'DK1', 'NO1', 'SE1', 'PL1', 'RU1', 'JP1', 'KR1', 'SA1'];
 const LIGUES_SECONDAIRES = ['FL2', 'BL2', 'SB', 'SD', 'BSB'];
+const COUPES_NATIONALES = ['FAC', 'EFL', 'CDF', 'CDR', 'CI', 'DFB', 'KNVB', 'TP', 'SCUP', 'CDB'];
 
 function prioriteLigue(code) {
     if (LIGUES_PRIORITAIRES.indexOf(code) !== -1) return 1;
+    if (LIGUES_CONNUES.indexOf(code) !== -1) return 2;
     if (LIGUES_SECONDAIRES.indexOf(code) !== -1) return 3;
-    return 2;
+    if (COUPES_NATIONALES.indexOf(code) !== -1) return 4;
+    return 3;
 }
 
-module.exports = { GRANDES_LIGUES, LIGUES_PRIORITAIRES, LIGUES_SECONDAIRES, prioriteLigue };
+module.exports = { GRANDES_LIGUES, LIGUES_PRIORITAIRES, LIGUES_CONNUES, LIGUES_SECONDAIRES, COUPES_NATIONALES, prioriteLigue };

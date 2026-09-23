@@ -10375,7 +10375,7 @@ async function autoFetchFinalScores(combined) {
                 let detected = c.detected_scores && c.detected_scores[index];
                 let scoreValue = detected || m.score;
                 let detectionHint = detected
-                    ? `<div style="font-size:11px; color:var(--green); margin-top:6px;"><i class="fas fa-check-circle"></i> Score réel détecté automatiquement (prédiction : ${m.score})</div>`
+                    ? `<div style="font-size:11px; color:var(--green); margin-top:6px;"><i class="fas fa-check-circle"></i> Score détecté automatiquement — vérifie-le avant de valider</div>`
                     : `<div style="font-size:11px; color:var(--text-gray); margin-top:6px;"><i class="fas fa-hourglass-half"></i> Pas encore détecté — vérifie/saisis le score toi-même si besoin</div>`;
 
                 // J'ajoute le champ "Cote finale" et un événement "oninput" pour recalculer le total
@@ -12492,10 +12492,6 @@ let quickEditCombinedId = null;
                             <input type="text" class="admin-input quickedit-score-input" data-index="${index}" value="${m.score}" style="font-size:16px; font-weight:bold; text-align:center; letter-spacing:2px;">
                         </div>
                         <div class="admin-field" style="margin-bottom:0; flex:1;">
-                            <div class="admin-label">Score réel :</div>
-                            <input type="text" class="admin-input quickedit-final-input" data-index="${index}" value="${m.final_score || ''}" placeholder="—" style="font-size:16px; font-weight:bold; text-align:center; letter-spacing:2px; color:var(--green);">
-                        </div>
-                        <div class="admin-field" style="margin-bottom:0; flex:1;">
                             <div class="admin-label">Cote :</div>
                             <input type="text" inputmode="decimal" class="admin-input quickedit-odds-input" data-index="${index}" value="${currentOdds}" style="font-size:16px; font-weight:bold; text-align:center; color:var(--primary-yellow);" oninput="recalculateQuickEditOdds()">
                         </div>
@@ -12538,16 +12534,9 @@ let quickEditCombinedId = null;
             if(updatedMatches[index]) updatedMatches[index].score = input.value.trim();
         });
 
-        // Le score réel saisi devient le pronostic : une fois le combiné
-        // enregistré, plus rien ne distingue les deux, ni dans l'historique ni
-        // dans ce qui part sur les réseaux.
-        document.querySelectorAll('.quickedit-final-input').forEach(input => {
-            let index = parseInt(input.getAttribute('data-index'));
-            let reel = input.value.trim();
-            if (!updatedMatches[index]) return;
-            if (reel) updatedMatches[index].score = reel;
-            updatedMatches[index].final_score = null;
-        });
+        // Un seul score existe, celui saisi ci-dessus : on efface toute trace
+        // d'un score « réel » distinct, y compris celui détecté par le cron.
+        updatedMatches.forEach(m => { m.final_score = null; });
 
         document.querySelectorAll('.quickedit-odds-input').forEach(input => {
             let index = parseInt(input.getAttribute('data-index'));

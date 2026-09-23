@@ -781,7 +781,7 @@ async function rencontresDuSoir(cible) {
     const limite = Date.now() + 60 * 60000;
     return lignes.filter(l => {
         const heure = heureParisDe(l.kickoff);
-        return heure >= '18:00' && Date.parse(l.kickoff) > limite && prioriteLigue(l.league_code) <= 2;
+        return heure >= '18:00' && Date.parse(l.kickoff) > limite && prioriteLigue(l.league_code) <= 4;
     }).sort((a, b) => (prioriteLigue(a.league_code) - prioriteLigue(b.league_code)) || (Date.parse(a.kickoff) - Date.parse(b.kickoff)));
 }
 
@@ -814,18 +814,33 @@ async function scoreExact(rencontre, pronostics) {
 }
 
 async function construireCombine(cible) {
-    const candidats = (await rencontresDuSoir(cible)).slice(0, 8);
-    if (candidats.length < 2) return null;
+    const toutes = await rencontresDuSoir(cible);
+    if (toutes.length < 2) return null;
     const pronostics = await sbFetch('ai_predictions?fixture_date=eq.' + cible + '&select=home,away,home_prob,draw_prob,away_prob') || [];
-    const retenus = [];
+
+    // On épuise d'abord les grandes affiches : une coupe amateur n'est retenue
+    // que si aucun championnat connu ne donne deux scores exacts ce soir-là.
+    const paliers = new Map();
+    toutes.forEach(r => {
+        const n = prioriteLigue(r.league_code);
+        if (!paliers.has(n)) paliers.set(n, []);
+        paliers.get(n).push(r);
+    });
+
+    let retenus = [];
     let appels = 0;
-    for (const c of candidats) {
-        if (retenus.length >= 4 || appels >= 6) break;
-        appels++;
-        try {
-            const s = await scoreExact(c, pronostics);
-            if (s) retenus.push(Object.assign({ rencontre: c }, s));
-        } catch (e) { /* cote indisponible pour ce match : on passe au suivant */ }
+    for (const niveau of [...paliers.keys()].sort((a, b) => a - b)) {
+        const lot = [];
+        for (const c of paliers.get(niveau).slice(0, 6)) {
+            if (lot.length >= 4 || appels >= 10) break;
+            appels++;
+            try {
+                const s = await scoreExact(c, pronostics);
+                if (s) lot.push(Object.assign({ rencontre: c }, s));
+            } catch (e) { /* cote indisponible pour ce match : on passe au suivant */ }
+        }
+        if (lot.length >= 2) { retenus = lot; break; }
+        if (appels >= 10) break;
     }
     if (retenus.length < 2) return null;
     // Deux matchs aux coups d'envoi les plus proches, comme le générateur de l'app.
