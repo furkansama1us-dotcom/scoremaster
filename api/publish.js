@@ -1059,6 +1059,39 @@ async function rapportAutomatique(now) {
     return { actif: true, envoye: true };
 }
 
+// POST { action: 'campagne-filleul', id, decision } (admin) : arbitrage d'un
+// parrainage signalé. Le compteur du parrain suit la décision, et la
+// récompense éventuelle est versée au passage suivant du cron.
+async function handleCampagneFilleul(req, res) {
+    const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    if (!(await verifyAdmin(accessToken))) return res.status(403).json({ error: 'Accès refusé' });
+
+    const { id, decision } = req.body || {};
+    if (!id || ['valide', 'rejete'].indexOf(decision) === -1) return res.status(400).json({ error: 'Paramètres invalides' });
+
+    const lignes = await sbFetch('referral_joins?id=eq.' + encodeURIComponent(id) + '&select=id,parrain_id,statut');
+    const ligne = lignes && lignes[0];
+    if (!ligne) return res.status(404).json({ error: 'Parrainage introuvable' });
+    if (ligne.statut === decision) return res.status(200).json({ ok: true, inchange: true });
+
+    await sbFetch('referral_joins?id=eq.' + encodeURIComponent(id), {
+        method: 'PATCH',
+        body: JSON.stringify(decision === 'valide'
+            ? { statut: 'valide', valide_le: new Date().toISOString(), motif: null }
+            : { statut: 'rejete', valide_le: null, motif: 'Refusé après vérification' })
+    });
+
+    // Le compteur de la campagne reflète exactement le nombre de filleuls
+    // validés : on le recalcule plutôt que de l'incrémenter à l'aveugle.
+    const valides = await sbFetch('referral_joins?parrain_id=eq.' + ligne.parrain_id + '&statut=eq.valide&select=id') || [];
+    await sbFetch('profiles?id=eq.' + ligne.parrain_id, {
+        method: 'PATCH',
+        body: JSON.stringify({ campagne_filleuls: valides.length })
+    });
+
+    res.status(200).json({ ok: true, valides: valides.length });
+}
+
 // POST { action: 'recap-reseau' } (admin) : met en forme les pronostics
 // transmis par le réseau de pronostiqueurs partenaires. L'admin colle ce qu'il
 // a reçu (une ligne par pari : la cote, puis le résultat) ; rien n'est inventé
@@ -1671,6 +1704,7 @@ module.exports = async function handler(req, res) {
         if (req.method === 'POST' && req.body && req.body.action === 'rapport') return await handleRapport(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'recap') return await handleRecap(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'recap-reseau') return await handleRecapReseau(req, res);
+        if (req.method === 'POST' && req.body && req.body.action === 'campagne-filleul') return await handleCampagneFilleul(req, res);
         if (req.method === 'POST') return await handleForcePublish(req, res);
         return res.status(405).json({ error: 'Méthode non autorisée' });
     } catch (error) {

@@ -35,9 +35,19 @@ async function getUser(accessToken) {
     return (user && user.id) ? user : null;
 }
 
-// Campagne « 5 filleuls = un combiné score exact », ouverte jusqu'au 31/10.
-const CAMPAGNE_SEUIL = 5;
-const CAMPAGNE_FIN = '2026-10-31';
+// Campagne « 5 filleuls = un combiné score exact ». Réglages pilotés depuis le
+// Content Planner ; les valeurs ci-dessous ne servent que de secours.
+const CAMPAGNE_DEFAUT = { campagne_active: true, campagne_seuil: 5, campagne_fin: '2026-10-31' };
+
+async function reglagesCampagne() {
+    try {
+        const rows = await sbFetch('automation_settings?id=eq.singleton&select=campagne_active,campagne_fin,campagne_seuil');
+        const row = rows && rows[0];
+        return row ? Object.assign({}, CAMPAGNE_DEFAUT, row) : CAMPAGNE_DEFAUT;
+    } catch (e) {
+        return CAMPAGNE_DEFAUT;
+    }
+}
 
 module.exports = async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Méthode non autorisée' });
@@ -58,13 +68,14 @@ module.exports = async function handler(req, res) {
 
         // { action: 'campagne' } : avancement détaillé, filleul par filleul.
         if (req.body && req.body.action === 'campagne') {
+            const reglages = await reglagesCampagne();
             const filleuls = await sbFetch(`referral_joins?parrain_id=eq.${user.id}&select=telegram_username,telegram_nom,statut,motif,rejoint_le&order=rejoint_le.desc`).catch(() => []) || [];
             const valides = filleuls.filter(f => f.statut === 'valide').length;
             return res.status(200).json({
                 inviteLink: profile.referral_invite_link || null,
-                seuil: CAMPAGNE_SEUIL,
-                fin: CAMPAGNE_FIN,
-                ouverte: new Date().toISOString().slice(0, 10) <= CAMPAGNE_FIN,
+                seuil: reglages.campagne_seuil,
+                fin: reglages.campagne_fin,
+                ouverte: !!reglages.campagne_active && new Date().toISOString().slice(0, 10) <= String(reglages.campagne_fin),
                 valides,
                 recompenseLe: profile.campagne_recompense_le || null,
                 filleuls: filleuls.map(f => ({

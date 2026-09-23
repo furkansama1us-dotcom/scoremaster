@@ -12,9 +12,20 @@ const REFERRAL_BOT_TOKEN = process.env.REFERRAL_BOT_TOKEN;
 const REWARD_THRESHOLD = 3;
 const TELEGRAM_CHANNEL_ID = process.env.TELEGRAM_CHANNEL_ID || '-1001477645066';
 
-// Campagne « 5 filleuls = un combiné score exact », ouverte jusqu'au 31/10.
-const CAMPAGNE_SEUIL = 5;
-const CAMPAGNE_FIN = '2026-10-31';
+// Campagne « 5 filleuls = un combiné score exact ». Les valeurs ci-dessous ne
+// servent que si la table de réglages n'est pas encore en place : l'admin
+// pilote tout depuis le Content Planner.
+const CAMPAGNE_DEFAUT = { campagne_active: true, campagne_seuil: 5, campagne_fin: '2026-10-31', campagne_delai_h: 72, campagne_max_jour: 2 };
+
+async function reglagesCampagne() {
+    try {
+        const rows = await sbFetch('automation_settings?id=eq.singleton&select=campagne_active,campagne_fin,campagne_seuil,campagne_delai_h,campagne_max_jour');
+        const r = rows && rows[0];
+        return r ? Object.assign({}, CAMPAGNE_DEFAUT, r) : CAMPAGNE_DEFAUT;
+    } catch (e) {
+        return CAMPAGNE_DEFAUT;
+    }
+}
 // Un filleul n'est compté qu'après ce délai de présence sur le canal : un
 // compte créé pour faire nombre et supprimé aussitôt ne passe pas la barre.
 const DELAI_CONFIRMATION_H = 72;
@@ -131,9 +142,10 @@ async function prevenirAdminParrainage(message) {
 
 // Récompense de la campagne : un combiné score exact offert, une seule fois
 // par membre, et seulement si la campagne est encore ouverte.
-async function recompenseCampagne(profile) {
+async function recompenseCampagne(profile, reglages) {
     if (profile.campagne_recompense_le) return false;
-    if (new Date().toISOString().slice(0, 10) > CAMPAGNE_FIN) return false;
+    if (!reglages.campagne_active) return false;
+    if (new Date().toISOString().slice(0, 10) > String(reglages.campagne_fin)) return false;
 
     const snapshot = await getCurrentComboSnapshot();
     if (!snapshot) return false;
@@ -160,14 +172,15 @@ async function recompenseCampagne(profile) {
         body: JSON.stringify({ campagne_recompense_le: new Date().toISOString() })
     });
     await prevenirAdminParrainage('🎁 Campagne parrainage : ' + (profile.username || profile.id.slice(0, 8))
-        + ' a atteint ' + CAMPAGNE_SEUIL + ' filleuls validés. Le combiné offert vient d\'être crédité.');
+        + ' a atteint ' + reglages.campagne_seuil + ' filleuls validés. Le combiné offert vient d\'être crédité.');
     return true;
 }
 
 // Passe de confirmation : ce qui attend depuis assez longtemps est validé si
 // le filleul est toujours sur le canal, dans la limite du rythme autorisé.
 async function confirmerFilleuls(summary) {
-    const limite = new Date(Date.now() - DELAI_CONFIRMATION_H * 3600000).toISOString();
+    const reglages = await reglagesCampagne();
+    const limite = new Date(Date.now() - (reglages.campagne_delai_h || DELAI_CONFIRMATION_H) * 3600000).toISOString();
     const enAttente = await sbFetch('referral_joins?statut=eq.en_attente&rejoint_le=lt.' + limite
         + '&select=id,parrain_id,telegram_user_id&order=rejoint_le.asc&limit=50') || [];
     if (!enAttente.length) return;
@@ -191,7 +204,7 @@ async function confirmerFilleuls(summary) {
                     + '&statut=eq.valide&valide_le=gte.' + aujourdhui + 'T00:00:00Z&select=id') || [];
                 dejaAujourdhui[f.parrain_id] = duJour.length;
             }
-            if (dejaAujourdhui[f.parrain_id] >= VALIDATIONS_PAR_JOUR) continue; // repris demain
+            if (dejaAujourdhui[f.parrain_id] >= (reglages.campagne_max_jour || VALIDATIONS_PAR_JOUR)) continue; // repris demain
             dejaAujourdhui[f.parrain_id]++;
 
             await sbFetch('referral_joins?id=eq.' + f.id, {
@@ -208,7 +221,24 @@ async function confirmerFilleuls(summary) {
                 method: 'PATCH',
                 body: JSON.stringify({ campagne_filleuls: total })
             });
-            if (total >= CAMPAGNE_SEUIL && await recompenseCampagne(profil)) summary.campagneRecompenses++;
+            if (total >= reglages.campagne_seuil && await recompenseCampagne(profil, reglages)) summary.campagneRecompenses++;
+        } catch (e) {
+            summary.errors.push(String(e));
+        }
+    }
+}
+
+// Rattrapage : un parrain peut atteindre le seuil parce que l'admin a validé
+// lui-même un filleul signalé. On vérifie donc à chaque passage qui a droit à
+// sa récompense sans l'avoir encore reçue.
+async function recompensesEnRetard(summary) {
+    const reglages = await reglagesCampagne();
+    if (!reglages.campagne_active) return;
+    const profils = await sbFetch('profiles?campagne_filleuls=gte.' + reglages.campagne_seuil
+        + '&campagne_recompense_le=is.null&select=id,username,campagne_filleuls,campagne_recompense_le&limit=20') || [];
+    for (const p of profils) {
+        try {
+            if (await recompenseCampagne(p, reglages)) summary.campagneRecompenses++;
         } catch (e) {
             summary.errors.push(String(e));
         }
@@ -318,6 +348,7 @@ module.exports = async function handler(req, res) {
 
         try {
             await confirmerFilleuls(summary);
+            await recompensesEnRetard(summary);
         } catch (e) {
             summary.errors.push('confirmation : ' + String(e));
         }

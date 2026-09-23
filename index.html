@@ -2776,6 +2776,33 @@ async function fetchApiScore(id, dateRaw) {
             <div id="cpAutoJours"></div>
         </div>
 
+        <!-- Gestion de la campagne de parrainage -->
+        <div class="cp-view" id="cp-view-campagne">
+            <button class="cp-back" onclick="cpTab('settings')">‹ Réglages</button>
+
+            <div class="cp-eyebrow">Règles de la campagne</div>
+            <div class="cp-set-card">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                    <div><label class="cp-field">Fin de la campagne</label><input type="date" class="cp-input" id="cpCampFin" onchange="cpSaveCampagne({ campagne_fin: this.value })"></div>
+                    <div><label class="cp-field">Filleuls à atteindre</label><input type="number" min="1" max="50" class="cp-input" id="cpCampSeuil" onchange="cpSaveCampagne({ campagne_seuil: parseInt(this.value, 10) })"></div>
+                    <div><label class="cp-field">Présence exigée (heures)</label><input type="number" min="0" max="336" step="1" class="cp-input" id="cpCampDelai" onchange="cpSaveCampagne({ campagne_delai_h: parseInt(this.value, 10) })"></div>
+                    <div><label class="cp-field">Validations max / jour</label><input type="number" min="1" max="20" class="cp-input" id="cpCampMax" onchange="cpSaveCampagne({ campagne_max_jour: parseInt(this.value, 10) })"></div>
+                </div>
+                <label class="cp-field">Récompense annoncée</label>
+                <input class="cp-input" id="cpCampRecompense" maxlength="80" onchange="cpSaveCampagne({ campagne_recompense: this.value })">
+                <span style="font-size:11.5px;color:#8a8290;">La présence exigée est le délai pendant lequel un filleul doit rester sur le canal avant d'être compté. Le plafond par jour empêche qu'une série de comptes créés le même soir valide la campagne d'un coup.</span>
+            </div>
+
+            <div class="cp-eyebrow">Où en est la campagne</div>
+            <div id="cpCampStats" style="margin-bottom:18px;"></div>
+
+            <div class="cp-eyebrow">Parrainages à vérifier</div>
+            <div id="cpCampAVerifier" style="margin-bottom:18px;"></div>
+
+            <div class="cp-eyebrow">Derniers parrainages</div>
+            <div id="cpCampDerniers"></div>
+        </div>
+
         <!-- Onglet Réglages -->
         <div class="cp-view" id="cp-view-settings">
             <div class="cp-eyebrow">Automatisation des publications</div>
@@ -2802,6 +2829,12 @@ async function fetchApiScore(id, dateRaw) {
                     <label class="cp-switch"><input type="checkbox" id="cpPromoToggle" onchange="cpSetPromo(this.checked)"><span></span></label>
                     <div style="flex:1;min-width:0;"><b>Promotion quotidienne de l'app</b><br><span style="font-size:11.5px;color:#8a8290;">Chaque jour à 12h30, une affiche Score Master sur Telegram et en story Instagram (pronostics gratuits, VIP+, parrainage, transparence…), jamais la même deux jours de suite.</span></div>
                 </div>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:14px;border-top:1px dashed #e7e0d5;">
+                    <label class="cp-switch"><input type="checkbox" id="cpCampagneToggle" onchange="cpSetCampagne(this.checked)"><span></span></label>
+                    <div style="flex:1;min-width:0;"><b>Campagne de parrainage</b><br><span style="font-size:11.5px;color:#8a8290;">Cochée, la campagne est en cours : le bandeau s'affiche dans l'app et les filleuls sont comptés. Décochée, plus rien n'est proposé ni récompensé.</span></div>
+                    <button class="cp-manage" onclick="cpOpenCampagne()">Gérer</button>
+                </div>
+                <div id="cpCampagneEtat" style="font-size:11.5px;margin-top:10px;"></div>
                 <div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:14px;border-top:1px dashed #e7e0d5;">
                     <label class="cp-switch"><input type="checkbox" id="cpRapportToggle" onchange="cpSetRapport(this.checked)"><span></span></label>
                     <div style="flex:1;min-width:0;"><b>Rapport quotidien sur Telegram</b><br><span style="font-size:11.5px;color:#8a8290;">Chaque soir à 23h45, l'agenda complet du lendemain : carrousels, combiné, séquence, pronostics et points d'attention.</span></div>
@@ -6172,6 +6205,9 @@ async function cpRenderAutoCard() {
     if (promo) { promo.disabled = !('auto_promo' in r); promo.checked = !!r.auto_promo; }
     var rapport = document.getElementById('cpRapportToggle');
     if (rapport) { rapport.disabled = !('auto_rapport' in r); rapport.checked = !!r.auto_rapport; }
+    var campagne = document.getElementById('cpCampagneToggle');
+    if (campagne) { campagne.disabled = !('campagne_active' in r); campagne.checked = !!r.campagne_active; }
+    cpRenderCampagneEtat();
     document.getElementById('cpAutoHeureTxt').textContent = cpHeureTxt(r.auto_approve_at);
     var nbExclus = (r.exclusions || []).length;
     etat.innerHTML = r.auto_publish
@@ -6317,6 +6353,130 @@ async function cpEnvoyerRecap() {
 
 async function cpSetVps(actif) {
     if (await cpSaveAuto({ auto_publish_vps: !!actif })) showToast(actif ? 'Contenus de la nuit approuvés automatiquement.' : 'Contenus de la nuit à valider toi-même.');
+}
+
+// ============================================================
+// CAMPAGNE DE PARRAINAGE — pilotage complet depuis les réglages
+// ============================================================
+async function cpSetCampagne(actif) {
+    if (await cpSaveAuto({ campagne_active: !!actif })) {
+        showToast(actif ? 'Campagne de parrainage lancée.' : 'Campagne de parrainage arrêtée.');
+        cpRenderCampagneEtat();
+    }
+}
+
+async function cpSaveCampagne(patch) {
+    if (await cpSaveAuto(patch)) {
+        showToast('Campagne mise à jour.');
+        cpRenderCampagneEtat();
+    }
+}
+
+function cpRenderCampagneEtat() {
+    var r = window._cpAuto;
+    var el = document.getElementById('cpCampagneEtat');
+    if (!el || !r) return;
+    if (!('campagne_active' in r)) {
+        el.innerHTML = '<span style="color:#c2334e;">Passe le SQL de la campagne dans Supabase pour activer cette option.</span>';
+        return;
+    }
+    var fin = r.campagne_fin ? cpFmtDayLabel(new Date(r.campagne_fin + 'T12:00:00')) : '—';
+    var finie = r.campagne_fin && cpDstr(new Date()) > r.campagne_fin;
+    el.innerHTML = r.campagne_active
+        ? (finie
+            ? '<span style="color:#c2334e;font-weight:800;">● Échéance dépassée</span> — la campagne s\'est terminée le ' + fin + '.'
+            : '<span style="color:#1f8a5b;font-weight:800;">● En cours</span> — ' + (r.campagne_seuil || 5) + ' filleuls jusqu\'au ' + fin + '.')
+        : '<span style="color:#8a8290;font-weight:800;">● Arrêtée</span> — rien n\'est proposé aux membres.';
+}
+
+async function cpOpenCampagne() {
+    cpGo('campagne');
+    var sc = document.getElementById('cpScroll');
+    if (sc) sc.scrollTop = 0;
+    await cpLoadAuto();
+    var r = window._cpAuto || {};
+    document.getElementById('cpCampFin').value = r.campagne_fin || '2026-10-31';
+    document.getElementById('cpCampSeuil').value = r.campagne_seuil || 5;
+    document.getElementById('cpCampDelai').value = r.campagne_delai_h != null ? r.campagne_delai_h : 72;
+    document.getElementById('cpCampMax').value = r.campagne_max_jour || 2;
+    document.getElementById('cpCampRecompense').value = r.campagne_recompense || 'Combiné score exact offert';
+    await cpChargerParrainages();
+}
+
+var CP_STATUT_PARRAIN = {
+    valide: { texte: 'Validé', couleur: '#1f8a5b' },
+    en_attente: { texte: 'En attente', couleur: '#8a8290' },
+    a_verifier: { texte: 'À vérifier', couleur: '#b8860b' },
+    rejete: { texte: 'Rejeté', couleur: '#c2334e' }
+};
+
+async function cpChargerParrainages() {
+    var stats = document.getElementById('cpCampStats');
+    var aVerifier = document.getElementById('cpCampAVerifier');
+    var derniers = document.getElementById('cpCampDerniers');
+    stats.innerHTML = '<div class="cp-txt-box">Chargement…</div>';
+    try {
+        var res = await supabaseClient.from('referral_joins')
+            .select('id, parrain_id, telegram_username, telegram_nom, statut, motif, rejoint_le')
+            .order('rejoint_le', { ascending: false })
+            .limit(80);
+        if (res.error) throw res.error;
+        var lignes = res.data || [];
+        window._cpParrainages = lignes;
+
+        var parrains = {};
+        lignes.forEach(function (l) { if (l.statut === 'valide') parrains[l.parrain_id] = (parrains[l.parrain_id] || 0) + 1; });
+        var seuil = (window._cpAuto && window._cpAuto.campagne_seuil) || 5;
+        var atteints = Object.keys(parrains).filter(function (k) { return parrains[k] >= seuil; }).length;
+
+        stats.innerHTML = '<div class="cp-set-card">'
+            + '<b>' + lignes.length + '</b> parrainage(s) enregistré(s)<br>'
+            + '<b>' + lignes.filter(function (l) { return l.statut === 'valide'; }).length + '</b> validé(s) · '
+            + '<b>' + lignes.filter(function (l) { return l.statut === 'en_attente'; }).length + '</b> en attente · '
+            + '<b>' + lignes.filter(function (l) { return l.statut === 'a_verifier'; }).length + '</b> à vérifier · '
+            + '<b>' + lignes.filter(function (l) { return l.statut === 'rejete'; }).length + '</b> rejeté(s)<br>'
+            + '<b>' + Object.keys(parrains).length + '</b> parrain(s) actif(s), dont <b>' + atteints + '</b> au seuil de ' + seuil
+            + '</div>';
+
+        var douteux = lignes.filter(function (l) { return l.statut === 'a_verifier'; });
+        aVerifier.innerHTML = douteux.length ? douteux.map(cpCarteParrainage).join('')
+            : '<div class="cp-txt-box">Rien à arbitrer pour le moment.</div>';
+
+        derniers.innerHTML = lignes.slice(0, 15).map(function (l) {
+            var s = CP_STATUT_PARRAIN[l.statut] || CP_STATUT_PARRAIN.en_attente;
+            return '<div class="cp-set-card" style="display:flex;align-items:center;gap:10px;padding:10px 12px;">'
+                + '<span style="flex:1;">' + cpNomFilleul(l) + '<br><span style="font-size:11px;color:#8a8290;">' + cpFmtDayLabel(new Date(l.rejoint_le)) + '</span></span>'
+                + '<span style="font-size:11.5px;font-weight:800;color:' + s.couleur + ';">' + s.texte + '</span></div>';
+        }).join('') || '<div class="cp-txt-box">Aucun parrainage pour l\'instant.</div>';
+    } catch (e) {
+        stats.innerHTML = '<div class="cp-txt-box">Lecture impossible : ' + (e.message || e) + '</div>';
+        aVerifier.innerHTML = '';
+        derniers.innerHTML = '';
+    }
+}
+
+function cpNomFilleul(l) {
+    return l.telegram_username ? '@' + l.telegram_username : (l.telegram_nom || 'Invité Telegram');
+}
+
+function cpCarteParrainage(l) {
+    return '<div class="cp-set-card">'
+        + '<b>' + cpNomFilleul(l) + '</b><br>'
+        + '<span style="font-size:11.5px;color:#8a8290;">' + (l.motif || 'Signalé automatiquement') + ' · ' + cpFmtDayLabel(new Date(l.rejoint_le)) + '</span>'
+        + '<div style="display:flex;gap:8px;margin-top:10px;">'
+        + '<button class="cp-secondary" style="flex:1;" onclick="cpArbitrerParrainage(\'' + l.id + '\', \'valide\')">Compter ce filleul</button>'
+        + '<button class="cp-secondary" style="flex:1;" onclick="cpArbitrerParrainage(\'' + l.id + '\', \'rejete\')">Ne pas compter</button>'
+        + '</div></div>';
+}
+
+async function cpArbitrerParrainage(id, decision) {
+    try {
+        await adminApiCall('/api/publish', { action: 'campagne-filleul', id: id, decision: decision });
+        showToast(decision === 'valide' ? 'Filleul compté.' : 'Filleul écarté.');
+        await cpChargerParrainages();
+    } catch (e) {
+        showToast('Erreur : ' + e.message, true);
+    }
 }
 
 async function cpSetPromo(actif) {

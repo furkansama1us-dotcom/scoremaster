@@ -795,3 +795,19 @@ alter table public.profiles
 -- Identifiant Telegram du membre, quand on le connaît : sert à refuser qu'un
 -- parrain se compte lui-même parmi ses filleuls.
 alter table public.profiles add column if not exists telegram_user_id bigint;
+
+-- Réglages de la campagne, pilotés depuis le Content Planner.
+alter table public.automation_settings
+  add column if not exists campagne_active boolean not null default false,
+  add column if not exists campagne_fin date not null default '2026-10-31',
+  add column if not exists campagne_seuil integer not null default 5,
+  add column if not exists campagne_delai_h integer not null default 72,
+  add column if not exists campagne_max_jour integer not null default 2,
+  add column if not exists campagne_recompense text not null default 'Combiné score exact offert';
+
+-- L'admin doit pouvoir relire tous les parrainages pour arbitrer les cas
+-- signalés ; les écritures restent réservées au serveur (clé de service).
+drop policy if exists "Les admins voient tous les parrainages" on public.referral_joins;
+create policy "Les admins voient tous les parrainages"
+  on public.referral_joins for select
+  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));
