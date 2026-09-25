@@ -10816,8 +10816,10 @@ async function autoFetchFinalScores(combined) {
         document.querySelectorAll('.validation-score-input').forEach(input => {
             let index = parseInt(input.getAttribute('data-index'));
             if(updatedMatches[index]) {
-                // score = pronostic publié (conservé) ; final_score = score réel constaté
-                updatedMatches[index].final_score = input.value.trim();
+                // Un seul score existe : celui saisi ici devient le pronostic
+                // enregistré, repris tel quel par le message Telegram et les visuels.
+                updatedMatches[index].score = input.value.trim();
+                updatedMatches[index].final_score = null;
                 updatedMatches[index].match_status = finalStatus;
             }
         });
@@ -10831,7 +10833,7 @@ async function autoFetchFinalScores(combined) {
         });
 
         let publicMatches = updatedMatches.map(m => ({
-            teams: m.teams, time: m.time, score: m.score, final_score: m.final_score || null, odds: m.odds, logo: m.logo, league_flag: m.league_flag, match_status: finalStatus
+            teams: m.teams, time: m.time, score: m.score, final_score: null, odds: m.odds, logo: m.logo, league_flag: m.league_flag || '', match_status: finalStatus
         }));
 
         // Recalcul du total global et des gains pour mettre à jour le ticket
@@ -10846,7 +10848,7 @@ async function autoFetchFinalScores(combined) {
             if (updatePub.error) throw updatePub.error;
 
             var updateVip = await supabaseClient.from('combineds_vip')
-                .update({ matches: updatedMatches, total_odds: newTotalOdds, gains: newGains })
+                .update({ matches: updatedMatches, total_odds: newTotalOdds, gains: newGains, detected_scores: null })
                 .eq('id', validationCombinedId);
             if (updateVip.error) throw updateVip.error;
 
