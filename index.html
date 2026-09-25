@@ -10463,7 +10463,7 @@ async function fetchMatchesFromAPI() {
                 }
             }
             
-            allCombineds = publicData;
+            allCombineds = completerDrapeaux(publicData);
             currentCombined = allCombineds.find(function(c) { return c.status === 'en-cours'; }) || allCombineds[0];
             
         } catch (e) { 
@@ -11699,6 +11699,69 @@ function copyTicketCombined(id) {
 var ticketSyncTimer = null;
 var ticketSyncRun = 0;
 
+// ============================================================
+// DRAPEAUX DES SÉLECTIONS NATIONALES
+// Les matchs internationaux (qualifs, Nations League, amicaux) n'ont pas de
+// drapeau de compétition : on affiche celui de chaque pays, déduit du nom.
+// ============================================================
+var PAYS_SELECTIONS = {
+    'france': 'fr', 'germany': 'de', 'allemagne': 'de', 'spain': 'es', 'espagne': 'es', 'italy': 'it', 'italie': 'it',
+    'portugal': 'pt', 'netherlands': 'nl', 'pays-bas': 'nl', 'belgium': 'be', 'belgique': 'be', 'england': 'gb-eng', 'angleterre': 'gb-eng',
+    'scotland': 'gb-sct', 'ecosse': 'gb-sct', 'wales': 'gb-wls', 'pays de galles': 'gb-wls', 'northern ireland': 'gb-nir', 'irlande du nord': 'gb-nir',
+    'ireland': 'ie', 'republic of ireland': 'ie', 'irlande': 'ie', 'switzerland': 'ch', 'suisse': 'ch', 'austria': 'at', 'autriche': 'at',
+    'denmark': 'dk', 'danemark': 'dk', 'sweden': 'se', 'suede': 'se', 'norway': 'no', 'norvege': 'no', 'finland': 'fi', 'finlande': 'fi',
+    'iceland': 'is', 'islande': 'is', 'poland': 'pl', 'pologne': 'pl', 'czech republic': 'cz', 'czechia': 'cz', 'republique tcheque': 'cz', 'tchequie': 'cz',
+    'slovakia': 'sk', 'slovaquie': 'sk', 'hungary': 'hu', 'hongrie': 'hu', 'romania': 'ro', 'roumanie': 'ro', 'bulgaria': 'bg', 'bulgarie': 'bg',
+    'greece': 'gr', 'grece': 'gr', 'turkey': 'tr', 'turkiye': 'tr', 'turquie': 'tr', 'croatia': 'hr', 'croatie': 'hr', 'serbia': 'rs', 'serbie': 'rs',
+    'slovenia': 'si', 'slovenie': 'si', 'bosnia and herzegovina': 'ba', 'bosnia & herzegovina': 'ba', 'bosnie-herzegovine': 'ba', 'bosnia': 'ba',
+    'montenegro': 'me', 'north macedonia': 'mk', 'macedoine du nord': 'mk', 'albania': 'al', 'albanie': 'al', 'kosovo': 'xk',
+    'ukraine': 'ua', 'belarus': 'by', 'bielorussie': 'by', 'russia': 'ru', 'russie': 'ru', 'moldova': 'md', 'moldavie': 'md',
+    'georgia': 'ge', 'georgie': 'ge', 'armenia': 'am', 'armenie': 'am', 'azerbaijan': 'az', 'azerbaidjan': 'az', 'kazakhstan': 'kz',
+    'latvia': 'lv', 'lettonie': 'lv', 'lithuania': 'lt', 'lituanie': 'lt', 'estonia': 'ee', 'estonie': 'ee',
+    'cyprus': 'cy', 'chypre': 'cy', 'malta': 'mt', 'malte': 'mt', 'luxembourg': 'lu', 'liechtenstein': 'li', 'andorra': 'ad', 'andorre': 'ad',
+    'san marino': 'sm', 'saint-marin': 'sm', 'gibraltar': 'gi', 'faroe islands': 'fo', 'iles feroe': 'fo', 'israel': 'il',
+    'brazil': 'br', 'bresil': 'br', 'argentina': 'ar', 'argentine': 'ar', 'uruguay': 'uy', 'colombia': 'co', 'colombie': 'co',
+    'chile': 'cl', 'chili': 'cl', 'peru': 'pe', 'perou': 'pe', 'ecuador': 'ec', 'equateur': 'ec', 'paraguay': 'py', 'bolivia': 'bo', 'bolivie': 'bo',
+    'venezuela': 've', 'usa': 'us', 'united states': 'us', 'etats-unis': 'us', 'mexico': 'mx', 'mexique': 'mx', 'canada': 'ca',
+    'costa rica': 'cr', 'panama': 'pa', 'jamaica': 'jm', 'jamaique': 'jm', 'honduras': 'hn', 'el salvador': 'sv', 'guatemala': 'gt', 'haiti': 'ht',
+    'morocco': 'ma', 'maroc': 'ma', 'algeria': 'dz', 'algerie': 'dz', 'tunisia': 'tn', 'tunisie': 'tn', 'egypt': 'eg', 'egypte': 'eg',
+    'senegal': 'sn', 'nigeria': 'ng', 'ghana': 'gh', 'cameroon': 'cm', 'cameroun': 'cm', 'ivory coast': 'ci', "cote d'ivoire": 'ci', 'cote divoire': 'ci',
+    'mali': 'ml', 'burkina faso': 'bf', 'south africa': 'za', 'afrique du sud': 'za', 'dr congo': 'cd', 'congo dr': 'cd', 'rd congo': 'cd',
+    'guinea': 'gn', 'guinee': 'gn', 'cape verde': 'cv', 'cap-vert': 'cv', 'gabon': 'ga', 'benin': 'bj', 'zambia': 'zm', 'angola': 'ao',
+    'japan': 'jp', 'japon': 'jp', 'south korea': 'kr', 'korea republic': 'kr', 'coree du sud': 'kr', 'australia': 'au', 'australie': 'au',
+    'saudi arabia': 'sa', 'arabie saoudite': 'sa', 'iran': 'ir', 'qatar': 'qa', 'iraq': 'iq', 'irak': 'iq', 'uae': 'ae', 'united arab emirates': 'ae',
+    'emirats arabes unis': 'ae', 'jordan': 'jo', 'jordanie': 'jo', 'uzbekistan': 'uz', 'ouzbekistan': 'uz', 'china': 'cn', 'chine': 'cn',
+    'new zealand': 'nz', 'nouvelle-zelande': 'nz'
+};
+
+function codePaysSelection(nom) {
+    var n = (nom || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/\s+(u\d{2}|w|women|femmes?|olympic)$/, '').trim();
+    return PAYS_SELECTIONS[n] || null;
+}
+
+function drapeauxSelections(teams) {
+    var parts = (teams || '').split(/\s+-\s+/);
+    if (parts.length !== 2) return '';
+    var a = codePaysSelection(parts[0]), b = codePaysSelection(parts[1]);
+    if (!a || !b) return ''; // les deux doivent être des pays : évite les faux positifs sur les clubs
+    var img = function (code) { return '<img src="https://flagcdn.com/20x15/' + code + '.png" style="width:18px;height:13px;object-fit:cover;border-radius:2px;flex-shrink:0;" onerror="this.style.display=&quot;none&quot;">'; };
+    return '<span style="display:inline-flex;gap:3px;align-items:center;">' + img(a) + img(b) + '</span>';
+}
+
+// Complète les matchs sans drapeau (ou avec le ballon par défaut) au chargement.
+function completerDrapeaux(combineds) {
+    (combineds || []).forEach(function (c) {
+        (c.matches || []).forEach(function (m) {
+            var vide = !m.league_flag || m.league_flag.indexOf('<img') === -1;
+            if (!vide) return;
+            var d = drapeauxSelections(m.teams);
+            if (d) m.league_flag = d;
+        });
+    });
+    return combineds;
+}
+
 async function fetchTicketCombineds() {
     var res = await supabaseClient.from('combineds_public').select('*').order('date', { ascending: false }).order('id', { ascending: false }).limit(10);
     if (res.error) throw res.error;
@@ -11712,7 +11775,7 @@ async function fetchTicketCombineds() {
             });
         }
     }
-    return data;
+    return completerDrapeaux(data);
 }
 
 function setTicketSync(state, text, pct) {
@@ -12679,7 +12742,7 @@ ${aiPrompt}
                         statusColor = 'var(--red)';
                     }
                     else if (bucket === 'finished') { statusLabel = 'Terminé'; statusColor = 'var(--green)'; finishedCount++; }
-                    else { statusLabel = live.status === 'TIMED' || live.status === 'SCHEDULED' ? 'À venir' : live.status; }
+                    else { statusLabel = (!live.status || live.status === 'TIMED' || live.status === 'SCHEDULED') ? 'À venir' : live.status; }
                     if (live.score && live.score.fullTime && live.score.fullTime.home !== null) {
                         scoreDisplay = `${live.score.fullTime.home} - ${live.score.fullTime.away}`;
                     }
@@ -12930,7 +12993,7 @@ let quickEditCombinedId = null;
         // Préparation version publique (on masque si c'est encore "en-cours")
         let publicMatches = updatedMatches.map(m => {
             let isFinished = (originalCombined.status === 'termine' || originalCombined.status === 'perdu');
-            return { teams: m.teams, time: m.time, score: isFinished ? m.score : '?-?', final_score: null, odds: isFinished ? m.odds : 0, logo: m.logo, match_status: m.match_status };
+            return { teams: m.teams, time: m.time, score: isFinished ? m.score : '?-?', final_score: null, odds: isFinished ? m.odds : 0, logo: m.logo, league_flag: m.league_flag || '', match_status: m.match_status };
         });
 
         try {

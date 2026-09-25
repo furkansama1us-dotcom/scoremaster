@@ -93,6 +93,12 @@ async function ecrireCacheClassement(code, payload) {
 
 // Les rencontres mises en cache par le rafraîchissement, au format football-data
 // pour que les deux fronts n'aient rien à adapter.
+function statutEstime(kickoff) {
+    const debut = Date.parse(kickoff);
+    if (!debut || Date.now() < debut) return 'TIMED';
+    return Date.now() < debut + 120 * 60000 ? 'IN_PLAY' : 'FINISHED';
+}
+
 async function matchsDepuisCache(dateFrom) {
     const rows = await sbFetch('ai_fixtures?select=*&fixture_date=eq.' + encodeURIComponent(dateFrom) + '&order=kickoff.asc');
     if (!rows || !rows.length) return null;
@@ -111,7 +117,11 @@ async function matchsDepuisCache(dateFrom) {
             homeTeam: { name: f.home },
             awayTeam: { name: f.away },
             competition: { name: f.league_name, code: f.league_code, major: true },
-            area: { name: f.country, flag: f.flag }
+            area: { name: f.country, flag: f.flag },
+            // Le cache ne connaît pas le direct : statut estimé d'après le coup
+            // d'envoi (2 h de marge pour la mi-temps et les arrêts de jeu), sans score.
+            status: statutEstime(f.kickoff),
+            score: { fullTime: { home: null, away: null } }
         }))
     };
 }
