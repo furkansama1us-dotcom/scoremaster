@@ -454,6 +454,7 @@
         .cta-hypnose::after{content:'';position:absolute;top:0;bottom:0;left:-60%;width:45%;pointer-events:none;
             background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-20deg);animation:hypnoShine 2.7s ease-in-out infinite}
         .cta-hypnose > *{position:relative;z-index:1}
+        .combined-cta-btn.cta-hypnose > .cta-lock{position:absolute}
         @keyframes hypnoSpin{to{--hypAng:360deg}}
         @keyframes hypnoBeat{0%,40%,100%{transform:scale(1)}10%{transform:scale(1.045)}20%{transform:scale(1.01)}30%{transform:scale(1.035)}}
         @keyframes hypnoWaves{0%{box-shadow:0 0 0 0 var(--hyp,rgba(34,197,94,.55)),0 0 0 0 var(--hyp,rgba(34,197,94,.55)),0 8px 22px rgba(0,0,0,.35)}
@@ -12665,10 +12666,10 @@ ${aiPrompt}
             }
         }
         
-        var ctaBtn = (isHome && !isLocked && sc === 'en-cours') ? `<a href="${TELEGRAM_LINK}" target="_blank" rel="noopener" class="combined-cta-btn"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>` : '';
+        var ctaBtn = (isHome && !isLocked && sc === 'en-cours') ? `<a href="${TELEGRAM_LINK}" target="_blank" rel="noopener" class="combined-cta-btn cta-hypnose" style="--hyp:rgba(0,136,204,.6);"><i class="fab fa-telegram-plane tg-icon"></i> 🔐 Découvrir les scores exacts !<i class="fas fa-lock cta-lock"></i></a>` : '';
         if (isHome && isLocked && sc === 'en-cours') ctaBtn = `<button class="combined-cta-btn" style="background: var(--bg-input); color: var(--text-gray); cursor: not-allowed;"><i class="fas fa-lock"></i> Trop tard, match commencé !</button>`;
 
-        var cartBtnHome = (isHome && sc === 'en-cours') ? `<button class="add-to-cart-btn" style="margin-top:8px;" onclick="openCheckout('vip', 99.99)"><i class="fab fa-telegram-plane"></i> J'adhère !</button>` : '';
+        var cartBtnHome = (isHome && sc === 'en-cours') ? `<button class="add-to-cart-btn cta-hypnose" style="--hyp:rgba(255,193,7,.55); width:calc(100% - 32px); margin:4px 16px 12px; padding:14px; border:none; border-radius:14px; background:linear-gradient(135deg, #FFC107, #B8860B); color:#000; font-size:15px; font-weight:900;" onclick="openCheckout('vip', 99.99)"><span style="display:inline-flex;align-items:center;gap:8px;"><i class="fab fa-telegram-plane"></i> J'adhère !</span></button>` : '';
 
         var vipRevealBtn = isVipObscured ? `<button id="reveal-btn-${c.id}" onclick="unblurVipCard('combined-card-vip-${c.id}', 'reveal-btn-${c.id}')" class="combined-cta-btn" style="background:linear-gradient(135deg, #FFC107, #B8860B); color:#000; margin-bottom: 12px; box-shadow: 0 4px 15px rgba(255,193,7, 0.3);"><i class="fas fa-eye" style="margin-right:6px;"></i> Cliquer ici pour déflouter les scores</button>` : '';
 
