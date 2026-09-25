@@ -1213,6 +1213,41 @@ async function handleCampagneRelance(req, res) {
     res.status(200).json({ ok: true, image: urls.post });
 }
 
+// POST { action: 'annonce-combine', id } (admin) : bouton « Relancer l'annonce »
+// d'un combiné en cours. Remplace les brouillons d'annonce non publiés de ce
+// combiné, recrée le visuel et publie tout de suite (Telegram + story).
+async function handleAnnonceCombine(req, res) {
+    const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    if (!(await verifyAdmin(accessToken))) return res.status(403).json({ error: 'Accès refusé' });
+    const { id } = req.body || {};
+    if (!id) return res.status(400).json({ error: 'id requis' });
+    const c = (await sbFetch('combineds_public?id=eq.' + encodeURIComponent(id) + '&select=id,date,time,status,matches') || [])[0];
+    if (!c) return res.status(404).json({ error: 'Combiné introuvable' });
+    if (c.status !== 'en-cours') return res.status(400).json({ error: 'Le combiné n\'est plus en cours.' });
+    const matchs = (c.matches || []).map(m => ({ teams: m.teams, time: m.time || c.time }));
+    if (!matchs.length) return res.status(400).json({ error: 'Combiné sans match' });
+
+    await sbFetch('pending_publications?overlay_data->>combo_id=eq.' + encodeURIComponent(id) + '&status=neq.published', { method: 'DELETE' });
+    const now = parisNowParts();
+    await preparerAnnonceCombine(id, matchs, c.date, now);
+
+    const lignes = await sbFetch('pending_publications?overlay_data->>combo_id=eq.' + encodeURIComponent(id) + '&status=eq.approved&select=*') || [];
+    const integrations = await postizFetch('/integrations');
+    const resultat = { publiees: [], echecs: [] };
+    for (const item of lignes) {
+        try {
+            await postizPublish(item, integrations);
+            await sbFetch('pending_publications?id=eq.' + item.id, { method: 'PATCH', body: JSON.stringify({ status: 'published', published_at: new Date().toISOString() }) });
+            resultat.publiees.push(item.platform);
+        } catch (e) {
+            await sbFetch('pending_publications?id=eq.' + item.id, { method: 'PATCH', body: JSON.stringify({ status: 'failed', error: String(e) }) }).catch(function () {});
+            resultat.echecs.push(item.platform + ' : ' + String(e).slice(0, 120));
+        }
+    }
+    res.status(resultat.publiees.length ? 200 : 502).json(Object.assign({ ok: resultat.publiees.length > 0 }, resultat,
+        resultat.publiees.length ? {} : { error: 'Aucune publication partie : ' + resultat.echecs.join(' | ') }));
+}
+
 // POST { action: 'campagne-filleul', id, decision } (admin) : arbitrage d'un
 // parrainage signalé. Le compteur du parrain suit la décision, et la
 // récompense éventuelle est versée au passage suivant du cron.
@@ -1866,6 +1901,7 @@ module.exports = async function handler(req, res) {
         if (req.method === 'POST' && req.body && req.body.action === 'recap-reseau') return await handleRecapReseau(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'campagne-filleul') return await handleCampagneFilleul(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'campagne-relance') return await handleCampagneRelance(req, res);
+        if (req.method === 'POST' && req.body && req.body.action === 'annonce-combine') return await handleAnnonceCombine(req, res);
         if (req.method === 'POST') return await handleForcePublish(req, res);
         return res.status(405).json({ error: 'Méthode non autorisée' });
     } catch (error) {

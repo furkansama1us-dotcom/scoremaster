@@ -5415,6 +5415,25 @@ const CONTENT_CALENDAR_TYPES = [
 
 window._calendarPollers = window._calendarPollers || {};
 
+// Bouton « Relancer l'annonce » d'un combiné en cours : le serveur recrée le
+// visuel et publie aussitôt sur Telegram et en story Instagram.
+async function relancerAnnonceCombine(id) {
+    if (!confirm("Recréer et publier maintenant l'annonce du combiné (Telegram + story Instagram) ?")) return;
+    var btn = document.getElementById('relance-annonce-' + id);
+    var label = btn ? btn.innerHTML : '';
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Génération et publication…'; }
+    try {
+        var r = await adminApiCall('/api/publish', { action: 'annonce-combine', id: id });
+        var noms = { telegram: 'Telegram', instagram: 'story Instagram' };
+        var faites = (r.publiees || []).map(function (p) { return noms[p] || p; }).join(' + ');
+        showToast('Annonce publiée : ' + faites + ((r.echecs || []).length ? ' (échec : ' + r.echecs.length + ')' : ''), (r.echecs || []).length > 0);
+    } catch (e) {
+        showToast('Erreur : ' + e.message, true);
+    } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = label; }
+    }
+}
+
 async function adminApiCall(endpoint, body) {
     let session = await supabaseClient.auth.getSession();
     let accessToken = session && session.data && session.data.session ? session.data.session.access_token : '';
@@ -12276,7 +12295,8 @@ function renderAdminHistory() {
                     <button onclick="openQuickEditScreen('${c.id}')" style="background:var(--blue); padding:6px 10px;"><i class="fas fa-edit"></i></button>
                     <button onclick="deleteSpecificCombined('${c.id}')" style="background:rgba(244,63,94,0.2); color:var(--red); padding:6px 10px;"><i class="fas fa-trash"></i></button>`;
                 // Les matchs peuvent finir avant le délai de 2 h : validation manuelle forcée.
-                let forceFinish = `<button onclick="openValidationScreen('${c.id}')" style="width:100%; margin-top:10px; padding:10px; background:rgba(34,197,94,0.15); color:var(--green); border:1px solid rgba(34,197,94,0.4); border-radius:8px; font-weight:bold; font-size:13px;"><i class="fas fa-flag-checkered"></i> Matchs terminés — valider le résultat</button>`;
+                let forceFinish = `<button onclick="openValidationScreen('${c.id}')" style="width:100%; margin-top:10px; padding:10px; background:rgba(34,197,94,0.15); color:var(--green); border:1px solid rgba(34,197,94,0.4); border-radius:8px; font-weight:bold; font-size:13px;"><i class="fas fa-flag-checkered"></i> Matchs terminés — valider le résultat</button>`
+                    + `<button id="relance-annonce-${c.id}" onclick="relancerAnnonceCombine('${c.id}')" style="width:100%; margin-top:8px; padding:10px; background:rgba(230,66,140,0.12); color:#e6428c; border:1px solid rgba(230,66,140,0.4); border-radius:8px; font-weight:bold; font-size:13px;"><i class="fas fa-bullhorn"></i> Relancer l'annonce (Telegram + story)</button>`;
                 htmlActive += cardBaseHtml(displayStatus, btns, forceFinish);
             }
         } else {
