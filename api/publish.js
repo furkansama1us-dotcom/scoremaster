@@ -874,6 +874,52 @@ async function insererPublications(lignes) {
     }
 }
 
+// Annonce du combiné (Telegram + story Instagram), même esprit que l'annonce de
+// l'app, visuel assemblé ici. Brouillons déjà approuvés : ils partent au passage
+// de publication. matchs : [{ teams, time }].
+async function preparerAnnonceCombine(id, matchs, cible, now) {
+    const lignesTexte = matchs.map(m => '🏆 ' + m.teams + ' (' + m.time + ')').join('\n');
+    const legende = '🏆 LE COMBINÉ DU JOUR EST DISPONIBLE !\n\nVoici les affiches retenues :\n' + lignesTexte
+        + '\n\n⏰ Coup d\'envoi à ' + matchs[0].time + '.\n\nComme toujours, l\'analyse complète est disponible dès maintenant dans votre espace VIP+ Score Master. 🙌'
+        + '\n\n' + CONTACT;
+    const { composerStory } = await import('./_compositeur.mjs');
+    const image = await composerStory({
+        fondUrl: await fondStoryRecent(now.dateStr, 3),
+        badge: 'COMBINÉ DU JOUR',
+        texte: 'Le combiné est *disponible*',
+        matchs: await infosMatchs(cible),
+        dateTexte: dateLongue(cible)
+    });
+    const [url] = await televerserSlides('annonce-' + id, ['data:image/jpeg;base64,' + image.toString('base64')]);
+    const base = { scheduled_for: now.dateStr, scheduled_time: hhmm(now.minutes), content_type: 'Combiné du jour', status: 'approved', overlay_data: { source: 'combo-auto', combo_id: id } };
+    await insererPublications([
+        Object.assign({}, base, { platform: 'telegram', image_url: url, caption: legende }),
+        Object.assign({}, base, { platform: 'instagram', image_url: url, image_url_story: url, publish_as_story: true, publish_as_post: false, caption: 'Le combiné du jour est disponible' })
+    ]);
+}
+
+// Rattrapage : un combiné automatique en cours dont l'annonce n'a jamais été
+// créée (échec au moment de la publication) la reçoit au passage suivant,
+// tant que le coup d'envoi n'est pas passé.
+async function rattraperAnnonces(now) {
+    const bilan = { rattrapees: [] };
+    const enCours = await sbFetch('combineds_public?status=eq.en-cours&date=gte.' + now.dateStr + '&select=id,date,time,matches') || [];
+    for (const c of enCours) {
+        if (c.date === now.dateStr && c.time && c.time <= hhmm(now.minutes)) continue;
+        const vip = (await sbFetch('combineds_vip?id=eq.' + c.id + '&select=matches') || [])[0];
+        if (!vip || !(vip.matches || []).some(m => m.source === 'auto')) continue;
+        const deja = await sbFetch('pending_publications?overlay_data->>combo_id=eq.' + c.id + '&select=id&limit=1') || [];
+        if (deja.length) continue;
+        const matchs = (c.matches || []).map(m => ({ teams: m.teams, time: m.time || c.time }));
+        if (!matchs.length) continue;
+        await preparerAnnonceCombine(c.id, matchs, c.date, now);
+        bilan.rattrapees.push(c.id);
+        await prevenirAdmin('📣 ANNONCE DU COMBINÉ RATTRAPÉE (' + c.date + ')\n\n' + matchs.map(m => '• ' + m.teams + ' · ' + m.time).join('\n')
+            + '\n\nTelegram et story Instagram partent au prochain passage de publication.');
+    }
+    return bilan;
+}
+
 async function publierCombineAuto(b, now) {
     const matches = b.matches.map(m => ({ teams: m.teams, score: m.score, odds: m.odds, time: m.time, logo: '', league_flag: drapeauHtml(m.flag), match_status: 'en-cours', source: 'auto' }));
     const publics = b.matches.map(m => ({ teams: m.teams, time: m.time, score: '?-?', odds: 0, logo: '', league_flag: drapeauHtml(m.flag), match_status: 'en-cours' }));
@@ -885,27 +931,9 @@ async function publierCombineAuto(b, now) {
     const id = pub && pub[0] && pub[0].id;
     await sbFetch('combineds_vip', { method: 'POST', body: JSON.stringify([{ id, matches, mise: MISE_COMBINE, gains: Math.round(MISE_COMBINE * total * 100) / 100, total_odds: total }]) });
 
-    // Annonce : même esprit que l'annonce de l'app, visuel assemblé ici.
     let annonceOk = false;
-    const lignesTexte = b.matches.map(m => '🏆 ' + m.teams + ' (' + m.time + ')').join('\n');
-    const legende = '🏆 LE COMBINÉ DU JOUR EST DISPONIBLE !\n\nVoici les affiches retenues :\n' + lignesTexte
-        + '\n\n⏰ Coup d\'envoi à ' + b.matches[0].time + '.\n\nComme toujours, l\'analyse complète est disponible dès maintenant dans votre espace VIP+ Score Master. 🙌'
-        + '\n\n' + CONTACT;
     try {
-        const { composerStory } = await import('./_compositeur.mjs');
-        const image = await composerStory({
-            fondUrl: await fondStoryRecent(now.dateStr, 3),
-            badge: 'COMBINÉ DU JOUR',
-            texte: 'Le combiné est *disponible*',
-            matchs: await infosMatchs(b.cible),
-            dateTexte: dateLongue(b.cible)
-        });
-        const [url] = await televerserSlides('annonce-' + id, ['data:image/jpeg;base64,' + image.toString('base64')]);
-        const base = { scheduled_for: now.dateStr, scheduled_time: hhmm(now.minutes), content_type: 'Combiné du jour', status: 'approved', overlay_data: { source: 'combo-auto', combo_id: id } };
-        await insererPublications([
-            Object.assign({}, base, { platform: 'telegram', image_url: url, caption: legende }),
-            Object.assign({}, base, { platform: 'instagram', image_url: url, image_url_story: url, publish_as_story: true, publish_as_post: false, caption: 'Le combiné du jour est disponible' })
-        ]);
+        await preparerAnnonceCombine(id, b.matches, b.cible, now);
         annonceOk = true;
     } catch (e) {
         await prevenirAdmin('⚠️ Combiné publié, mais l\'annonce n\'a pas pu être préparée : ' + String(e).slice(0, 200));
@@ -1464,6 +1492,11 @@ async function handleCronSweep(req, res) {
         summary.combine = await combineAutomatique(now);
     } catch (e) {
         summary.combine = { erreur: String(e) };
+    }
+    try {
+        summary.annonces = await rattraperAnnonces(now);
+    } catch (e) {
+        summary.annonces = { erreur: String(e) };
     }
     try {
         summary.promotion = await promotionQuotidienne(now);
