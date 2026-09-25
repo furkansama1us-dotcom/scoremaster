@@ -16,6 +16,21 @@ const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const FOOTBALL_DATA_API_KEY = process.env.FOOTBALL_DATA_API_KEY || '188ee1f452d24a99b59f174dcaee710d';
 const CRON_SECRET = process.env.CRON_SECRET;
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
+
+// Bouton « Actualiser » du panneau admin : même détection, déclenchée à la
+// demande par un admin connecté (POST + jeton de session) au lieu du cron.
+async function verifyAdmin(accessToken) {
+    if (!accessToken) return false;
+    const r = await fetch(SUPABASE_URL + '/auth/v1/user', {
+        headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + accessToken }
+    });
+    if (!r.ok) return false;
+    const user = await r.json();
+    if (!user || !user.id) return false;
+    const rows = await sbFetch('profiles?id=eq.' + user.id + '&select=is_admin');
+    return !!(rows && rows[0] && rows[0].is_admin);
+}
 
 function cleanStr(str) {
     return (str || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
@@ -82,7 +97,10 @@ module.exports = async function handler(req, res) {
     if (!SUPABASE_SERVICE_ROLE_KEY || !CRON_SECRET) {
         return res.status(500).json({ error: 'SUPABASE_SERVICE_ROLE_KEY et/ou CRON_SECRET manquants dans les variables d\'environnement Vercel.' });
     }
-    if ((req.query.secret || '') !== CRON_SECRET) {
+    const parCron = (req.query.secret || '') === CRON_SECRET;
+    const parAdmin = !parCron && req.method === 'POST'
+        && await verifyAdmin((req.headers.authorization || '').replace(/^Bearer\s+/i, ''));
+    if (!parCron && !parAdmin) {
         return res.status(401).json({ error: 'Secret invalide' });
     }
 

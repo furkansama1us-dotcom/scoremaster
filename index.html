@@ -1972,7 +1972,7 @@ async function fetchApiScore(id, dateRaw) {
             
             <div class="admin-section-title" style="color:var(--text-white); display:flex; justify-content:space-between; align-items:center;">
                 <span><i class="fas fa-exclamation-triangle" style="color:#FF9800;"></i> À Confirmer (Matchs Terminés)</span>
-                <button onclick="autoConfirmFinishedCombineds()" style="background:rgba(255,193,7,.15); color:var(--primary-yellow); border:1px solid rgba(255,193,7,.3); border-radius:8px; padding:5px 10px; font-size:11px; font-weight:700; cursor:pointer;"><i class="fas fa-rotate"></i> Actualiser</button>
+                <button id="btn-actualiser-scores" onclick="actualiserScoresDetectes()" style="background:rgba(255,193,7,.15); color:var(--primary-yellow); border:1px solid rgba(255,193,7,.3); border-radius:8px; padding:5px 10px; font-size:11px; font-weight:700; cursor:pointer;"><i class="fas fa-rotate"></i> Actualiser</button>
             </div>
             <div style="font-size:11px; color:var(--text-gray); margin-bottom:8px;">Les scores réels sont détectés automatiquement en arrière-plan (toutes les 30 min via le cron VPS) et pré-remplis ici dès qu'ils sont dispos. Rien n'est publié tout seul : tu vérifies puis cliques "Appliquer et publier".</div>
             <div id="admin-history-pending" style="max-height: 200px; overflow-y: auto; background: rgba(255, 152, 0, 0.05); border-radius: 12px; padding: 10px; border: 1px dashed rgba(255, 152, 0, 0.5); margin-bottom:20px;"></div>
@@ -12347,10 +12347,33 @@ function renderAdminHistory() {
 // dès qu'ils arrivent ; c'est toujours l'admin qui valide manuellement via
 // "Appliquer les nouveaux scores et publier".
 // ============================================================
+// Rafraîchissement silencieux (chargement du panneau, toutes les 5 min).
 async function autoConfirmFinishedCombineds() {
     if (!window.isAdmin) return;
     await chargerDonnees();
     renderAdminHistory();
+}
+
+// Bouton « Actualiser » : lance tout de suite la détection serveur (la même que
+// le cron), recharge l'écran et dit ce qui a été trouvé.
+async function actualiserScoresDetectes() {
+    if (!window.isAdmin) return;
+    var btn = document.getElementById('btn-actualiser-scores');
+    var label = btn ? btn.innerHTML : '';
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-rotate fa-spin"></i> Recherche…'; }
+    try {
+        var r = await adminApiCall('/api/auto-confirm', {});
+        await chargerDonnees();
+        renderAdminHistory();
+        var trouves = (r.newlyDetected || []).length;
+        if (trouves) showToast(trouves + ' combiné(s) : scores finaux détectés, vérifie puis valide ✅');
+        else if (!r.checked) showToast('Aucun combiné en cours à vérifier.');
+        else showToast('Pas encore de score final : matchs en cours ou non couverts. Tu peux saisir les scores via « Valider ».');
+    } catch (e) {
+        showToast('Erreur de détection : ' + e.message, true);
+    } finally {
+        if (btn) { btn.disabled = false; btn.innerHTML = label; }
+    }
 }
 
 // ============================================================
