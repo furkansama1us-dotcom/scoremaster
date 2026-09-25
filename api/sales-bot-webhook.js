@@ -94,6 +94,38 @@ async function notifyAdmin(text) {
     });
 }
 
+function escapeHtml(v) {
+    return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Alerte admin liée à un client. Le texte contient le repère {{CLIENT}} à la
+// place du nom. Envoyée directement par le bot de vente (HTML) pour que le nom
+// soit cliquable, avec un bouton vers le chat quand le client a un pseudo, et
+// enregistrée dans bot_relay_map : répondre à l'alerte écrit au client via le
+// bot, même s'il n'a pas de pseudo. Repli sur telegram_queue en cas d'échec.
+async function notifyAdminLead(text, chatId, convo) {
+    const nom = convo.telegram_name || convo.telegram_username || 'Sans nom';
+    const pseudo = convo.telegram_username || null;
+    const clientTexte = nom + (pseudo ? ' (@' + pseudo + ')' : '');
+    if (SALES_ADMIN_CHAT_ID) {
+        const clientHtml = '<a href="tg://user?id=' + encodeURIComponent(chatId) + '"><b>' + escapeHtml(nom) + '</b></a>'
+            + (pseudo ? ' (@' + escapeHtml(pseudo) + ')' : ' <i>(pas de pseudo)</i>');
+        const html = escapeHtml(text).replace('{{CLIENT}}', clientHtml)
+            + '\n\n<i>↩️ Réponds à ce message : ta réponse lui sera envoyée par le bot.</i>';
+        const bouton = pseudo ? [[{ text: '💬 Écrire à ' + nom, url: 'https://t.me/' + pseudo }]] : null;
+        const sent = await sendMessage(SALES_ADMIN_CHAT_ID, html, bouton);
+        if (sent && sent.ok && sent.result && sent.result.message_id) {
+            await sbFetch('bot_relay_map', {
+                method: 'POST',
+                headers: { Prefer: 'return=minimal' },
+                body: JSON.stringify([{ relay_message_id: sent.result.message_id, lead_chat_id: chatId }])
+            }).catch(function (e) { console.error('Erreur enregistrement relay map:', e); });
+            return;
+        }
+    }
+    await notifyAdmin(text.replace('{{CLIENT}}', clientTexte));
+}
+
 function packKeyboard() {
     return Object.keys(PACKS).map(function (key) {
         var p = PACKS[key];
@@ -259,8 +291,9 @@ async function handleJoinConfirm(chatId, convo) {
     );
     await safeUpsertConversation(chatId, { state: 'awaiting_platform', order_ref: orderRef });
     const firstName = (convo.telegram_name || '').split(' ')[0] || '';
-    await notifyAdmin(
-        `💰 NOUVELLE DEMANDE (Bot Telegram)\n\nRéférence : ${orderRef}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n➡️ Le client vient de confirmer, il répond encore à quelques questions avant que je te notifie à nouveau avec plus de détails.\n\n📋 Message suggéré à lui envoyer dès maintenant (copier-coller) :\n« Salut${firstName ? ' ' + firstName : ''} ! 😊 Un grand merci pour ta confiance, ravi de t'accueillir chez Score Master ! Je m'occupe personnellement de toi pour la suite. Avant qu'on rentre dans le vif du sujet, dis-moi : ça fait longtemps que tu paries ou tu débutes tout juste ? »\n\n⚠️ Le paiement (PayPal/PCS) reste à toi de l'aborder plus tard, une fois le contact établi.`
+    await notifyAdminLead(
+        `💰 NOUVELLE DEMANDE (Bot Telegram)\n\nRéférence : ${orderRef}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\n\n👤 {{CLIENT}}\n💬 Chat ID : ${chatId}\n\n➡️ Le client vient de confirmer, il répond encore à quelques questions avant que je te notifie à nouveau avec plus de détails.\n\n📋 Message suggéré à lui envoyer dès maintenant (copier-coller) :\n« Salut${firstName ? ' ' + firstName : ''} ! 😊 Un grand merci pour ta confiance, ravi de t'accueillir chez Score Master ! Je m'occupe personnellement de toi pour la suite. Avant qu'on rentre dans le vif du sujet, dis-moi : ça fait longtemps que tu paries ou tu débutes tout juste ? »\n\n⚠️ Le paiement (PayPal/PCS) reste à toi de l'aborder plus tard, une fois le contact établi.`,
+        chatId, convo
     );
 }
 
@@ -303,8 +336,9 @@ async function handleLuckChoice(chatId, luckKey, convo) {
     const platformLabel = convo.betting_platform || '';
     const sportLabel = convo.betting_sport || '';
     const platformLine = platformLabel ? ` Vu que tu paries sur ${platformLabel}, garde en tête que` : ' Sache que';
-    await notifyAdmin(
-        `✅ COMPLÉMENT DE DEMANDE (Bot Telegram)\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n\n🎯 Plateforme habituelle : ${convo.betting_platform || '?'}\n🏅 Sport favori : ${sportLabel || '?'}\n📅 Expérience : ${convo.betting_experience || '?'}\n🎲 Régularité : ${LUCK_LABELS[luckKey] || luckKey}\n\n➡️ Contacte le client sur Telegram pour poursuivre l'échange.\n\n📋 Message suggéré à lui envoyer (copier-coller) :\n« Ah top${firstName ? ', ' + firstName : ''} ! 😊${platformLine} nos pronostics ${sportLabel.toLowerCase()} sont particulièrement solides en ce moment 🔥. »\n\n⚠️ Le paiement (PayPal/PCS) reste à toi de l'aborder plus tard, une fois le contact établi.`
+    await notifyAdminLead(
+        `✅ COMPLÉMENT DE DEMANDE (Bot Telegram)\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type} (${pack ? pack.price : '?'}€)\n\n👤 {{CLIENT}}\n💬 Chat ID : ${chatId}\n\n🎯 Plateforme habituelle : ${convo.betting_platform || '?'}\n🏅 Sport favori : ${sportLabel || '?'}\n📅 Expérience : ${convo.betting_experience || '?'}\n🎲 Régularité : ${LUCK_LABELS[luckKey] || luckKey}\n\n➡️ Contacte le client sur Telegram pour poursuivre l'échange.\n\n📋 Message suggéré à lui envoyer (copier-coller) :\n« Ah top${firstName ? ', ' + firstName : ''} ! 😊${platformLine} nos pronostics ${sportLabel.toLowerCase()} sont particulièrement solides en ce moment 🔥. »\n\n⚠️ Le paiement (PayPal/PCS) reste à toi de l'aborder plus tard, une fois le contact établi.`,
+        chatId, convo
     );
     // Message relayé (celui-ci, contrairement au précédent envoyé via
     // telegram_queue, est directement "répondable" pour engager la conversation).
@@ -333,8 +367,9 @@ async function handleRelaunch(chatId, convo) {
     await upsertConversation(chatId, { relaunch_count: newCount, last_relaunch_at: new Date().toISOString() });
     await sendMessage(chatId, `C'est noté ! Un admin va vous contacter très vite. Merci de votre patience 🙏 (${newCount}/3)`);
     const firstName = (convo.telegram_name || '').split(' ')[0] || '';
-    await notifyAdmin(
-        `🔔 RELANCE (${newCount}/3) — Bot Telegram\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type}\n\n👤 ${convo.telegram_name || 'Sans nom'}${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''}\n💬 Chat ID : ${chatId}\n${convo.betting_platform ? `🎯 Plateforme habituelle : ${convo.betting_platform}\n` : ''}${convo.betting_sport ? `🏅 Sport favori : ${convo.betting_sport}\n` : ''}${convo.betting_experience ? `📅 Expérience : ${convo.betting_experience}\n` : ''}${convo.betting_luck ? `🎲 Régularité : ${convo.betting_luck}\n` : ''}\n➡️ Le client attend toujours ton contact.\n\n📋 Message suggéré à lui envoyer (copier-coller) :\n« Salut${firstName ? ' ' + firstName : ''} ! 😊 Désolé pour l'attente, je m'occupe de toi tout de suite ! En tout cas t'as fait le bon choix de nous rejoindre, l'équipe est hyper rigoureuse sur l'analyse, on ne sort un ticket que quand on est vraiment confiants dessus. »\n\n⚠️ Le paiement (PayPal/PCS) reste à toi de l'aborder plus tard, une fois le contact établi.`
+    await notifyAdminLead(
+        `🔔 RELANCE (${newCount}/3) — Bot Telegram\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type}\n\n👤 {{CLIENT}}\n💬 Chat ID : ${chatId}\n${convo.betting_platform ? `🎯 Plateforme habituelle : ${convo.betting_platform}\n` : ''}${convo.betting_sport ? `🏅 Sport favori : ${convo.betting_sport}\n` : ''}${convo.betting_experience ? `📅 Expérience : ${convo.betting_experience}\n` : ''}${convo.betting_luck ? `🎲 Régularité : ${convo.betting_luck}\n` : ''}\n➡️ Le client attend toujours ton contact.\n\n📋 Message suggéré à lui envoyer (copier-coller) :\n« Salut${firstName ? ' ' + firstName : ''} ! 😊 Désolé pour l'attente, je m'occupe de toi tout de suite ! En tout cas t'as fait le bon choix de nous rejoindre, l'équipe est hyper rigoureuse sur l'analyse, on ne sort un ticket que quand on est vraiment confiants dessus. »\n\n⚠️ Le paiement (PayPal/PCS) reste à toi de l'aborder plus tard, une fois le contact établi.`,
+        chatId, convo
     );
 }
 
