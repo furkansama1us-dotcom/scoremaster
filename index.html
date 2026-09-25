@@ -473,6 +473,14 @@
         @keyframes hypnoWaves{0%{box-shadow:0 0 0 0 var(--hyp,rgba(34,197,94,.55)),0 0 0 0 var(--hyp,rgba(34,197,94,.55)),0 8px 22px rgba(0,0,0,.35)}
             100%{box-shadow:0 0 0 14px transparent,0 0 0 26px transparent,0 8px 22px rgba(0,0,0,.35)}}
         @keyframes hypnoShine{0%,55%{left:-60%}100%{left:130%}}
+        /* Mascotte cachée derrière le bouton « Débloquer » */
+        .masc-wrap{position:relative;display:flex}
+        .masc-wrap > button{position:relative;z-index:2}
+        .masc-clip{position:absolute;left:50%;bottom:calc(100% - 6px);width:140px;height:64px;margin-left:-70px;overflow:hidden;pointer-events:none;z-index:1}
+        .masc{position:absolute;left:38px;bottom:0;width:64px;height:68px;transform:translate(0,70px);transform-origin:50% 100%;will-change:transform}
+        .masc img{position:absolute;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
+        .masc-corps{left:0;top:0;width:64px;height:68px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+        .masc-bras{left:47.5px;top:45.7px;width:15.2px;height:43.9px;transform-origin:50% 4%;z-index:1}
         .cta-hint{text-align:center;font-size:13px;font-weight:800;color:#26A5E4;margin-bottom:10px;font-family:'Montserrat',sans-serif;animation:hintBounce 1.2s ease-in-out infinite}
         @keyframes hintBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
         @media (prefers-reduced-motion:reduce){.cta-hypnose,.cta-hypnose::before,.cta-hypnose::after,.cta-hint{animation:none}}
@@ -10158,9 +10166,107 @@ async function fetchMatchesFromAPI() {
             container.innerHTML = `
             <div style="display:flex;gap:10px;">
                 <input type="text" id="unlock-code-input" class="admin-input" placeholder="Ton code (ex: SME-8X92K1)" style="flex:1;background:var(--bg-input); border:1px solid var(--border-color); color:#fff; padding:12px; border-radius:10px;">
-                <button onclick="submitUnlockCode()" style="padding:0 18px;background:var(--primary-yellow);color:#000;border:none;border-radius:10px;font-size:13px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;">Débloquer</button>
+                <div class="masc-wrap">
+                    <div class="masc-clip" aria-hidden="true"><div class="masc" id="masc-debloquer"><img class="masc-corps" src="mascotte-corps.webp" alt=""><img class="masc-bras" src="mascotte-bras.webp" alt=""></div></div>
+                    <button onclick="submitUnlockCode()" style="padding:0 18px;background:var(--primary-yellow);color:#000;border:none;border-radius:10px;font-size:13px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;">Débloquer</button>
+                </div>
             </div>`;
+            lancerMascotte();
         }
+    }
+
+    // ============================================================
+    // MASCOTTE — cachée derrière « Débloquer » : elle sort la tête d'un air
+    // suspicieux, fait coucou, se recache, et varie ses sorties au hasard.
+    // ============================================================
+    var mascotteTour = 0;
+    function lancerMascotte() {
+        var tour = ++mascotteTour; // un nouveau rendu arrête la boucle précédente
+        var m = document.getElementById('masc-debloquer');
+        if (!m || !m.animate) return;
+        var b = m.querySelector('.masc-bras');
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            m.style.transform = 'translate(0,30px)'; // simple regard fixe, sans mouvement
+            return;
+        }
+        var T = function (x, y, r, sx, sy) { return 'translate(' + x + 'px,' + y + 'px) rotate(' + (r || 0) + 'deg) scale(' + (sx || 1) + ',' + (sy || 1) + ')'; };
+        var R = function (r) { return 'rotate(' + r + 'deg)'; };
+        var vivant = function () { return tour === mascotteTour && document.body.contains(m); };
+        var pause = function (ms) { return new Promise(function (ok) { setTimeout(ok, ms); }); };
+        var bouge = function (el, de, a, ms, easing) {
+            if (!vivant()) return Promise.resolve();
+            return el.animate([{ transform: de }, { transform: a }], { duration: ms, easing: easing || 'ease-in-out', fill: 'forwards' }).finished;
+        };
+        var suite = function (el, etapes, ms, easing) {
+            if (!vivant()) return Promise.resolve();
+            return el.animate(etapes.map(function (t) { return { transform: t }; }), { duration: ms, easing: easing || 'ease-in-out', fill: 'forwards' }).finished;
+        };
+        var coucouBras = async function (fois) {
+            await bouge(b, R(0), R(-150), 260, 'ease-out');
+            var etapes = [R(-150)];
+            for (var i = 0; i < fois; i++) etapes.push(R(-176), R(-138));
+            etapes.push(R(-150));
+            await suite(b, etapes, fois * 330);
+            await bouge(b, R(-150), R(0), 240, 'ease-in');
+        };
+
+        var scenes = {
+            // Sort les yeux lentement, regarde à gauche puis à droite, se hisse, fait coucou, replonge
+            suspicieux: async function () {
+                await bouge(m, T(0, 70), T(0, 33), 1000, 'ease-out');
+                await pause(450);
+                await bouge(m, T(0, 33), T(-5, 33, -9), 380); await pause(550);
+                await bouge(m, T(-5, 33, -9), T(5, 33, 9), 560); await pause(550);
+                await bouge(m, T(5, 33, 9), T(0, 33), 300); await pause(300);
+                await suite(m, [T(0, 33), T(0, 10), T(0, 16)], 460, 'ease-out');
+                await coucouBras(3);
+                await pause(150);
+                await bouge(m, T(0, 16), T(0, 70), 260, 'ease-in');
+            },
+            // Se penche depuis le bord droit du bouton, petit coucou, repart
+            cote: async function () {
+                await bouge(m, T(24, 70, 18), T(24, 26, 18), 750, 'ease-out');
+                await pause(600);
+                await coucouBras(2);
+                await pause(300);
+                await bouge(m, T(24, 26, 18), T(24, 70, 18), 380, 'ease-in');
+            },
+            // Coup d'œil furtif depuis la gauche, puis replonge
+            furtif: async function () {
+                await bouge(m, T(-24, 70, -18), T(-24, 32, -18), 850, 'ease-out');
+                await pause(900);
+                await bouge(m, T(-24, 32, -18), T(-20, 32, -8), 300); await pause(350);
+                await bouge(m, T(-20, 32, -8), T(-24, 70, -18), 220, 'ease-in');
+            },
+            // Jaillit en s'étirant, retombe en s'écrasant
+            saut: async function () {
+                await suite(m, [T(0, 70, 0, 1.08, .88), T(0, 12, 0, .92, 1.12), T(0, 18, 0, 1, 1)], 520, 'ease-out');
+                await coucouBras(1);
+                await suite(m, [T(0, 18), T(0, 22, 0, 1.08, .9), T(0, 70, 0, 1.05, .92)], 360, 'ease-in');
+            },
+            // Se dandine en agitant le bras
+            danse: async function () {
+                await bouge(m, T(0, 70), T(0, 18), 480, 'ease-out');
+                var d = [T(0, 18)];
+                for (var i = 0; i < 4; i++) d.push(T(-3, 16, -10), T(3, 20, 10));
+                d.push(T(0, 18));
+                await Promise.all([suite(m, d, 1700), coucouBras(4)]);
+                await bouge(m, T(0, 18), T(0, 70), 280, 'ease-in');
+            }
+        };
+        var noms = ['cote', 'furtif', 'saut', 'danse', 'suspicieux'];
+
+        (async function boucle() {
+            await pause(1200);
+            var premiere = true;
+            while (vivant()) {
+                if (document.hidden) { await pause(1500); continue; }
+                var nom = premiere ? 'suspicieux' : noms[Math.floor(Math.random() * noms.length)];
+                premiere = false;
+                try { await scenes[nom](); } catch (e) { return; }
+                await pause(2500 + Math.random() * 3000);
+            }
+        })();
     }
 
     function openUnlockSuccessPopup(snapshot) {
