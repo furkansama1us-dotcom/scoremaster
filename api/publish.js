@@ -865,6 +865,15 @@ function drapeauHtml(url) {
     return url ? '<img src="' + url + '" style="width:16px;height:12px;object-fit:cover;border-radius:2px;vertical-align:middle;">' : '';
 }
 
+// Une insertion groupée PostgREST exige les mêmes champs sur chaque ligne
+// (sinon erreur PGRST102). Les brouillons Telegram et Instagram n'ont pas les
+// mêmes : on les insère un par un.
+async function insererPublications(lignes) {
+    for (const ligne of lignes) {
+        await sbFetch('pending_publications', { method: 'POST', body: JSON.stringify([ligne]) });
+    }
+}
+
 async function publierCombineAuto(b, now) {
     const matches = b.matches.map(m => ({ teams: m.teams, score: m.score, odds: m.odds, time: m.time, logo: '', league_flag: drapeauHtml(m.flag), match_status: 'en-cours', source: 'auto' }));
     const publics = b.matches.map(m => ({ teams: m.teams, time: m.time, score: '?-?', odds: 0, logo: '', league_flag: drapeauHtml(m.flag), match_status: 'en-cours' }));
@@ -877,6 +886,7 @@ async function publierCombineAuto(b, now) {
     await sbFetch('combineds_vip', { method: 'POST', body: JSON.stringify([{ id, matches, mise: MISE_COMBINE, gains: Math.round(MISE_COMBINE * total * 100) / 100, total_odds: total }]) });
 
     // Annonce : même esprit que l'annonce de l'app, visuel assemblé ici.
+    let annonceOk = false;
     const lignesTexte = b.matches.map(m => '🏆 ' + m.teams + ' (' + m.time + ')').join('\n');
     const legende = '🏆 LE COMBINÉ DU JOUR EST DISPONIBLE !\n\nVoici les affiches retenues :\n' + lignesTexte
         + '\n\n⏰ Coup d\'envoi à ' + b.matches[0].time + '.\n\nComme toujours, l\'analyse complète est disponible dès maintenant dans votre espace VIP+ Score Master. 🙌'
@@ -892,17 +902,16 @@ async function publierCombineAuto(b, now) {
         });
         const [url] = await televerserSlides('annonce-' + id, ['data:image/jpeg;base64,' + image.toString('base64')]);
         const base = { scheduled_for: now.dateStr, scheduled_time: hhmm(now.minutes), content_type: 'Combiné du jour', status: 'approved', overlay_data: { source: 'combo-auto', combo_id: id } };
-        await sbFetch('pending_publications', {
-            method: 'POST', body: JSON.stringify([
-                Object.assign({}, base, { platform: 'telegram', image_url: url, caption: legende }),
-                Object.assign({}, base, { platform: 'instagram', image_url: url, image_url_story: url, publish_as_story: true, publish_as_post: false, caption: 'Le combiné du jour est disponible' })
-            ])
-        });
+        await insererPublications([
+            Object.assign({}, base, { platform: 'telegram', image_url: url, caption: legende }),
+            Object.assign({}, base, { platform: 'instagram', image_url: url, image_url_story: url, publish_as_story: true, publish_as_post: false, caption: 'Le combiné du jour est disponible' })
+        ]);
+        annonceOk = true;
     } catch (e) {
         await prevenirAdmin('⚠️ Combiné publié, mais l\'annonce n\'a pas pu être préparée : ' + String(e).slice(0, 200));
     }
     await prevenirAdmin('✅ COMBINÉ AUTOMATIQUE PUBLIÉ (' + b.cible + ')\n\n' + b.matches.map(m => '• ' + m.teams + ' · ' + m.time + ' · ' + m.score + ' @ ' + m.odds).join('\n')
-        + '\nCote totale : ' + total + '\n\nAnnonce envoyée sur Telegram et en story. La validation du résultat reste à toi.');
+        + '\nCote totale : ' + total + '\n\n' + (annonceOk ? 'Annonce envoyée sur Telegram et en story.' : 'Annonce non préparée (voir l\'alerte précédente).') + ' La validation du résultat reste à toi.');
     return id;
 }
 
@@ -1136,20 +1145,17 @@ async function publierRelanceCampagne(reglages, now) {
         caption: legende,
         overlay_data: { source: 'campagne', date: now.dateStr }
     };
-    await sbFetch('pending_publications', {
-        method: 'POST',
-        body: JSON.stringify([
-            Object.assign({}, base, {
-                platform: 'instagram',
-                image_url: urlStory,
-                image_url_story: urlStory,
-                image_url_post: urlPost,
-                publish_as_story: true,
-                publish_as_post: true
-            }),
-            Object.assign({}, base, { platform: 'telegram', image_url: urlPost })
-        ])
-    });
+    await insererPublications([
+        Object.assign({}, base, {
+            platform: 'instagram',
+            image_url: urlStory,
+            image_url_story: urlStory,
+            image_url_post: urlPost,
+            publish_as_story: true,
+            publish_as_post: true
+        }),
+        Object.assign({}, base, { platform: 'telegram', image_url: urlPost })
+    ]);
     return { story: urlStory, post: urlPost };
 }
 
