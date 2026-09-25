@@ -476,6 +476,11 @@
         /* Mascotte cachée derrière le bouton « Débloquer » */
         .masc-wrap{position:relative;display:flex}
         .masc-wrap > button{position:relative;z-index:2}
+        .btn-debloquer{overflow:hidden;animation:debloquerHalo 2.8s ease-in-out infinite}
+        .btn-debloquer::after{content:'';position:absolute;top:0;bottom:0;left:-70%;width:45%;pointer-events:none;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);animation:debloquerReflet 3.6s ease-in-out infinite}
+        @keyframes debloquerHalo{0%,100%{box-shadow:0 0 0 0 rgba(255,193,7,0),0 4px 12px rgba(255,193,7,.18)}50%{box-shadow:0 0 0 3px rgba(255,193,7,.18),0 4px 18px rgba(255,193,7,.42)}}
+        @keyframes debloquerReflet{0%,65%{left:-70%}100%{left:130%}}
+        @media (prefers-reduced-motion:reduce){.btn-debloquer,.btn-debloquer::after{animation:none}}
         .masc-clip{position:absolute;left:50%;bottom:calc(100% - 6px);width:140px;height:64px;margin-left:-70px;overflow:hidden;pointer-events:none;z-index:1}
         .masc{position:absolute;left:38px;bottom:0;width:64px;height:68px;transform:translate(0,70px);transform-origin:50% 100%;will-change:transform}
         .masc img{position:absolute;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
@@ -10168,7 +10173,7 @@ async function fetchMatchesFromAPI() {
                 <input type="text" id="unlock-code-input" class="admin-input" placeholder="Ton code (ex: SME-8X92K1)" style="flex:1;background:var(--bg-input); border:1px solid var(--border-color); color:#fff; padding:12px; border-radius:10px;">
                 <div class="masc-wrap">
                     <div class="masc-clip" aria-hidden="true"><div class="masc" id="masc-debloquer"><img class="masc-corps" src="mascotte-corps.webp" alt=""><img class="masc-bras" src="mascotte-bras.webp" alt=""></div></div>
-                    <button onclick="submitUnlockCode()" style="padding:0 18px;background:var(--primary-yellow);color:#000;border:none;border-radius:10px;font-size:13px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;">Débloquer</button>
+                    <button class="btn-debloquer" onclick="submitUnlockCode()" style="padding:0 18px;background:var(--primary-yellow);color:#000;border:none;border-radius:10px;font-size:13px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;">Débloquer</button>
                 </div>
             </div>`;
             lancerMascotte();
@@ -10201,6 +10206,10 @@ async function fetchMatchesFromAPI() {
             if (!vivant()) return Promise.resolve();
             return el.animate(etapes.map(function (t) { return { transform: t }; }), { duration: ms, easing: easing || 'ease-in-out', fill: 'forwards' }).finished;
         };
+        var btn = m.closest('.masc-wrap') && m.closest('.masc-wrap').querySelector('.btn-debloquer');
+        var rebond = function () {
+            if (btn && vivant()) btn.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.07,.9)' }, { transform: 'scale(.97,1.04)' }, { transform: 'scale(1)' }], { duration: 380, easing: 'ease-out' });
+        };
         var coucouBras = async function (fois) {
             await bouge(b, R(0), R(-150), 260, 'ease-out');
             var etapes = [R(-150)];
@@ -10221,7 +10230,7 @@ async function fetchMatchesFromAPI() {
                 await suite(m, [T(0, 33), T(0, 10), T(0, 16)], 460, 'ease-out');
                 await coucouBras(3);
                 await pause(150);
-                await bouge(m, T(0, 16), T(0, 70), 260, 'ease-in');
+                await bouge(m, T(0, 16), T(0, 70), 260, 'ease-in'); rebond();
             },
             // Se penche depuis le bord droit du bouton, petit coucou, repart
             cote: async function () {
@@ -10229,20 +10238,20 @@ async function fetchMatchesFromAPI() {
                 await pause(600);
                 await coucouBras(2);
                 await pause(300);
-                await bouge(m, T(24, 26, 18), T(24, 70, 18), 380, 'ease-in');
+                await bouge(m, T(24, 26, 18), T(24, 70, 18), 380, 'ease-in'); rebond();
             },
             // Coup d'œil furtif depuis la gauche, puis replonge
             furtif: async function () {
                 await bouge(m, T(-24, 70, -18), T(-24, 32, -18), 850, 'ease-out');
                 await pause(900);
                 await bouge(m, T(-24, 32, -18), T(-20, 32, -8), 300); await pause(350);
-                await bouge(m, T(-20, 32, -8), T(-24, 70, -18), 220, 'ease-in');
+                await bouge(m, T(-20, 32, -8), T(-24, 70, -18), 220, 'ease-in'); rebond();
             },
             // Jaillit en s'étirant, retombe en s'écrasant
             saut: async function () {
                 await suite(m, [T(0, 70, 0, 1.08, .88), T(0, 12, 0, .92, 1.12), T(0, 18, 0, 1, 1)], 520, 'ease-out');
                 await coucouBras(1);
-                await suite(m, [T(0, 18), T(0, 22, 0, 1.08, .9), T(0, 70, 0, 1.05, .92)], 360, 'ease-in');
+                await suite(m, [T(0, 18), T(0, 22, 0, 1.08, .9), T(0, 70, 0, 1.05, .92)], 360, 'ease-in'); rebond();
             },
             // Se dandine en agitant le bras
             danse: async function () {
@@ -10251,7 +10260,7 @@ async function fetchMatchesFromAPI() {
                 for (var i = 0; i < 4; i++) d.push(T(-3, 16, -10), T(3, 20, 10));
                 d.push(T(0, 18));
                 await Promise.all([suite(m, d, 1700), coucouBras(4)]);
-                await bouge(m, T(0, 18), T(0, 70), 280, 'ease-in');
+                await bouge(m, T(0, 18), T(0, 70), 280, 'ease-in'); rebond();
             }
         };
         var noms = ['cote', 'furtif', 'saut', 'danse', 'suspicieux'];
