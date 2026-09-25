@@ -443,6 +443,25 @@
         /* Le bouton respire doucement pour rester le point d'entrée évident de la carte */
         @keyframes packCtaBreathe{0%,100%{transform:scale(1);box-shadow:0 8px 22px rgba(0,0,0,.35)}50%{transform:scale(1.025);box-shadow:0 12px 28px rgba(0,0,0,.45)}}
         .pack-btn-pulse{animation:packCtaBreathe 2.6s ease-in-out infinite,btnPulse 2s ease infinite}
+        /* Effet « hypnose » des boutons d'adhésion : double battement, anneau de
+           lumière qui tourne, ondes qui s'échappent et reflet qui balaie.
+           --hyp : couleur des ondes, propre à chaque bouton. */
+        @property --hypAng{syntax:'<angle>';inherits:false;initial-value:0deg}
+        .cta-hypnose{position:relative;overflow:hidden;isolation:isolate;animation:hypnoBeat 1.8s ease-in-out infinite,hypnoWaves 1.8s ease-out infinite}
+        .cta-hypnose::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:2px;pointer-events:none;
+            background:conic-gradient(from var(--hypAng),transparent 0deg,rgba(255,255,255,.95) 40deg,transparent 90deg,transparent 180deg,rgba(255,255,255,.95) 220deg,transparent 270deg);
+            -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:hypnoSpin 2.4s linear infinite}
+        .cta-hypnose::after{content:'';position:absolute;top:0;bottom:0;left:-60%;width:45%;pointer-events:none;
+            background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);transform:skewX(-20deg);animation:hypnoShine 2.7s ease-in-out infinite}
+        .cta-hypnose > *{position:relative;z-index:1}
+        @keyframes hypnoSpin{to{--hypAng:360deg}}
+        @keyframes hypnoBeat{0%,40%,100%{transform:scale(1)}10%{transform:scale(1.045)}20%{transform:scale(1.01)}30%{transform:scale(1.035)}}
+        @keyframes hypnoWaves{0%{box-shadow:0 0 0 0 var(--hyp,rgba(34,197,94,.55)),0 0 0 0 var(--hyp,rgba(34,197,94,.55)),0 8px 22px rgba(0,0,0,.35)}
+            100%{box-shadow:0 0 0 14px transparent,0 0 0 26px transparent,0 8px 22px rgba(0,0,0,.35)}}
+        @keyframes hypnoShine{0%,55%{left:-60%}100%{left:130%}}
+        .cta-hint{text-align:center;font-size:13px;font-weight:800;color:#26A5E4;margin-bottom:10px;font-family:'Montserrat',sans-serif;animation:hintBounce 1.2s ease-in-out infinite}
+        @keyframes hintBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+        @media (prefers-reduced-motion:reduce){.cta-hypnose,.cta-hypnose::before,.cta-hypnose::after,.cta-hint{animation:none}}
         /* Garantie : léger battement de la lueur pour attirer l'œil sans clignoter */
         @keyframes guaranteeGlow{0%,100%{box-shadow:0 0 14px rgba(34,197,94,.14);transform:translateY(0)}50%{box-shadow:0 0 26px rgba(34,197,94,.34);transform:translateY(-2px)}}
         .guarantee-badge{animation:guaranteeGlow 3s ease-in-out infinite}
@@ -1640,7 +1659,7 @@ async function fetchApiScore(id, dateRaw) {
                     </div>
                     <div class="guarantee-badge"><i class="fas fa-shield-alt"></i><span>Satisfait ou remboursé sous 48h</span></div>
                     <div class="pack-detail-bottom">
-                        <button class="pack-subscribe-btn pack-btn-pulse" style="background:var(--green);color:#fff;" onclick="openCheckout('journalier', 50)"><i class="fab fa-telegram-plane" style="margin-right:6px;"></i> J'adhère !</button>
+                        <button class="pack-subscribe-btn cta-hypnose" style="--hyp:rgba(34,197,94,.55);background:var(--green);color:#fff;" onclick="openCheckout('journalier', 50)"><span><i class="fab fa-telegram-plane" style="margin-right:6px;"></i> J'adhère !</span></button>
                     </div>
                     <div class="payment-methods">
                         <span style="font-size:11px; color:var(--text-gray);">Paiement sécurisé</span>
@@ -1689,7 +1708,7 @@ async function fetchApiScore(id, dateRaw) {
                         <span style="color:#FFC107;">Garantie satisfait ou remboursé 7 jours</span>
                     </div>
                     <div class="pack-detail-bottom">
-                        <button class="pack-subscribe-btn pack-btn-pulse" style="background:linear-gradient(135deg, #FFC107, #B8860B);color:#000; font-size:15px; padding:12px 28px;" onclick="openCheckout('vip', 99.99)"><i class="fab fa-telegram-plane" style="margin-right:6px;"></i> J'adhère !</button>
+                        <button class="pack-subscribe-btn cta-hypnose" style="--hyp:rgba(255,193,7,.55);background:linear-gradient(135deg, #FFC107, #B8860B);color:#000; font-size:15px; padding:12px 28px;" onclick="openCheckout('vip', 99.99)"><span><i class="fab fa-telegram-plane" style="margin-right:6px;"></i> J'adhère !</span></button>
                     </div>
                     <div class="payment-methods">
                         <span style="font-size:11px; color:var(--text-gray);">Paiement sécurisé 🔒</span>
@@ -1727,7 +1746,7 @@ async function fetchApiScore(id, dateRaw) {
                     </div>
                     <div class="guarantee-badge"><i class="fas fa-shield-alt"></i><span>Satisfait ou remboursé sous 48h</span></div>
                     <div class="pack-detail-bottom">
-                        <button class="pack-subscribe-btn pack-btn-pulse" style="background:var(--blue);color:#fff;" onclick="openCheckout('hebdo', 69.99)"><i class="fab fa-telegram-plane" style="margin-right:6px;"></i> J'adhère !</button>
+                        <button class="pack-subscribe-btn cta-hypnose" style="--hyp:rgba(59,130,246,.55);background:var(--blue);color:#fff;" onclick="openCheckout('hebdo', 69.99)"><span><i class="fab fa-telegram-plane" style="margin-right:6px;"></i> J'adhère !</span></button>
                     </div>
                     <div class="payment-methods">
                         <span style="font-size:11px; color:var(--text-gray);">Paiement sécurisé</span>
@@ -2966,7 +2985,8 @@ async function fetchApiScore(id, dateRaw) {
         <i class="fas fa-times" onclick="closeSubscribePopup()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
         <h3 style="font-size:18px;font-weight:800;margin-bottom:8px;color:#fff;font-family:'Montserrat',sans-serif;" id="subscribe-pack-title">Souscrire au pack</h3>
         <p style="font-size:13px;color:var(--text-gray);margin-bottom:20px;line-height:1.5;font-family:'Inter',sans-serif;">Finalise ton accès en quelques minutes ⚡</p>
-        <a id="subscribe-bot-link" href="#" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:#26A5E4;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:10px;text-decoration:none;"><i class="fab fa-telegram-plane" style="font-size:18px;"></i> Démarrer avec notre assistant</a>
+        <div class="cta-hint">👇 Dernière étape : clique ici</div>
+        <a id="subscribe-bot-link" class="cta-hypnose" href="#" target="_blank" rel="noopener" style="--hyp:rgba(38,165,228,.6);display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:#26A5E4;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:10px;text-decoration:none;"><span style="display:inline-flex;align-items:center;gap:10px;"><i class="fab fa-telegram-plane" style="font-size:18px;"></i> Démarrer avec notre assistant</span></a>
         <a id="subscribe-whatsapp-link" href="#" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:#25D366;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;text-decoration:none;"><i class="fab fa-whatsapp" style="font-size:18px;"></i> Contacter via WhatsApp</a>
     </div>
 </div>
