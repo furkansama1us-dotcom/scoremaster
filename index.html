@@ -11214,10 +11214,10 @@ function buildHistoryCardHtml(c, sl) {
                 var mStatus = m.match_status || (sc === 'en-cours' ? 'en-cours' : sc);
                 var scoreColor = mStatus === 'termine' ? 'var(--green)' : (mStatus === 'perdu' ? 'var(--red)' : 'var(--text-white)');
                 
-                var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:12px;height:12px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : (m.league_flag ? `<span style="margin-right:6px; display:inline-flex; align-items:center; vertical-align:middle;">${m.league_flag}</span>` : `<span style="margin-right:4px;">⚽</span>`));
+                var logoDisplay = m._selections ? '' : (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:12px;height:12px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : (m.league_flag ? `<span style="margin-right:6px; display:inline-flex; align-items:center; vertical-align:middle;">${m.league_flag}</span>` : `<span style="margin-right:4px;">⚽</span>`));
                 
                 matchesHtml += `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px; align-items:center;">
-                    <span style="color:var(--text-light-gray);">${logoDisplay}${m.teams || 'Équipes'}</span>
+                    <span style="color:var(--text-light-gray);">${logoDisplay}${equipesHtml(m, 15)}</span>
                     <span style="font-weight:700; color:${scoreColor}; background:rgba(255,255,255,0.05); padding:3px 8px; border-radius:6px;">${m.score}</span>
                 </div>`;
             });
@@ -11742,24 +11742,31 @@ function codePaysSelection(nom) {
 
 function drapeauxSelections(teams) {
     var parts = (teams || '').split(/\s+-\s+/);
-    if (parts.length !== 2) return '';
+    if (parts.length !== 2) return null;
     var a = codePaysSelection(parts[0]), b = codePaysSelection(parts[1]);
-    if (!a || !b) return ''; // les deux doivent être des pays : évite les faux positifs sur les clubs
-    var img = function (code) { return '<img src="https://flagcdn.com/20x15/' + code + '.png" style="width:18px;height:13px;object-fit:cover;border-radius:2px;flex-shrink:0;" onerror="this.style.display=&quot;none&quot;">'; };
-    return '<span style="display:inline-flex;gap:3px;align-items:center;">' + img(a) + img(b) + '</span>';
+    if (!a || !b) return null; // les deux doivent être des pays : évite les faux positifs sur les clubs
+    return { home: parts[0], away: parts[1], codeHome: a, codeAway: b };
 }
 
-// Complète les matchs sans drapeau (ou avec le ballon par défaut) au chargement.
+// Marque au chargement les matchs entre sélections. Propriété non énumérable :
+// elle n'est jamais réenregistrée en base.
 function completerDrapeaux(combineds) {
     (combineds || []).forEach(function (c) {
         (c.matches || []).forEach(function (m) {
-            var vide = !m.league_flag || m.league_flag.indexOf('<img') === -1;
-            if (!vide) return;
             var d = drapeauxSelections(m.teams);
-            if (d) m.league_flag = d;
+            if (d) Object.defineProperty(m, '_selections', { value: d, enumerable: false, configurable: true });
         });
     });
     return combineds;
+}
+
+// Nom des équipes, précédé chacun de son drapeau pour un match entre sélections.
+function equipesHtml(m, taille) {
+    var d = m && m._selections;
+    if (!d) return (m && m.teams) || 'Équipes';
+    var w = taille || 18, hgt = Math.round(w * 0.72);
+    var img = function (code) { return '<img src="https://flagcdn.com/40x30/' + code + '.png" alt="" style="width:' + w + 'px;height:' + hgt + 'px;object-fit:cover;border-radius:2px;vertical-align:-2px;margin-right:6px;" onerror="this.style.display=&quot;none&quot;">'; };
+    return img(d.codeHome) + d.home + '<span style="margin:0 7px;opacity:.55;">-</span>' + img(d.codeAway) + d.away;
 }
 
 async function fetchTicketCombineds() {
@@ -12545,10 +12552,10 @@ ${aiPrompt}
             var displayOdds = isHomeObscured ? '**.**' : m.odds.toFixed(2);
             
             var blurClass = (isHomeObscured || isVipObscured) ? 'blurred-value' : '';
-            var logoDisplay = (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : (m.league_flag ? '' : `<span style="margin-right:4px;">⚽</span>`));
+            var logoDisplay = m._selections ? '' : (m.logo && m.logo.startsWith("<img")) ? m.logo : (m.logo ? `<img src="${m.logo}" style="width:14px;height:14px;object-fit:contain;margin-right:6px;vertical-align:middle;">` : (m.league_flag ? '' : `<span style="margin-right:4px;">⚽</span>`));
             
             // AFFICHAGE DU DRAPEAU ICI
-            var flagDisplay = m.league_flag ? `<span style="margin-right:6px; display:inline-flex; align-items:center; vertical-align:middle;">${m.league_flag}</span>` : '';
+            var flagDisplay = (m.league_flag && !m._selections) ? `<span style="margin-right:6px; display:inline-flex; align-items:center; vertical-align:middle;">${m.league_flag}</span>` : '';
             
             let cleanTime = m.time ? m.time.match(/\d{2}:\d{2}/) : "--:--";
             let finalTimeDisplay = smartPrefix + (cleanTime ? cleanTime[0] : "");
@@ -12565,7 +12572,7 @@ ${aiPrompt}
                         <div class="match-teams" style="color:#fff; flex:1; min-width:0; display:flex; align-items:center; gap:6px;">
                             ${logoDisplay}
                             ${flagDisplay}
-                            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; width:100%;">${m.teams || 'Équipes'}</span>
+                            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; width:100%;">${equipesHtml(m)}</span>
                         </div>
                         <div class="match-time" style="color:var(--text-gray); flex-shrink:0; white-space:nowrap;">${finalTimeDisplay}</div>
                     </div>
