@@ -1,0 +1,161 @@
+{
+  "meta": {
+    "genere_le": "2026-09-25",
+    "objet": "Reprise de la session Score Master sur un autre poste (MacBook)",
+    "a_lire_avec": ["CLAUDE.md", "supabase_orders_setup.sql"]
+  },
+
+  "projet": {
+    "nom": "Score Master",
+    "domaine": "scoremaster.fr",
+    "description": "Web app de pronostics football (combinés score exact), espace VIP+, bot de vente et publication automatisée sur Instagram et Telegram.",
+    "depot": "https://github.com/furkansama1us-dotcom/scoremaster.git",
+    "chemin_windows": "D:\\PROJECT VIDEO\\postiz-setup\\scoremaster",
+    "branche": "main",
+    "dernier_commit": "21138ff",
+    "hebergement": {
+      "front_et_api": "Vercel",
+      "base": "Supabase (projet pytqquerlktxnfnohwmg)",
+      "publication_reseaux": "Postiz auto-hébergé",
+      "cron": "VPS (crontab, TZ=Europe/Paris) qui appelle les routes Vercel",
+      "images_ia": "Higgsfield via routine Claude Code cloud (MCP), mascotte = Reference Element"
+    }
+  },
+
+  "architecture": {
+    "front": "index.html — fichier unique d'environ 12 000 lignes, HTML + CSS + JS en ligne, pas de build",
+    "api": "api/*.js — 12 fonctions Vercel maximum, limite ATTEINTE",
+    "regle_critique": "Ne jamais créer de nouveau fichier api/<nom>.js. Toute nouvelle route se greffe sur un fichier existant via un paramètre action/type dans le body. Les fichiers préfixés « _ » (api/_compositeur.mjs, api/_ligues.js) ne comptent pas comme fonctions.",
+    "fichiers_cles": {
+      "api/publish.js": "Moteur d'automatisation : balayage cron, approbation auto, séquence marketing, combiné automatique, rapport, récap, sélections réseau, campagne de parrainage, publication Postiz",
+      "api/_compositeur.mjs": "Rendu serveur des images avec @napi-rs/canvas : assembler (carrousels), composerStory, composerTicket (ticket honoré), composerAffiche (sélections), composerCampagne (affiche parrainage)",
+      "api/_ligues.js": "GRANDES_LIGUES + prioriteLigue (4 paliers)",
+      "api/football.js": "Cache des rencontres et pronostics, économie de quota API-Football",
+      "api/sync-referral-joins.js": "Cron parrainage : détection des arrivées Telegram, anti-fraude, récompenses",
+      "api/referral-get-link.js": "Lien d'invitation personnel + état de la campagne (action: campagne)",
+      "api/generate-story-content.js": "Génération des contenus Victoire / Combiné du jour / Conseil IA",
+      "vps-scripts/generate-content.mjs": "Script nocturne du VPS : un type de contenu par jour, rotation sur 7 jours",
+      "content-calendar.json": "152 entrées, carrousels duo",
+      "supabase_orders_setup.sql": "Schéma complet, à rejouer dans le SQL Editor"
+    }
+  },
+
+  "workflow_de_travail": {
+    "edition": "Les patchs sur index.html et api/publish.js se font par petits scripts Node écrits dans le scratchpad (Write) puis exécutés, avec vérification que le motif recherché est unique. L'édition par sed ou heredoc bash mange les backslashes : à éviter.",
+    "pieges_connus": [
+      "Un template literal JS dans un script de patch interpole ${...} : utiliser une variable D = '$' pour écrire ${...} littéralement.",
+      "String.raw n'empêche PAS l'interpolation de ${...}.",
+      "Les backticks dans un commentaire inséré via template literal ferment le littéral."
+    ],
+    "verifications": [
+      "node --check sur chaque fichier api modifié",
+      "Extraction des blocs <script> de index.html vers des fichiers temporaires puis node --check sur chacun",
+      "Rendu local des images (node + @napi-rs/canvas) puis lecture de l'image pour contrôle visuel",
+      "Captures headless Chrome pour les éléments d'interface"
+    ],
+    "git": "Commit + push systématiques après chaque lot, messages en français, sans accents dans le corps (heredoc), signés Co-Authored-By: Claude Opus 5."
+  },
+
+  "regles_metier": {
+    "combine": [
+      "Un seul combiné en cours à la fois.",
+      "Si le combiné en cours n'est pas validé, aucun nouveau combiné.",
+      "Validation après minuit : le suivant est généré une heure plus tard.",
+      "Jusqu'à 14h, le combiné peut viser le soir même ; après 14h, il vise le lendemain soir.",
+      "Publication entre 23h et minuit.",
+      "Sélection des matchs par paliers de ligues : grands championnats et coupes d'Europe d'abord, coupes nationales en dernier recours."
+    ],
+    "contenus": [
+      "Aucune mention « 18+ » ni « jouer comporte des risques » nulle part.",
+      "Aucun message du type « je gagne X euros par jour ».",
+      "Les carrousels vont sur Instagram uniquement, jamais sur Telegram, deux par jour (matin et soir).",
+      "Contacts en pied de chaque publication : site, Instagram @scoremaster.fr, Telegram @ScoreMasterOfficiel.",
+      "Rappel des rencontres avec logos et date/heure de coup d'envoi.",
+      "Les sélections du réseau sont toujours datées de la veille (J-1).",
+      "Les émojis sont retirés des textes composés en image : les polices serveur les rendent en carrés vides."
+    ],
+    "validation_admin": [
+      "La communication de résultat ne part qu'après le clic sur « Enregistrer les modifications » (drapeau diffusable).",
+      "Ne jamais afficher « pronostic vs score réel » : le score enregistré devient le pronostic, le champ Score réel a été supprimé.",
+      "Les boutons cachés de l'historique (SMVIP+, promo bookmaker) restent réservés à l'admin."
+    ],
+    "campagne_parrainage": {
+      "promesse": "5 filleuls validés = un combiné score exact offert, jusqu'au 31/10/2026",
+      "anti_fraude": [
+        "Un compte Telegram ne peut être parrainé qu'une fois (unicité en base, tous parrains confondus)",
+        "72 h de présence effective sur le canal avant validation (getChatMember)",
+        "2 validations par jour et par parrain au maximum",
+        "Compte sans pseudo ou arrivées en rafale (3 en moins d'une heure) : statut a_verifier + alerte Telegram, arbitrage admin",
+        "Refus du self-parrainage"
+      ],
+      "pilotage": "Content Planner > Réglages > Campagne de parrainage > Gérer : fin, seuil, durée de présence, plafond par jour, libellé de récompense, relance quotidienne et arbitrage des cas signalés."
+    }
+  },
+
+  "travaux_de_la_session": [
+    { "commit": "1fa7316", "sujet": "Rappel des rencontres (logos + date) sur les stories et messages" },
+    { "commit": "ac441de", "sujet": "Nettoyage des mentions de jeu responsable dans les contenus déjà préparés" },
+    { "commit": "596186f", "sujet": "Récap des résultats réels, prêt à transférer sur le canal" },
+    { "commit": "cc250fe", "sujet": "Import des pronostics du réseau + trame de cotes du soir (19h)" },
+    { "commit": "0045001", "sujet": "40 accroches tournantes + 10 chutes, régénération, publication post + story" },
+    { "commit": "ee3c0f2", "sujet": "Sélections du réseau datées de la veille" },
+    { "commit": "55a1a96", "sujet": "Le pronostic suit le score réel à l'enregistrement, drapeau diffusable" },
+    { "commit": "cd7bf34", "sujet": "Approbation auto des contenus du VPS + date et heure de création sur les cartes" },
+    { "commit": "1b67764", "sujet": "Affiche « ticket honoré » composée côté serveur pour les messages de victoire" },
+    { "commit": "8bece98", "sujet": "Affiche marketing des sélections, réservoir de fonds élargi, noms d'équipes normalisés" },
+    { "commit": "f9f71c8", "sujet": "Paliers de ligues pour le combiné, suppression du champ Score réel" },
+    { "commit": "83f2db4", "sujet": "Campagne parrainage : bandeau app, panneau membre, table referral_joins, anti-fraude" },
+    { "commit": "2a70c15", "sujet": "Pilotage de la campagne depuis le Content Planner + arbitrage des cas signalés" },
+    { "commit": "3e4be75", "sujet": "Relance quotidienne de la campagne : affiche 9:16 et 4:5, story + post + Telegram" },
+    { "commit": "65426a0", "sujet": "Bandeau de campagne compact et animé (reflet, halo, pulsation)" },
+    { "commit": "21138ff", "sujet": "Bandeau de campagne aligné sur les cartes (marges latérales)" }
+  ],
+
+  "sql_a_passer_dans_supabase": {
+    "statut": "À CONFIRMER — l'utilisateur a passé les premiers blocs, les colonnes de campagne et de relance restent probablement à jouer",
+    "ou": "Supabase > SQL Editor > New query > Run",
+    "instructions": "Tout est idempotent (if not exists), le bloc peut être rejoué sans risque. La version complète est en fin de supabase_orders_setup.sql.",
+    "blocs": [
+      "alter table public.automation_settings add column if not exists auto_publish_vps boolean not null default false, add column if not exists auto_trame boolean not null default true, add column if not exists trame_envoyee_le date;",
+      "alter table public.combineds_public add column if not exists diffusable boolean not null default false;",
+      "create table if not exists public.referral_joins (...) + policy « Un membre voit ses filleuls » + policy « Les admins voient tous les parrainages »",
+      "alter table public.profiles add column if not exists campagne_filleuls integer not null default 0, add column if not exists campagne_recompense_le timestamptz, add column if not exists telegram_user_id bigint;",
+      "alter table public.automation_settings add column if not exists campagne_active boolean not null default false, campagne_fin date default '2026-10-31', campagne_seuil integer default 5, campagne_delai_h integer default 72, campagne_max_jour integer default 2, campagne_recompense text default 'Combiné score exact offert';",
+      "alter table public.automation_settings add column if not exists campagne_relance boolean not null default false, campagne_relance_heure text default '17:30', campagne_relance_le date;"
+    ]
+  },
+
+  "en_attente": [
+    {
+      "sujet": "Rotation de secrets",
+      "urgence": "haute",
+      "detail": "CRON_SECRET et la clé API-Football ont été collés en clair dans la conversation et sur des captures. À régénérer dans Vercel puis à reporter dans les 5 lignes du crontab du VPS. Aucune valeur n'est reproduite ici volontairement."
+    },
+    {
+      "sujet": "Chemin « Victoire » déclenché depuis le panneau",
+      "urgence": "moyenne",
+      "detail": "Les lignes Victoire (Telegram) et Victoire Story (Instagram) créées par api/generate-story-content.js composent encore l'image dans le navigateur, donc uniquement si l'onglet reste ouvert. Proposition faite et non tranchée : les basculer sur composerTicket côté serveur."
+    },
+    {
+      "sujet": "Routine cloud de test",
+      "urgence": "basse",
+      "detail": "La routine désactivée « ScoreMaster - test reseau compositeur » reste à supprimer, seul l'utilisateur peut le faire."
+    },
+    {
+      "sujet": "Parrainage permanent (3 filleuls)",
+      "urgence": "basse",
+      "detail": "Il continue de tourner en parallèle de la campagne à 5. À décider : le suspendre pendant la campagne ou le laisser."
+    },
+    {
+      "sujet": "Fond des affiches de campagne",
+      "urgence": "basse",
+      "detail": "L'affiche utilise une illustration récente des carrousels assombrie à 72 %. Alternative proposée : aplat uni ou visuel dédié de la mascotte."
+    }
+  ],
+
+  "automatisations_actives": {
+    "cron_vercel_sweep": "api/publish.js — assainissement des légendes, approbation auto (07h00), combiné automatique, promotion (12h30), rapport (23h45), trame réseau (19h00), relance campagne (heure réglable), séquence marketing, publication des lignes approuvées",
+    "vps": "generate-content.mjs chaque nuit pour le lendemain, sync-referral-joins pour le parrainage",
+    "routine_cloud": "Génération Higgsfield des carrousels du calendrier, vers 21h10 Paris"
+  }
+}
