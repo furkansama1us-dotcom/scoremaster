@@ -505,6 +505,35 @@
         .masc img{position:absolute;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
         .masc-corps{left:0;top:0;width:64px;height:68px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
         .masc-bras{left:47.5px;top:45.7px;width:15.2px;height:43.9px;transform-origin:50% 4%;z-index:1}
+        /* Page Pronostics AI : duel de la mascotte, gratuit contre SM VIP+ */
+        .ai-duel{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 20px 18px}
+        .ai-duel-carte{position:relative;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;background:#11162a}
+        .ai-duel-carte.gratuit{border:1px solid rgba(255,255,255,.08)}
+        .ai-duel-carte.vip{border:1.5px solid rgba(255,193,7,.75);animation:duelHalo 2.4s ease-in-out infinite}
+        .ai-duel-badge{position:absolute;top:8px;left:8px;z-index:2;font-size:9.5px;font-weight:900;letter-spacing:.6px;padding:4px 8px;border-radius:20px;font-family:'Montserrat',sans-serif}
+        .gratuit .ai-duel-badge{background:rgba(20,24,40,.8);color:#9aa3b8;border:1px solid rgba(255,255,255,.12)}
+        .vip .ai-duel-badge{background:linear-gradient(135deg,#FFE082,#FFC107 50%,#B8860B);color:#2a1c00;box-shadow:0 0 12px rgba(255,193,7,.6)}
+        .ai-duel-img{position:relative;aspect-ratio:3/4;overflow:hidden}
+        .ai-duel-img img{width:100%;height:100%;object-fit:cover;display:block}
+        .gratuit .ai-duel-img img{filter:saturate(.75) brightness(.9)}
+        .vip .ai-duel-img img{animation:duelEnvol 3.2s ease-in-out infinite;transform-origin:50% 60%}
+        .vip .ai-duel-img::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 35%,rgba(255,240,180,.35) 50%,transparent 65%);background-size:250% 100%;animation:duelReflet 3.5s ease-in-out infinite}
+        .ai-duel-img::before{content:'';position:absolute;left:0;right:0;bottom:0;height:45%;z-index:1;pointer-events:none;background:linear-gradient(to top,#11162a 8%,transparent)}
+        .ai-duel-texte{position:relative;z-index:2;margin-top:-34px;padding:0 10px 12px;display:flex;flex-direction:column;gap:5px;flex:1}
+        .ai-duel-titre{font-size:13px;font-weight:900;font-family:'Montserrat',sans-serif;line-height:1.2}
+        .gratuit .ai-duel-titre{color:#c3c9d6}
+        .vip .ai-duel-titre{background:linear-gradient(90deg,#FFE9A8,#FFC107,#FFE9A8);-webkit-background-clip:text;background-clip:text;color:transparent}
+        .ai-duel-ligne{font-size:10.5px;line-height:1.35;color:var(--text-gray);display:flex;gap:5px;align-items:flex-start}
+        .ai-duel-ligne i{font-size:10px;margin-top:2px;flex-shrink:0}
+        .gratuit .ai-duel-ligne i{color:#6b7385}
+        .vip .ai-duel-ligne{color:#e8e2cf}
+        .vip .ai-duel-ligne i{color:#FFC107}
+        .ai-duel-bulle{font-size:10.5px;font-style:italic;color:#8a93a8;margin-top:auto;padding-top:4px}
+        .ai-duel-cta{margin-top:auto;width:100%;padding:10px 6px;border:none;border-radius:10px;background:linear-gradient(135deg,#FFC107,#B8860B);color:#1a1200;font-size:11.5px;font-weight:900;font-family:'Montserrat',sans-serif;cursor:pointer}
+        @keyframes duelHalo{0%,100%{box-shadow:0 0 10px rgba(255,193,7,.25),inset 0 0 0 rgba(255,193,7,0)}50%{box-shadow:0 0 24px rgba(255,193,7,.55),inset 0 0 18px rgba(255,193,7,.12)}}
+        @keyframes duelEnvol{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-5px) scale(1.02)}}
+        @keyframes duelReflet{0%,60%{background-position:150% 0}100%{background-position:-50% 0}}
+        @media (prefers-reduced-motion:reduce){.ai-duel-carte.vip,.vip .ai-duel-img img,.vip .ai-duel-img::after,.ai-duel-cta{animation:none}}
         .cta-hint{text-align:center;font-size:13px;font-weight:800;color:#26A5E4;margin-bottom:10px;font-family:'Montserrat',sans-serif;animation:hintBounce 1.2s ease-in-out infinite}
         @keyframes hintBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
         @media (prefers-reduced-motion:reduce){.cta-hypnose,.cta-hypnose::before,.cta-hypnose::after,.cta-hint{animation:none}}
@@ -1947,6 +1976,28 @@ async function fetchApiScore(id, dateRaw) {
             <div class="ai-intro-banner">
                 <div class="ai-intro-badge"><i class="fas fa-microchip"></i> AI-POWERED</div>
                 <div class="ai-intro-text">Analyse automatique des prochains matchs (forme, contexte, cote domicile/extérieur), gratuite et ouverte à tous. Certains pronostics, marqués <span style="color:#FFC107;font-weight:700;">VIP</span>, atteignent une fiabilité de 95 à 99% et restent floutés tant que tu n'as pas rejoint le VIP+ — débloque-les dès maintenant pour ne plus jamais rater un ticket ultra-fiable.</div>
+            </div>
+            <div class="ai-duel">
+                <div class="ai-duel-carte gratuit">
+                    <span class="ai-duel-badge">PRONOS GRATUITS</span>
+                    <div class="ai-duel-img"><img src="mascotte-pronos-gratuits.webp" alt="La mascotte Score Master, blasée, avec un ticket froissé" loading="lazy"></div>
+                    <div class="ai-duel-texte">
+                        <div class="ai-duel-titre">Mode économie</div>
+                        <div class="ai-duel-ligne"><i class="fas fa-chart-simple"></i><span>Analyse de base</span></div>
+                        <div class="ai-duel-ligne"><i class="fas fa-circle-half-stroke"></i><span>Pour se faire une idée</span></div>
+                        <div class="ai-duel-bulle">« Bon… je fais avec. »</div>
+                    </div>
+                </div>
+                <div class="ai-duel-carte vip">
+                    <span class="ai-duel-badge"><i class="fas fa-crown"></i> SM VIP+</span>
+                    <div class="ai-duel-img"><img src="mascotte-pronos-vip.webp" alt="La mascotte Score Master en ange gardien, ailes d'or et regard laser" loading="lazy"></div>
+                    <div class="ai-duel-texte">
+                        <div class="ai-duel-titre">Puissance maximale</div>
+                        <div class="ai-duel-ligne"><i class="fas fa-bolt"></i><span>Pronos marqués VIP débloqués</span></div>
+                        <div class="ai-duel-ligne"><i class="fas fa-shield-halved"></i><span>Fiabilité IA 95 à 99 %</span></div>
+                        <button class="ai-duel-cta cta-hypnose" style="--hyp:rgba(255,193,7,.55);" onclick="openCheckout('vip', 99.99)"><span>Rejoindre la team</span></button>
+                    </div>
+                </div>
             </div>
             <div class="ai-date-tabs" id="ai-date-tabs">
                 <div class="ai-date-tab active" data-offset="0" onclick="switchAIDate(0)">Aujourd'hui</div>
