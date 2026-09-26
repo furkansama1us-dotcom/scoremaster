@@ -11424,12 +11424,21 @@ async function autoFetchFinalScores(combined) {
     function comboVersionAdmin(c) {
         var perso = lireScoresAdmin()[c.id];
         if (!perso) return c;
-        var copie = Object.assign({}, c, { matches: (c.matches || []).map(function (m, i) {
+        // Ancien format : { index: score }
+        if (!perso.s && !perso.o) perso = { s: perso, o: {} };
+        var matches = (c.matches || []).map(function (m, i) {
             var cm = Object.assign({}, m);
             if (m._selections) Object.defineProperty(cm, '_selections', { value: m._selections, enumerable: false, configurable: true });
-            if (perso[i]) cm.score = perso[i];
+            if (perso.s && perso.s[i]) cm.score = perso.s[i];
+            if (perso.o && perso.o[i]) cm.odds = Number(perso.o[i]);
             return cm;
-        }) });
+        });
+        var copie = Object.assign({}, c, { matches: matches });
+        if (perso.o && Object.keys(perso.o).length) {
+            var total = matches.reduce(function (t, m) { return t * (Number(m.odds) > 0 ? Number(m.odds) : 1); }, 1);
+            copie.total_odds = Math.round(total * 100) / 100;
+            copie.gains = Math.round((Number(c.mise) || 0) * total * 100) / 100;
+        }
         return copie;
     }
 
@@ -11468,20 +11477,49 @@ async function autoFetchFinalScores(combined) {
         var c = comboVersionAdmin(currentCombined);
         var ov = document.createElement('div');
         ov.id = 'editeur-scores-admin';
-        ov.style.cssText = 'position:fixed;inset:0;z-index:10070;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);';
-        var lignes = (c.matches || []).map(function (m, i) {
-            return '<div style="margin-bottom:12px;"><div style="font-size:12px;color:var(--text-gray);margin-bottom:6px;">' + (m.teams || ('Match ' + (i + 1))) + '</div>'
-                + '<input type="text" class="admin-input editeur-score-admin" data-index="' + i + '" value="' + String(m.score || '').replace(/"/g, '&quot;') + '" style="width:100%;box-sizing:border-box;font-size:16px;font-weight:800;text-align:center;letter-spacing:2px;background:var(--bg-input);border:1px solid var(--border-color);color:#fff;padding:12px;border-radius:10px;"></div>';
+        ov.style.cssText = 'position:fixed;inset:0;z-index:10070;background:var(--bg-dark);overflow-y:auto;-webkit-overflow-scrolling:touch;';
+        var cartes = (c.matches || []).map(function (m, i) {
+            var drapeau = m._selections ? '' : (m.league_flag ? '<span style="margin-right:6px;display:inline-flex;align-items:center;">' + m.league_flag + '</span>' : '<span style="margin-right:6px;">⚽</span>');
+            var cote = Number(m.odds) > 0 ? Number(m.odds).toFixed(2) : '';
+            return '<div class="admin-card" style="padding:15px;border-left:4px solid var(--primary-yellow);margin-bottom:10px;">'
+                + '<div style="font-size:12px;color:var(--text-gray);margin-bottom:8px;">Match ' + (i + 1) + ' • Prévu à ' + (m.time || '--:--') + '</div>'
+                + '<div style="font-weight:bold;font-size:15px;margin-bottom:15px;display:flex;align-items:center;flex-wrap:wrap;">' + drapeau + equipesHtml(m) + '</div>'
+                + '<div style="display:flex;gap:10px;">'
+                + '<div class="admin-field" style="margin-bottom:0;flex:1;"><div class="admin-label">Pronostic :</div>'
+                + '<input type="text" class="admin-input editeur-score-admin" data-index="' + i + '" value="' + String(m.score || '').replace(/"/g, '&quot;') + '" style="font-size:16px;font-weight:bold;text-align:center;letter-spacing:2px;"></div>'
+                + '<div class="admin-field" style="margin-bottom:0;flex:1;"><div class="admin-label">Cote :</div>'
+                + '<input type="text" inputmode="decimal" class="admin-input editeur-cote-admin" data-index="' + i + '" value="' + cote + '" style="font-size:16px;font-weight:bold;text-align:center;color:var(--primary-yellow);" oninput="recalculerEditeurAdmin()"></div>'
+                + '</div></div>';
         }).join('');
-        ov.innerHTML = '<div style="background:var(--bg-card);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:20px;width:100%;max-width:380px;max-height:90vh;overflow-y:auto;font-family:\'Montserrat\',sans-serif;">'
-            + '<div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:4px;">Scores de la version admin</div>'
-            + '<div style="font-size:11.5px;color:var(--text-gray);line-height:1.45;margin-bottom:16px;">Visibles uniquement dans la version admin, sur cet appareil. La version publique et les données enregistrées ne changent pas.</div>'
-            + lignes
-            + '<button onclick="enregistrerScoresAdmin()" style="width:100%;padding:13px;margin-top:4px;background:var(--primary-yellow);color:#000;border:none;border-radius:10px;font-size:14px;font-weight:900;font-family:inherit;cursor:pointer;">Enregistrer</button>'
-            + '<div style="display:flex;gap:8px;margin-top:8px;"><button onclick="reinitialiserScoresAdmin()" style="flex:1;padding:11px;background:none;color:var(--text-gray);border:1px solid var(--border-color);border-radius:10px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;">Revenir aux vrais scores</button>'
-            + '<button onclick="fermerEditeurScoresAdmin()" style="flex:1;padding:11px;background:none;color:var(--text-gray);border:1px solid var(--border-color);border-radius:10px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;">Annuler</button></div></div>';
-        ov.addEventListener('click', function (ev) { if (ev.target === ov) fermerEditeurScoresAdmin(); });
+        ov.innerHTML = '<div style="max-width:480px;margin:0 auto;padding:20px 20px 40px;">'
+            + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">'
+            + '<div class="admin-section-title" style="color:var(--primary-yellow);font-size:16px;margin:0;"><i class="fas fa-user-shield"></i> Version admin</div>'
+            + '<button onclick="fermerEditeurScoresAdmin()" style="width:40px;height:40px;border-radius:50%;background:var(--bg-input);border:1px solid var(--border-color);color:#fff;font-size:16px;cursor:pointer;"><i class="fas fa-times"></i></button></div>'
+            + '<p style="font-size:13px;color:var(--text-gray);margin-bottom:20px;line-height:1.5;">Ajustez les pronostics et les cotes de la version admin. Visible uniquement dans la version admin, sur cet appareil : la version publique et les données enregistrées ne changent pas.</p>'
+            + cartes
+            + '<div class="admin-summary" style="margin-top:20px;background:var(--bg-input);">'
+            + '<div class="admin-summary-row"><span class="admin-summary-label">Nouvelle cote totale :</span><span class="admin-summary-value" id="editeur-admin-cote" style="color:var(--primary-yellow);font-size:18px;">0.00</span></div>'
+            + '<div class="admin-summary-row"><span class="admin-summary-label">Mise :</span><span class="admin-summary-value" id="editeur-admin-mise">' + fmtC(Number(c.mise) || 0) + '</span></div>'
+            + '<div class="admin-summary-row" style="border:none;"><span class="admin-summary-label">Gains potentiels :</span><span class="admin-summary-value gains" id="editeur-admin-gains" style="color:var(--green);font-size:18px;">0,00 €</span></div>'
+            + '</div>'
+            + '<button onclick="enregistrerScoresAdmin()" style="width:100%;margin-top:20px;padding:16px;background:var(--primary-yellow);color:#000;border:none;border-radius:12px;font-size:15px;font-weight:900;font-family:\'Montserrat\',sans-serif;cursor:pointer;box-shadow:0 6px 18px rgba(255,193,7,.3);"><i class="fas fa-save" style="margin-right:8px;"></i>ENREGISTRER LES MODIFICATIONS</button>'
+            + '<button onclick="reinitialiserScoresAdmin()" style="width:100%;margin-top:10px;padding:12px;background:none;color:var(--text-gray);border:1px solid var(--border-color);border-radius:12px;font-size:13px;font-weight:700;font-family:\'Montserrat\',sans-serif;cursor:pointer;">Revenir aux vrais scores et cotes</button>'
+            + '</div>';
         document.body.appendChild(ov);
+        recalculerEditeurAdmin();
+    }
+    function recalculerEditeurAdmin() {
+        var total = 1, ok = false;
+        document.querySelectorAll('.editeur-cote-admin').forEach(function (inp) {
+            var v = parseFloat(inp.value.replace(',', '.'));
+            if (!isNaN(v) && v > 0) { total *= v; ok = true; }
+        });
+        if (!ok) total = 0;
+        var mise = Number(currentCombined && currentCombined.mise) || 0;
+        var coteEl = document.getElementById('editeur-admin-cote');
+        var gainsEl = document.getElementById('editeur-admin-gains');
+        if (coteEl) coteEl.textContent = total.toFixed(2);
+        if (gainsEl) gainsEl.textContent = fmtC(Math.round(mise * total * 100) / 100);
     }
     function fermerEditeurScoresAdmin() {
         var ov = document.getElementById('editeur-scores-admin');
@@ -11490,18 +11528,21 @@ async function autoFetchFinalScores(combined) {
     function enregistrerScoresAdmin() {
         if (!currentCombined) return;
         var tout = lireScoresAdmin();
-        var perso = {};
+        var perso = { s: {}, o: {} };
+        var reels = currentCombined.matches || [];
         document.querySelectorAll('.editeur-score-admin').forEach(function (inp) {
-            var v = inp.value.trim();
-            var i = inp.getAttribute('data-index');
-            var reel = currentCombined.matches && currentCombined.matches[i] ? String(currentCombined.matches[i].score || '') : '';
-            if (v && v !== reel) perso[i] = v;
+            var i = inp.getAttribute('data-index'), v = inp.value.trim();
+            if (v && reels[i] && v !== String(reels[i].score || '')) perso.s[i] = v;
         });
-        if (Object.keys(perso).length) tout[currentCombined.id] = perso; else delete tout[currentCombined.id];
+        document.querySelectorAll('.editeur-cote-admin').forEach(function (inp) {
+            var i = inp.getAttribute('data-index'), v = parseFloat(inp.value.replace(',', '.'));
+            if (!isNaN(v) && v > 0 && reels[i] && Math.abs(v - Number(reels[i].odds || 0)) > 0.0001) perso.o[i] = v;
+        });
+        if (Object.keys(perso.s).length || Object.keys(perso.o).length) tout[currentCombined.id] = perso; else delete tout[currentCombined.id];
         ecrireScoresAdmin(tout);
         fermerEditeurScoresAdmin();
         renderCombined();
-        showToast('Scores de la version admin enregistrés');
+        showToast('Version admin mise à jour');
     }
     function reinitialiserScoresAdmin() {
         if (!currentCombined) return;
