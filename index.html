@@ -539,6 +539,23 @@
         .ai-scene .sc-ono.etoile{background:#E8352B;clip-path:polygon(50% 0%,61% 20%,82% 8%,77% 31%,100% 35%,82% 52%,98% 72%,74% 71%,72% 96%,54% 80%,38% 100%,33% 76%,8% 84%,18% 60%,0% 44%,21% 34%,12% 11%,36% 20%);padding:16px 20px}
         .ai-scene .sc-ono.etoile-or{background:#FFC107;color:#fff;clip-path:polygon(50% 0%,61% 20%,82% 8%,77% 31%,100% 35%,82% 52%,98% 72%,74% 71%,72% 96%,54% 80%,38% 100%,33% 76%,8% 84%,18% 60%,0% 44%,21% 34%,12% 11%,36% 20%);padding:16px 20px}
         .ai-scene .sc-ono.soupir{color:#aab2c5;-webkit-text-stroke:1px #0b0f1a;text-shadow:1px 1px 0 #0b0f1a;font-size:15px}
+        /* Planche finale façon BD, sur tout le cadre */
+        .ai-scene .sc-fin{position:absolute;inset:0;z-index:8;opacity:0;pointer-events:none;cursor:pointer;overflow:hidden;border-radius:14px;
+            border:3px solid #111;box-sizing:border-box;background-color:#FFC107;
+            background-image:radial-gradient(rgba(214,90,0,.35) 1.6px,transparent 1.8px),repeating-conic-gradient(from 0deg at 78% 60%,rgba(255,255,255,.28) 0deg 8deg,transparent 8deg 20deg);
+            background-size:9px 9px,100% 100%}
+        .ai-scene .sc-fin.active{pointer-events:auto}
+        .ai-scene .sc-fin-titre{position:absolute;left:12px;top:10px;font-family:'Bangers','Impact',sans-serif;font-size:27px;line-height:.95;letter-spacing:1px;color:#fff;
+            -webkit-text-stroke:2px #111;paint-order:stroke fill;text-shadow:3px 3px 0 #E8352B,5px 5px 0 #111;transform:rotate(-4deg);transform-origin:0 50%}
+        .ai-scene .sc-fin-cartouche{position:absolute;left:12px;bottom:10px;max-width:58%;background:#fff;border:2.5px solid #111;border-radius:4px;padding:6px 9px;
+            box-shadow:3px 3px 0 #111;font-family:'Bangers','Impact',sans-serif;font-size:14px;line-height:1.1;letter-spacing:.5px;color:#111;transform:rotate(1.5deg)}
+        .ai-scene .sc-fin-cartouche b{color:#E8352B;font-weight:400;white-space:nowrap}
+        .ai-scene.etroit .sc-fin-titre{font-size:22px}
+        .ai-scene.etroit .sc-fin-cartouche{font-size:12px;max-width:60%;padding:5px 7px}
+        .ai-scene.etroit .sc-fin-roi{height:92px}
+        .ai-scene.etroit .sc-fin-touche{font-size:10.5px;padding:2px 6px}
+        .ai-scene .sc-fin-roi{position:absolute;right:-4px;bottom:-2px;height:104px;width:auto;filter:drop-shadow(3px 3px 0 #111)}
+        .ai-scene .sc-fin-touche{position:absolute;right:10px;top:10px;font-family:'Bangers','Impact',sans-serif;font-size:12px;letter-spacing:.8px;color:#111;background:#fff;border:2px solid #111;border-radius:12px;padding:2px 8px;box-shadow:2px 2px 0 #111}
         @keyframes scClignote{0%{opacity:1}100%{opacity:.15}}
         @keyframes scPileFlotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
         @keyframes scAura{0%,100%{transform:scale(.92);opacity:.85}50%{transform:scale(1.08);opacity:1}}
@@ -2020,6 +2037,12 @@ async function fetchApiScore(id, dateRaw) {
                     </svg>
                     <div class="sc-flash"></div>
                     <div class="sc-titre">⚡ SUPER SM ⚡</div>
+                    <div class="sc-fin" onclick="if (typeof openCheckout === 'function') openCheckout('vip', 99.99)">
+                        <div class="sc-fin-titre">N'ATTENDS<br>PLUS !</div>
+                        <div class="sc-fin-cartouche">Rejoins la team <b>SM VIP+</b> et libère toute la puissance de l'IA !</div>
+                        <img class="sc-fin-roi" src="mascotte-roi-mecha.webp" alt="">
+                        <div class="sc-fin-touche">Touche ici !</div>
+                    </div>
                 </div>
             </div>
             <div class="ai-duel">
@@ -10307,6 +10330,7 @@ async function fetchMatchesFromAPI() {
         var robot = sc.querySelector('.sc-robot'), img = robot.querySelector('img'), jauge = sc.querySelector('.sc-jauge'), barre = jauge.querySelector('i');
         var pile = sc.querySelector('.sc-pile'), roi = sc.querySelector('.sc-roi'), eclairs = sc.querySelector('.sc-eclairs');
         var flash = sc.querySelector('.sc-flash'), titre = sc.querySelector('.sc-titre'), bulle = sc.querySelector('.sc-bulle');
+        var fin = sc.querySelector('.sc-fin'), finTitre = sc.querySelector('.sc-fin-titre'), finCartouche = sc.querySelector('.sc-fin-cartouche'), finRoi = sc.querySelector('.sc-fin-roi'), finTouche = sc.querySelector('.sc-fin-touche');
         var calme = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         var pause = function (ms) { return new Promise(function (ok) { setTimeout(ok, ms); }); };
         var anim = function (el, images, ms, easing) { return el.animate(images, { duration: ms, easing: easing || 'ease-in-out', fill: 'forwards' }).finished; };
@@ -10350,8 +10374,10 @@ async function fetchMatchesFromAPI() {
         async function scene() {
             var w = W(), xPile = Math.round(w * 0.66), xArret = xPile - 60, xDebut = Math.round(w * 0.16);
             // État de départ
-            [robot, img, pile, roi, eclairs, flash, titre, bulle, barre, jauge].forEach(function (el) { el.getAnimations().forEach(function (a) { a.cancel(); }); });
+            [robot, img, pile, roi, eclairs, flash, titre, bulle, barre, jauge, fin, finTitre, finCartouche, finRoi, finTouche].forEach(function (el) { el.getAnimations().forEach(function (a) { a.cancel(); }); });
+            fin.classList.remove('active');
             sc.querySelectorAll('.sc-ono').forEach(function (el) { el.remove(); });
+            sc.classList.toggle('etroit', w < 280);
             pile.style.left = xPile + 'px'; pile.style.opacity = '1';
             barre.style.cssText = ''; jauge.style.borderColor = ''; img.style.filter = '';
             roi.style.left = Math.round(xArret + 28 - 62) + 'px';
@@ -10389,10 +10415,23 @@ async function fetchMatchesFromAPI() {
             await anim(roi, [{ opacity: 0, transform: 'translateY(14px) scale(.55)' }, { opacity: 1, transform: 'translateY(-4px) scale(1.12)', offset: .65 }, { opacity: 1, transform: 'translateY(0) scale(1)' }], 600, 'ease-out');
             anim(titre, [{ opacity: 0, transform: 'scale(.6)' }, { opacity: 1, transform: 'scale(1.12)', offset: .7 }, { opacity: 1, transform: 'scale(1)' }], 450, 'ease-out');
             await anim(roi, [{ transform: 'translateY(0)' }, { transform: 'translateY(-5px)' }, { transform: 'translateY(0)' }, { transform: 'translateY(-5px)' }, { transform: 'translateY(0)' }], 2800);
-            // 6. Fin de boucle
-            anim(titre, [{ opacity: 1 }, { opacity: 0 }], 350);
-            await anim(roi, [{ opacity: 1 }, { opacity: 0 }], 450);
-            await pause(700);
+            // 6. Planche finale façon BD, sur tout le cadre
+            anim(titre, [{ opacity: 1 }, { opacity: 0 }], 250);
+            anim(roi, [{ opacity: 1 }, { opacity: 0 }], 250);
+            fin.classList.add('active');
+            ono('POW !', w / 2, 75, 'etoile', 26, -8, 700);
+            await anim(fin, [{ opacity: 0, transform: 'scale(.6) rotate(-5deg)' }, { opacity: 1, transform: 'scale(1.05) rotate(1deg)', offset: .7 }, { opacity: 1, transform: 'scale(1) rotate(0)' }], 420, 'ease-out');
+            anim(finTitre, [{ transform: 'rotate(-4deg) scale(2.4)', opacity: 0 }, { transform: 'rotate(-4deg) scale(.92)', opacity: 1, offset: .6 }, { transform: 'rotate(-4deg) scale(1)', opacity: 1 }], 420, 'ease-in');
+            anim(finRoi, [{ transform: 'translateX(80px)' }, { transform: 'translateX(-6px)', offset: .75 }, { transform: 'translateX(0)' }], 550, 'ease-out');
+            await pause(250);
+            anim(finCartouche, [{ transform: 'rotate(1.5deg) translateY(30px)', opacity: 0 }, { transform: 'rotate(1.5deg) translateY(0)', opacity: 1 }], 380, 'ease-out');
+            await pause(300);
+            anim(finTouche, [{ transform: 'scale(1)' }, { transform: 'scale(1.12)' }, { transform: 'scale(1)' }], 700, 'ease-in-out');
+            await anim(finTitre, [{ transform: 'rotate(-4deg) scale(1)' }, { transform: 'rotate(-5deg) scale(1.06)' }, { transform: 'rotate(-4deg) scale(1)' }, { transform: 'rotate(-5deg) scale(1.06)' }, { transform: 'rotate(-4deg) scale(1)' }], 5000);
+            // 7. Fin de boucle
+            await anim(fin, [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0, transform: 'scale(.9)' }], 350, 'ease-in');
+            fin.classList.remove('active');
+            await pause(600);
         }
 
         (async function boucle() {
