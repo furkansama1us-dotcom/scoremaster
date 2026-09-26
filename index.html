@@ -11398,6 +11398,20 @@ async function autoFetchFinalScores(combined) {
         document.getElementById('stat-losses').textContent = losses;
     }
 
+    // ============================================================
+    // APERÇU ADMIN — les « ••• » de la carte basculent sur une copie de la
+    // page où le combiné reste présenté « en cours » (ni imminent, ni live,
+    // ni terminé). Réservé à l'admin, purement visuel : rien n'est modifié en base.
+    // ============================================================
+    function apercuAdminActif() { return window.isAdmin === true && window.apercuEnCours === true; }
+    function basculerApercuAdmin(e) {
+        if (e) e.stopPropagation();
+        if (window.isAdmin !== true) return;
+        window.apercuEnCours = !window.apercuEnCours;
+        renderCombined();
+        showToast(window.apercuEnCours ? 'Aperçu admin : combiné affiché « en cours »' : 'Retour à l\'affichage réel');
+    }
+
     function renderCombined() {
         var vc = document.getElementById('vip-combined-container');
         var hc = document.getElementById('home-combined-container');
@@ -11406,7 +11420,7 @@ async function autoFetchFinalScores(combined) {
             var empty = '<div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div>';
             if (vc) vc.innerHTML = empty; if (hc) hc.innerHTML = empty; if (sb) sb.innerHTML = ''; return;
         }
-        var sc = currentCombined.status;
+        var sc = apercuAdminActif() ? 'en-cours' : currentCombined.status;
         var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
         var pw = '50%'; if (sc === 'termine' || sc === 'perdu') pw = '100%';
         if (vc) vc.innerHTML = buildCC(currentCombined, sc, sl, pw, false);
@@ -12842,11 +12856,12 @@ ${aiPrompt}
         var displayTotalOdds = isHomeObscured ? '***.**' : (c.total_odds || 0).toFixed(2);
 
         let isLocked = false; let timeMessage = ''; let isLive = false;
+        var apercu = apercuAdminActif();
         if (sc === 'en-cours' && c.date && c.time) {
             const matchDateTime = new Date(`${c.date}T${c.time}:00`);
             const lockoutDateTime = new Date(matchDateTime.getTime() - 15 * 60000);
-            isLive = new Date() >= matchDateTime;
-            if (new Date() >= lockoutDateTime) {
+            isLive = !apercu && new Date() >= matchDateTime;
+            if (!apercu && new Date() >= lockoutDateTime) {
                 isLocked = true;
                 timeMessage = `<div class="combo-time-message" style="color: var(--red); font-size: 13px; font-weight: 800; margin: 12px 16px; text-align: center; background: rgba(244,63,94,0.1); padding: 10px; border-radius: 8px;"><i class="fas fa-lock"></i> Les paris sont fermés (Match imminent)</div>`;
             } else {
@@ -12884,7 +12899,7 @@ ${aiPrompt}
         <div class="combined-card" id="combined-card-${isHome ? 'home' : 'vip'}-${c.id}" style="width:100%;">
             <div class="combined-header">
                 <div class="combined-status"><span class="status-badge ${badgeClass}"${statusBadgeClick}>${statusBadgeLabel}</span><span class="combined-label">Combiné</span>${aiTag}</div>
-                <i class="fas fa-ellipsis-h combined-more"></i>
+                <i class="fas fa-ellipsis-h combined-more"${window.isAdmin === true ? ` onclick="basculerApercuAdmin(event)" style="cursor:pointer;padding:6px;margin:-6px;${apercu ? 'color:var(--primary-yellow);' : ''}"` : ''}></i>
             </div>
             <div class="combined-progress"><div class="combined-progress-fill" style="width:${pw};${pc}"></div></div>
             <div class="combined-body" style="padding-top: 10px;">${mH}</div>
