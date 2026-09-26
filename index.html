@@ -505,6 +505,38 @@
         .masc img{position:absolute;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
         .masc-corps{left:0;top:0;width:64px;height:68px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
         .masc-bras{left:47.5px;top:45.7px;width:15.2px;height:43.9px;transform-origin:50% 4%;z-index:1}
+        /* Page Pronostics AI : scène « pile VIP » — la mascotte déchargée avale une
+           pile VIP et devient le roi des méchas */
+        .ai-scene{position:relative;height:150px;margin-top:14px;border-radius:14px;overflow:hidden;
+            background:radial-gradient(ellipse 80% 70% at 50% 100%,rgba(255,193,7,.08),transparent 70%),linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.25));border:1px solid rgba(255,255,255,.05)}
+        .ai-scene .sc-sol{position:absolute;left:0;right:0;bottom:10px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent)}
+        .ai-scene .sc-robot{position:absolute;left:0;bottom:11px;width:56px;height:105px;transform:translateX(-80px);will-change:transform}
+        .ai-scene .sc-robot img{width:56px;height:105px;display:block;filter:grayscale(.85) brightness(.62);transform-origin:50% 100%}
+        .ai-scene .sc-jauge{position:absolute;left:50%;top:-16px;width:24px;height:11px;margin-left:-13px;border:1.5px solid #ff5a5a;border-radius:3px;padding:1px;box-sizing:border-box}
+        .ai-scene .sc-jauge::after{content:'';position:absolute;right:-4px;top:2.5px;width:2px;height:4px;border-radius:0 1px 1px 0;background:inherit;background:currentColor;color:#ff5a5a}
+        .ai-scene .sc-jauge i{display:block;height:100%;width:18%;border-radius:1px;background:#ff5a5a;animation:scClignote .7s steps(2) infinite}
+        .ai-scene .sc-pile{position:absolute;bottom:14px;width:26px;height:44px;border-radius:5px;background:linear-gradient(135deg,#FFF1B0,#FFC107 45%,#B8860B);
+            box-shadow:0 0 14px rgba(255,193,7,.7),inset 0 0 0 1.5px rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;animation:scPileFlotte 1.6s ease-in-out infinite}
+        .ai-scene .sc-pile::before{content:'';position:absolute;top:-5px;left:8px;width:10px;height:5px;border-radius:2px 2px 0 0;background:#FFE082}
+        .ai-scene .sc-pile span{font:900 9px 'Montserrat',sans-serif;color:#3a2600;writing-mode:vertical-rl;transform:rotate(180deg);letter-spacing:1px}
+        .ai-scene .sc-pile-bis{animation:none}
+        .ai-scene .sc-roi{position:absolute;bottom:8px;width:124px;height:125px;opacity:0;pointer-events:none;will-change:transform,opacity}
+        .ai-scene .sc-roi img{position:relative;z-index:2;width:124px;height:125px;display:block;filter:drop-shadow(0 0 10px rgba(255,200,40,.55))}
+        .ai-scene .sc-aura{position:absolute;left:50%;top:50%;width:190px;height:190px;margin:-95px 0 0 -95px;border-radius:50%;z-index:1;
+            background:radial-gradient(circle,rgba(255,236,150,.75) 0%,rgba(255,193,7,.35) 35%,transparent 65%);animation:scAura 1.2s ease-in-out infinite}
+        .ai-scene .sc-rayons{position:absolute;left:50%;top:50%;width:300px;height:300px;margin:-150px 0 0 -150px;z-index:0;opacity:.55;
+            background:repeating-conic-gradient(from 0deg,rgba(255,215,64,.35) 0deg 6deg,transparent 6deg 22deg);
+            -webkit-mask:radial-gradient(circle,#000 20%,transparent 62%);mask:radial-gradient(circle,#000 20%,transparent 62%);animation:scRayons 9s linear infinite}
+        .ai-scene .sc-eclairs{position:absolute;inset:0;opacity:0;pointer-events:none;z-index:3}
+        .ai-scene .sc-flash{position:absolute;inset:0;background:#fff8d6;opacity:0;pointer-events:none;z-index:4}
+        .ai-scene .sc-titre{position:absolute;top:8px;left:8px;z-index:5;transform-origin:0 50%;white-space:nowrap;opacity:0;
+            font:900 10px 'Montserrat',sans-serif;letter-spacing:1.2px;color:#2a1c00;padding:4px 10px;border-radius:20px;
+            background:linear-gradient(135deg,#FFE082,#FFC107 50%,#B8860B);box-shadow:0 0 14px rgba(255,193,7,.7)}
+        .ai-scene .sc-bulle{position:absolute;top:34px;z-index:5;font:700 10px 'Montserrat',sans-serif;color:#aab2c5;opacity:0;white-space:nowrap}
+        @keyframes scClignote{0%{opacity:1}100%{opacity:.15}}
+        @keyframes scPileFlotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+        @keyframes scAura{0%,100%{transform:scale(.92);opacity:.85}50%{transform:scale(1.08);opacity:1}}
+        @keyframes scRayons{to{transform:rotate(360deg)}}
         /* Page Pronostics AI : duel de la mascotte, gratuit contre SM VIP+ */
         .ai-duel{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 20px 18px}
         .ai-duel-carte{position:relative;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;background:#11162a}
@@ -1968,6 +2000,21 @@ async function fetchApiScore(id, dateRaw) {
             <div class="ai-intro-banner">
                 <div class="ai-intro-badge"><i class="fas fa-microchip"></i> AI-POWERED</div>
                 <div class="ai-intro-text">Analyse automatique des prochains matchs (forme, contexte, cote domicile/extérieur), gratuite et ouverte à tous. Certains pronostics, marqués <span style="color:#FFC107;font-weight:700;">VIP</span>, atteignent une fiabilité de 95 à 99% et restent floutés tant que tu n'as pas rejoint le VIP+ — débloque-les dès maintenant pour ne plus jamais rater un ticket ultra-fiable.</div>
+                <div class="ai-scene" id="ai-scene" aria-hidden="true">
+                    <div class="sc-sol"></div>
+                    <div class="sc-bulle">Batterie faible…</div>
+                    <div class="sc-pile"><span>VIP</span></div>
+                    <div class="sc-robot"><div class="sc-jauge"><i></i></div><img src="mascotte-dechargee.webp" alt=""></div>
+                    <div class="sc-roi"><div class="sc-rayons"></div><div class="sc-aura"></div><img src="mascotte-roi-mecha.webp" alt=""></div>
+                    <svg class="sc-eclairs" viewBox="0 0 300 150" preserveAspectRatio="none">
+                        <polyline points="150,0 138,40 156,48 132,95" fill="none" stroke="#FFF3B0" stroke-width="3" stroke-linejoin="round"/>
+                        <polyline points="150,0 138,40 156,48 132,95" fill="none" stroke="#FFC107" stroke-width="7" stroke-opacity=".45" stroke-linejoin="round"/>
+                        <polyline points="95,10 110,52 96,58 118,110" fill="none" stroke="#FFF3B0" stroke-width="2.2" stroke-linejoin="round"/>
+                        <polyline points="215,6 198,50 214,56 190,112" fill="none" stroke="#FFF3B0" stroke-width="2.2" stroke-linejoin="round"/>
+                    </svg>
+                    <div class="sc-flash"></div>
+                    <div class="sc-titre">⚡ ROI DES MÉCHAS ⚡</div>
+                </div>
             </div>
             <div class="ai-duel">
                 <div class="ai-duel-carte gratuit">
@@ -10241,6 +10288,93 @@ async function fetchMatchesFromAPI() {
             lancerMascotte();
         }
     }
+
+    // ============================================================
+    // SCÈNE « PILE VIP » (page Pronostics AI) : la mascotte arrive déchargée,
+    // avale la pile VIP, éclairs, et devient le roi des méchas. En boucle,
+    // seulement quand la page est affichée.
+    // ============================================================
+    function lancerSceneIA() {
+        var sc = document.getElementById('ai-scene');
+        if (!sc || !sc.animate || sc.dataset.lancee) return;
+        sc.dataset.lancee = '1';
+        var robot = sc.querySelector('.sc-robot'), img = robot.querySelector('img'), jauge = sc.querySelector('.sc-jauge'), barre = jauge.querySelector('i');
+        var pile = sc.querySelector('.sc-pile'), roi = sc.querySelector('.sc-roi'), eclairs = sc.querySelector('.sc-eclairs');
+        var flash = sc.querySelector('.sc-flash'), titre = sc.querySelector('.sc-titre'), bulle = sc.querySelector('.sc-bulle');
+        var calme = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var pause = function (ms) { return new Promise(function (ok) { setTimeout(ok, ms); }); };
+        var anim = function (el, images, ms, easing) { return el.animate(images, { duration: ms, easing: easing || 'ease-in-out', fill: 'forwards' }).finished; };
+        var page = document.getElementById('page-ai');
+        var visible = function () { return !document.hidden && page && getComputedStyle(page).visibility !== 'hidden' && sc.offsetParent !== null; };
+        var W = function () { return sc.clientWidth || 300; };
+
+        if (calme) { // pas d'animation : on montre directement le roi des méchas
+            pile.style.display = 'none'; robot.style.display = 'none';
+            roi.style.opacity = '1'; roi.style.left = (W() / 2 - 62) + 'px'; titre.style.opacity = '1';
+            return;
+        }
+
+        function marche(de, a, ms) {
+            var pas = Math.max(2, Math.round(ms / 260)), images = [];
+            for (var i = 0; i <= pas; i++) images.push({ transform: 'rotate(' + (i % 2 ? 4 : -4) + 'deg) translateY(' + (i % 2 ? -2 : 0) + 'px)' });
+            images[pas] = { transform: 'rotate(0deg) translateY(0)' };
+            return Promise.all([
+                anim(robot, [{ transform: 'translateX(' + de + 'px)' }, { transform: 'translateX(' + a + 'px)' }], ms, 'linear'),
+                anim(img, images, ms, 'linear')
+            ]);
+        }
+
+        async function scene() {
+            var w = W(), xPile = Math.round(w * 0.66), xArret = xPile - 60, xDebut = Math.round(w * 0.16);
+            // État de départ
+            [robot, img, pile, roi, eclairs, flash, titre, bulle, barre, jauge].forEach(function (el) { el.getAnimations().forEach(function (a) { a.cancel(); }); });
+            pile.style.left = xPile + 'px'; pile.style.opacity = '1';
+            barre.style.cssText = ''; jauge.style.borderColor = ''; img.style.filter = '';
+            roi.style.left = Math.round(xArret + 28 - 62) + 'px';
+            bulle.style.left = (xDebut + 58) + 'px';
+
+            // 1. Arrive déchargée, en traînant les pieds
+            await marche(-80, xDebut, 2000);
+            anim(bulle, [{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'translateY(0)' }], 300);
+            await anim(img, [{ transform: 'rotate(0deg)' }, { transform: 'rotate(-7deg) translateY(2px)' }], 450);
+            await pause(700);
+            await anim(img, [{ transform: 'rotate(-7deg) translateY(2px)' }, { transform: 'rotate(0deg)' }], 250);
+            anim(bulle, [{ opacity: 1 }, { opacity: 0 }], 250);
+            // 2. Repère la pile et y va
+            await marche(xDebut, xArret, 1100);
+            await pause(200);
+            // 3. Avale la pile VIP
+            var cibleX = xArret + 28 - (xPile + 13), cibleY = -46;
+            await anim(pile, [{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: 'translate(' + (cibleX / 2) + 'px,-40px) scale(.8)', opacity: 1, offset: .5 }, { transform: 'translate(' + cibleX + 'px,' + cibleY + 'px) scale(.2)', opacity: 0 }], 600, 'ease-in');
+            // 4. Éclairs, flash, la jauge se remplit
+            barre.style.animation = 'none';
+            anim(barre, [{ width: '18%', background: '#ff5a5a' }, { width: '60%', background: '#22C55E' }, { width: '100%', background: '#FFC107' }], 800, 'ease-out');
+            anim(jauge, [{ borderColor: '#ff5a5a' }, { borderColor: '#FFC107' }], 800);
+            anim(eclairs, [{ opacity: 0 }, { opacity: 1 }, { opacity: 0 }, { opacity: 1 }, { opacity: .2 }, { opacity: 1 }, { opacity: 0 }], 800, 'linear');
+            anim(flash, [{ opacity: 0 }, { opacity: .75 }, { opacity: 0 }, { opacity: .5 }, { opacity: 0 }], 650, 'linear');
+            await anim(img, [{ transform: 'translateX(0)', filter: 'grayscale(.85) brightness(.62)' }, { transform: 'translateX(-3px)' }, { transform: 'translateX(3px)' }, { transform: 'translateX(-3px)' }, { transform: 'translateX(3px)' }, { transform: 'translateX(0)', filter: 'grayscale(0) brightness(1.6) sepia(1) saturate(4)' }], 800, 'linear');
+            // 5. Transformation : le roi des méchas
+            anim(robot, [{ opacity: 1 }, { opacity: 0 }], 160);
+            anim(flash, [{ opacity: .9 }, { opacity: 0 }], 450, 'ease-out');
+            await anim(roi, [{ opacity: 0, transform: 'translateY(14px) scale(.55)' }, { opacity: 1, transform: 'translateY(-4px) scale(1.12)', offset: .65 }, { opacity: 1, transform: 'translateY(0) scale(1)' }], 600, 'ease-out');
+            anim(titre, [{ opacity: 0, transform: 'scale(.6)' }, { opacity: 1, transform: 'scale(1.12)', offset: .7 }, { opacity: 1, transform: 'scale(1)' }], 450, 'ease-out');
+            await anim(roi, [{ transform: 'translateY(0)' }, { transform: 'translateY(-5px)' }, { transform: 'translateY(0)' }, { transform: 'translateY(-5px)' }, { transform: 'translateY(0)' }], 2800);
+            // 6. Fin de boucle
+            anim(titre, [{ opacity: 1 }, { opacity: 0 }], 350);
+            await anim(roi, [{ opacity: 1 }, { opacity: 0 }], 450);
+            anim(robot, [{ opacity: 0 }, { opacity: 1 }], 10);
+            await pause(700);
+        }
+
+        (async function boucle() {
+            while (document.body.contains(sc)) {
+                if (!visible()) { await pause(800); continue; }
+                try { await scene(); } catch (e) { await pause(1500); }
+            }
+        })();
+    }
+    document.addEventListener('DOMContentLoaded', lancerSceneIA);
+    if (document.readyState !== 'loading') lancerSceneIA();
 
     // ============================================================
     // MASCOTTE — cachée derrière « Débloquer » : elle sort la tête d'un air
