@@ -11409,7 +11409,108 @@ async function autoFetchFinalScores(combined) {
         if (window.isAdmin !== true) return;
         window.apercuEnCours = !window.apercuEnCours;
         renderCombined();
-        showToast(window.apercuEnCours ? 'Aperçu admin : combiné affiché « en cours »' : 'Retour à l\'affichage réel');
+        showToast(window.apercuEnCours ? 'Version admin ouverte : combiné affiché « en cours »' : 'Retour sur la version publique');
+    }
+
+    // Scores propres à la version admin : gardés sur cet appareil uniquement,
+    // jamais écrits en base, jamais visibles dans la version publique.
+    function lireScoresAdmin() {
+        try { return JSON.parse(localStorage.getItem('sm_apercu_scores') || '{}') || {}; } catch (e) { return window._scoresAdminMem || {}; }
+    }
+    function ecrireScoresAdmin(tout) {
+        window._scoresAdminMem = tout;
+        try { localStorage.setItem('sm_apercu_scores', JSON.stringify(tout)); } catch (e) { /* mémoire seule */ }
+    }
+    function comboVersionAdmin(c) {
+        var perso = lireScoresAdmin()[c.id];
+        if (!perso) return c;
+        var copie = Object.assign({}, c, { matches: (c.matches || []).map(function (m, i) {
+            var cm = Object.assign({}, m);
+            if (m._selections) Object.defineProperty(cm, '_selections', { value: m._selections, enumerable: false, configurable: true });
+            if (perso[i]) cm.score = perso[i];
+            return cm;
+        }) });
+        return copie;
+    }
+
+    function fermerMenuApercu() {
+        var m = document.getElementById('menu-apercu');
+        if (m) m.remove();
+        document.removeEventListener('click', fermerMenuApercu);
+        window.removeEventListener('scroll', fermerMenuApercu, true);
+    }
+    function ouvrirMenuApercu(e) {
+        e.stopPropagation();
+        if (window.isAdmin !== true) return;
+        var deja = document.getElementById('menu-apercu');
+        fermerMenuApercu();
+        if (deja) return; // second clic sur « ••• » : referme simplement le menu
+        var r = e.currentTarget.getBoundingClientRect();
+        var choix = apercuAdminActif()
+            ? [['fa-globe', 'Retour sur la version publique', 'basculerApercuAdmin()'], ['fa-pen-to-square', 'Modifier les scores de la version admin', 'ouvrirEditeurScoresAdmin()']]
+            : [['fa-user-shield', 'Ouvrir la version admin', 'basculerApercuAdmin()']];
+        var menu = document.createElement('div');
+        menu.id = 'menu-apercu';
+        menu.style.cssText = 'position:fixed;z-index:10060;top:' + (r.bottom + 6) + 'px;right:' + Math.max(8, window.innerWidth - r.right - 4) + 'px;min-width:220px;max-width:calc(100vw - 16px);background:#161c30;border:1px solid rgba(255,255,255,.12);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.55);padding:6px;font-family:\'Montserrat\',sans-serif;';
+        menu.innerHTML = choix.map(function (c) {
+            return '<button onclick="fermerMenuApercu();' + c[2] + '" style="display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;background:none;border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:700;text-align:left;cursor:pointer;font-family:inherit;"><i class="fas ' + c[0] + '" style="width:16px;color:var(--text-gray);"></i>' + c[1] + '</button>';
+        }).join('');
+        menu.addEventListener('click', function (ev) { ev.stopPropagation(); });
+        document.body.appendChild(menu);
+        setTimeout(function () {
+            document.addEventListener('click', fermerMenuApercu);
+            window.addEventListener('scroll', fermerMenuApercu, true);
+        }, 0);
+    }
+
+    function ouvrirEditeurScoresAdmin() {
+        if (window.isAdmin !== true || !currentCombined) return;
+        var c = comboVersionAdmin(currentCombined);
+        var ov = document.createElement('div');
+        ov.id = 'editeur-scores-admin';
+        ov.style.cssText = 'position:fixed;inset:0;z-index:10070;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);';
+        var lignes = (c.matches || []).map(function (m, i) {
+            return '<div style="margin-bottom:12px;"><div style="font-size:12px;color:var(--text-gray);margin-bottom:6px;">' + (m.teams || ('Match ' + (i + 1))) + '</div>'
+                + '<input type="text" class="admin-input editeur-score-admin" data-index="' + i + '" value="' + String(m.score || '').replace(/"/g, '&quot;') + '" style="width:100%;box-sizing:border-box;font-size:16px;font-weight:800;text-align:center;letter-spacing:2px;background:var(--bg-input);border:1px solid var(--border-color);color:#fff;padding:12px;border-radius:10px;"></div>';
+        }).join('');
+        ov.innerHTML = '<div style="background:var(--bg-card);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:20px;width:100%;max-width:380px;max-height:90vh;overflow-y:auto;font-family:\'Montserrat\',sans-serif;">'
+            + '<div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:4px;">Scores de la version admin</div>'
+            + '<div style="font-size:11.5px;color:var(--text-gray);line-height:1.45;margin-bottom:16px;">Visibles uniquement dans la version admin, sur cet appareil. La version publique et les données enregistrées ne changent pas.</div>'
+            + lignes
+            + '<button onclick="enregistrerScoresAdmin()" style="width:100%;padding:13px;margin-top:4px;background:var(--primary-yellow);color:#000;border:none;border-radius:10px;font-size:14px;font-weight:900;font-family:inherit;cursor:pointer;">Enregistrer</button>'
+            + '<div style="display:flex;gap:8px;margin-top:8px;"><button onclick="reinitialiserScoresAdmin()" style="flex:1;padding:11px;background:none;color:var(--text-gray);border:1px solid var(--border-color);border-radius:10px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;">Revenir aux vrais scores</button>'
+            + '<button onclick="fermerEditeurScoresAdmin()" style="flex:1;padding:11px;background:none;color:var(--text-gray);border:1px solid var(--border-color);border-radius:10px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;">Annuler</button></div></div>';
+        ov.addEventListener('click', function (ev) { if (ev.target === ov) fermerEditeurScoresAdmin(); });
+        document.body.appendChild(ov);
+    }
+    function fermerEditeurScoresAdmin() {
+        var ov = document.getElementById('editeur-scores-admin');
+        if (ov) ov.remove();
+    }
+    function enregistrerScoresAdmin() {
+        if (!currentCombined) return;
+        var tout = lireScoresAdmin();
+        var perso = {};
+        document.querySelectorAll('.editeur-score-admin').forEach(function (inp) {
+            var v = inp.value.trim();
+            var i = inp.getAttribute('data-index');
+            var reel = currentCombined.matches && currentCombined.matches[i] ? String(currentCombined.matches[i].score || '') : '';
+            if (v && v !== reel) perso[i] = v;
+        });
+        if (Object.keys(perso).length) tout[currentCombined.id] = perso; else delete tout[currentCombined.id];
+        ecrireScoresAdmin(tout);
+        fermerEditeurScoresAdmin();
+        renderCombined();
+        showToast('Scores de la version admin enregistrés');
+    }
+    function reinitialiserScoresAdmin() {
+        if (!currentCombined) return;
+        var tout = lireScoresAdmin();
+        delete tout[currentCombined.id];
+        ecrireScoresAdmin(tout);
+        fermerEditeurScoresAdmin();
+        renderCombined();
+        showToast('Version admin : vrais scores rétablis');
     }
 
     function renderCombined() {
@@ -11423,8 +11524,9 @@ async function autoFetchFinalScores(combined) {
         var sc = apercuAdminActif() ? 'en-cours' : currentCombined.status;
         var sl = { 'en-cours': 'En cours', 'termine': 'Gagné ✅', 'perdu': 'Perdu ❌' };
         var pw = '50%'; if (sc === 'termine' || sc === 'perdu') pw = '100%';
-        if (vc) vc.innerHTML = buildCC(currentCombined, sc, sl, pw, false);
-        if (hc) hc.innerHTML = buildCC(currentCombined, sc, sl, pw, true);
+        var combo = apercuAdminActif() ? comboVersionAdmin(currentCombined) : currentCombined;
+        if (vc) vc.innerHTML = buildCC(combo, sc, sl, pw, false);
+        if (hc) hc.innerHTML = buildCC(combo, sc, sl, pw, true);
         if (sc === 'en-cours' && sb) sb.innerHTML = '<div class="platform-bg-display hist-banner" onclick="openTicketHistoryWithLoader()" style="background:' + platformColors().background + '; color:' + platformColors().color + ';">'
             + '<span class="vipx-badge"><img src="logo-dark.png" alt=""><em>VIP+</em></span>'
             + '<span class="hist-banner-txt"><b>Aperçu historique bookmaker favori</b><small>👑 Exclusivité SM VIP+ !</small></span>'
@@ -12899,7 +13001,7 @@ ${aiPrompt}
         <div class="combined-card" id="combined-card-${isHome ? 'home' : 'vip'}-${c.id}" style="width:100%;">
             <div class="combined-header">
                 <div class="combined-status"><span class="status-badge ${badgeClass}"${statusBadgeClick}>${statusBadgeLabel}</span><span class="combined-label">Combiné</span>${aiTag}</div>
-                <i class="fas fa-ellipsis-h combined-more"${window.isAdmin === true ? ` onclick="basculerApercuAdmin(event)" style="cursor:pointer;padding:6px;margin:-6px;${apercu ? 'color:var(--primary-yellow);' : ''}"` : ''}></i>
+                <i class="fas fa-ellipsis-h combined-more"${window.isAdmin === true ? ' onclick="ouvrirMenuApercu(event)" style="cursor:pointer;padding:6px;margin:-6px;"' : ''}></i>
             </div>
             <div class="combined-progress"><div class="combined-progress-fill" style="width:${pw};${pc}"></div></div>
             <div class="combined-body" style="padding-top: 10px;">${mH}</div>
