@@ -18,7 +18,7 @@
     
     <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiU2NvcmUgTWVyaWRpYW4iLCJzaG9ydF9uYW1lIjoiU2NvcmUgTWVyaWRpYW4iLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBBMEUxRiIsInRoZW1lX2NvbG9yIjoiIzBBMEUxRiIsIm9yaWVudGF0aW9uIjoicG9ydHJhaXQiLCJpY29ucyI6W3sic3JjIjoibG9nby1kYXJrLnBuZyIsInNpemVzIjoiMTkyeDE5MiA1MTJ4NTEyIiwidHlwZSI6ImltYWdlL3BuZyIsInB1cnBvc2UiOiJhbnkgbWFza2FibGUifV19">
     
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Anton&family=Manrope:wght@400;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Anton&family=Manrope:wght@400;700;800&family=Bangers&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <!-- Supreme (Fontshare) : police de la page « Mes tickets », reprise de la maquette Figma -->
     <link href="https://api.fontshare.com/v2/css?f[]=supreme@400,700&display=swap" rel="stylesheet">
@@ -533,6 +533,12 @@
             font:900 10px 'Montserrat',sans-serif;letter-spacing:1.2px;color:#2a1c00;padding:4px 10px;border-radius:20px;
             background:linear-gradient(135deg,#FFE082,#FFC107 50%,#B8860B);box-shadow:0 0 14px rgba(255,193,7,.7)}
         .ai-scene .sc-bulle{position:absolute;top:34px;z-index:5;font:700 10px 'Montserrat',sans-serif;color:#aab2c5;opacity:0;white-space:nowrap}
+        /* Onomatopées façon BD */
+        .ai-scene .sc-ono{position:absolute;z-index:6;pointer-events:none;font-family:'Bangers','Impact',sans-serif;letter-spacing:1px;line-height:1;white-space:nowrap;
+            color:#FFE14D;-webkit-text-stroke:1.5px #1a1200;paint-order:stroke fill;text-shadow:2px 2px 0 #1a1200;padding:8px 12px}
+        .ai-scene .sc-ono.etoile{background:#E8352B;clip-path:polygon(50% 0%,61% 20%,82% 8%,77% 31%,100% 35%,82% 52%,98% 72%,74% 71%,72% 96%,54% 80%,38% 100%,33% 76%,8% 84%,18% 60%,0% 44%,21% 34%,12% 11%,36% 20%);padding:16px 20px}
+        .ai-scene .sc-ono.etoile-or{background:#FFC107;color:#fff;clip-path:polygon(50% 0%,61% 20%,82% 8%,77% 31%,100% 35%,82% 52%,98% 72%,74% 71%,72% 96%,54% 80%,38% 100%,33% 76%,8% 84%,18% 60%,0% 44%,21% 34%,12% 11%,36% 20%);padding:16px 20px}
+        .ai-scene .sc-ono.soupir{color:#aab2c5;-webkit-text-stroke:1px #0b0f1a;text-shadow:1px 1px 0 #0b0f1a;font-size:15px}
         @keyframes scClignote{0%{opacity:1}100%{opacity:.15}}
         @keyframes scPileFlotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
         @keyframes scAura{0%,100%{transform:scale(.92);opacity:.85}50%{transform:scale(1.08);opacity:1}}
@@ -2013,7 +2019,7 @@ async function fetchApiScore(id, dateRaw) {
                         <polyline points="215,6 198,50 214,56 190,112" fill="none" stroke="#FFF3B0" stroke-width="2.2" stroke-linejoin="round"/>
                     </svg>
                     <div class="sc-flash"></div>
-                    <div class="sc-titre">⚡ ROI DES MÉCHAS ⚡</div>
+                    <div class="sc-titre">⚡ SUPER SM ⚡</div>
                 </div>
             </div>
             <div class="ai-duel">
@@ -10307,6 +10313,23 @@ async function fetchMatchesFromAPI() {
         var page = document.getElementById('page-ai');
         var visible = function () { return !document.hidden && page && getComputedStyle(page).visibility !== 'hidden' && sc.offsetParent !== null; };
         var W = function () { return sc.clientWidth || 300; };
+        // Bulle d'onomatopée : surgit, tient un instant, puis disparaît
+        function ono(texte, x, y, style, taille, angle, tenue) {
+            var el = document.createElement('div');
+            el.className = 'sc-ono ' + (style || '');
+            el.textContent = texte;
+            el.style.left = x + 'px'; el.style.top = y + 'px';
+            if (taille) el.style.fontSize = taille + 'px';
+            sc.appendChild(el);
+            var a = angle || 0;
+            el.animate([
+                { transform: 'translate(-50%,-50%) rotate(' + (a - 12) + 'deg) scale(0)', opacity: 0 },
+                { transform: 'translate(-50%,-50%) rotate(' + (a + 4) + 'deg) scale(1.25)', opacity: 1, offset: .18 },
+                { transform: 'translate(-50%,-50%) rotate(' + a + 'deg) scale(1)', opacity: 1, offset: .3 },
+                { transform: 'translate(-50%,-50%) rotate(' + a + 'deg) scale(1.04)', opacity: 1, offset: .85 },
+                { transform: 'translate(-50%,-50%) rotate(' + a + 'deg) scale(.7)', opacity: 0 }
+            ], { duration: tenue || 900, easing: 'ease-out', fill: 'forwards' }).finished.then(function () { el.remove(); });
+        }
 
         if (calme) { // pas d'animation : on montre directement le roi des méchas
             pile.style.display = 'none'; robot.style.display = 'none';
@@ -10328,6 +10351,7 @@ async function fetchMatchesFromAPI() {
             var w = W(), xPile = Math.round(w * 0.66), xArret = xPile - 60, xDebut = Math.round(w * 0.16);
             // État de départ
             [robot, img, pile, roi, eclairs, flash, titre, bulle, barre, jauge].forEach(function (el) { el.getAnimations().forEach(function (a) { a.cancel(); }); });
+            sc.querySelectorAll('.sc-ono').forEach(function (el) { el.remove(); });
             pile.style.left = xPile + 'px'; pile.style.opacity = '1';
             barre.style.cssText = ''; jauge.style.borderColor = ''; img.style.filter = '';
             roi.style.left = Math.round(xArret + 28 - 62) + 'px';
@@ -10336,6 +10360,7 @@ async function fetchMatchesFromAPI() {
             // 1. Arrive déchargée, en traînant les pieds
             await marche(-80, xDebut, 2000);
             anim(bulle, [{ opacity: 0, transform: 'translateY(4px)' }, { opacity: 1, transform: 'translateY(0)' }], 300);
+            ono('PFFF…', xDebut + 95, 18, 'soupir', 17, -6, 1300);
             await anim(img, [{ transform: 'rotate(0deg)' }, { transform: 'rotate(-7deg) translateY(2px)' }], 450);
             await pause(700);
             await anim(img, [{ transform: 'rotate(-7deg) translateY(2px)' }, { transform: 'rotate(0deg)' }], 250);
@@ -10345,9 +10370,12 @@ async function fetchMatchesFromAPI() {
             await pause(200);
             // 3. Avale la pile VIP
             var cibleX = xArret + 28 - (xPile + 13), cibleY = -46;
+            ono('GLOUPS !', xArret + 28, 30, 'etoile', 17, -8, 900);
             await anim(pile, [{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: 'translate(' + (cibleX / 2) + 'px,-40px) scale(.8)', opacity: 1, offset: .5 }, { transform: 'translate(' + cibleX + 'px,' + cibleY + 'px) scale(.2)', opacity: 0 }], 600, 'ease-in');
             // 4. Éclairs, flash, la jauge se remplit
             barre.style.animation = 'none';
+            ono('BZZZT !', Math.max(40, xArret - 30), 40, '', 22, -12, 800);
+            setTimeout(function () { ono('KRAKOOM !', Math.min(w - 50, xArret + 90), 58, 'etoile', 18, 9, 850); }, 330);
             anim(barre, [{ width: '18%', background: '#ff5a5a' }, { width: '60%', background: '#22C55E' }, { width: '100%', background: '#FFC107' }], 800, 'ease-out');
             anim(jauge, [{ borderColor: '#ff5a5a' }, { borderColor: '#FFC107' }], 800);
             anim(eclairs, [{ opacity: 0 }, { opacity: 1 }, { opacity: 0 }, { opacity: 1 }, { opacity: .2 }, { opacity: 1 }, { opacity: 0 }], 800, 'linear');
@@ -10355,6 +10383,8 @@ async function fetchMatchesFromAPI() {
             await anim(img, [{ transform: 'translateX(0)', filter: 'grayscale(.85) brightness(.62)' }, { transform: 'translateX(-3px)' }, { transform: 'translateX(3px)' }, { transform: 'translateX(-3px)' }, { transform: 'translateX(3px)' }, { transform: 'translateX(0)', filter: 'grayscale(0) brightness(1.6) sepia(1) saturate(4)' }], 800, 'linear');
             // 5. Transformation : le roi des méchas
             anim(robot, [{ opacity: 1 }, { opacity: 0 }], 160);
+            ono('BOUM !', Math.max(46, xArret - 20), 92, 'etoile-or', 22, -10, 1100);
+            setTimeout(function () { ono('ZAP !', Math.min(w - 36, xArret + 100), 104, '', 20, 12, 900); }, 250);
             anim(flash, [{ opacity: .9 }, { opacity: 0 }], 450, 'ease-out');
             await anim(roi, [{ opacity: 0, transform: 'translateY(14px) scale(.55)' }, { opacity: 1, transform: 'translateY(-4px) scale(1.12)', offset: .65 }, { opacity: 1, transform: 'translateY(0) scale(1)' }], 600, 'ease-out');
             anim(titre, [{ opacity: 0, transform: 'scale(.6)' }, { opacity: 1, transform: 'scale(1.12)', offset: .7 }, { opacity: 1, transform: 'scale(1)' }], 450, 'ease-out');
@@ -10362,7 +10392,6 @@ async function fetchMatchesFromAPI() {
             // 6. Fin de boucle
             anim(titre, [{ opacity: 1 }, { opacity: 0 }], 350);
             await anim(roi, [{ opacity: 1 }, { opacity: 0 }], 450);
-            anim(robot, [{ opacity: 0 }, { opacity: 1 }], 10);
             await pause(700);
         }
 
