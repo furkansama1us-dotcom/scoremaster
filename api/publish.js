@@ -263,7 +263,7 @@ async function approuverContenusVps(reglages, now) {
 // le balayage la publie dans la foulée. L'agent ne valide jamais un résultat.
 // ------------------------------------------------------------
 // Bloc de contact repris au bas de chaque publication Telegram.
-const CONTACT = '🌐 Site : https://scoremaster.fr/\n📸 Instagram : @scoremaster.fr\n➡️ Telegram : @ScoreMasterOfficiel';
+const CONTACT = '🌐 Site : https://scoremaster.fr/\n📸 Instagram : @scoresmasters.fr\n➡️ Telegram : @ScoreMasterOfficiel';
 
 const SEQ_TELEGRAM = {
     promo: [
