@@ -113,7 +113,31 @@
         .lab-frais i{width:6px;height:6px;border-radius:50%;background:#22C55E;box-shadow:0 0 6px #22C55E}
         .lab-frais.hors i{background:#8b93a7;box-shadow:none}
         .lab-prof{display:flex;align-items:center;gap:12px;margin:18px 0 6px}
-        .lab-robot{position:relative;flex:0 0 104px;height:111px;animation:labFlotte 6s ease-in-out infinite}
+        .lab-poste{flex:0 0 116px;display:flex;flex-direction:column;align-items:center}
+        .lab-ecran{position:relative;width:116px;height:134px;border-radius:14px;overflow:hidden;
+            background:radial-gradient(ellipse 80% 60% at 50% 85%,rgba(143,179,234,.2),transparent 70%),linear-gradient(180deg,#0f1f3a,#081120);
+            border:1px solid rgba(143,179,234,.38);box-shadow:0 0 0 3px rgba(143,179,234,.06),0 12px 26px rgba(0,0,0,.45),inset 0 0 20px rgba(143,179,234,.14)}
+        .lab-ecran::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:3;
+            background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 3px),linear-gradient(125deg,rgba(255,255,255,.1) 0%,transparent 35%)}
+        .lab-ecran::before{content:'';position:absolute;left:0;right:0;height:26px;top:-30px;z-index:3;pointer-events:none;
+            background:linear-gradient(180deg,transparent,rgba(143,179,234,.16),transparent);animation:labBalaye 5.5s linear infinite}
+        .lab-ecran .coin{position:absolute;width:10px;height:10px;z-index:4;border-color:#FFC107;border-style:solid;border-width:0;opacity:.85}
+        .lab-ecran .coin.hg{left:5px;top:5px;border-top-width:1.5px;border-left-width:1.5px;border-top-left-radius:4px}
+        .lab-ecran .coin.hd{right:5px;top:5px;border-top-width:1.5px;border-right-width:1.5px;border-top-right-radius:4px}
+        .lab-ecran .coin.bg{left:5px;bottom:5px;border-bottom-width:1.5px;border-left-width:1.5px;border-bottom-left-radius:4px}
+        .lab-ecran .coin.bd{right:5px;bottom:5px;border-bottom-width:1.5px;border-right-width:1.5px;border-bottom-right-radius:4px}
+        .lab-ecran .bandeau{position:absolute;left:18px;right:18px;top:7px;z-index:4;display:flex;align-items:center;justify-content:space-between;font:800 8px 'Montserrat',sans-serif;letter-spacing:1px;color:#8fb3ea}
+        .lab-ecran .bandeau b{display:inline-flex;align-items:center;gap:4px;font-weight:800}
+        .lab-ecran .bandeau b::before{content:'';width:5px;height:5px;border-radius:50%;background:#22C55E;box-shadow:0 0 5px #22C55E;animation:labPoint 1.6s ease-in-out infinite}
+        .lab-ecran .onde{display:inline-flex;align-items:center;gap:1.5px;height:10px}
+        .lab-ecran .onde i{width:2px;height:10px;border-radius:2px;background:#FFC107;transform-origin:50% 50%;animation:labOnde .9s ease-in-out infinite}
+        .lab-ecran .onde i:nth-child(2){animation-delay:.15s}.lab-ecran .onde i:nth-child(3){animation-delay:.3s}.lab-ecran .onde i:nth-child(4){animation-delay:.45s}.lab-ecran .onde i:nth-child(5){animation-delay:.6s}
+        .lab-pied{width:10px;height:9px;background:linear-gradient(180deg,#26406b,#162845)}
+        .lab-socle{width:58px;height:5px;border-radius:5px;background:linear-gradient(90deg,#1a2d4d,#3b5c8f,#1a2d4d);box-shadow:0 3px 12px rgba(143,179,234,.35)}
+        @keyframes labBalaye{0%{top:-30px}100%{top:140px}}
+        @keyframes labOnde{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+        @keyframes labPoint{0%,100%{opacity:1}50%{opacity:.35}}
+        .lab-robot{position:absolute;left:6px;bottom:-12px;z-index:2;width:104px;height:111px;animation:labFlotte 6s ease-in-out infinite}
         .lab-robot img{width:104px;height:111px;display:block;filter:drop-shadow(0 8px 16px rgba(0,0,0,.45))}
         .lab-robot i{position:absolute;top:33.2px;width:4.4px;height:6px;border-radius:50%;background:#FFE36B;box-shadow:0 0 5px 2px rgba(255,200,40,.85),0 0 10px 4px rgba(255,170,0,.35);animation:labRegard 7s ease-in-out infinite,labCligne 5s infinite}
         .lab-robot i.g{left:39.6px}.lab-robot i.d{left:58.8px}
@@ -145,7 +169,7 @@
         @keyframes labRegard{0%,20%{transform:translate(0,0)}30%,55%{transform:translate(3px,1.5px)}65%,85%{transform:translate(1px,2px)}100%{transform:translate(0,0)}}
         @keyframes labCligne{0%,94%,100%{height:6px;margin-top:0}97%{height:1px;margin-top:2.5px}}
         @keyframes labScan{0%{transform:translateY(0);opacity:0}8%{opacity:.55}55%{transform:translateY(168px);opacity:.55}62%,100%{transform:translateY(168px);opacity:0}}
-        @media (prefers-reduced-motion:reduce){.lab-robot,.lab-robot i,.lab-lien i{animation:none}.lab-iceberg .ib-noeud,.lab-iceberg .ib-texte{opacity:1;transition:none}.lab-iceberg .ib-lien{stroke-dashoffset:0;transition:none}.lab-iceberg .ib-scan,.lab-iceberg .ib-flux{display:none}}
+        @media (prefers-reduced-motion:reduce){.lab-robot,.lab-robot i,.lab-lien i,.lab-ecran::before,.lab-ecran .onde i,.lab-ecran .bandeau b::before{animation:none}.lab-iceberg .ib-noeud,.lab-iceberg .ib-texte{opacity:1;transition:none}.lab-iceberg .ib-lien{stroke-dashoffset:0;transition:none}.lab-iceberg .ib-scan,.lab-iceberg .ib-flux{display:none}}
         /* Haut de la page vitrine : logo vivant */
         @property --orAng{syntax:'<angle>';inherits:false;initial-value:0deg}
         .hex-grid-login svg{animation:hexDerive 40s linear infinite alternate}
@@ -1861,7 +1885,15 @@ async function fetchApiScore(id, dateRaw) {
         </div>
 
         <div class="lab-prof">
-            <div class="lab-robot" aria-hidden="true"><img src="mascotte-login.webp" alt=""><i class="g"></i><i class="d"></i></div>
+            <div class="lab-poste" aria-hidden="true">
+                <div class="lab-ecran">
+                    <div class="bandeau"><b>SM·IA</b><span class="onde"><i></i><i></i><i></i><i></i><i></i></span></div>
+                    <div class="lab-robot"><img src="mascotte-login.webp" alt=""><i class="g"></i><i class="d"></i></div>
+                    <span class="coin hg"></span><span class="coin hd"></span><span class="coin bg"></span><span class="coin bd"></span>
+                </div>
+                <div class="lab-pied"></div>
+                <div class="lab-socle"></div>
+            </div>
             <div class="lab-parole">
                 <b>Tu vois le résultat. J'analyse ce qui l'explique.</b>
                 <span>Sous la surface, plusieurs signaux changent la lecture du match.</span>
