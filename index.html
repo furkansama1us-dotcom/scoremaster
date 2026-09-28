@@ -92,6 +92,10 @@
         /* Page de connexion : la mascotte réagit à la saisie */
         .login-mascotte{position:absolute;left:50%;bottom:0;width:120px;height:128px;margin-left:-60px;z-index:0;pointer-events:none}
         .login-mascotte.cachee{display:none}
+        .login-mascotte.a-gauche{left:6px;margin-left:0}
+        .login-mascotte.a-gauche .lm-bulle{left:2px;--bx:0;transform-origin:25% 100%}
+        .login-mascotte.a-gauche .lm-bulle::after{left:52px}
+        .login-mascotte.a-gauche .lm-ono{left:88px}
         .login-mascotte .lm-corps{position:absolute;left:0;bottom:-20px;width:120px;height:128px;transform:translateY(150px);transform-origin:50% 100%;will-change:transform}
         .login-mascotte .lm-img{position:absolute;inset:0;width:120px;height:128px;filter:drop-shadow(0 -2px 10px rgba(255,193,7,.12))}
         .login-mascotte .lm-bras{position:absolute;left:89.1px;top:85.7px;width:28.6px;height:82.3px;transform-origin:50% 4%}
@@ -102,9 +106,34 @@
         .login-mascotte.pudique .lm-oeil{opacity:.08;transform:scaleY(.2);animation:none}
         .login-mascotte.ebahi .lm-oeil{transform:scale(1.35)}
         .login-mascotte .lm-bulle{position:absolute;bottom:116px;left:50%;white-space:nowrap;background:#fff;color:#111;font:800 11px 'Montserrat',sans-serif;
-            padding:6px 10px;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transform:translateX(-50%) scale(.6);transform-origin:50% 100%;transition:opacity .2s,transform .25s cubic-bezier(.3,1.6,.5,1)}
+            padding:6px 10px;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transform:translateX(var(--bx,-50%)) scale(.6);transform-origin:50% 100%;transition:opacity .2s,transform .25s cubic-bezier(.3,1.6,.5,1)}
         .login-mascotte .lm-bulle::after{content:'';position:absolute;left:50%;margin-left:-5px;bottom:-5px;width:10px;height:10px;background:#fff;transform:rotate(45deg);border-radius:2px}
-        .login-mascotte .lm-bulle.visible{opacity:1;transform:translateX(-50%) scale(1)}
+        .login-mascotte .lm-bulle.visible{opacity:1;transform:translateX(var(--bx,-50%)) scale(1)}
+        /* Gags de la mascotte */
+        .login-mascotte .lm-ballon{position:absolute;left:51px;top:0;font-size:18px;color:#fff;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5));z-index:3}
+        .login-mascotte .lm-z{position:absolute;left:78px;top:18px;font:900 13px 'Montserrat',sans-serif;color:#8fb8ff;opacity:0;z-index:3}
+        .login-mascotte.dodo .lm-oeil{transform:scaleY(.15);opacity:.55;animation:none}
+        .login-mascotte .lm-ono{position:absolute;left:50%;top:-6px;z-index:4;font-family:'Bangers','Impact',sans-serif;font-size:22px;letter-spacing:1px;white-space:nowrap;color:#FFE14D;
+            -webkit-text-stroke:1.5px #1a1200;paint-order:stroke fill;text-shadow:2px 2px 0 #1a1200;background:#E8352B;padding:12px 16px;
+            clip-path:polygon(50% 0%,61% 20%,82% 8%,77% 31%,100% 35%,82% 52%,98% 72%,74% 71%,72% 96%,54% 80%,38% 100%,33% 76%,8% 84%,18% 60%,0% 44%,21% 34%,12% 11%,36% 20%)}
+        /* L'iceberg de l'IA : l'humain voit la pointe, l'IA voit tout */
+        .login-ia{position:absolute;right:4px;bottom:6px;width:min(222px,calc(100% - 138px));height:170px;z-index:0;pointer-events:none}
+        .login-ia.cachee{display:none}
+        .login-ia .li-legende{position:absolute;top:0;left:0;right:0;text-align:center;font:600 10.5px 'Inter',sans-serif;color:#7d869b;line-height:1.35}
+        .login-ia .li-legende b{color:var(--primary-yellow);font-weight:800}
+        .login-ia svg{position:absolute;left:50%;top:32px;width:200px;height:130px;margin-left:-100px;overflow:visible}
+        .login-ia .li-revele{clip-path:inset(100% 0 0 0);animation:liRevele 7s ease-in-out infinite}
+        .login-ia .li-scanligne{animation:liScan 7s ease-in-out infinite}
+        .login-ia .li-donnee{position:absolute;font:700 9px 'Inter',sans-serif;color:#FFE082;white-space:nowrap;letter-spacing:.2px;opacity:0;
+            text-shadow:0 0 6px rgba(255,193,7,.6);animation:liDonnee 7s ease-in-out infinite;animation-delay:var(--d)}
+        .login-ia .li-rayon{position:absolute;top:62px;height:92px;
+            background:linear-gradient(to right,rgba(255,214,64,.6),rgba(255,193,7,.14) 75%,transparent);clip-path:polygon(0 60%,0 66%,100% 100%,100% 0);
+            opacity:0;animation:liRayon 7s ease-in-out infinite;filter:blur(1px)}
+        @keyframes liRevele{0%,8%{clip-path:inset(100% 0 0 0);opacity:1}55%{clip-path:inset(0 0 0 0);opacity:1}86%{clip-path:inset(0 0 0 0);opacity:1}100%{clip-path:inset(0 0 0 0);opacity:0}}
+        @keyframes liScan{0%,8%{transform:translateY(0);opacity:0}12%{opacity:1}55%{transform:translateY(-118px);opacity:1}62%,100%{transform:translateY(-118px);opacity:0}}
+        @keyframes liDonnee{0%,14%{opacity:0;transform:translateY(4px) scale(.9)}20%{opacity:1;transform:translateY(0) scale(1)}24%{opacity:.35}27%{opacity:1}68%{opacity:1}76%,100%{opacity:0}}
+        @keyframes liRayon{0%,6%{opacity:0}12%,58%{opacity:1}66%,100%{opacity:0}}
+        @media (prefers-reduced-motion:reduce){.login-ia .li-revele{animation:none;clip-path:none}.login-ia .li-scanligne,.login-ia .li-rayon{display:none}.login-ia .li-donnee{animation:none;opacity:1}}
         @keyframes lmCligne{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
         @media (prefers-reduced-motion:reduce){.splash-robot .sr-couleur{animation:none;clip-path:none}.splash-robot .sr-scan,.splash-robot .sr-onde{display:none}.splash-robot .sr-oeil{animation:none;opacity:1}.splash-robot .sr-corps{animation:none}.login-mascotte .lm-oeil{animation:none}}
         @keyframes splashFadeIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
@@ -1665,6 +1694,40 @@ async function fetchApiScore(id, dateRaw) {
         </div>
         <div style="margin-top:10px; position:relative; z-index:1;">
             <a href="#" onclick="window.open(TELEGRAM_LINK, '_blank'); return false;" style="display:flex; align-items:center; justify-content:center; gap:7px; padding:10px; background:rgba(38,165,228,0.1); border:1px solid rgba(38,165,228,0.3); border-radius:12px; color:#26A5E4; font-size:12.5px; font-weight:700; text-decoration:none;"><i class="fab fa-telegram-plane"></i> Telegram</a>
+        </div>
+        <div class="login-ia cachee" id="login-ia" aria-hidden="true">
+            <div class="li-legende">L'humain voit la pointe.<br><b>Notre IA voit tout l'iceberg.</b></div>
+            <svg viewBox="0 0 230 150">
+                <defs>
+                    <linearGradient id="li-eau" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c4b7a" stop-opacity=".45"/><stop offset="1" stop-color="#0F1424" stop-opacity="0"/></linearGradient>
+                    <linearGradient id="li-glace" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4fbff"/><stop offset="1" stop-color="#9cc7ea"/></linearGradient>
+                </defs>
+                <rect x="-20" y="34" width="270" height="116" fill="url(#li-eau)"/>
+                <!-- partie immergée : devinée seulement -->
+                <polygon points="78,34 152,34 186,62 204,98 178,132 122,146 66,136 34,100 50,62" fill="#0d2138" fill-opacity=".55" stroke="#2c5d8a" stroke-opacity=".35" stroke-dasharray="3 4"/>
+                <!-- partie immergée révélée par le scan de l'IA -->
+                <g class="li-revele">
+                    <polygon points="78,34 152,34 186,62 204,98 178,132 122,146 66,136 34,100 50,62" fill="rgba(255,193,7,.08)" stroke="#FFC107" stroke-width="1.4"/>
+                    <polyline points="78,34 96,70 50,62 96,70 122,146 96,70 150,86 152,34 150,86 186,62 150,86 204,98 150,86 178,132 150,86 122,146" fill="none" stroke="#FFC107" stroke-opacity=".45" stroke-width=".8"/>
+                    <polyline points="96,70 34,100 66,136 96,70" fill="none" stroke="#FFC107" stroke-opacity=".35" stroke-width=".8"/>
+                </g>
+                <!-- pointe visible -->
+                <polygon points="84,34 100,16 110,22 122,4 136,20 146,34" fill="url(#li-glace)"/>
+                <text x="115" y="28" text-anchor="middle" font-family="Inter,sans-serif" font-size="7.5" font-weight="800" fill="#1b3350">SCORE</text>
+                <!-- ligne d'eau -->
+                <path d="M-20,34 Q-5,31 10,34 T40,34 T70,34 T100,34 T130,34 T160,34 T190,34 T220,34 T250,34" fill="none" stroke="#6fb1ea" stroke-opacity=".6" stroke-width="1.2"/>
+                <line class="li-scanligne" x1="20" y1="150" x2="210" y2="150" stroke="#FFE082" stroke-width="1.6" style="filter:drop-shadow(0 0 3px #FFC107)"/>
+            </svg>
+            <div class="li-donnee" style="left:calc(50% - 50px);top:133px;--d:.5s">xG 1.84</div>
+            <div class="li-donnee" style="left:calc(50% + 10px);top:131px;--d:.6s">Pressing 67 %</div>
+            <div class="li-donnee" style="left:calc(50% - 66px);top:112px;--d:1s">Forme 5 matchs</div>
+            <div class="li-donnee" style="left:calc(50% + 18px);top:110px;--d:1.1s">Blessures</div>
+            <div class="li-donnee" style="left:calc(50% - 56px);top:91px;--d:1.5s">Arbitre</div>
+            <div class="li-donnee" style="left:calc(50% - 9px);top:98px;--d:1.55s">Météo</div>
+            <div class="li-donnee" style="left:calc(50% + 28px);top:87px;--d:1.7s">Fatigue</div>
+            <div class="li-donnee" style="left:calc(50% - 38px);top:72px;--d:2.1s">Cotes en direct</div>
+            <div class="li-donnee" style="left:calc(50% + 32px);top:68px;--d:2.2s">H2H</div>
+            <div class="li-rayon"></div>
         </div>
         <div class="login-mascotte cachee" id="login-mascotte" aria-hidden="true">
             <div class="lm-bulle" id="lm-bulle"></div>
@@ -10440,8 +10503,24 @@ async function fetchMatchesFromAPI() {
             if (!zone) return;
             var conteneur = zone.parentElement, dernier = zone.previousElementSibling;
             if (!conteneur || !dernier) return;
+            var ia = document.getElementById('login-ia');
+            if (ia && dernier === ia) dernier = ia.previousElementSibling;
             var libre = conteneur.getBoundingClientRect().bottom - dernier.getBoundingClientRect().bottom;
             zone.classList.toggle('cachee', libre < 118);
+            var avecIa = !!ia && libre >= 175 && conteneur.clientWidth >= 330;
+            if (ia) ia.classList.toggle('cachee', !avecIa);
+            zone.classList.toggle('a-gauche', avecIa);
+            if (avecIa) {
+                // Le faisceau part des yeux de la mascotte et s'ouvre vers la partie immergée
+                var rayon = ia.querySelector('.li-rayon');
+                var zr = ia.getBoundingClientRect(), mr = zone.getBoundingClientRect();
+                var oeilX = mr.left + 72, oeilY = mr.top + 20 + 42;
+                var gauche = oeilX - zr.left, haut = 62, hauteur = 92;
+                var fy = Math.max(2, Math.min(98, (oeilY - (zr.top + haut)) / hauteur * 100));
+                rayon.style.left = gauche + 'px';
+                rayon.style.width = (zr.width / 2 - gauche) + 'px';
+                rayon.style.clipPath = 'polygon(0 ' + (fy - 3) + '%,0 ' + (fy + 3) + '%,100% 100%,100% 0)';
+            }
         }
         function anime(el, images, ms, easing) { return el.animate(images, { duration: ms, easing: easing || 'ease-in-out' }); }
         function dire(texte, ms) {
@@ -10471,6 +10550,41 @@ async function fetchMatchesFromAPI() {
             anime(corps, [{ transform: 'translateY(0) rotate(0)' }, { transform: 'translateY(0) rotate(-8deg)' }, { transform: 'translateY(0) rotate(8deg)' }, { transform: 'translateY(0) rotate(-6deg)' }, { transform: 'translateY(0) rotate(0)' }], 700);
             dire('Oups, on réessaie ?', 2200);
         }
+        function gagBallon() {
+            var b = document.createElement('i'); b.className = 'fas fa-futbol lm-ballon'; zone.appendChild(b);
+            var y0 = -150, tete = 4, rebonds = [];
+            rebonds.push({ transform: 'translate(0,' + y0 + 'px) rotate(0)' });
+            [0, 1, 2].forEach(function (i) {
+                rebonds.push({ transform: 'translate(' + (i * 3) + 'px,' + tete + 'px) rotate(' + (120 * (i + 1)) + 'deg)', easing: 'ease-out' });
+                rebonds.push({ transform: 'translate(' + (i * 3 + 2) + 'px,' + (tete - 46 + i * 12) + 'px) rotate(' + (120 * (i + 1) + 60) + 'deg)', easing: 'ease-in' });
+            });
+            rebonds.push({ transform: 'translate(170px,-40px) rotate(720deg)' });
+            var anim = b.animate(rebonds, { duration: 2600, easing: 'linear', fill: 'forwards' });
+            // la tête encaisse chaque rebond
+            [340, 820, 1260].forEach(function (t) { setTimeout(function () { corps.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(4px) scale(1.03,.97)' }, { transform: 'translateY(0)' }], { duration: 200 }); }, t); });
+            setTimeout(function () { dire('Trop facile !', 1500); }, 1500);
+            anim.finished.then(function () { b.remove(); });
+        }
+        function gagDodo() {
+            zone.classList.add('dodo');
+            dire('Mode veille…', 1400);
+            ['Z', 'z', 'Z'].forEach(function (l, i) {
+                var z = document.createElement('span'); z.className = 'lm-z'; z.textContent = l; zone.appendChild(z);
+                z.animate([{ opacity: 0, transform: 'translate(0,0) scale(.7)' }, { opacity: 1, transform: 'translate(8px,-18px) scale(1)', offset: .4 }, { opacity: 0, transform: 'translate(18px,-40px) scale(1.2)' }], { duration: 1500, delay: i * 550, fill: 'forwards' }).finished.then(function () { z.remove(); });
+            });
+            setTimeout(function () {
+                zone.classList.remove('dodo'); zone.classList.add('ebahi');
+                sauter(); dire('Hein ? Je dormais pas !', 1800);
+                setTimeout(function () { zone.classList.remove('ebahi'); }, 900);
+            }, 2800);
+        }
+        function gagAtchoum() {
+            var o = document.createElement('div'); o.className = 'lm-ono'; o.textContent = 'ATCHOUM !'; zone.appendChild(o);
+            corps.animate([{ transform: 'translateY(0) rotate(0)' }, { transform: 'translateY(2px) rotate(-5deg)', offset: .45 }, { transform: 'translateY(-6px) rotate(9deg)', offset: .6 }, { transform: 'translateY(0) rotate(-3deg)', offset: .8 }, { transform: 'translateY(0) rotate(0)' }], { duration: 900 });
+            o.animate([{ opacity: 0, transform: 'translate(-50%,-50%) scale(0) rotate(-14deg)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1.2) rotate(4deg)', offset: .5 }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1) rotate(-4deg)', offset: .65 }, { opacity: 0, transform: 'translate(-50%,-50%) scale(.8) rotate(-4deg)' }], { duration: 1300, delay: 380, fill: 'forwards' }).finished.then(function () { o.remove(); });
+            setTimeout(function () { dire('Pardon… trop de données !', 1800); }, 1500);
+        }
+
         function arrivee() {
             if (entree) return;
             entree = true;
@@ -10491,8 +10605,12 @@ async function fetchMatchesFromAPI() {
                 var actif = document.activeElement && /login-(email|username|password)/.test(document.activeElement.id || '');
                 if (!actif && !zone.classList.contains('cachee')) {
                     var r = Math.random();
-                    if (r < .35) coucou();
-                    else if (r < .7) { yeux.style.transform = 'translate(-6px,0)'; setTimeout(function () { yeux.style.transform = 'translate(6px,0)'; }, 700); setTimeout(regardNeutre, 1400); }
+                    if (calme) { var p0 = ['Les pronos du jour t\'attendent !', 'L\'IA a bossé toute la nuit…', 'Prêt pour le combiné ?'][Math.floor(Math.random() * 3)]; dire(p0, 2400); }
+                    else if (r < .16) coucou();
+                    else if (r < .3) { yeux.style.transform = 'translate(-6px,0)'; setTimeout(function () { yeux.style.transform = 'translate(6px,0)'; }, 700); setTimeout(regardNeutre, 1400); }
+                    else if (r < .5) gagBallon();
+                    else if (r < .66) gagDodo();
+                    else if (r < .82) gagAtchoum();
                     else { var p = ['Les pronos du jour t\'attendent !', 'L\'IA a bossé toute la nuit…', 'Prêt pour le combiné ?'][Math.floor(Math.random() * 3)]; dire(p, 2400); }
                 }
                 idle();
