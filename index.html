@@ -146,6 +146,77 @@
         @keyframes labCligne{0%,94%,100%{height:6px;margin-top:0}97%{height:1px;margin-top:2.5px}}
         @keyframes labScan{0%{transform:translateY(0);opacity:0}8%{opacity:.55}55%{transform:translateY(168px);opacity:.55}62%,100%{transform:translateY(168px);opacity:0}}
         @media (prefers-reduced-motion:reduce){.lab-robot,.lab-robot i,.lab-lien i{animation:none}.lab-iceberg .ib-noeud,.lab-iceberg .ib-texte{opacity:1;transition:none}.lab-iceberg .ib-lien{stroke-dashoffset:0;transition:none}.lab-iceberg .ib-scan,.lab-iceberg .ib-flux{display:none}}
+        /* Haut de la page vitrine : logo vivant */
+        @property --orAng{syntax:'<angle>';inherits:false;initial-value:0deg}
+        .hex-grid-login svg{animation:hexDerive 40s linear infinite alternate}
+        @keyframes hexDerive{from{transform:translate(0,0)}to{transform:translate(-30px,-18px)}}
+        .logo-scene{position:relative;display:inline-block;width:84px;height:84px;animation:logoFlotte 5s ease-in-out infinite}
+        .logo-scene::before{content:'';position:absolute;left:50%;top:55%;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;z-index:-1;
+            background:radial-gradient(circle,rgba(255,193,7,.28),rgba(255,193,7,.08) 45%,transparent 70%);animation:logoHalo 5s ease-in-out infinite}
+        .logo-scene .login-logo-img{display:block}
+        .logo-scene .logo-eclat{position:absolute;inset:0;pointer-events:none;
+            -webkit-mask:url(logo-dark.png) center/contain no-repeat;mask:url(logo-dark.png) center/contain no-repeat;
+            background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.95) 50%,transparent 62%);background-size:260% 100%;background-position:160% 0;animation:logoReflet 4.5s ease-in-out infinite}
+        .logo-scene .logo-etincelle{position:absolute;left:64px;top:4px;width:14px;height:14px;pointer-events:none;background:#fff;
+            clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);filter:drop-shadow(0 0 4px #FFE082);transform:scale(0);animation:logoEtincelle 4.5s ease-in-out infinite}
+        @keyframes logoFlotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+        @keyframes logoHalo{0%,100%{opacity:.7;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}}
+        @keyframes logoReflet{0%,55%{background-position:160% 0}85%,100%{background-position:-60% 0}}
+        @keyframes logoEtincelle{0%,80%{transform:scale(0) rotate(0)}86%{transform:scale(1) rotate(45deg)}94%,100%{transform:scale(0) rotate(90deg)}}
+        .vt-hero h1,.vt-hero p,.vt-atouts span{animation:vtEntree .7s ease-out backwards}
+        .vt-hero p{animation-delay:.12s}.vt-atouts span:nth-child(1){animation-delay:.22s}.vt-atouts span:nth-child(2){animation-delay:.3s}.vt-atouts span:nth-child(3){animation-delay:.38s}
+        @keyframes vtEntree{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+        /* Portail de connexion doré */
+        #login-screen .login-form-container{border-top-color:transparent;border-bottom-color:transparent;box-shadow:0 -12px 40px rgba(255,193,7,.12),0 20px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,224,130,.12);
+            background:radial-gradient(ellipse 90% 40% at 50% 0%,rgba(255,193,7,.07),transparent 70%),#0F1424}
+        #login-screen .login-form-container::after{content:'';position:absolute;inset:0;border-radius:inherit;padding:1.5px;pointer-events:none;z-index:0;
+            background:conic-gradient(from var(--orAng),rgba(184,134,11,.55),#FFE082,#FFC107 20%,rgba(184,134,11,.5) 35%,rgba(255,193,7,.25) 55%,#FFE082 72%,rgba(184,134,11,.55));
+            -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:orTourne 8s linear infinite}
+        @keyframes orTourne{to{--orAng:360deg}}
+        /* Nos réseaux */
+        .rx-fusion{display:flex;justify-content:center;gap:26px;margin:0 0 16px}
+        .rx-duo{display:flex;flex-direction:column;align-items:center;gap:8px}
+        .rx-duo .logos{position:relative;width:96px;height:56px}
+        .rx-duo .logos > *{position:absolute;top:0;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+        .rx-duo .sm{left:0;z-index:2;background:#0b0f1a;border:2px solid #FFC107;box-shadow:0 0 16px rgba(255,193,7,.35);animation:rxGauche 3.6s ease-in-out infinite}
+        .rx-duo .sm img{width:40px;height:40px}
+        .rx-duo .pf{right:0;z-index:1;color:#fff;font-size:26px;animation:rxDroite 3.6s ease-in-out infinite}
+        .rx-duo .pf.ig{background:radial-gradient(circle at 30% 107%,#fdf497 0%,#fdf497 5%,#fd5949 45%,#d6249f 60%,#285AEB 90%)}
+        .rx-duo .pf.tg{background:#26A5E4}
+        .rx-duo .eclat{left:38px !important;top:20px !important;width:16px !important;height:16px !important;z-index:3;background:#fff;border-radius:0 !important;
+            clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);filter:drop-shadow(0 0 5px #FFE082);animation:rxEclat 3.6s ease-in-out infinite}
+        .rx-duo span{font:800 11px 'Montserrat',sans-serif;letter-spacing:.8px;color:#dfe5f1}
+        .rx-duo span b{color:var(--primary-yellow)}
+        @keyframes rxGauche{0%,100%{transform:translateX(-6px)}45%,60%{transform:translateX(4px)}}
+        @keyframes rxDroite{0%,100%{transform:translateX(6px)}45%,60%{transform:translateX(-4px)}}
+        @keyframes rxEclat{0%,40%{transform:scale(0) rotate(0);opacity:0}50%{transform:scale(1.2) rotate(45deg);opacity:1}62%,100%{transform:scale(0) rotate(90deg);opacity:0}}
+        .rx-apercus{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        .rx-carte{border-radius:16px;overflow:hidden;background:#0f1424;border:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column}
+        .rx-tete{display:flex;align-items:center;gap:7px;padding:9px 9px 8px}
+        .rx-tete img{width:24px;height:24px;border-radius:50%;background:#0b0f1a;border:1.5px solid #FFC107;padding:2px;box-sizing:border-box}
+        .rx-tete b{display:block;font:700 10.5px 'Inter',sans-serif;color:#fff;line-height:1.2}
+        .rx-tete small{display:block;font:500 9px 'Inter',sans-serif;color:#8b93a7}
+        .rx-tete i.fab{margin-left:auto;font-size:14px}
+        .rx-ig .rx-tete i.fab{color:#e1306c}.rx-tg .rx-tete i.fab{color:#26A5E4}
+        .rx-ig .visuel{position:relative;aspect-ratio:1/1;overflow:hidden}
+        .rx-ig .visuel img{width:100%;height:100%;object-fit:cover;object-position:50% 30%;display:block}
+        .rx-ig .actions{display:flex;gap:10px;padding:8px 9px 4px;color:#dfe5f1;font-size:13px}
+        .rx-ig .actions i:last-child{margin-left:auto}
+        .rx-ig p,.rx-tg .bulle p{margin:0;font:500 10px/1.4 'Inter',sans-serif;color:#c9d3e6}
+        .rx-ig p{padding:0 9px 10px}
+        .rx-ig p b{color:#fff}
+        .rx-tg .fil{flex:1;padding:8px;background:linear-gradient(180deg,#17212b,#0e1621)}
+        .rx-tg .bulle{position:relative;background:#182533;border-radius:10px 10px 10px 3px;overflow:hidden;animation:rxBulle 6s ease-in-out infinite}
+        .rx-tg .bulle img{width:100%;aspect-ratio:4/3;object-fit:cover;object-position:50% 25%;display:block}
+        .rx-tg .bulle p{padding:7px 8px 4px}
+        .rx-tg .bulle p b{color:#FFE082}
+        .rx-tg .bulle small{display:block;text-align:right;padding:0 8px 6px;font:500 8.5px 'Inter',sans-serif;color:#6d8aa3}
+        @keyframes rxBulle{0%,8%{opacity:0;transform:translateY(12px) scale(.96)}16%,86%{opacity:1;transform:none}96%,100%{opacity:0;transform:translateY(-6px)}}
+        .rx-boutons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+        .rx-boutons .vt-bouton{padding:11px 8px;font-size:12px}
+        .rx-boutons .ig{border-color:rgba(225,48,108,.35);background:rgba(225,48,108,.1);color:#f06292}
+        .rx-note{margin:8px 0 0;text-align:center;font:500 10px 'Inter',sans-serif;color:#5f677a}
+        @media (prefers-reduced-motion:reduce){.hex-grid-login svg,.logo-scene,.logo-scene::before,.logo-scene .logo-eclat,.logo-scene .logo-etincelle,.vt-hero h1,.vt-hero p,.vt-atouts span,#login-screen .login-form-container::after,.rx-duo .sm,.rx-duo .pf,.rx-duo .eclat,.rx-tg .bulle{animation:none}.rx-duo .eclat{display:none}}
         /* Page vitrine (écran de connexion) */
         .vt-hero{padding:4px 26px 18px;text-align:center;position:relative;z-index:1}
         .vt-hero h1{margin:0 0 8px;font:800 23px/1.2 'Montserrat',sans-serif;color:#fff;letter-spacing:-.3px}
@@ -1706,7 +1777,7 @@ async function fetchApiScore(id, dateRaw) {
         </svg>
     </div>
     <div class="login-header" style="padding-top:calc(20px + var(--safe-top));">
-        <img id="img-login" alt="Score Master" class="login-logo-img">
+        <span class="logo-scene"><img id="img-login" alt="Score Master" class="login-logo-img"><span class="logo-eclat" aria-hidden="true"></span><span class="logo-etincelle" aria-hidden="true"></span></span>
     </div>
     <section class="vt-hero">
         <h1>Des pronostics fiables,<br><span>analysés par l'IA.</span></h1>
@@ -1861,33 +1932,6 @@ async function fetchApiScore(id, dateRaw) {
     </section>
 
     <section class="vt-section vt-apparition">
-        <span class="vt-surtitre">L'EXPÉRIENCE SCORE MASTER</span>
-        <h2 class="vt-titre">Trois façons de <span>suivre nos analyses</span></h2>
-        <div class="vt-formules">
-            <article class="vt-formule">
-                <h3>SM Journalier</h3>
-                <p class="accroche">Ton pronostic fiable du jour, avec son analyse détaillée.</p>
-                <ul><li><i class="fas fa-check"></i>1 pronostic par jour</li><li><i class="fas fa-check"></i>Analyse détaillée</li><li><i class="fas fa-check"></i>Support 7j/7</li><li><i class="fas fa-check"></i>Notification push</li></ul>
-                <button class="vt-bouton" onclick="vitrineInscription()">Créer mon compte</button>
-            </article>
-            <article class="vt-formule vip">
-                <img class="robot" src="mascotte-roi-mecha.webp" alt="" loading="lazy">
-                <span class="ruban">LE PLUS COMPLET</span>
-                <h3>SM VIP+ à vie</h3>
-                <p class="accroche">L'accès complet, pour toujours : là où notre IA donne toute sa puissance.</p>
-                <ul><li><i class="fas fa-check"></i>Accès à vie</li><li><i class="fas fa-check"></i>4 à 5 combinés / semaine</li><li><i class="fas fa-check"></i>Espace membre VIP+</li><li><i class="fas fa-check"></i>Canal Telegram VIP</li><li><i class="fas fa-check"></i>Priorité support</li><li><i class="fas fa-check"></i>Accès fondateurs</li></ul>
-                <button class="vt-bouton or" onclick="vitrineInscription()"><i class="fas fa-crown"></i> Rejoindre le VIP+</button>
-            </article>
-            <article class="vt-formule">
-                <h3>SM Combiné Hebdo</h3>
-                <p class="accroche">Chaque semaine, des combinés soigneusement sélectionnés.</p>
-                <ul><li><i class="fas fa-check"></i>5 combinés / semaine</li><li><i class="fas fa-check"></i>Cotes élevées</li><li><i class="fas fa-check"></i>Suivi en direct</li><li><i class="fas fa-check"></i>Récap hebdomadaire</li></ul>
-                <button class="vt-bouton" onclick="vitrineInscription()">Créer mon compte</button>
-            </article>
-        </div>
-    </section>
-
-    <section class="vt-section vt-apparition">
         <span class="vt-surtitre">CONFIANCE</span>
         <h2 class="vt-titre">Pourquoi nous <span>faire confiance</span></h2>
         <div class="vt-confiance">
@@ -1896,6 +1940,34 @@ async function fetchApiScore(id, dateRaw) {
             <div><i class="fas fa-rotate"></i><b>Analyses actualisées</b><p>Les analyses sont mises à jour avant chaque match.</p></div>
             <div><i class="fab fa-telegram-plane"></i><b>Une vraie communauté</b><p>Chaque combiné est annoncé sur notre canal Telegram.</p></div>
         </div>
+    </section>
+
+    <section class="vt-section vt-apparition">
+        <span class="vt-surtitre">NOS RÉSEAUX</span>
+        <h2 class="vt-titre">Score Master, <span>partout où tu es</span></h2>
+        <div class="rx-fusion">
+            <div class="rx-duo"><div class="logos"><div class="sm"><img src="logo-dark.png" alt="Score Master"></div><div class="pf ig"><i class="fab fa-instagram"></i></div><div class="eclat" aria-hidden="true"></div></div><span>SM <b>×</b> INSTAGRAM</span></div>
+            <div class="rx-duo"><div class="logos"><div class="sm"><img src="logo-dark.png" alt="Score Master"></div><div class="pf tg"><i class="fab fa-telegram-plane"></i></div><div class="eclat" aria-hidden="true" style="animation-delay:.4s"></div></div><span>SM <b>×</b> TELEGRAM</span></div>
+        </div>
+        <div class="rx-apercus">
+            <article class="rx-carte rx-ig" aria-label="Aperçu de notre compte Instagram">
+                <div class="rx-tete"><img src="logo-dark.png" alt=""><div><b>scoremaster.fr</b><small>Instagram</small></div><i class="fab fa-instagram"></i></div>
+                <div class="visuel"><img src="mascotte-pronos-vip.webp" alt="" loading="lazy"></div>
+                <div class="actions"><i class="far fa-heart"></i><i class="far fa-comment"></i><i class="far fa-paper-plane"></i><i class="far fa-bookmark"></i></div>
+                <p><b>scoremaster.fr</b> Analyses, coulisses et combinés validés : suis l'aventure au quotidien.</p>
+            </article>
+            <article class="rx-carte rx-tg" aria-label="Aperçu de notre canal Telegram">
+                <div class="rx-tete"><img src="logo-dark.png" alt=""><div><b>Score Master</b><small>canal Telegram</small></div><i class="fab fa-telegram-plane"></i></div>
+                <div class="fil">
+                    <div class="bulle"><img src="mascotte-roi-mecha.webp" alt="" loading="lazy" style="background:radial-gradient(circle,#3a2e0a,#182533 70%)"><p><b>🏆 Le combiné du jour est disponible !</b><br>L'analyse complète t'attend dans ton espace Score Master.</p><small>✓✓</small></div>
+                </div>
+            </article>
+        </div>
+        <div class="rx-boutons">
+            <a class="vt-bouton ig" href="https://www.instagram.com/scoremaster.fr/" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> Suivre</a>
+            <a class="vt-bouton tg" href="#" onclick="window.open(TELEGRAM_LINK, '_blank'); return false;"><i class="fab fa-telegram-plane"></i> Rejoindre</a>
+        </div>
+        <p class="rx-note">Aperçus illustratifs de nos publications.</p>
     </section>
 
     <section class="vt-final vt-apparition">
