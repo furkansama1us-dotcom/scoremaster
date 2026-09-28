@@ -66,6 +66,47 @@
         .splash-loader span:nth-child(2){animation-delay:.2s}
         .splash-loader span:nth-child(3){animation-delay:.4s}
         
+        /* Démarrage : la mascotte s'allume comme un hologramme */
+        #splash-screen .splash-logo-img{width:118px}
+        .splash-robot{position:relative;width:91px;height:170px;margin:18px auto 0}
+        .splash-robot img{position:absolute;inset:0;width:91px;height:170px}
+        .splash-robot .sr-ombre{filter:brightness(.16) saturate(0);opacity:.9}
+        .splash-robot .sr-couleur{clip-path:inset(100% 0 0 0);animation:srReveler 1.5s .25s ease-in-out forwards}
+        .splash-robot .sr-scan{position:absolute;left:-14px;right:-14px;height:3px;top:100%;border-radius:2px;background:linear-gradient(90deg,transparent,#FFE082,#FFC107,#FFE082,transparent);
+            box-shadow:0 0 12px 3px rgba(255,193,7,.65);opacity:0;animation:srScan 1.5s .25s ease-in-out forwards}
+        .splash-robot .sr-oeil{position:absolute;top:28.4px;width:4px;height:6px;border-radius:50%;background:#FFE36B;box-shadow:0 0 5px 2px rgba(255,200,40,.9),0 0 12px 4px rgba(255,170,0,.45);opacity:0;animation:srYeux .5s 1.8s steps(1) forwards}
+        .splash-robot .sr-oeil.g{left:34.3px}.splash-robot .sr-oeil.d{left:51.4px}
+        .splash-robot .sr-onde{position:absolute;left:50%;top:31px;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;border:2px solid rgba(255,193,7,.8);opacity:0;animation:srOnde .9s 2s ease-out forwards}
+        .splash-robot .sr-corps{position:absolute;inset:0;animation:srFlotte 2.4s 2.2s ease-in-out infinite}
+        .splash-boot{width:210px;margin:18px auto 0}
+        .splash-boot .sb-barre{height:4px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden}
+        .splash-boot .sb-barre i{display:block;height:100%;width:0;border-radius:4px;background:linear-gradient(90deg,#B8860B,#FFC107,#FFE082);box-shadow:0 0 8px rgba(255,193,7,.6);animation:sbCharge 2.3s cubic-bezier(.3,.1,.3,1) forwards}
+        .splash-boot .sb-texte{margin-top:10px;font:600 11.5px 'Inter',sans-serif;color:#9aa3b8;letter-spacing:.3px;min-height:16px;transition:opacity .2s}
+        .splash-boot .sb-texte.pret{color:var(--primary-yellow);font-weight:800}
+        @keyframes srReveler{to{clip-path:inset(0 0 0 0)}}
+        @keyframes srScan{0%{top:100%;opacity:0}8%{opacity:1}92%{opacity:1}100%{top:-2px;opacity:0}}
+        @keyframes srYeux{0%{opacity:1}20%{opacity:.1}40%{opacity:1}60%{opacity:.2}80%,100%{opacity:1}}
+        @keyframes srOnde{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(9)}}
+        @keyframes srFlotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+        @keyframes sbCharge{0%{width:0}30%{width:34%}55%{width:58%}80%{width:86%}100%{width:100%}}
+        /* Page de connexion : la mascotte réagit à la saisie */
+        .login-mascotte{position:absolute;left:50%;bottom:0;width:120px;height:128px;margin-left:-60px;z-index:0;pointer-events:none}
+        .login-mascotte.cachee{display:none}
+        .login-mascotte .lm-corps{position:absolute;left:0;bottom:-20px;width:120px;height:128px;transform:translateY(150px);transform-origin:50% 100%;will-change:transform}
+        .login-mascotte .lm-img{position:absolute;inset:0;width:120px;height:128px;filter:drop-shadow(0 -2px 10px rgba(255,193,7,.12))}
+        .login-mascotte .lm-bras{position:absolute;left:89.1px;top:85.7px;width:28.6px;height:82.3px;transform-origin:50% 4%}
+        .login-mascotte .lm-yeux{position:absolute;left:0;top:0;width:120px;height:60px;transition:transform .25s ease-out}
+        .login-mascotte .lm-oeil{position:absolute;top:38.3px;width:5px;height:7px;border-radius:50%;background:#FFE36B;
+            box-shadow:0 0 5px 2px rgba(255,200,40,.9),0 0 11px 4px rgba(255,170,0,.4);transition:opacity .2s,transform .2s;animation:lmCligne 4.2s infinite}
+        .login-mascotte .lm-oeil.g{left:45.7px}.login-mascotte .lm-oeil.d{left:67.9px}
+        .login-mascotte.pudique .lm-oeil{opacity:.08;transform:scaleY(.2);animation:none}
+        .login-mascotte.ebahi .lm-oeil{transform:scale(1.35)}
+        .login-mascotte .lm-bulle{position:absolute;bottom:116px;left:50%;white-space:nowrap;background:#fff;color:#111;font:800 11px 'Montserrat',sans-serif;
+            padding:6px 10px;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transform:translateX(-50%) scale(.6);transform-origin:50% 100%;transition:opacity .2s,transform .25s cubic-bezier(.3,1.6,.5,1)}
+        .login-mascotte .lm-bulle::after{content:'';position:absolute;left:50%;margin-left:-5px;bottom:-5px;width:10px;height:10px;background:#fff;transform:rotate(45deg);border-radius:2px}
+        .login-mascotte .lm-bulle.visible{opacity:1;transform:translateX(-50%) scale(1)}
+        @keyframes lmCligne{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+        @media (prefers-reduced-motion:reduce){.splash-robot .sr-couleur{animation:none;clip-path:none}.splash-robot .sr-scan,.splash-robot .sr-onde{display:none}.splash-robot .sr-oeil{animation:none;opacity:1}.splash-robot .sr-corps{animation:none}.login-mascotte .lm-oeil{animation:none}}
         @keyframes splashFadeIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
         @keyframes loaderBounce{0%,80%,100%{transform:scale(.6);opacity:.3}40%{transform:scale(1);opacity:1}}
         @keyframes ballSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
@@ -1540,7 +1581,19 @@ async function fetchApiScore(id, dateRaw) {
 <div id="splash-screen">
     <div class="splash-content">
         <img id="img-splash" alt="Score Master" class="splash-logo-img">
-        <div class="splash-loader"><span></span><span></span><span></span></div>
+        <div class="splash-robot" aria-hidden="true">
+            <div class="sr-corps">
+                <img class="sr-ombre" src="mascotte-splash.webp" alt="">
+                <img class="sr-couleur" src="mascotte-splash.webp" alt="">
+                <i class="sr-oeil g"></i><i class="sr-oeil d"></i>
+                <div class="sr-onde"></div>
+            </div>
+            <div class="sr-scan"></div>
+        </div>
+        <div class="splash-boot">
+            <div class="sb-barre"><i></i></div>
+            <div class="sb-texte" id="splash-statut">Connexion aux API sportives…</div>
+        </div>
     </div>
 </div>
 
@@ -1612,6 +1665,14 @@ async function fetchApiScore(id, dateRaw) {
         </div>
         <div style="margin-top:10px; position:relative; z-index:1;">
             <a href="#" onclick="window.open(TELEGRAM_LINK, '_blank'); return false;" style="display:flex; align-items:center; justify-content:center; gap:7px; padding:10px; background:rgba(38,165,228,0.1); border:1px solid rgba(38,165,228,0.3); border-radius:12px; color:#26A5E4; font-size:12.5px; font-weight:700; text-decoration:none;"><i class="fab fa-telegram-plane"></i> Telegram</a>
+        </div>
+        <div class="login-mascotte cachee" id="login-mascotte" aria-hidden="true">
+            <div class="lm-bulle" id="lm-bulle"></div>
+            <div class="lm-corps">
+                <img class="lm-img" src="mascotte-login.webp" alt="">
+                <img class="lm-bras" src="mascotte-bras.webp" alt="">
+                <div class="lm-yeux"><i class="lm-oeil g"></i><i class="lm-oeil d"></i></div>
+            </div>
         </div>
     </div>
 </div>
@@ -10317,6 +10378,128 @@ async function fetchMatchesFromAPI() {
             lancerMascotte();
         }
     }
+
+    // ============================================================
+    // ÉCRAN DE DÉMARRAGE : messages de chargement sous la mascotte
+    // ============================================================
+    (function () {
+        var etapes = [[0, 'Connexion aux API sportives…'], [650, 'Analyse IA des matchs…'], [1300, 'Calcul des indices de fiabilité…'], [2050, 'Prêt !']];
+        etapes.forEach(function (e) {
+            setTimeout(function () {
+                var el = document.getElementById('splash-statut');
+                if (!el) return;
+                el.style.opacity = '0';
+                setTimeout(function () { el.textContent = e[1]; el.classList.toggle('pret', e[1] === 'Prêt !'); el.style.opacity = '1'; }, e[0] ? 150 : 0);
+            }, e[0]);
+        });
+    })();
+
+    // ============================================================
+    // PAGE DE CONNEXION : la mascotte arrive, suit la saisie des yeux,
+    // détourne le regard pendant le mot de passe, fête la connexion.
+    // ============================================================
+    (function () {
+        var zone, corps, bras, yeux, bulle, ecran, calme, timerBulle, timerIdle, occupee = false, entree = false;
+        function init() {
+            zone = document.getElementById('login-mascotte');
+            ecran = document.getElementById('login-screen');
+            if (!zone || !ecran || zone.dataset.ok) return;
+            zone.dataset.ok = '1';
+            corps = zone.querySelector('.lm-corps'); bras = zone.querySelector('.lm-bras'); yeux = zone.querySelector('.lm-yeux'); bulle = document.getElementById('lm-bulle');
+            calme = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            new MutationObserver(function () { if (ecran.classList.contains('active')) arrivee(); }).observe(ecran, { attributes: true, attributeFilter: ['class'] });
+            window.addEventListener('resize', verifierPlace);
+            var email = document.getElementById('login-email'), pseudo = document.getElementById('login-username'), mdp = document.getElementById('login-password'), oeilMdp = document.getElementById('togglePassword');
+            [email, pseudo].forEach(function (champ) {
+                if (!champ) return;
+                champ.addEventListener('focus', function () { zone.classList.remove('pudique'); suivre(champ); });
+                champ.addEventListener('input', function () { suivre(champ); });
+                champ.addEventListener('blur', regardNeutre);
+            });
+            if (mdp) {
+                mdp.addEventListener('focus', function () { if (mdp.type === 'password') pudique(); });
+                mdp.addEventListener('blur', function () { zone.classList.remove('pudique'); tourner(0); regardNeutre(); });
+            }
+            if (oeilMdp) oeilMdp.addEventListener('click', function () {
+                setTimeout(function () {
+                    if (mdp.type === 'text') { zone.classList.remove('pudique'); zone.classList.add('ebahi'); tourner(0); yeux.style.transform = 'translate(0,2px)'; dire('Hé, je vois tout !', 1600); setTimeout(function () { zone.classList.remove('ebahi'); }, 900); }
+                    else if (document.activeElement === mdp) pudique();
+                }, 0);
+            });
+            // Réactions à la connexion : on écoute les messages d'erreur et le bouton
+            var toastOrig = window.showToast;
+            if (typeof toastOrig === 'function') window.showToast = function (msg, err) { if (err) window._mascotteErreur = true; return toastOrig.apply(this, arguments); };
+            var btn = document.getElementById('btn-action');
+            if (btn) btn.addEventListener('click', function () {
+                window._mascotteErreur = false;
+                sauter(); dire('C\'est parti !', 1400);
+                setTimeout(function () { if (window._mascotteErreur && ecran.classList.contains('active')) oups(); }, 1600);
+            }, true); // phase de capture : passe avant le onclick du bouton, qui peut signaler une erreur
+        }
+        function verifierPlace() {
+            if (!zone) return;
+            var conteneur = zone.parentElement, dernier = zone.previousElementSibling;
+            if (!conteneur || !dernier) return;
+            var libre = conteneur.getBoundingClientRect().bottom - dernier.getBoundingClientRect().bottom;
+            zone.classList.toggle('cachee', libre < 118);
+        }
+        function anime(el, images, ms, easing) { return el.animate(images, { duration: ms, easing: easing || 'ease-in-out' }); }
+        function dire(texte, ms) {
+            clearTimeout(timerBulle);
+            bulle.textContent = texte; bulle.classList.add('visible');
+            timerBulle = setTimeout(function () { bulle.classList.remove('visible'); }, ms || 1800);
+        }
+        function suivre(champ) {
+            var ratio = Math.min(1, (champ.value || '').length / 26);
+            yeux.style.transform = 'translate(' + (-6 + 12 * ratio).toFixed(1) + 'px,2.5px)';
+        }
+        function regardNeutre() { yeux.style.transform = 'translate(0,0)'; }
+        function tourner(deg) { if (!calme) corps.style.transform = deg ? 'translateY(0) rotate(' + deg + 'deg)' : 'translateY(0)'; }
+        function pudique() { zone.classList.add('pudique'); tourner(-7); dire('Je ne regarde pas !', 1700); }
+        function coucou() {
+            if (calme) return;
+            anime(bras, [{ transform: 'rotate(0)' }, { transform: 'rotate(-150deg)', offset: .2 }, { transform: 'rotate(-176deg)', offset: .35 }, { transform: 'rotate(-138deg)', offset: .5 }, { transform: 'rotate(-176deg)', offset: .65 }, { transform: 'rotate(-150deg)', offset: .8 }, { transform: 'rotate(0)' }], 1500);
+        }
+        function sauter() {
+            if (calme) return;
+            corps.getAnimations().forEach(function (a) { a.cancel(); });
+            anime(corps, [{ transform: 'translateY(0) scale(1,1)' }, { transform: 'translateY(4px) scale(1.06,.94)', offset: .2 }, { transform: 'translateY(-22px) scale(.96,1.05)', offset: .5 }, { transform: 'translateY(0) scale(1.04,.97)', offset: .8 }, { transform: 'translateY(0) scale(1,1)' }], 650);
+            coucou();
+        }
+        function oups() {
+            if (calme) { dire('Oups, on réessaie ?', 2000); return; }
+            anime(corps, [{ transform: 'translateY(0) rotate(0)' }, { transform: 'translateY(0) rotate(-8deg)' }, { transform: 'translateY(0) rotate(8deg)' }, { transform: 'translateY(0) rotate(-6deg)' }, { transform: 'translateY(0) rotate(0)' }], 700);
+            dire('Oups, on réessaie ?', 2200);
+        }
+        function arrivee() {
+            if (entree) return;
+            entree = true;
+            setTimeout(function () {
+                verifierPlace();
+                if (calme) { corps.style.transform = 'translateY(0)'; return; }
+                corps.style.transform = 'translateY(0)';
+                anime(corps, [{ transform: 'translateY(150px)' }, { transform: 'translateY(-10px)', offset: .7 }, { transform: 'translateY(0)' }], 900, 'cubic-bezier(.2,.9,.3,1)').finished.then(function () {
+                    coucou(); dire('Bienvenue chez Score Master !', 2400);
+                    idle();
+                });
+            }, 700);
+        }
+        function idle() {
+            clearTimeout(timerIdle);
+            timerIdle = setTimeout(function () {
+                if (!ecran.classList.contains('active')) return;
+                var actif = document.activeElement && /login-(email|username|password)/.test(document.activeElement.id || '');
+                if (!actif && !zone.classList.contains('cachee')) {
+                    var r = Math.random();
+                    if (r < .35) coucou();
+                    else if (r < .7) { yeux.style.transform = 'translate(-6px,0)'; setTimeout(function () { yeux.style.transform = 'translate(6px,0)'; }, 700); setTimeout(regardNeutre, 1400); }
+                    else { var p = ['Les pronos du jour t\'attendent !', 'L\'IA a bossé toute la nuit…', 'Prêt pour le combiné ?'][Math.floor(Math.random() * 3)]; dire(p, 2400); }
+                }
+                idle();
+            }, 6000 + Math.random() * 4000);
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+    })();
 
     // ============================================================
     // SCÈNE « PILE VIP » (page Pronostics AI) : la mascotte arrive déchargée,
