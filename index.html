@@ -133,25 +133,6 @@
         .lab-legende{display:flex;justify-content:center;gap:14px;margin:2px 0 14px;font:600 10px 'Inter',sans-serif;color:#8b93a7}
         .lab-legende span{display:inline-flex;align-items:center;gap:5px}
         .lab-legende i{width:7px;height:7px;border-radius:50%;display:inline-block}
-        .lab-carte{background:rgba(6,11,24,.55);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px 14px 12px}
-        .lab-carte-tete{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:12px}
-        .lab-carte-tete small{display:block;font:800 9.5px 'Montserrat',sans-serif;letter-spacing:1.4px;color:var(--primary-yellow)}
-        .lab-carte-tete b{display:block;margin-top:4px;font:700 13.5px/1.3 'Montserrat',sans-serif;color:#fff}
-        .lab-carte-tete em{display:block;margin-top:2px;font:400 11px 'Inter',sans-serif;color:#8b93a7;font-style:normal}
-        .lab-statut{flex-shrink:0;font:600 10px 'Inter',sans-serif;color:#8fb3ea;display:inline-flex;align-items:center;gap:5px}
-        .lab-statut i{width:5px;height:5px;border-radius:50%;background:#8fb3ea;animation:labPouls 1.8s ease-in-out infinite}
-        .lab-etape{padding:10px 0;border-top:1px solid rgba(255,255,255,.06)}
-        .lab-etape h4{margin:0 0 7px;font:800 9.5px 'Montserrat',sans-serif;letter-spacing:1.3px;color:#8b93a7}
-        .lab-etape h4 small{font:600 9.5px 'Inter',sans-serif;letter-spacing:0;color:#5f677a;margin-left:4px}
-        .lab-puces{display:flex;flex-wrap:wrap;gap:5px}
-        .lab-puces span{font:600 10.5px 'Inter',sans-serif;color:#c9d3e6;background:rgba(143,179,234,.08);border:1px solid rgba(143,179,234,.16);padding:3px 8px;border-radius:20px}
-        .lab-proba{display:grid;grid-template-columns:minmax(0,1fr) 38px;align-items:center;gap:4px 8px;margin-top:4px}
-        .lab-proba span{font:600 11px 'Inter',sans-serif;color:#c9d3e6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-        .lab-proba strong{font:800 11.5px 'Montserrat',sans-serif;color:#fff;text-align:right}
-        .lab-proba .barre{grid-column:1 / -1;height:5px;border-radius:5px;background:rgba(255,255,255,.06);overflow:hidden;margin-bottom:5px}
-        .lab-proba .barre i{display:block;height:100%;width:0;border-radius:5px;background:linear-gradient(90deg,#8a6a12,#FFC107);transition:width 1.2s cubic-bezier(.3,.1,.3,1)}
-        .lab-lecture{font:500 12.5px/1.45 'Inter',sans-serif;color:#e6e9f0}
-        .lab-note{margin-top:5px;font:400 10.5px 'Inter',sans-serif;color:#6f7890}
         .lab-methode{margin-top:12px;border:1px solid rgba(255,255,255,.07);border-radius:14px;background:rgba(255,255,255,.02)}
         .lab-methode summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;font:700 12.5px 'Montserrat',sans-serif;color:#dfe5f1}
         .lab-methode summary::-webkit-details-marker{display:none}
@@ -164,8 +145,7 @@
         @keyframes labRegard{0%,20%{transform:translate(0,0)}30%,55%{transform:translate(3px,1.5px)}65%,85%{transform:translate(1px,2px)}100%{transform:translate(0,0)}}
         @keyframes labCligne{0%,94%,100%{height:6px;margin-top:0}97%{height:1px;margin-top:2.5px}}
         @keyframes labScan{0%{transform:translateY(0);opacity:0}8%{opacity:.55}55%{transform:translateY(168px);opacity:.55}62%,100%{transform:translateY(168px);opacity:0}}
-        @keyframes labPouls{0%,100%{opacity:1}50%{opacity:.3}}
-        @media (prefers-reduced-motion:reduce){.lab-robot,.lab-robot i,.lab-lien i,.lab-statut i{animation:none}.lab-iceberg .ib-noeud,.lab-iceberg .ib-texte{opacity:1;transition:none}.lab-iceberg .ib-lien{stroke-dashoffset:0;transition:none}.lab-iceberg .ib-scan,.lab-iceberg .ib-flux{display:none}}
+        @media (prefers-reduced-motion:reduce){.lab-robot,.lab-robot i,.lab-lien i{animation:none}.lab-iceberg .ib-noeud,.lab-iceberg .ib-texte{opacity:1;transition:none}.lab-iceberg .ib-lien{stroke-dashoffset:0;transition:none}.lab-iceberg .ib-scan,.lab-iceberg .ib-flux{display:none}}
         @keyframes splashFadeIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
         @keyframes loaderBounce{0%,80%,100%{transform:scale(.6);opacity:.3}40%{transform:scale(1);opacity:1}}
         @keyframes ballSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
@@ -1748,7 +1728,7 @@ async function fetchApiScore(id, dateRaw) {
         </div>
 
         <div class="lab-iceberg" id="lab-iceberg">
-            <svg viewBox="0 0 320 250" role="img" aria-label="Iceberg : le score, la cote et le résultat sont visibles en surface ; sous l'eau, les signaux analysés : forme récente, confrontations, domicile et extérieur, attaque et défense, buts, cotes du marché, calendrier, qui convergent vers les probabilités calculées.">
+            <svg viewBox="0 0 320 250" role="img" aria-label="Iceberg : le score, la cote et le résultat sont visibles en surface ; sous l'eau, les signaux analysés : forme récente, confrontations, domicile et extérieur, attaque et défense, buts, cotes du marché, calendrier, qui convergent vers l'analyse IA.">
                 <defs>
                     <linearGradient id="ib-glace" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6fbff"/><stop offset="1" stop-color="#b9d6f2"/></linearGradient>
                     <linearGradient id="ib-fond" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#17365e" stop-opacity=".9"/><stop offset="1" stop-color="#0b1a31" stop-opacity=".6"/></linearGradient>
@@ -1785,7 +1765,7 @@ async function fetchApiScore(id, dateRaw) {
                         <circle class="ib-noeud" cx="208" cy="208" r="3.2" fill="#cfe1ff" style="--d:1.2s"/><text class="ib-texte" x="201" y="211.5" text-anchor="end" style="--d:1.2s">Calendrier</text>
                 <circle class="ib-noeud" cx="158" cy="182" r="6" fill="#FFC107" style="--d:1.5s"/>
                 <circle class="ib-noeud" cx="158" cy="182" r="11" fill="none" stroke="#FFC107" stroke-opacity=".35" style="--d:1.5s"/>
-                <text class="ib-texte" x="158" y="166" text-anchor="middle" style="--d:1.6s;fill:#FFE082;font-weight:800">Probabilités 1 · N · 2</text>
+                <text class="ib-texte" x="158" y="166" text-anchor="middle" style="--d:1.6s;fill:#FFE082;font-weight:800">Analyse IA</text>
                 <polygon points="128,70 146,40 157,47 170,20 184,44 194,70" fill="url(#ib-glace)"/>
                 <path d="M-10,70 Q5,67 20,70 T50,70 T80,70 T110,70 T140,70 T170,70 T200,70 T230,70 T260,70 T290,70 T320,70 T340,70" fill="none" stroke="#6fb1ea" stroke-opacity=".55" stroke-width="1.2"/>
                 <text class="ib-surface" x="70" y="52" text-anchor="middle">Score</text>
@@ -1797,35 +1777,15 @@ async function fetchApiScore(id, dateRaw) {
                 <text x="316" y="30" text-anchor="end" style="font:700 7.5px Inter,sans-serif;fill:#8b93a7;letter-spacing:1px">CE QUE L'ON VOIT</text>
             </svg>
         </div>
-        <div class="lab-legende"><span><i style="background:#cfe1ff"></i>Données observées</span><span><i style="background:#FFC107"></i>Indicateur calculé</span></div>
-
-        <article class="lab-carte" id="lab-carte">
-            <div class="lab-carte-tete">
-                <div><small>AI ANALYSIS</small><b id="lab-match">Rencontre en cours de chargement…</b><em id="lab-contexte"></em></div>
-                <span class="lab-statut"><i></i>Analyse en cours</span>
-            </div>
-            <div class="lab-etape">
-                <h4>1 · SIGNAUX OBSERVÉS <small id="lab-source">Source : API-Football</small></h4>
-                <div class="lab-puces"><span>Forme récente</span><span>Confrontations</span><span>Buts marqués / encaissés</span><span>Domicile / extérieur</span></div>
-            </div>
-            <div class="lab-etape">
-                <h4>2 · INDICATEURS CALCULÉS</h4>
-                <div class="lab-proba" id="lab-proba"><span style="grid-column:1 / -1;color:#6f7890">Probabilités en cours de chargement…</span></div>
-            </div>
-            <div class="lab-etape">
-                <h4>3 · LECTURE IA</h4>
-                <div class="lab-lecture" id="lab-lecture">Le résultat visible ne suffit pas à expliquer la dynamique du match.</div>
-                <div class="lab-note">Estimation calculée à partir des données disponibles, jamais une certitude.</div>
-            </div>
-        </article>
+        <div class="lab-legende"><span><i style="background:#cfe1ff"></i>Données observées</span><span><i style="background:#FFC107"></i>Analyse IA</span></div>
 
         <details class="lab-methode">
             <summary>Voir la méthodologie <i class="fas fa-chevron-down"></i></summary>
             <ol>
-                <li><b>Données observées.</b> Résultats récents, confrontations directes, buts marqués et encaissés, performances à domicile et à l'extérieur, fournis par API-Football.</li>
-                <li><b>Indicateurs calculés.</b> Pour chaque rencontre, des probabilités de victoire, de nul et de défaite, recalculées avant le match.</li>
-                <li><b>Lecture IA.</b> Nos outils croisent ces probabilités avec les cotes pour repérer les rencontres les plus lisibles. Chaque combiné est relu par notre équipe avant publication.</li>
-                <li><b>Limites.</b> Une probabilité reste une estimation : le football garde sa part d'imprévu et aucun résultat n'est garanti.</li>
+                <li><b>Données observées.</b> Résultats récents, confrontations directes, buts marqués et encaissés, performances à domicile et à l'extérieur.</li>
+                <li><b>Indicateurs calculés.</b> Notre IA transforme ces données en indicateurs, mis à jour avant chaque match.</li>
+                <li><b>Validation humaine.</b> Chaque combiné est relu par notre équipe avant publication.</li>
+                <li><b>Limites.</b> Une analyse reste une estimation : le football garde sa part d'imprévu et aucun résultat n'est garanti.</li>
             </ol>
         </details>
     </section>
@@ -10549,14 +10509,11 @@ async function fetchMatchesFromAPI() {
     })();
 
     // ============================================================
-    // AI ANALYSIS LAB (page de connexion) : uniquement des données réelles,
-    // lues dans ai_predictions / ai_fixtures (lecture publique). Si rien n'est
-    // disponible, la carte le dit au lieu d'inventer des valeurs.
+    // AI ANALYSIS LAB (page de connexion) : seule donnée affichée, la fraîcheur
+    // réelle des analyses (ai_predictions, lecture publique). Masquée si absente.
     // ============================================================
     (function () {
         var charge = false;
-        function dateParis(d) { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d || new Date()); }
-        function heureParis(iso) { return new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit' }).format(new Date(iso)); }
         function ilYa(iso) {
             var min = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000));
             if (min < 1) return 'il y a moins d\'une minute';
@@ -10564,65 +10521,18 @@ async function fetchMatchesFromAPI() {
             var h = Math.round(min / 60); if (h < 24) return 'il y a ' + h + ' h';
             var j = Math.round(h / 24); return 'il y a ' + j + ' jour' + (j > 1 ? 's' : '');
         }
-        function echapper(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-        function traduireConseil(a) {
-            return String(a || '').replace(/Double chance\s*:/i, 'Double chance :').replace(/ or draw/gi, ' ou nul').replace(/draw or /gi, 'nul ou ')
-                .replace(/Winner\s*:/i, 'Vainqueur :').replace(/Combo/i, 'Combiné').replace(/ and target /gi, ' + ').replace(/Over /gi, 'Plus de ').replace(/Under /gi, 'Moins de ')
-                .replace(/No predictions available/i, '');
-        }
-        function memes(a, b) { var n = function (x) { return String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, ''); }; return n(a) === n(b); }
         async function chargerLab() {
             if (charge || typeof supabaseClient === 'undefined') return;
             charge = true;
             var frais = document.getElementById('lab-frais');
             try {
-                var aujourd = dateParis();
-                var p = await supabaseClient.from('ai_predictions').select('fixture_date,home,away,home_prob,draw_prob,away_prob,advice,source,fetched_at').gte('fixture_date', aujourd).order('fixture_date', { ascending: true }).limit(60);
-                if (p.error) throw p.error;
-                var preds = p.data || [];
-                var f = await supabaseClient.from('ai_fixtures').select('fixture_date,home,away,kickoff,league_name').gte('fixture_date', aujourd).limit(200);
-                var fixtures = (f.data || []);
-                // Fraîcheur réelle : dernière mise à jour des probabilités
-                var derniere = preds.reduce(function (m, x) { return (!m || Date.parse(x.fetched_at) > Date.parse(m)) ? x.fetched_at : m; }, null);
-                var duJour = preds.filter(function (x) { return x.fixture_date === aujourd; }).length;
-                if (derniere) {
-                    frais.classList.remove('hors');
-                    frais.querySelector('span').textContent = 'Données actualisées ' + ilYa(derniere) + (duJour ? ' · ' + duJour + ' rencontre' + (duJour > 1 ? 's' : '') + ' analysée' + (duJour > 1 ? 's' : '') + ' aujourd\'hui' : '');
-                } else {
-                    frais.querySelector('span').textContent = 'Aucune analyse publiée pour le moment';
-                }
-                // Exemple réel : la prochaine rencontre analysée à venir
-                var avecInfos = preds.map(function (x) {
-                    var fx = fixtures.find(function (y) { return y.fixture_date === x.fixture_date && memes(y.home, x.home) && memes(y.away, x.away); });
-                    return { p: x, kickoff: fx && fx.kickoff, ligue: fx && fx.league_name };
-                }).filter(function (x) { return (x.p.home_prob || x.p.draw_prob || x.p.away_prob); });
-                var aVenir = avecInfos.filter(function (x) { return x.kickoff && Date.parse(x.kickoff) > Date.now(); }).sort(function (a, b) { return Date.parse(a.kickoff) - Date.parse(b.kickoff); });
-                var ex = aVenir[0] || avecInfos[0];
-                if (!ex) {
-                    document.getElementById('lab-match').textContent = 'Aucune rencontre analysée pour le moment';
-                    document.getElementById('lab-contexte').textContent = 'Les analyses sont publiées avant les matchs.';
-                    document.getElementById('lab-proba').innerHTML = '<span style="grid-column:1 / -1;color:#6f7890">Les probabilités apparaîtront dès la prochaine analyse.</span>';
-                    return;
-                }
-                var q = ex.p;
-                document.getElementById('lab-match').textContent = q.home + ' – ' + q.away;
-                document.getElementById('lab-contexte').textContent = [ex.ligue, ex.kickoff ? (q.fixture_date === aujourd ? 'aujourd\'hui ' : 'le ' + q.fixture_date.split('-').reverse().slice(0, 2).join('/') + ' ') + 'à ' + heureParis(ex.kickoff) : null, 'exemple réel'].filter(Boolean).join(' · ');
-                if (q.source) document.getElementById('lab-source').textContent = 'Source : ' + (q.source === 'api-football' ? 'API-Football' : q.source);
-                var lignes = [[q.home, q.home_prob], ['Match nul', q.draw_prob], [q.away, q.away_prob]];
-                var box = document.getElementById('lab-proba');
-                box.innerHTML = lignes.map(function (l) {
-                    return '<span>' + echapper(l[0]) + '</span><strong>' + (Number(l[1]) || 0) + ' %</strong><div class="barre"><i data-w="' + (Number(l[1]) || 0) + '"></i></div>';
-                }).join('');
-                requestAnimationFrame(function () { setTimeout(function () { box.querySelectorAll('.barre i').forEach(function (b) { b.style.width = b.getAttribute('data-w') + '%'; }); }, 60); });
-                var conseil = traduireConseil(q.advice);
-                var max = Math.max(q.home_prob || 0, q.draw_prob || 0, q.away_prob || 0);
-                var lecture = max >= 50 ? 'Les signaux convergent nettement vers une issue (' + max + ' %).' : 'Aucune issue ne se détache vraiment : match ouvert, les signaux se partagent.';
-                document.getElementById('lab-lecture').textContent = lecture + (conseil ? ' Piste de lecture : ' + conseil + '.' : '');
-                document.getElementById('lab-contexte').textContent += ' · mis à jour ' + ilYa(q.fetched_at);
+                var r = await supabaseClient.from('ai_predictions').select('fetched_at').order('fetched_at', { ascending: false }).limit(1);
+                if (r.error) throw r.error;
+                var derniere = r.data && r.data[0] && r.data[0].fetched_at;
+                if (derniere) { frais.classList.remove('hors'); frais.querySelector('span').textContent = 'Données actualisées ' + ilYa(derniere); }
+                else frais.style.display = 'none';
             } catch (e) {
-                frais.querySelector('span').textContent = 'Données momentanément indisponibles';
-                document.getElementById('lab-match').textContent = 'Analyse momentanément indisponible';
-                document.getElementById('lab-proba').innerHTML = '<span style="grid-column:1 / -1;color:#6f7890">Réessaie dans quelques instants.</span>';
+                frais.style.display = 'none';
                 charge = false;
             }
         }
