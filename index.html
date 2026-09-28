@@ -146,6 +146,61 @@
         @keyframes labCligne{0%,94%,100%{height:6px;margin-top:0}97%{height:1px;margin-top:2.5px}}
         @keyframes labScan{0%{transform:translateY(0);opacity:0}8%{opacity:.55}55%{transform:translateY(168px);opacity:.55}62%,100%{transform:translateY(168px);opacity:0}}
         @media (prefers-reduced-motion:reduce){.lab-robot,.lab-robot i,.lab-lien i{animation:none}.lab-iceberg .ib-noeud,.lab-iceberg .ib-texte{opacity:1;transition:none}.lab-iceberg .ib-lien{stroke-dashoffset:0;transition:none}.lab-iceberg .ib-scan,.lab-iceberg .ib-flux{display:none}}
+        /* Page vitrine (écran de connexion) */
+        .vt-hero{padding:4px 26px 18px;text-align:center;position:relative;z-index:1}
+        .vt-hero h1{margin:0 0 8px;font:800 23px/1.2 'Montserrat',sans-serif;color:#fff;letter-spacing:-.3px}
+        .vt-hero h1 span{color:var(--primary-yellow)}
+        .vt-hero p{margin:0 auto 12px;max-width:330px;font:400 13px/1.5 'Inter',sans-serif;color:#9aa3b8}
+        .vt-atouts{display:flex;justify-content:center;flex-wrap:wrap;gap:6px}
+        .vt-atouts span{display:inline-flex;align-items:center;gap:5px;font:600 10.5px 'Inter',sans-serif;color:#c9d3e6;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);padding:5px 9px;border-radius:20px}
+        .vt-atouts i{color:var(--primary-yellow);font-size:10px}
+        .vt-section{padding:34px 18px 6px}
+        .vt-surtitre{display:block;text-align:center;font:800 10.5px 'Montserrat',sans-serif;letter-spacing:1.6px;color:#8fb3ea;margin-bottom:8px}
+        .vt-titre{margin:0 0 18px;text-align:center;font:800 20px/1.25 'Montserrat',sans-serif;color:#fff}
+        .vt-titre span{color:var(--primary-yellow)}
+        .vt-etapes{display:flex;flex-direction:column;gap:10px}
+        .vt-etape{display:flex;gap:12px;align-items:flex-start;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px}
+        .vt-etape .num{flex:0 0 34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;font:800 14px 'Montserrat',sans-serif;color:#1a1200;background:linear-gradient(135deg,#FFE082,#FFC107)}
+        .vt-etape b{display:block;font:700 14px 'Montserrat',sans-serif;color:#fff;margin-bottom:3px}
+        .vt-etape p{margin:0;font:400 12.5px/1.5 'Inter',sans-serif;color:#9aa3b8}
+        .vt-formules{display:flex;flex-direction:column;gap:12px}
+        .vt-formule{position:relative;border-radius:18px;padding:16px 16px 14px;background:linear-gradient(180deg,#121a2e,#0e1424);border:1px solid rgba(255,255,255,.08);overflow:hidden}
+        .vt-formule.vip{border:1.5px solid rgba(255,193,7,.55);background:radial-gradient(ellipse 80% 60% at 85% 20%,rgba(255,193,7,.12),transparent 70%),linear-gradient(180deg,#171a26,#0f1320);box-shadow:0 10px 30px rgba(255,193,7,.08)}
+        .vt-formule .ruban{display:inline-block;margin-bottom:8px;font:800 9.5px 'Montserrat',sans-serif;letter-spacing:1.2px;color:#1a1200;background:linear-gradient(135deg,#FFE082,#FFC107);padding:3px 8px;border-radius:20px}
+        .vt-formule h3{margin:0 0 4px;font:800 16px 'Montserrat',sans-serif;color:#fff}
+        .vt-formule .accroche{margin:0 0 10px;font:400 12px/1.45 'Inter',sans-serif;color:#9aa3b8;max-width:68%}
+        .vt-formule.vip .accroche{max-width:60%}
+        .vt-formule ul{list-style:none;margin:0 0 12px;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
+        .vt-formule li{display:flex;gap:6px;align-items:flex-start;font:500 11.5px/1.35 'Inter',sans-serif;color:#dfe5f1}
+        .vt-formule li i{color:#22C55E;font-size:10px;margin-top:3px}
+        .vt-formule.vip li i{color:var(--primary-yellow)}
+        .vt-formule .garantie{display:block;margin-bottom:12px;font:600 11px 'Inter',sans-serif;color:#7dd3a0}
+        .vt-formule .robot{position:absolute;right:-8px;top:6px;width:118px;height:auto;pointer-events:none;filter:drop-shadow(0 6px 12px rgba(0,0,0,.4))}
+        .vt-bouton{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#fff;font:800 13px 'Montserrat',sans-serif;cursor:pointer;text-decoration:none}
+        .vt-bouton.or{border:none;background:linear-gradient(135deg,#FFC107,#B8860B);color:#1a1200;box-shadow:0 6px 18px rgba(255,193,7,.25)}
+        .vt-bouton.tg{border-color:rgba(38,165,228,.35);background:rgba(38,165,228,.1);color:#26A5E4}
+        .vt-confiance{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+        .vt-confiance div{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px 12px}
+        .vt-confiance i{display:flex;width:32px;height:32px;align-items:center;justify-content:center;border-radius:10px;background:rgba(255,193,7,.1);color:var(--primary-yellow);font-size:14px;margin-bottom:9px}
+        .vt-confiance b{display:block;font:700 12.5px/1.3 'Montserrat',sans-serif;color:#fff;margin-bottom:4px}
+        .vt-confiance p{margin:0;font:400 11.5px/1.45 'Inter',sans-serif;color:#9aa3b8}
+        .vt-final{margin:30px 14px 0;padding:24px 18px;border-radius:22px;text-align:center;background:radial-gradient(ellipse 90% 80% at 50% 0%,rgba(255,193,7,.14),transparent 70%),#0f1528;border:1px solid rgba(255,193,7,.25)}
+        .vt-final h2{margin:0 0 6px;font:800 19px/1.25 'Montserrat',sans-serif;color:#fff}
+        .vt-final p{margin:0 0 16px;font:400 12.5px/1.5 'Inter',sans-serif;color:#9aa3b8}
+        .vt-final .vt-bouton + .vt-bouton{margin-top:8px}
+        .vt-pied{padding:26px 20px calc(96px + var(--safe-bottom));text-align:center}
+        .vt-pied .logo{width:46px;height:auto;opacity:.9;margin-bottom:10px}
+        .vt-pied nav{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 16px;margin-bottom:12px}
+        .vt-pied nav a{display:inline-flex;align-items:center;gap:6px;font:600 12px 'Inter',sans-serif;color:#9aa3b8;text-decoration:none}
+        .vt-pied nav a i{color:var(--primary-yellow)}
+        .vt-pied small{font:400 11px 'Inter',sans-serif;color:#5f677a}
+        .vt-connexion-flottante{position:sticky;bottom:calc(14px + var(--safe-bottom));z-index:20;margin:-66px auto 0;width:max-content;display:flex;align-items:center;gap:8px;padding:12px 20px;border-radius:30px;border:none;cursor:pointer;
+            background:linear-gradient(135deg,#FFC107,#B8860B);color:#1a1200;font:800 13px 'Montserrat',sans-serif;box-shadow:0 10px 26px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.15) inset;
+            opacity:0;transform:translateY(20px);pointer-events:none;transition:opacity .3s,transform .3s}
+        .vt-connexion-flottante.visible{opacity:1;transform:translateY(0);pointer-events:auto}
+        .vt-apparition{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s ease}
+        .vt-apparition.vu{opacity:1;transform:none}
+        @media (prefers-reduced-motion:reduce){.vt-apparition{opacity:1;transform:none;transition:none}.vt-connexion-flottante{transition:none}}
         @keyframes splashFadeIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
         @keyframes loaderBounce{0%,80%,100%{transform:scale(.6);opacity:.3}40%{transform:scale(1);opacity:1}}
         @keyframes ballSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
@@ -1653,6 +1708,11 @@ async function fetchApiScore(id, dateRaw) {
     <div class="login-header" style="padding-top:calc(20px + var(--safe-top));">
         <img id="img-login" alt="Score Master" class="login-logo-img">
     </div>
+    <section class="vt-hero">
+        <h1>Le score exact,<br><span>analysé par l'IA.</span></h1>
+        <p>Des combinés en score exact, préparés par notre IA et validés par notre équipe avant chaque publication.</p>
+        <div class="vt-atouts"><span><i class="fas fa-microchip"></i>Analyse IA</span><span><i class="fas fa-user-check"></i>Validation humaine</span><span><i class="fas fa-shield-halved"></i>Satisfait ou remboursé</span></div>
+    </section>
     <div class="login-form-container">
         <div class="pattern-bg-form">
             <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
@@ -1789,6 +1849,76 @@ async function fetchApiScore(id, dateRaw) {
             </ol>
         </details>
     </section>
+
+    <section class="vt-section vt-apparition">
+        <span class="vt-surtitre">COMMENT ÇA MARCHE</span>
+        <h2 class="vt-titre">Du match analysé au <span>combiné validé</span></h2>
+        <div class="vt-etapes">
+            <div class="vt-etape"><span class="num">1</span><div><b>L'IA analyse</b><p>Nos agents passent chaque rencontre au crible, encore et encore, jusqu'au coup d'envoi.</p></div></div>
+            <div class="vt-etape"><span class="num">2</span><div><b>L'équipe valide</b><p>Chaque combiné est relu par un membre de l'équipe avant d'être publié. Rien ne sort sans ce double contrôle.</p></div></div>
+            <div class="vt-etape"><span class="num">3</span><div><b>Tu reçois ton combiné</b><p>Dans ton espace de l'application et sur notre canal Telegram, dès sa publication.</p></div></div>
+        </div>
+    </section>
+
+    <section class="vt-section vt-apparition">
+        <span class="vt-surtitre">NOS FORMULES</span>
+        <h2 class="vt-titre">Choisis ton <span>niveau d'accès</span></h2>
+        <div class="vt-formules">
+            <article class="vt-formule">
+                <h3>SM Score Exact Journalier</h3>
+                <p class="accroche">Ton pronostic en score exact du jour, avec son analyse détaillée.</p>
+                <ul><li><i class="fas fa-check"></i>1 score exact</li><li><i class="fas fa-check"></i>Analyse détaillée</li><li><i class="fas fa-check"></i>Support 7j/7</li><li><i class="fas fa-check"></i>Notification push</li></ul>
+                <span class="garantie"><i class="fas fa-shield-halved"></i> Satisfait ou remboursé sous 48 h</span>
+                <button class="vt-bouton" onclick="vitrineInscription()">Créer mon compte</button>
+            </article>
+            <article class="vt-formule vip">
+                <img class="robot" src="mascotte-roi-mecha.webp" alt="" loading="lazy">
+                <span class="ruban">LE PLUS COMPLET</span>
+                <h3>SM VIP+ à vie</h3>
+                <p class="accroche">L'accès complet, pour toujours : là où notre IA donne toute sa puissance.</p>
+                <ul><li><i class="fas fa-check"></i>Accès à vie</li><li><i class="fas fa-check"></i>4 à 5 combinés S.E / sem.</li><li><i class="fas fa-check"></i>Espace membre VIP+</li><li><i class="fas fa-check"></i>Canal Telegram VIP</li><li><i class="fas fa-check"></i>Priorité support</li><li><i class="fas fa-check"></i>Accès fondateurs</li></ul>
+                <span class="garantie"><i class="fas fa-shield-halved"></i> Satisfait ou remboursé sous 7 jours</span>
+                <button class="vt-bouton or" onclick="vitrineInscription()"><i class="fas fa-crown"></i> Rejoindre le VIP+</button>
+            </article>
+            <article class="vt-formule">
+                <h3>SM Combiné Hebdo</h3>
+                <p class="accroche">Chaque semaine, des combinés en score exact soigneusement sélectionnés.</p>
+                <ul><li><i class="fas fa-check"></i>5 combinés S.E / sem.</li><li><i class="fas fa-check"></i>Cotes élevées</li><li><i class="fas fa-check"></i>Suivi en direct</li><li><i class="fas fa-check"></i>Récap hebdomadaire</li></ul>
+                <span class="garantie"><i class="fas fa-shield-halved"></i> Satisfait ou remboursé sous 48 h</span>
+                <button class="vt-bouton" onclick="vitrineInscription()">Créer mon compte</button>
+            </article>
+        </div>
+    </section>
+
+    <section class="vt-section vt-apparition">
+        <span class="vt-surtitre">CONFIANCE</span>
+        <h2 class="vt-titre">Pourquoi nous <span>faire confiance</span></h2>
+        <div class="vt-confiance">
+            <div><i class="fas fa-user-check"></i><b>Validation humaine</b><p>L'IA propose, l'équipe vérifie chaque combiné.</p></div>
+            <div><i class="fas fa-clock-rotate-left"></i><b>Historique consultable</b><p>Chaque combiné, gagné comme perdu, reste visible dans l'app.</p></div>
+            <div><i class="fas fa-shield-halved"></i><b>Satisfait ou remboursé</b><p>48 h, et 7 jours pour le VIP+.</p></div>
+            <div><i class="fab fa-telegram-plane"></i><b>Une vraie communauté</b><p>Chaque combiné est annoncé sur notre canal Telegram.</p></div>
+        </div>
+    </section>
+
+    <section class="vt-final vt-apparition">
+        <h2>Prêt à voir le match <span style="color:var(--primary-yellow)">autrement</span>&nbsp;?</h2>
+        <p>Crée ton compte en quelques secondes et découvre le prochain combiné.</p>
+        <button class="vt-bouton or" onclick="vitrineInscription()">Créer mon compte</button>
+        <a class="vt-bouton tg" href="#" onclick="window.open(TELEGRAM_LINK, '_blank'); return false;"><i class="fab fa-telegram-plane"></i> Rejoindre le canal Telegram</a>
+    </section>
+
+    <footer class="vt-pied">
+        <img class="logo" src="logo-dark.png" alt="Score Master">
+        <nav>
+            <a href="https://scoremaster.fr/"><i class="fas fa-globe"></i>scoremaster.fr</a>
+            <a href="https://www.instagram.com/scoremaster.fr/" target="_blank" rel="noopener"><i class="fab fa-instagram"></i>@scoremaster.fr</a>
+            <a href="#" onclick="window.open(TELEGRAM_LINK, '_blank'); return false;"><i class="fab fa-telegram-plane"></i>@ScoreMasterOfficiel</a>
+        </nav>
+        <small>© 2026 Score Master · Pronostics football analysés par l'IA</small>
+    </footer>
+
+    <button class="vt-connexion-flottante" id="vt-connexion-flottante" onclick="vitrineConnexion()"><i class="fas fa-right-to-bracket"></i> Se connecter</button>
 </div>
     
 <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toast-message"></span></div>
@@ -10506,6 +10636,42 @@ async function fetchMatchesFromAPI() {
                 setTimeout(function () { el.textContent = e[1]; el.classList.toggle('pret', e[1] === 'Prêt !'); el.style.opacity = '1'; }, e[0] ? 150 : 0);
             }, e[0]);
         });
+    })();
+
+    // ============================================================
+    // PAGE VITRINE (écran de connexion) : raccourcis vers le formulaire,
+    // bouton « Se connecter » flottant et apparitions au défilement.
+    // ============================================================
+    function vitrineVersFormulaire(champ) {
+        var form = document.querySelector('#login-screen .login-form-container');
+        if (!form) return;
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setTimeout(function () { var el = document.getElementById(champ); if (el) el.focus({ preventScroll: true }); }, 600);
+    }
+    function vitrineInscription() {
+        if (typeof isSignUpMode !== 'undefined' && !isSignUpMode) toggleAuthMode();
+        vitrineVersFormulaire('login-username');
+    }
+    function vitrineConnexion() {
+        if (typeof isSignUpMode !== 'undefined' && isSignUpMode) toggleAuthMode();
+        vitrineVersFormulaire('login-email');
+    }
+    (function () {
+        function init() {
+            var ecran = document.getElementById('login-screen');
+            var form = ecran && ecran.querySelector('.login-form-container');
+            var flottant = document.getElementById('vt-connexion-flottante');
+            if (!ecran || !form || !flottant) return;
+            if (!('IntersectionObserver' in window)) { document.querySelectorAll('.vt-apparition').forEach(function (el) { el.classList.add('vu'); }); return; }
+            new IntersectionObserver(function (entrees) {
+                entrees.forEach(function (e) { flottant.classList.toggle('visible', !e.isIntersecting); });
+            }, { root: ecran, threshold: 0 }).observe(form);
+            var io = new IntersectionObserver(function (entrees) {
+                entrees.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('vu'); io.unobserve(e.target); } });
+            }, { root: ecran, threshold: .15 });
+            document.querySelectorAll('.vt-apparition').forEach(function (el) { io.observe(el); });
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
     })();
 
     // ============================================================
