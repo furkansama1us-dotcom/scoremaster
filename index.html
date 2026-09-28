@@ -89,53 +89,83 @@
         @keyframes srOnde{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(9)}}
         @keyframes srFlotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
         @keyframes sbCharge{0%{width:0}30%{width:34%}55%{width:58%}80%{width:86%}100%{width:100%}}
-        /* Page de connexion : la mascotte réagit à la saisie */
-        .login-mascotte{position:absolute;left:50%;bottom:0;width:120px;height:128px;margin-left:-60px;z-index:0;pointer-events:none}
-        .login-mascotte.cachee{display:none}
-        .login-mascotte.a-gauche{left:6px;margin-left:0}
-        .login-mascotte.a-gauche .lm-bulle{left:2px;--bx:0;transform-origin:25% 100%}
-        .login-mascotte.a-gauche .lm-bulle::after{left:52px}
-        .login-mascotte.a-gauche .lm-ono{left:88px}
-        .login-mascotte .lm-corps{position:absolute;left:0;bottom:-20px;width:120px;height:128px;transform:translateY(150px);transform-origin:50% 100%;will-change:transform}
-        .login-mascotte .lm-img{position:absolute;inset:0;width:120px;height:128px;filter:drop-shadow(0 -2px 10px rgba(255,193,7,.12))}
-        .login-mascotte .lm-bras{position:absolute;left:89.1px;top:85.7px;width:28.6px;height:82.3px;transform-origin:50% 4%}
-        .login-mascotte .lm-yeux{position:absolute;left:0;top:0;width:120px;height:60px;transition:transform .25s ease-out}
-        .login-mascotte .lm-oeil{position:absolute;top:38.3px;width:5px;height:7px;border-radius:50%;background:#FFE36B;
-            box-shadow:0 0 5px 2px rgba(255,200,40,.9),0 0 11px 4px rgba(255,170,0,.4);transition:opacity .2s,transform .2s;animation:lmCligne 4.2s infinite}
-        .login-mascotte .lm-oeil.g{left:45.7px}.login-mascotte .lm-oeil.d{left:67.9px}
-        .login-mascotte.pudique .lm-oeil{opacity:.08;transform:scaleY(.2);animation:none}
-        .login-mascotte.ebahi .lm-oeil{transform:scale(1.35)}
-        .login-mascotte .lm-bulle{position:absolute;bottom:116px;left:50%;white-space:nowrap;background:#fff;color:#111;font:800 11px 'Montserrat',sans-serif;
-            padding:6px 10px;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.35);opacity:0;transform:translateX(var(--bx,-50%)) scale(.6);transform-origin:50% 100%;transition:opacity .2s,transform .25s cubic-bezier(.3,1.6,.5,1)}
-        .login-mascotte .lm-bulle::after{content:'';position:absolute;left:50%;margin-left:-5px;bottom:-5px;width:10px;height:10px;background:#fff;transform:rotate(45deg);border-radius:2px}
-        .login-mascotte .lm-bulle.visible{opacity:1;transform:translateX(var(--bx,-50%)) scale(1)}
-        /* Gags de la mascotte */
-        .login-mascotte .lm-ballon{position:absolute;left:51px;top:0;font-size:18px;color:#fff;filter:drop-shadow(0 2px 3px rgba(0,0,0,.5));z-index:3}
-        .login-mascotte .lm-z{position:absolute;left:78px;top:18px;font:900 13px 'Montserrat',sans-serif;color:#8fb8ff;opacity:0;z-index:3}
-        .login-mascotte.dodo .lm-oeil{transform:scaleY(.15);opacity:.55;animation:none}
-        .login-mascotte .lm-ono{position:absolute;left:50%;top:-6px;z-index:4;font-family:'Bangers','Impact',sans-serif;font-size:22px;letter-spacing:1px;white-space:nowrap;color:#FFE14D;
-            -webkit-text-stroke:1.5px #1a1200;paint-order:stroke fill;text-shadow:2px 2px 0 #1a1200;background:#E8352B;padding:12px 16px;
-            clip-path:polygon(50% 0%,61% 20%,82% 8%,77% 31%,100% 35%,82% 52%,98% 72%,74% 71%,72% 96%,54% 80%,38% 100%,33% 76%,8% 84%,18% 60%,0% 44%,21% 34%,12% 11%,36% 20%)}
-        /* L'iceberg de l'IA : l'humain voit la pointe, l'IA voit tout */
-        .login-ia{position:absolute;right:4px;bottom:6px;width:min(222px,calc(100% - 138px));height:170px;z-index:0;pointer-events:none}
-        .login-ia.cachee{display:none}
-        .login-ia .li-legende{position:absolute;top:0;left:0;right:0;text-align:center;font:600 10.5px 'Inter',sans-serif;color:#7d869b;line-height:1.35}
-        .login-ia .li-legende b{color:var(--primary-yellow);font-weight:800}
-        .login-ia svg{position:absolute;left:50%;top:32px;width:200px;height:130px;margin-left:-100px;overflow:visible}
-        .login-ia .li-revele{clip-path:inset(100% 0 0 0);animation:liRevele 7s ease-in-out infinite}
-        .login-ia .li-scanligne{animation:liScan 7s ease-in-out infinite}
-        .login-ia .li-donnee{position:absolute;font:700 9px 'Inter',sans-serif;color:#FFE082;white-space:nowrap;letter-spacing:.2px;opacity:0;
-            text-shadow:0 0 6px rgba(255,193,7,.6);animation:liDonnee 7s ease-in-out infinite;animation-delay:var(--d)}
-        .login-ia .li-rayon{position:absolute;top:62px;height:92px;
-            background:linear-gradient(to right,rgba(255,214,64,.6),rgba(255,193,7,.14) 75%,transparent);clip-path:polygon(0 60%,0 66%,100% 100%,100% 0);
-            opacity:0;animation:liRayon 7s ease-in-out infinite;filter:blur(1px)}
-        @keyframes liRevele{0%,8%{clip-path:inset(100% 0 0 0);opacity:1}55%{clip-path:inset(0 0 0 0);opacity:1}86%{clip-path:inset(0 0 0 0);opacity:1}100%{clip-path:inset(0 0 0 0);opacity:0}}
-        @keyframes liScan{0%,8%{transform:translateY(0);opacity:0}12%{opacity:1}55%{transform:translateY(-118px);opacity:1}62%,100%{transform:translateY(-118px);opacity:0}}
-        @keyframes liDonnee{0%,14%{opacity:0;transform:translateY(4px) scale(.9)}20%{opacity:1;transform:translateY(0) scale(1)}24%{opacity:.35}27%{opacity:1}68%{opacity:1}76%,100%{opacity:0}}
-        @keyframes liRayon{0%,6%{opacity:0}12%,58%{opacity:1}66%,100%{opacity:0}}
-        @media (prefers-reduced-motion:reduce){.login-ia .li-revele{animation:none;clip-path:none}.login-ia .li-scanligne,.login-ia .li-rayon{display:none}.login-ia .li-donnee{animation:none;opacity:1}}
-        @keyframes lmCligne{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
-        @media (prefers-reduced-motion:reduce){.splash-robot .sr-couleur{animation:none;clip-path:none}.splash-robot .sr-scan,.splash-robot .sr-onde{display:none}.splash-robot .sr-oeil{animation:none;opacity:1}.splash-robot .sr-corps{animation:none}.login-mascotte .lm-oeil{animation:none}}
+        @media (prefers-reduced-motion:reduce){.splash-robot .sr-couleur{animation:none;clip-path:none}.splash-robot .sr-scan,.splash-robot .sr-onde{display:none}.splash-robot .sr-oeil{animation:none;opacity:1}.splash-robot .sr-corps{animation:none}}
+        /* Connexion : le portail reste compact, la page défile vers l'AI Analysis Lab */
+        #login-screen{overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+        #login-screen > *{flex-shrink:0}
+        #login-screen .login-form-container{flex:0 0 auto;overflow:visible;border-radius:30px 30px 26px 26px;border-bottom:1px solid rgba(255,193,7,.12)}
+        .lab-lien{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:16px;position:relative;z-index:1;font:600 12px 'Inter',sans-serif;color:#8b93a7;text-decoration:none}
+        .lab-lien i{color:var(--primary-yellow);font-size:11px;animation:labFleche 2.4s ease-in-out infinite}
+        @keyframes labFleche{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+        .lab-promesse{padding:44px 26px 22px;text-align:center}
+        .lab-promesse h2{margin:0 0 10px;font:800 21px/1.25 'Montserrat',sans-serif;color:#fff;letter-spacing:-.2px}
+        .lab-promesse h2 span{color:var(--primary-yellow)}
+        .lab-promesse p{margin:0 auto;max-width:320px;font:400 13.5px/1.55 'Inter',sans-serif;color:#9aa3b8}
+        .lab{position:relative;margin:0 14px calc(28px + var(--safe-bottom));padding:20px 16px 18px;border-radius:26px;overflow:hidden;
+            background:linear-gradient(180deg,#0e1a33 0%,#0b1326 100%);border:1px solid rgba(120,160,230,.14);box-shadow:0 18px 50px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.04)}
+        .lab::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.5;
+            background-image:linear-gradient(rgba(120,160,230,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(120,160,230,.05) 1px,transparent 1px);background-size:22px 22px;
+            -webkit-mask:radial-gradient(ellipse 90% 70% at 50% 30%,#000,transparent);mask:radial-gradient(ellipse 90% 70% at 50% 30%,#000,transparent)}
+        .lab > *{position:relative}
+        .lab-entete{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+        .lab-etiquette{font:800 10.5px 'Montserrat',sans-serif;letter-spacing:1.6px;color:#8fb3ea}
+        .lab-frais{display:inline-flex;align-items:center;gap:6px;font:600 10.5px 'Inter',sans-serif;color:#9aa3b8;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);padding:4px 9px;border-radius:20px}
+        .lab-frais i{width:6px;height:6px;border-radius:50%;background:#22C55E;box-shadow:0 0 6px #22C55E}
+        .lab-frais.hors i{background:#8b93a7;box-shadow:none}
+        .lab-prof{display:flex;align-items:center;gap:12px;margin:18px 0 6px}
+        .lab-robot{position:relative;flex:0 0 104px;height:111px;animation:labFlotte 6s ease-in-out infinite}
+        .lab-robot img{width:104px;height:111px;display:block;filter:drop-shadow(0 8px 16px rgba(0,0,0,.45))}
+        .lab-robot i{position:absolute;top:33.2px;width:4.4px;height:6px;border-radius:50%;background:#FFE36B;box-shadow:0 0 5px 2px rgba(255,200,40,.85),0 0 10px 4px rgba(255,170,0,.35);animation:labRegard 7s ease-in-out infinite,labCligne 5s infinite}
+        .lab-robot i.g{left:39.6px}.lab-robot i.d{left:58.8px}
+        .lab-parole{flex:1;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.07);border-radius:14px 14px 14px 4px;padding:11px 12px}
+        .lab-parole b{display:block;font:700 13px/1.35 'Montserrat',sans-serif;color:#fff}
+        .lab-parole span{display:block;margin-top:5px;font:400 11.5px/1.45 'Inter',sans-serif;color:#8b93a7}
+        .lab-iceberg{position:relative;margin:4px -4px 0}
+        .lab-iceberg svg{display:block;width:100%;height:auto;overflow:visible}
+        .lab-iceberg .ib-noeud,.lab-iceberg .ib-texte{opacity:0;transition:opacity .7s ease;transition-delay:var(--d,0s)}
+        .lab-iceberg .ib-lien{stroke-dasharray:160;stroke-dashoffset:160;transition:stroke-dashoffset 1.4s ease;transition-delay:var(--d,0s)}
+        .lab-iceberg.vu .ib-noeud,.lab-iceberg.vu .ib-texte{opacity:1}
+        .lab-iceberg.vu .ib-lien{stroke-dashoffset:0}
+        .lab-iceberg .ib-scan{opacity:0}
+        .lab-iceberg.vu .ib-scan{animation:labScan 9s 2.4s ease-in-out infinite}
+        .lab-iceberg .ib-flux{opacity:0;transition:opacity 1s 2.6s}
+        .lab-iceberg.vu .ib-flux{opacity:1}
+        .lab-legende{display:flex;justify-content:center;gap:14px;margin:2px 0 14px;font:600 10px 'Inter',sans-serif;color:#8b93a7}
+        .lab-legende span{display:inline-flex;align-items:center;gap:5px}
+        .lab-legende i{width:7px;height:7px;border-radius:50%;display:inline-block}
+        .lab-carte{background:rgba(6,11,24,.55);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:14px 14px 12px}
+        .lab-carte-tete{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:12px}
+        .lab-carte-tete small{display:block;font:800 9.5px 'Montserrat',sans-serif;letter-spacing:1.4px;color:var(--primary-yellow)}
+        .lab-carte-tete b{display:block;margin-top:4px;font:700 13.5px/1.3 'Montserrat',sans-serif;color:#fff}
+        .lab-carte-tete em{display:block;margin-top:2px;font:400 11px 'Inter',sans-serif;color:#8b93a7;font-style:normal}
+        .lab-statut{flex-shrink:0;font:600 10px 'Inter',sans-serif;color:#8fb3ea;display:inline-flex;align-items:center;gap:5px}
+        .lab-statut i{width:5px;height:5px;border-radius:50%;background:#8fb3ea;animation:labPouls 1.8s ease-in-out infinite}
+        .lab-etape{padding:10px 0;border-top:1px solid rgba(255,255,255,.06)}
+        .lab-etape h4{margin:0 0 7px;font:800 9.5px 'Montserrat',sans-serif;letter-spacing:1.3px;color:#8b93a7}
+        .lab-etape h4 small{font:600 9.5px 'Inter',sans-serif;letter-spacing:0;color:#5f677a;margin-left:4px}
+        .lab-puces{display:flex;flex-wrap:wrap;gap:5px}
+        .lab-puces span{font:600 10.5px 'Inter',sans-serif;color:#c9d3e6;background:rgba(143,179,234,.08);border:1px solid rgba(143,179,234,.16);padding:3px 8px;border-radius:20px}
+        .lab-proba{display:grid;grid-template-columns:minmax(0,1fr) 38px;align-items:center;gap:4px 8px;margin-top:4px}
+        .lab-proba span{font:600 11px 'Inter',sans-serif;color:#c9d3e6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .lab-proba strong{font:800 11.5px 'Montserrat',sans-serif;color:#fff;text-align:right}
+        .lab-proba .barre{grid-column:1 / -1;height:5px;border-radius:5px;background:rgba(255,255,255,.06);overflow:hidden;margin-bottom:5px}
+        .lab-proba .barre i{display:block;height:100%;width:0;border-radius:5px;background:linear-gradient(90deg,#8a6a12,#FFC107);transition:width 1.2s cubic-bezier(.3,.1,.3,1)}
+        .lab-lecture{font:500 12.5px/1.45 'Inter',sans-serif;color:#e6e9f0}
+        .lab-note{margin-top:5px;font:400 10.5px 'Inter',sans-serif;color:#6f7890}
+        .lab-methode{margin-top:12px;border:1px solid rgba(255,255,255,.07);border-radius:14px;background:rgba(255,255,255,.02)}
+        .lab-methode summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;font:700 12.5px 'Montserrat',sans-serif;color:#dfe5f1}
+        .lab-methode summary::-webkit-details-marker{display:none}
+        .lab-methode summary i{color:#8b93a7;transition:transform .25s}
+        .lab-methode[open] summary i{transform:rotate(180deg)}
+        .lab-methode ol{margin:0;padding:0 16px 14px 32px;font:400 12px/1.55 'Inter',sans-serif;color:#9aa3b8}
+        .lab-methode li{margin-bottom:7px}
+        .lab-methode li b{color:#dfe5f1;font-weight:700}
+        @keyframes labFlotte{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+        @keyframes labRegard{0%,20%{transform:translate(0,0)}30%,55%{transform:translate(3px,1.5px)}65%,85%{transform:translate(1px,2px)}100%{transform:translate(0,0)}}
+        @keyframes labCligne{0%,94%,100%{height:6px;margin-top:0}97%{height:1px;margin-top:2.5px}}
+        @keyframes labScan{0%{transform:translateY(0);opacity:0}8%{opacity:.55}55%{transform:translateY(168px);opacity:.55}62%,100%{transform:translateY(168px);opacity:0}}
+        @keyframes labPouls{0%,100%{opacity:1}50%{opacity:.3}}
+        @media (prefers-reduced-motion:reduce){.lab-robot,.lab-robot i,.lab-lien i,.lab-statut i{animation:none}.lab-iceberg .ib-noeud,.lab-iceberg .ib-texte{opacity:1;transition:none}.lab-iceberg .ib-lien{stroke-dashoffset:0;transition:none}.lab-iceberg .ib-scan,.lab-iceberg .ib-flux{display:none}}
         @keyframes splashFadeIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
         @keyframes loaderBounce{0%,80%,100%{transform:scale(.6);opacity:.3}40%{transform:scale(1);opacity:1}}
         @keyframes ballSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
@@ -1695,49 +1725,110 @@ async function fetchApiScore(id, dateRaw) {
         <div style="margin-top:10px; position:relative; z-index:1;">
             <a href="#" onclick="window.open(TELEGRAM_LINK, '_blank'); return false;" style="display:flex; align-items:center; justify-content:center; gap:7px; padding:10px; background:rgba(38,165,228,0.1); border:1px solid rgba(38,165,228,0.3); border-radius:12px; color:#26A5E4; font-size:12.5px; font-weight:700; text-decoration:none;"><i class="fab fa-telegram-plane"></i> Telegram</a>
         </div>
-        <div class="login-ia cachee" id="login-ia" aria-hidden="true">
-            <div class="li-legende">L'humain voit la pointe.<br><b>Notre IA voit tout l'iceberg.</b></div>
-            <svg viewBox="0 0 230 150">
-                <defs>
-                    <linearGradient id="li-eau" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c4b7a" stop-opacity=".45"/><stop offset="1" stop-color="#0F1424" stop-opacity="0"/></linearGradient>
-                    <linearGradient id="li-glace" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4fbff"/><stop offset="1" stop-color="#9cc7ea"/></linearGradient>
-                </defs>
-                <rect x="-20" y="34" width="270" height="116" fill="url(#li-eau)"/>
-                <!-- partie immergée : devinée seulement -->
-                <polygon points="78,34 152,34 186,62 204,98 178,132 122,146 66,136 34,100 50,62" fill="#0d2138" fill-opacity=".55" stroke="#2c5d8a" stroke-opacity=".35" stroke-dasharray="3 4"/>
-                <!-- partie immergée révélée par le scan de l'IA -->
-                <g class="li-revele">
-                    <polygon points="78,34 152,34 186,62 204,98 178,132 122,146 66,136 34,100 50,62" fill="rgba(255,193,7,.08)" stroke="#FFC107" stroke-width="1.4"/>
-                    <polyline points="78,34 96,70 50,62 96,70 122,146 96,70 150,86 152,34 150,86 186,62 150,86 204,98 150,86 178,132 150,86 122,146" fill="none" stroke="#FFC107" stroke-opacity=".45" stroke-width=".8"/>
-                    <polyline points="96,70 34,100 66,136 96,70" fill="none" stroke="#FFC107" stroke-opacity=".35" stroke-width=".8"/>
-                </g>
-                <!-- pointe visible -->
-                <polygon points="84,34 100,16 110,22 122,4 136,20 146,34" fill="url(#li-glace)"/>
-                <text x="115" y="28" text-anchor="middle" font-family="Inter,sans-serif" font-size="7.5" font-weight="800" fill="#1b3350">SCORE</text>
-                <!-- ligne d'eau -->
-                <path d="M-20,34 Q-5,31 10,34 T40,34 T70,34 T100,34 T130,34 T160,34 T190,34 T220,34 T250,34" fill="none" stroke="#6fb1ea" stroke-opacity=".6" stroke-width="1.2"/>
-                <line class="li-scanligne" x1="20" y1="150" x2="210" y2="150" stroke="#FFE082" stroke-width="1.6" style="filter:drop-shadow(0 0 3px #FFC107)"/>
-            </svg>
-            <div class="li-donnee" style="left:calc(50% - 50px);top:133px;--d:.5s">xG 1.84</div>
-            <div class="li-donnee" style="left:calc(50% + 10px);top:131px;--d:.6s">Pressing 67 %</div>
-            <div class="li-donnee" style="left:calc(50% - 66px);top:112px;--d:1s">Forme 5 matchs</div>
-            <div class="li-donnee" style="left:calc(50% + 18px);top:110px;--d:1.1s">Blessures</div>
-            <div class="li-donnee" style="left:calc(50% - 56px);top:91px;--d:1.5s">Arbitre</div>
-            <div class="li-donnee" style="left:calc(50% - 9px);top:98px;--d:1.55s">Météo</div>
-            <div class="li-donnee" style="left:calc(50% + 28px);top:87px;--d:1.7s">Fatigue</div>
-            <div class="li-donnee" style="left:calc(50% - 38px);top:72px;--d:2.1s">Cotes en direct</div>
-            <div class="li-donnee" style="left:calc(50% + 32px);top:68px;--d:2.2s">H2H</div>
-            <div class="li-rayon"></div>
+        <a href="#lab" class="lab-lien" onclick="document.getElementById('lab').scrollIntoView({ behavior: 'smooth', block: 'start' }); return false;">Comment notre IA analyse un match <i class="fas fa-chevron-down"></i></a>
+    </div>
+
+    <section class="lab-promesse">
+        <h2>L'humain voit la pointe.<br><span>Notre IA analyse tout l'iceberg.</span></h2>
+        <p>Un résultat visible repose sur de nombreux signaux que l'on ne voit pas immédiatement.</p>
+    </section>
+
+    <section class="lab" id="lab" aria-labelledby="lab-titre">
+        <div class="lab-entete">
+            <span class="lab-etiquette" id="lab-titre">AI ANALYSIS LAB</span>
+            <span class="lab-frais hors" id="lab-frais"><i></i><span>Chargement des données…</span></span>
         </div>
-        <div class="login-mascotte cachee" id="login-mascotte" aria-hidden="true">
-            <div class="lm-bulle" id="lm-bulle"></div>
-            <div class="lm-corps">
-                <img class="lm-img" src="mascotte-login.webp" alt="">
-                <img class="lm-bras" src="mascotte-bras.webp" alt="">
-                <div class="lm-yeux"><i class="lm-oeil g"></i><i class="lm-oeil d"></i></div>
+
+        <div class="lab-prof">
+            <div class="lab-robot" aria-hidden="true"><img src="mascotte-login.webp" alt=""><i class="g"></i><i class="d"></i></div>
+            <div class="lab-parole">
+                <b>Tu vois le résultat. J'analyse ce qui l'explique.</b>
+                <span>Sous la surface, plusieurs signaux changent la lecture du match.</span>
             </div>
         </div>
-    </div>
+
+        <div class="lab-iceberg" id="lab-iceberg">
+            <svg viewBox="0 0 320 250" role="img" aria-label="Iceberg : le score, la cote et le résultat sont visibles en surface ; sous l'eau, les signaux analysés : forme récente, confrontations, domicile et extérieur, attaque et défense, buts, cotes du marché, calendrier, qui convergent vers les probabilités calculées.">
+                <defs>
+                    <linearGradient id="ib-glace" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6fbff"/><stop offset="1" stop-color="#b9d6f2"/></linearGradient>
+                    <linearGradient id="ib-fond" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#17365e" stop-opacity=".9"/><stop offset="1" stop-color="#0b1a31" stop-opacity=".6"/></linearGradient>
+                    <linearGradient id="ib-eau" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d4f86" stop-opacity=".28"/><stop offset="1" stop-color="#0b1326" stop-opacity="0"/></linearGradient>
+                    <clipPath id="ib-coupe"><polygon points="112,70 208,70 252,108 274,160 244,214 172,240 100,230 58,180 70,112"/></clipPath>
+                    <style>.ib-texte{font:600 8.6px Inter,sans-serif;fill:#c9d3e6}.ib-surface{font:700 9px Inter,sans-serif;fill:#dfe9f7}</style>
+                </defs>
+                <rect x="-10" y="70" width="340" height="180" fill="url(#ib-eau)"/>
+                <polygon points="112,70 208,70 252,108 274,160 244,214 172,240 100,230 58,180 70,112" fill="url(#ib-fond)" stroke="#8fb3ea" stroke-opacity=".22"/>
+                <g clip-path="url(#ib-coupe)">
+                    <rect class="ib-scan" x="40" y="70" width="250" height="2" fill="#8fb3ea"/>
+                    <line class="ib-lien" x1="104" y1="108" x2="178" y2="138" stroke="#8fb3ea" stroke-opacity=".35" stroke-width="1" style="--d:0.50s"/>
+                        <line class="ib-lien" x1="210" y1="100" x2="178" y2="138" stroke="#8fb3ea" stroke-opacity=".35" stroke-width="1" style="--d:0.62s"/>
+                        <line class="ib-lien" x1="92" y1="150" x2="178" y2="138" stroke="#8fb3ea" stroke-opacity=".35" stroke-width="1" style="--d:0.74s"/>
+                        <line class="ib-lien" x1="178" y1="138" x2="158" y2="182" stroke="#8fb3ea" stroke-opacity=".35" stroke-width="1" style="--d:0.86s"/>
+                        <line class="ib-lien" x1="236" y1="168" x2="158" y2="182" stroke="#8fb3ea" stroke-opacity=".35" stroke-width="1" style="--d:0.98s"/>
+                        <line class="ib-lien" x1="104" y1="196" x2="158" y2="182" stroke="#8fb3ea" stroke-opacity=".35" stroke-width="1" style="--d:1.10s"/>
+                        <line class="ib-lien" x1="208" y1="208" x2="158" y2="182" stroke="#8fb3ea" stroke-opacity=".35" stroke-width="1" style="--d:1.22s"/>
+                        <line class="ib-lien" x1="92" y1="150" x2="104" y2="196" stroke="#8fb3ea" stroke-opacity=".35" stroke-width="1" style="--d:1.34s"/>
+                        <line class="ib-lien" x1="210" y1="100" x2="236" y2="168" stroke="#8fb3ea" stroke-opacity=".35" stroke-width="1" style="--d:1.46s"/>
+                    <g class="ib-flux">
+                            <circle r="1.8" fill="#FFE082"><animateMotion dur="2.6s" begin="0.0s" repeatCount="indefinite" path="M178,138 L158,182"/></circle>
+                            <circle r="1.8" fill="#FFE082"><animateMotion dur="3.1s" begin="0.7s" repeatCount="indefinite" path="M236,168 L158,182"/></circle>
+                            <circle r="1.8" fill="#FFE082"><animateMotion dur="3.6s" begin="1.4s" repeatCount="indefinite" path="M104,196 L158,182"/></circle>
+                            <circle r="1.8" fill="#FFE082"><animateMotion dur="4.1s" begin="2.1s" repeatCount="indefinite" path="M208,208 L158,182"/></circle>
+                    </g>
+                </g>
+                <circle class="ib-noeud" cx="104" cy="108" r="3.2" fill="#cfe1ff" style="--d:0.3s"/><text class="ib-texte" x="111" y="111.5" text-anchor="start" style="--d:0.3s">Forme récente</text>
+                        <circle class="ib-noeud" cx="210" cy="100" r="3.2" fill="#cfe1ff" style="--d:0.45s"/><text class="ib-texte" x="210" y="92" text-anchor="middle" style="--d:0.45s">Confrontations</text>
+                        <circle class="ib-noeud" cx="92" cy="150" r="3.2" fill="#cfe1ff" style="--d:0.6s"/><text class="ib-texte" x="99" y="153.5" text-anchor="start" style="--d:0.6s">Domicile / extérieur</text>
+                        <circle class="ib-noeud" cx="178" cy="138" r="3.2" fill="#cfe1ff" style="--d:0.75s"/><text class="ib-texte" x="178" y="130" text-anchor="middle" style="--d:0.75s">Attaque / défense</text>
+                        <circle class="ib-noeud" cx="236" cy="168" r="3.2" fill="#cfe1ff" style="--d:0.9s"/><text class="ib-texte" x="229" y="171.5" text-anchor="end" style="--d:0.9s">Buts</text>
+                        <circle class="ib-noeud" cx="104" cy="196" r="3.2" fill="#cfe1ff" style="--d:1.05s"/><text class="ib-texte" x="111" y="199.5" text-anchor="start" style="--d:1.05s">Cotes du marché</text>
+                        <circle class="ib-noeud" cx="208" cy="208" r="3.2" fill="#cfe1ff" style="--d:1.2s"/><text class="ib-texte" x="201" y="211.5" text-anchor="end" style="--d:1.2s">Calendrier</text>
+                <circle class="ib-noeud" cx="158" cy="182" r="6" fill="#FFC107" style="--d:1.5s"/>
+                <circle class="ib-noeud" cx="158" cy="182" r="11" fill="none" stroke="#FFC107" stroke-opacity=".35" style="--d:1.5s"/>
+                <text class="ib-texte" x="158" y="166" text-anchor="middle" style="--d:1.6s;fill:#FFE082;font-weight:800">Probabilités 1 · N · 2</text>
+                <polygon points="128,70 146,40 157,47 170,20 184,44 194,70" fill="url(#ib-glace)"/>
+                <path d="M-10,70 Q5,67 20,70 T50,70 T80,70 T110,70 T140,70 T170,70 T200,70 T230,70 T260,70 T290,70 T320,70 T340,70" fill="none" stroke="#6fb1ea" stroke-opacity=".55" stroke-width="1.2"/>
+                <text class="ib-surface" x="70" y="52" text-anchor="middle">Score</text>
+                <text class="ib-surface" x="250" y="46" text-anchor="middle">Cote</text>
+                <text class="ib-surface" x="236" y="62" text-anchor="middle">Résultat</text>
+                <line x1="92" y1="50" x2="132" y2="58" stroke="#dfe9f7" stroke-opacity=".35" stroke-width=".8"/>
+                <line x1="232" y1="44" x2="186" y2="46" stroke="#dfe9f7" stroke-opacity=".35" stroke-width=".8"/>
+                <text x="316" y="84" text-anchor="end" style="font:700 7.5px Inter,sans-serif;fill:#6fb1ea;letter-spacing:1px">CE QUE L'IA ANALYSE</text>
+                <text x="316" y="30" text-anchor="end" style="font:700 7.5px Inter,sans-serif;fill:#8b93a7;letter-spacing:1px">CE QUE L'ON VOIT</text>
+            </svg>
+        </div>
+        <div class="lab-legende"><span><i style="background:#cfe1ff"></i>Données observées</span><span><i style="background:#FFC107"></i>Indicateur calculé</span></div>
+
+        <article class="lab-carte" id="lab-carte">
+            <div class="lab-carte-tete">
+                <div><small>AI ANALYSIS</small><b id="lab-match">Rencontre en cours de chargement…</b><em id="lab-contexte"></em></div>
+                <span class="lab-statut"><i></i>Analyse en cours</span>
+            </div>
+            <div class="lab-etape">
+                <h4>1 · SIGNAUX OBSERVÉS <small id="lab-source">Source : API-Football</small></h4>
+                <div class="lab-puces"><span>Forme récente</span><span>Confrontations</span><span>Buts marqués / encaissés</span><span>Domicile / extérieur</span></div>
+            </div>
+            <div class="lab-etape">
+                <h4>2 · INDICATEURS CALCULÉS</h4>
+                <div class="lab-proba" id="lab-proba"><span style="grid-column:1 / -1;color:#6f7890">Probabilités en cours de chargement…</span></div>
+            </div>
+            <div class="lab-etape">
+                <h4>3 · LECTURE IA</h4>
+                <div class="lab-lecture" id="lab-lecture">Le résultat visible ne suffit pas à expliquer la dynamique du match.</div>
+                <div class="lab-note">Estimation calculée à partir des données disponibles, jamais une certitude.</div>
+            </div>
+        </article>
+
+        <details class="lab-methode">
+            <summary>Voir la méthodologie <i class="fas fa-chevron-down"></i></summary>
+            <ol>
+                <li><b>Données observées.</b> Résultats récents, confrontations directes, buts marqués et encaissés, performances à domicile et à l'extérieur, fournis par API-Football.</li>
+                <li><b>Indicateurs calculés.</b> Pour chaque rencontre, des probabilités de victoire, de nul et de défaite, recalculées avant le match.</li>
+                <li><b>Lecture IA.</b> Nos outils croisent ces probabilités avec les cotes pour repérer les rencontres les plus lisibles. Chaque combiné est relu par notre équipe avant publication.</li>
+                <li><b>Limites.</b> Une probabilité reste une estimation : le football garde sa part d'imprévu et aucun résultat n'est garanti.</li>
+            </ol>
+        </details>
+    </section>
 </div>
     
 <div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toast-message"></span></div>
@@ -10458,163 +10549,95 @@ async function fetchMatchesFromAPI() {
     })();
 
     // ============================================================
-    // PAGE DE CONNEXION : la mascotte arrive, suit la saisie des yeux,
-    // détourne le regard pendant le mot de passe, fête la connexion.
+    // AI ANALYSIS LAB (page de connexion) : uniquement des données réelles,
+    // lues dans ai_predictions / ai_fixtures (lecture publique). Si rien n'est
+    // disponible, la carte le dit au lieu d'inventer des valeurs.
     // ============================================================
     (function () {
-        var zone, corps, bras, yeux, bulle, ecran, calme, timerBulle, timerIdle, occupee = false, entree = false;
-        function init() {
-            zone = document.getElementById('login-mascotte');
-            ecran = document.getElementById('login-screen');
-            if (!zone || !ecran || zone.dataset.ok) return;
-            zone.dataset.ok = '1';
-            corps = zone.querySelector('.lm-corps'); bras = zone.querySelector('.lm-bras'); yeux = zone.querySelector('.lm-yeux'); bulle = document.getElementById('lm-bulle');
-            calme = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            new MutationObserver(function () { if (ecran.classList.contains('active')) arrivee(); }).observe(ecran, { attributes: true, attributeFilter: ['class'] });
-            window.addEventListener('resize', verifierPlace);
-            var email = document.getElementById('login-email'), pseudo = document.getElementById('login-username'), mdp = document.getElementById('login-password'), oeilMdp = document.getElementById('togglePassword');
-            [email, pseudo].forEach(function (champ) {
-                if (!champ) return;
-                champ.addEventListener('focus', function () { zone.classList.remove('pudique'); suivre(champ); });
-                champ.addEventListener('input', function () { suivre(champ); });
-                champ.addEventListener('blur', regardNeutre);
-            });
-            if (mdp) {
-                mdp.addEventListener('focus', function () { if (mdp.type === 'password') pudique(); });
-                mdp.addEventListener('blur', function () { zone.classList.remove('pudique'); tourner(0); regardNeutre(); });
-            }
-            if (oeilMdp) oeilMdp.addEventListener('click', function () {
-                setTimeout(function () {
-                    if (mdp.type === 'text') { zone.classList.remove('pudique'); zone.classList.add('ebahi'); tourner(0); yeux.style.transform = 'translate(0,2px)'; dire('Hé, je vois tout !', 1600); setTimeout(function () { zone.classList.remove('ebahi'); }, 900); }
-                    else if (document.activeElement === mdp) pudique();
-                }, 0);
-            });
-            // Réactions à la connexion : on écoute les messages d'erreur et le bouton
-            var toastOrig = window.showToast;
-            if (typeof toastOrig === 'function') window.showToast = function (msg, err) { if (err) window._mascotteErreur = true; return toastOrig.apply(this, arguments); };
-            var btn = document.getElementById('btn-action');
-            if (btn) btn.addEventListener('click', function () {
-                window._mascotteErreur = false;
-                sauter(); dire('C\'est parti !', 1400);
-                setTimeout(function () { if (window._mascotteErreur && ecran.classList.contains('active')) oups(); }, 1600);
-            }, true); // phase de capture : passe avant le onclick du bouton, qui peut signaler une erreur
+        var charge = false;
+        function dateParis(d) { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d || new Date()); }
+        function heureParis(iso) { return new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit' }).format(new Date(iso)); }
+        function ilYa(iso) {
+            var min = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000));
+            if (min < 1) return 'il y a moins d\'une minute';
+            if (min < 60) return 'il y a ' + min + ' min';
+            var h = Math.round(min / 60); if (h < 24) return 'il y a ' + h + ' h';
+            var j = Math.round(h / 24); return 'il y a ' + j + ' jour' + (j > 1 ? 's' : '');
         }
-        function verifierPlace() {
-            if (!zone) return;
-            var conteneur = zone.parentElement, dernier = zone.previousElementSibling;
-            if (!conteneur || !dernier) return;
-            var ia = document.getElementById('login-ia');
-            if (ia && dernier === ia) dernier = ia.previousElementSibling;
-            var libre = conteneur.getBoundingClientRect().bottom - dernier.getBoundingClientRect().bottom;
-            zone.classList.toggle('cachee', libre < 118);
-            var avecIa = !!ia && libre >= 175 && conteneur.clientWidth >= 330;
-            if (ia) ia.classList.toggle('cachee', !avecIa);
-            zone.classList.toggle('a-gauche', avecIa);
-            if (avecIa) {
-                // Le faisceau part des yeux de la mascotte et s'ouvre vers la partie immergée
-                var rayon = ia.querySelector('.li-rayon');
-                var zr = ia.getBoundingClientRect(), mr = zone.getBoundingClientRect();
-                var oeilX = mr.left + 72, oeilY = mr.top + 20 + 42;
-                var gauche = oeilX - zr.left, haut = 62, hauteur = 92;
-                var fy = Math.max(2, Math.min(98, (oeilY - (zr.top + haut)) / hauteur * 100));
-                rayon.style.left = gauche + 'px';
-                rayon.style.width = (zr.width / 2 - gauche) + 'px';
-                rayon.style.clipPath = 'polygon(0 ' + (fy - 3) + '%,0 ' + (fy + 3) + '%,100% 100%,100% 0)';
-            }
+        function echapper(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+        function traduireConseil(a) {
+            return String(a || '').replace(/Double chance\s*:/i, 'Double chance :').replace(/ or draw/gi, ' ou nul').replace(/draw or /gi, 'nul ou ')
+                .replace(/Winner\s*:/i, 'Vainqueur :').replace(/Combo/i, 'Combiné').replace(/ and target /gi, ' + ').replace(/Over /gi, 'Plus de ').replace(/Under /gi, 'Moins de ')
+                .replace(/No predictions available/i, '');
         }
-        function anime(el, images, ms, easing) { return el.animate(images, { duration: ms, easing: easing || 'ease-in-out' }); }
-        function dire(texte, ms) {
-            clearTimeout(timerBulle);
-            bulle.textContent = texte; bulle.classList.add('visible');
-            timerBulle = setTimeout(function () { bulle.classList.remove('visible'); }, ms || 1800);
-        }
-        function suivre(champ) {
-            var ratio = Math.min(1, (champ.value || '').length / 26);
-            yeux.style.transform = 'translate(' + (-6 + 12 * ratio).toFixed(1) + 'px,2.5px)';
-        }
-        function regardNeutre() { yeux.style.transform = 'translate(0,0)'; }
-        function tourner(deg) { if (!calme) corps.style.transform = deg ? 'translateY(0) rotate(' + deg + 'deg)' : 'translateY(0)'; }
-        function pudique() { zone.classList.add('pudique'); tourner(-7); dire('Je ne regarde pas !', 1700); }
-        function coucou() {
-            if (calme) return;
-            anime(bras, [{ transform: 'rotate(0)' }, { transform: 'rotate(-150deg)', offset: .2 }, { transform: 'rotate(-176deg)', offset: .35 }, { transform: 'rotate(-138deg)', offset: .5 }, { transform: 'rotate(-176deg)', offset: .65 }, { transform: 'rotate(-150deg)', offset: .8 }, { transform: 'rotate(0)' }], 1500);
-        }
-        function sauter() {
-            if (calme) return;
-            corps.getAnimations().forEach(function (a) { a.cancel(); });
-            anime(corps, [{ transform: 'translateY(0) scale(1,1)' }, { transform: 'translateY(4px) scale(1.06,.94)', offset: .2 }, { transform: 'translateY(-22px) scale(.96,1.05)', offset: .5 }, { transform: 'translateY(0) scale(1.04,.97)', offset: .8 }, { transform: 'translateY(0) scale(1,1)' }], 650);
-            coucou();
-        }
-        function oups() {
-            if (calme) { dire('Oups, on réessaie ?', 2000); return; }
-            anime(corps, [{ transform: 'translateY(0) rotate(0)' }, { transform: 'translateY(0) rotate(-8deg)' }, { transform: 'translateY(0) rotate(8deg)' }, { transform: 'translateY(0) rotate(-6deg)' }, { transform: 'translateY(0) rotate(0)' }], 700);
-            dire('Oups, on réessaie ?', 2200);
-        }
-        function gagBallon() {
-            var b = document.createElement('i'); b.className = 'fas fa-futbol lm-ballon'; zone.appendChild(b);
-            var y0 = -150, tete = 4, rebonds = [];
-            rebonds.push({ transform: 'translate(0,' + y0 + 'px) rotate(0)' });
-            [0, 1, 2].forEach(function (i) {
-                rebonds.push({ transform: 'translate(' + (i * 3) + 'px,' + tete + 'px) rotate(' + (120 * (i + 1)) + 'deg)', easing: 'ease-out' });
-                rebonds.push({ transform: 'translate(' + (i * 3 + 2) + 'px,' + (tete - 46 + i * 12) + 'px) rotate(' + (120 * (i + 1) + 60) + 'deg)', easing: 'ease-in' });
-            });
-            rebonds.push({ transform: 'translate(170px,-40px) rotate(720deg)' });
-            var anim = b.animate(rebonds, { duration: 2600, easing: 'linear', fill: 'forwards' });
-            // la tête encaisse chaque rebond
-            [340, 820, 1260].forEach(function (t) { setTimeout(function () { corps.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(4px) scale(1.03,.97)' }, { transform: 'translateY(0)' }], { duration: 200 }); }, t); });
-            setTimeout(function () { dire('Trop facile !', 1500); }, 1500);
-            anim.finished.then(function () { b.remove(); });
-        }
-        function gagDodo() {
-            zone.classList.add('dodo');
-            dire('Mode veille…', 1400);
-            ['Z', 'z', 'Z'].forEach(function (l, i) {
-                var z = document.createElement('span'); z.className = 'lm-z'; z.textContent = l; zone.appendChild(z);
-                z.animate([{ opacity: 0, transform: 'translate(0,0) scale(.7)' }, { opacity: 1, transform: 'translate(8px,-18px) scale(1)', offset: .4 }, { opacity: 0, transform: 'translate(18px,-40px) scale(1.2)' }], { duration: 1500, delay: i * 550, fill: 'forwards' }).finished.then(function () { z.remove(); });
-            });
-            setTimeout(function () {
-                zone.classList.remove('dodo'); zone.classList.add('ebahi');
-                sauter(); dire('Hein ? Je dormais pas !', 1800);
-                setTimeout(function () { zone.classList.remove('ebahi'); }, 900);
-            }, 2800);
-        }
-        function gagAtchoum() {
-            var o = document.createElement('div'); o.className = 'lm-ono'; o.textContent = 'ATCHOUM !'; zone.appendChild(o);
-            corps.animate([{ transform: 'translateY(0) rotate(0)' }, { transform: 'translateY(2px) rotate(-5deg)', offset: .45 }, { transform: 'translateY(-6px) rotate(9deg)', offset: .6 }, { transform: 'translateY(0) rotate(-3deg)', offset: .8 }, { transform: 'translateY(0) rotate(0)' }], { duration: 900 });
-            o.animate([{ opacity: 0, transform: 'translate(-50%,-50%) scale(0) rotate(-14deg)' }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1.2) rotate(4deg)', offset: .5 }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1) rotate(-4deg)', offset: .65 }, { opacity: 0, transform: 'translate(-50%,-50%) scale(.8) rotate(-4deg)' }], { duration: 1300, delay: 380, fill: 'forwards' }).finished.then(function () { o.remove(); });
-            setTimeout(function () { dire('Pardon… trop de données !', 1800); }, 1500);
-        }
-
-        function arrivee() {
-            if (entree) return;
-            entree = true;
-            setTimeout(function () {
-                verifierPlace();
-                if (calme) { corps.style.transform = 'translateY(0)'; return; }
-                corps.style.transform = 'translateY(0)';
-                anime(corps, [{ transform: 'translateY(150px)' }, { transform: 'translateY(-10px)', offset: .7 }, { transform: 'translateY(0)' }], 900, 'cubic-bezier(.2,.9,.3,1)').finished.then(function () {
-                    coucou(); dire('Bienvenue chez Score Master !', 2400);
-                    idle();
-                });
-            }, 700);
-        }
-        function idle() {
-            clearTimeout(timerIdle);
-            timerIdle = setTimeout(function () {
-                if (!ecran.classList.contains('active')) return;
-                var actif = document.activeElement && /login-(email|username|password)/.test(document.activeElement.id || '');
-                if (!actif && !zone.classList.contains('cachee')) {
-                    var r = Math.random();
-                    if (calme) { var p0 = ['Les pronos du jour t\'attendent !', 'L\'IA a bossé toute la nuit…', 'Prêt pour le combiné ?'][Math.floor(Math.random() * 3)]; dire(p0, 2400); }
-                    else if (r < .16) coucou();
-                    else if (r < .3) { yeux.style.transform = 'translate(-6px,0)'; setTimeout(function () { yeux.style.transform = 'translate(6px,0)'; }, 700); setTimeout(regardNeutre, 1400); }
-                    else if (r < .5) gagBallon();
-                    else if (r < .66) gagDodo();
-                    else if (r < .82) gagAtchoum();
-                    else { var p = ['Les pronos du jour t\'attendent !', 'L\'IA a bossé toute la nuit…', 'Prêt pour le combiné ?'][Math.floor(Math.random() * 3)]; dire(p, 2400); }
+        function memes(a, b) { var n = function (x) { return String(x || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, ''); }; return n(a) === n(b); }
+        async function chargerLab() {
+            if (charge || typeof supabaseClient === 'undefined') return;
+            charge = true;
+            var frais = document.getElementById('lab-frais');
+            try {
+                var aujourd = dateParis();
+                var p = await supabaseClient.from('ai_predictions').select('fixture_date,home,away,home_prob,draw_prob,away_prob,advice,source,fetched_at').gte('fixture_date', aujourd).order('fixture_date', { ascending: true }).limit(60);
+                if (p.error) throw p.error;
+                var preds = p.data || [];
+                var f = await supabaseClient.from('ai_fixtures').select('fixture_date,home,away,kickoff,league_name').gte('fixture_date', aujourd).limit(200);
+                var fixtures = (f.data || []);
+                // Fraîcheur réelle : dernière mise à jour des probabilités
+                var derniere = preds.reduce(function (m, x) { return (!m || Date.parse(x.fetched_at) > Date.parse(m)) ? x.fetched_at : m; }, null);
+                var duJour = preds.filter(function (x) { return x.fixture_date === aujourd; }).length;
+                if (derniere) {
+                    frais.classList.remove('hors');
+                    frais.querySelector('span').textContent = 'Données actualisées ' + ilYa(derniere) + (duJour ? ' · ' + duJour + ' rencontre' + (duJour > 1 ? 's' : '') + ' analysée' + (duJour > 1 ? 's' : '') + ' aujourd\'hui' : '');
+                } else {
+                    frais.querySelector('span').textContent = 'Aucune analyse publiée pour le moment';
                 }
-                idle();
-            }, 6000 + Math.random() * 4000);
+                // Exemple réel : la prochaine rencontre analysée à venir
+                var avecInfos = preds.map(function (x) {
+                    var fx = fixtures.find(function (y) { return y.fixture_date === x.fixture_date && memes(y.home, x.home) && memes(y.away, x.away); });
+                    return { p: x, kickoff: fx && fx.kickoff, ligue: fx && fx.league_name };
+                }).filter(function (x) { return (x.p.home_prob || x.p.draw_prob || x.p.away_prob); });
+                var aVenir = avecInfos.filter(function (x) { return x.kickoff && Date.parse(x.kickoff) > Date.now(); }).sort(function (a, b) { return Date.parse(a.kickoff) - Date.parse(b.kickoff); });
+                var ex = aVenir[0] || avecInfos[0];
+                if (!ex) {
+                    document.getElementById('lab-match').textContent = 'Aucune rencontre analysée pour le moment';
+                    document.getElementById('lab-contexte').textContent = 'Les analyses sont publiées avant les matchs.';
+                    document.getElementById('lab-proba').innerHTML = '<span style="grid-column:1 / -1;color:#6f7890">Les probabilités apparaîtront dès la prochaine analyse.</span>';
+                    return;
+                }
+                var q = ex.p;
+                document.getElementById('lab-match').textContent = q.home + ' – ' + q.away;
+                document.getElementById('lab-contexte').textContent = [ex.ligue, ex.kickoff ? (q.fixture_date === aujourd ? 'aujourd\'hui ' : 'le ' + q.fixture_date.split('-').reverse().slice(0, 2).join('/') + ' ') + 'à ' + heureParis(ex.kickoff) : null, 'exemple réel'].filter(Boolean).join(' · ');
+                if (q.source) document.getElementById('lab-source').textContent = 'Source : ' + (q.source === 'api-football' ? 'API-Football' : q.source);
+                var lignes = [[q.home, q.home_prob], ['Match nul', q.draw_prob], [q.away, q.away_prob]];
+                var box = document.getElementById('lab-proba');
+                box.innerHTML = lignes.map(function (l) {
+                    return '<span>' + echapper(l[0]) + '</span><strong>' + (Number(l[1]) || 0) + ' %</strong><div class="barre"><i data-w="' + (Number(l[1]) || 0) + '"></i></div>';
+                }).join('');
+                requestAnimationFrame(function () { setTimeout(function () { box.querySelectorAll('.barre i').forEach(function (b) { b.style.width = b.getAttribute('data-w') + '%'; }); }, 60); });
+                var conseil = traduireConseil(q.advice);
+                var max = Math.max(q.home_prob || 0, q.draw_prob || 0, q.away_prob || 0);
+                var lecture = max >= 50 ? 'Les signaux convergent nettement vers une issue (' + max + ' %).' : 'Aucune issue ne se détache vraiment : match ouvert, les signaux se partagent.';
+                document.getElementById('lab-lecture').textContent = lecture + (conseil ? ' Piste de lecture : ' + conseil + '.' : '');
+                document.getElementById('lab-contexte').textContent += ' · mis à jour ' + ilYa(q.fetched_at);
+            } catch (e) {
+                frais.querySelector('span').textContent = 'Données momentanément indisponibles';
+                document.getElementById('lab-match').textContent = 'Analyse momentanément indisponible';
+                document.getElementById('lab-proba').innerHTML = '<span style="grid-column:1 / -1;color:#6f7890">Réessaie dans quelques instants.</span>';
+                charge = false;
+            }
+        }
+        function init() {
+            var ice = document.getElementById('lab-iceberg');
+            var ecran = document.getElementById('login-screen');
+            if (!ice || !ecran) return;
+            if ('IntersectionObserver' in window) {
+                new IntersectionObserver(function (entrees, obs) {
+                    entrees.forEach(function (e) { if (e.isIntersecting) { ice.classList.add('vu'); obs.disconnect(); } });
+                }, { root: ecran, threshold: .35 }).observe(ice);
+            } else ice.classList.add('vu');
+            // Les données sont lues quand la page de connexion s'affiche
+            if (ecran.classList.contains('active')) chargerLab();
+            new MutationObserver(function () { if (ecran.classList.contains('active')) chargerLab(); }).observe(ecran, { attributes: true, attributeFilter: ['class'] });
         }
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
     })();
