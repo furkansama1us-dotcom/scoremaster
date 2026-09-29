@@ -314,7 +314,16 @@
         .pv-bilan .m span:last-child{flex-shrink:0;background:rgba(255,255,255,.08);padding:1px 7px;border-radius:6px;font-weight:800}
         .pv-bilan .p{display:flex;flex-wrap:wrap;gap:4px 6px;margin-top:6px}
         .pv-bilan .p span{font:600 10.5px 'Inter',sans-serif;color:#4ade80;background:rgba(34,197,94,.1);padding:2px 7px;border-radius:20px}
-        .pv-bilan .p span.n{color:#8b93a7;background:rgba(255,255,255,.05)}
+        .pv-bilan .p span.n{color:#fb7185;background:rgba(244,63,94,.1)}
+        .pv-bilan .p span i{font-style:normal;opacity:.75;margin-left:4px}
+        .pv-bilan .tot{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font:600 10.5px 'Inter',sans-serif;color:#8b93a7}
+        .pv-bilan .tot b{font:800 11.5px 'Montserrat',sans-serif;color:#dfe5f1}
+        .pv-bilan .final{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,193,7,.25)}
+        .pv-bilan .final span{font:800 11px 'Montserrat',sans-serif;letter-spacing:.6px;color:#FFE082}
+        .pv-bilan .final b{font:900 16px 'Montserrat',sans-serif;color:#fff}
+        .pv-bilan .etat{font:800 9.5px 'Montserrat',sans-serif;padding:2px 7px;border-radius:20px;margin-left:6px}
+        .pv-bilan .etat.g{background:rgba(34,197,94,.15);color:#4ade80}.pv-bilan .etat.p{background:rgba(244,63,94,.15);color:#fb7185}
+        .pv-bilan .note{margin:8px 0 0;font:500 9.5px 'Inter',sans-serif;color:#5f677a}
         .pv-valider{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:12px;margin-bottom:12px;background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.35);font:600 11.5px/1.4 'Inter',sans-serif;color:#fdba74}
         .pv-valider button{flex-shrink:0;padding:8px 12px;border-radius:10px;border:none;background:#FFC107;color:#1a1200;font:800 11.5px 'Montserrat',sans-serif;cursor:pointer}
         .pv-note{margin-top:14px;font:500 10.5px/1.5 'Inter',sans-serif;color:#5f677a;text-align:center}
@@ -12499,11 +12508,17 @@ async function autoFetchFinalScores(combined) {
         }).join('') + '</div>';
         var lignes = PV_ANALYSES.filter(function (x) { return x.fixture_date === date; });
         var matchs = lignes.map(function (x) { return x.payload; }).sort(function (x, y) { return Date.parse(x.kickoff) - Date.parse(y.kickoff); });
-        var bilan = '<div class="pv-bilan"><h4><i class="fas fa-list-check"></i> RÉSUMÉ DES MATCHS</h4>' + matchs.map(function (m) {
-            var ok = (m.marches || []).filter(function (x) { return x.realise; }), ko = (m.marches || []).length - ok.length;
+        var coteTot = 1, tousOk = true;
+        var bilan = '<div class="pv-bilan"><h4><i class="fas fa-list-check"></i> RÉSUMÉ DES MATCHS DU ' + date.split('-').reverse().join('/') + '</h4>' + matchs.map(function (m) {
+            var ms = m.marches || [], cote = 1, ok = true;
+            ms.forEach(function (x) { if (x.cote) cote *= x.cote; if (!x.realise) ok = false; });
+            coteTot *= cote; if (!ok) tousOk = false;
             return '<div class="ligne"><div class="m"><span>' + pvEchap(m.home) + ' - ' + pvEchap(m.away) + '</span><span>' + pvEchap(m.score) + '</span></div>'
-                + '<div class="p">' + ok.map(function (x) { return '<span>✓ ' + pvEchap(x.libelle) + '</span>'; }).join('') + (ko ? '<span class="n">' + ko + ' non réalisé' + (ko > 1 ? 's' : '') + '</span>' : '') + '</div></div>';
-        }).join('') + '</div>';
+                + '<div class="p">' + ms.map(function (x) { return '<span' + (x.realise ? '' : ' class="n"') + '>' + (x.realise ? '✓ ' : '✗ ') + pvEchap(x.libelle) + (x.cote ? '<i>≈ ' + pvCote(x.cote) + '</i>' : '') + '</span>'; }).join('') + '</div>'
+                + '<div class="tot"><span>Cote cumulée du match<span class="etat ' + (ok ? 'g">GAGNÉ' : 'p">PERDU') + '</span></span><b>≈ ' + pvCote(cote) + '</b></div></div>';
+        }).join('')
+            + '<div class="final"><span>COTE TOTALE · ' + matchs.length + ' MATCHS<span class="etat ' + (tousOk ? 'g">GAGNÉ' : 'p">PERDU') + '</span></span><b>≈ ' + pvCote(coteTot) + '</b></div>'
+            + '<p class="note">Tous les paris retenus avant le match, réalisés ou non · cotes estimées d\'après les probabilités d\'avant-match.</p></div>';
         box.innerHTML = frise + paTauxGlobal(matchs) + bilan + matchs.map(function (m, k) { return paCarte(m, date, k); }).join('');
     }
     async function validerAnalyses(btn, date) {
