@@ -12537,7 +12537,7 @@ async function autoFetchFinalScores(combined) {
         html += '<div class="pv-titre pv-apparait"><small>AUJOURD\'HUI</small><b>Paris du <span>jour</span></b></div>';
         var aVenir = jour.filter(function (p) { return Date.parse(p.kickoff) > Date.now(); });
         if (aVenir.length) html += '<div class="pv-compteur pv-apparait"><span><i class="fas fa-stopwatch"></i> ' + (aVenir.length === jour.length ? 'Premier match dans' : 'Prochain match dans') + '</span><b id="pv-compteur" data-cible="' + aVenir[0].kickoff + '">--:--:--</b></div>';
-        if (jour.length) html += '<button class="pv-deflouter cta-hypnose" style="--hyp:rgba(255,193,7,.5)" id="pv-deflouter" onclick="deflouterParisVip()"><span><i class="fas fa-eye"></i> Déflouter les prédictions</span></button>';
+        if (jour.length) html += '<button class="pv-deflouter cta-hypnose" style="--hyp:rgba(255,193,7,.5)" id="pv-deflouter" onclick="deflouterParisVip()"><span><i class="fas fa-eye"></i> Afficher les prédictions</span></button>';
         html += jour.length ? jour.map(function (p) { return pvCarte(p, true); }).join('') : '<div class="pv-vide">Les paris du jour sont choisis chaque matin à partir de 9 h.</div>';
         if (histo.length) html += '<div class="pv-titre"><small>SUIVI</small><b>Historique</b></div>' + histo.map(function (p) { return pvCarte(p, false); }).join('');
         html += '<div class="pv-titre pv-apparait"><small>ANALYSES IA</small><b>Analyses des <span>matchs passés</span></b></div><div id="pv-analyses"></div>';
