@@ -315,6 +315,31 @@
         .vt-pied nav{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 16px;margin-bottom:12px}
         .vt-pied nav a{display:inline-flex;align-items:center;gap:6px;font:600 12px 'Inter',sans-serif;color:#9aa3b8;text-decoration:none}
         .vt-pied nav a i{color:var(--primary-yellow)}
+        .vt-legal{display:flex;justify-content:center;flex-wrap:wrap;gap:6px 14px;margin:0 0 10px}
+        .vt-legal a{font:500 11px 'Inter',sans-serif;color:#7d869b;text-decoration:underline;text-decoration-color:rgba(125,134,155,.35);text-underline-offset:3px}
+        .legal-fond{position:fixed;inset:0;z-index:10080;background:rgba(3,6,14,.72);display:none;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .25s}
+        .legal-fond.ouvert{display:flex}
+        .legal-fond.visible{opacity:1}
+        .legal-feuille{width:100%;max-width:420px;max-height:88%;display:flex;flex-direction:column;background:#0f1424;border:1px solid rgba(255,193,7,.18);border-bottom:none;border-radius:22px 22px 0 0;
+            transform:translateY(24px);transition:transform .3s cubic-bezier(.2,.8,.2,1);box-shadow:0 -20px 50px rgba(0,0,0,.5)}
+        .legal-fond.visible .legal-feuille{transform:none}
+        .legal-tete{flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 18px 12px;border-bottom:1px solid rgba(255,255,255,.07)}
+        .legal-tete h2{margin:0;font:800 16px 'Montserrat',sans-serif;color:#fff}
+        .legal-tete button{flex-shrink:0;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;font-size:14px;cursor:pointer}
+        .legal-onglets{display:flex;gap:6px;padding:10px 18px 0;overflow-x:auto;flex-shrink:0}
+        .legal-onglets button{flex-shrink:0;padding:6px 11px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:none;color:#9aa3b8;font:600 11.5px 'Inter',sans-serif;cursor:pointer}
+        .legal-onglets button.actif{background:rgba(255,193,7,.12);border-color:rgba(255,193,7,.4);color:var(--primary-yellow)}
+        .legal-corps{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 18px calc(24px + var(--safe-bottom));-webkit-user-select:text;user-select:text}
+        .legal-corps article{display:none}
+        .legal-corps article.actif{display:block}
+        .legal-corps .maj{font:500 11px 'Inter',sans-serif;color:#6f7890;margin:0 0 12px}
+        .legal-corps h3{margin:16px 0 6px;font:700 13.5px 'Montserrat',sans-serif;color:#fff}
+        .legal-corps p,.legal-corps li{font:400 12.5px/1.6 'Inter',sans-serif;color:#b4bcd0}
+        .legal-corps p{margin:0 0 8px}
+        .legal-corps ul{margin:0 0 8px;padding-left:18px}
+        .legal-corps li{margin-bottom:4px}
+        .legal-corps b{color:#e6e9f0;font-weight:600}
+        .legal-corps a{color:var(--primary-yellow)}
         .vt-pied small{font:400 11px 'Inter',sans-serif;color:#5f677a}
         .vt-connexion-flottante{position:sticky;bottom:calc(14px + var(--safe-bottom));z-index:20;margin:-66px auto 0;width:max-content;display:flex;align-items:center;gap:8px;padding:12px 20px;border-radius:30px;border:none;cursor:pointer;
             background:linear-gradient(135deg,#FFC107,#B8860B);color:#1a1200;font:800 13px 'Montserrat',sans-serif;box-shadow:0 10px 26px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.15) inset;
@@ -2046,8 +2071,89 @@ async function fetchApiScore(id, dateRaw) {
             <a href="https://www.instagram.com/scoresmasters.fr/" target="_blank" rel="noopener"><i class="fab fa-instagram"></i>@scoresmasters.fr</a>
             <a href="#" onclick="window.open(TELEGRAM_LINK, '_blank'); return false;"><i class="fab fa-telegram-plane"></i>@ScoreMasterOfficiel</a>
         </nav>
+        <div class="vt-legal">
+            <a href="#" onclick="ouvrirLegal('mentions'); return false;">Mentions légales</a>
+            <a href="#" onclick="ouvrirLegal('cgu'); return false;">Conditions d'utilisation</a>
+            <a href="#" onclick="ouvrirLegal('confidentialite'); return false;">Confidentialité</a>
+        </div>
         <small>© 2026 Score Master · Pronostics football analysés par l'IA</small>
     </footer>
+
+    <div class="legal-fond" id="legal-fond" data-nosnippet role="dialog" aria-modal="true" aria-labelledby="legal-titre" onclick="if (event.target === this) fermerLegal()">
+        <div class="legal-feuille">
+            <div class="legal-tete"><h2 id="legal-titre">Informations légales</h2><button onclick="fermerLegal()" aria-label="Fermer"><i class="fas fa-times"></i></button></div>
+            <div class="legal-onglets">
+                <button data-legal="mentions" onclick="ouvrirLegal('mentions')">Mentions légales</button>
+                <button data-legal="cgu" onclick="ouvrirLegal('cgu')">Conditions d'utilisation</button>
+                <button data-legal="confidentialite" onclick="ouvrirLegal('confidentialite')">Confidentialité</button>
+            </div>
+            <div class="legal-corps" id="legal-corps">
+                <article data-legal="mentions">
+                    <p class="maj">Dernière mise à jour : 29 septembre 2026</p>
+                    <h3>Éditeur du site</h3>
+                    <p>Le site et l'application <b>scoremaster.fr</b> sont édités sous la marque <b>Score Master</b>.</p>
+                    <h3>Contact</h3>
+                    <p>Pour toute question relative au site, à son contenu ou à vos données, tu peux nous écrire via notre compte Telegram <a href="#" onclick="window.open(TELEGRAM_LINK, '_blank'); return false;">@ScoreMasterOfficiel</a>.</p>
+                    <h3>Hébergement</h3>
+                    <p><b>Vercel Inc.</b>, 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis — <a href="https://vercel.com" target="_blank" rel="noopener">vercel.com</a>.</p>
+                    <p>Les données des comptes sont hébergées par <b>Supabase</b> — <a href="https://supabase.com" target="_blank" rel="noopener">supabase.com</a>.</p>
+                    <h3>Propriété intellectuelle</h3>
+                    <p>La marque Score Master, son logo, sa mascotte, ses visuels, ses textes et ses analyses sont protégés. Toute reproduction ou diffusion, totale ou partielle, sans autorisation préalable est interdite.</p>
+                    <h3>Responsabilité</h3>
+                    <p>Les contenus publiés sont fournis à titre d'information. Nous faisons le maximum pour qu'ils soient exacts et à jour, sans pouvoir garantir l'absence d'erreur ou d'interruption du service.</p>
+                </article>
+                <article data-legal="cgu">
+                    <p class="maj">Dernière mise à jour : 29 septembre 2026</p>
+                    <h3>1. Objet</h3>
+                    <p>Les présentes conditions encadrent l'utilisation de l'application Score Master, qui propose des analyses et des pronostics sur des rencontres de football, préparés à l'aide d'outils d'intelligence artificielle et relus par notre équipe.</p>
+                    <h3>2. Accès au service</h3>
+                    <p>La création d'un compte est gratuite. Certaines fonctionnalités sont réservées aux membres disposant d'un accès spécifique, dont les modalités sont précisées lors de la demande auprès de notre équipe.</p>
+                    <h3>3. Compte</h3>
+                    <p>Tu t'engages à fournir des informations exactes et à garder ton mot de passe confidentiel. Ton compte est personnel : tu es responsable de l'usage qui en est fait.</p>
+                    <h3>4. Nature des contenus</h3>
+                    <p>Les pronostics, indices de fiabilité et analyses sont des <b>estimations</b> établies à partir des données disponibles. Ils ne constituent ni une garantie de résultat ni un conseil personnalisé. Le football garde sa part d'imprévu : les décisions que tu prends à partir de ces contenus restent de ta seule responsabilité.</p>
+                    <h3>5. Utilisations interdites</h3>
+                    <ul>
+                        <li>revendre, partager ou diffuser publiquement les contenus réservés aux membres ;</li>
+                        <li>copier ou extraire le contenu de l'application de manière automatisée ;</li>
+                        <li>tenter de contourner les accès ou de perturber le fonctionnement du service.</li>
+                    </ul>
+                    <p>En cas de manquement, l'accès au compte peut être suspendu.</p>
+                    <h3>6. Propriété intellectuelle</h3>
+                    <p>L'ensemble des éléments de l'application (marque, logo, mascotte, textes, visuels, analyses) reste la propriété de Score Master.</p>
+                    <h3>7. Disponibilité et évolution</h3>
+                    <p>Nous nous efforçons d'assurer l'accès au service en continu, sans pouvoir le garantir. Les fonctionnalités et les présentes conditions peuvent évoluer ; la date de mise à jour figure en haut de cette page.</p>
+                    <h3>8. Droit applicable</h3>
+                    <p>Les présentes conditions sont soumises au droit français.</p>
+                </article>
+                <article data-legal="confidentialite">
+                    <p class="maj">Dernière mise à jour : 29 septembre 2026</p>
+                    <h3>Données collectées</h3>
+                    <ul>
+                        <li><b>Compte</b> : adresse email, pseudo et mot de passe (conservé sous forme chiffrée par notre prestataire d'authentification).</li>
+                        <li><b>Demandes d'accès et échanges</b> : les informations que tu transmets à notre assistant Telegram (identifiant et nom Telegram, réponses aux questions posées, messages).</li>
+                        <li><b>Parrainage</b> : l'identifiant Telegram des personnes arrivées via ton lien, pour comptabiliser les parrainages.</li>
+                        <li><b>Préférences</b> : quelques réglages enregistrés sur ton appareil (session, préférences d'affichage).</li>
+                    </ul>
+                    <h3>Utilisation</h3>
+                    <p>Ces données servent uniquement à faire fonctionner ton compte, à traiter tes demandes, à gérer le parrainage et à te contacter au sujet du service. Elles ne sont ni vendues ni utilisées à des fins publicitaires par des tiers.</p>
+                    <h3>Prestataires</h3>
+                    <ul>
+                        <li><b>Supabase</b> : base de données et authentification ;</li>
+                        <li><b>Vercel</b> : hébergement de l'application ;</li>
+                        <li><b>Telegram</b> : messagerie de l'assistant et du canal.</li>
+                    </ul>
+                    <p>L'application charge aussi des polices et des icônes depuis des services tiers (Google Fonts, cdnjs), qui reçoivent à cette occasion l'adresse IP de ton appareil. Certains prestataires pouvant être situés hors de l'Union européenne, les transferts s'appuient sur les garanties prévues par le RGPD.</p>
+                    <h3>Cookies</h3>
+                    <p>Aucun cookie publicitaire ni de mesure d'audience tierce n'est utilisé. Seul le stockage local nécessaire au fonctionnement (maintien de la connexion, préférences) est employé.</p>
+                    <h3>Durée de conservation</h3>
+                    <p>Les données du compte sont conservées tant que le compte est actif, puis supprimées. Les échanges liés à une demande sont conservés le temps nécessaire à son traitement et au suivi de la relation.</p>
+                    <h3>Tes droits</h3>
+                    <p>Conformément au RGPD, tu disposes d'un droit d'accès, de rectification, d'effacement, d'opposition, de limitation et de portabilité de tes données. Pour les exercer, écris-nous via notre compte Telegram <a href="#" onclick="window.open(TELEGRAM_LINK, '_blank'); return false;">@ScoreMasterOfficiel</a>. Tu peux également introduire une réclamation auprès de la CNIL (<a href="https://www.cnil.fr" target="_blank" rel="noopener">cnil.fr</a>).</p>
+                </article>
+            </div>
+        </div>
+    </div>
 
     <button class="vt-connexion-flottante" id="vt-connexion-flottante" onclick="vitrineConnexion()"><i class="fas fa-right-to-bracket"></i> Se connecter</button>
 </div>
@@ -10804,6 +10910,29 @@ async function fetchMatchesFromAPI() {
         }
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
     })();
+
+    // Informations légales : fenêtre de lecture avec trois onglets
+    function ouvrirLegal(cle) {
+        var fond = document.getElementById('legal-fond');
+        if (!fond) return;
+        var titres = { mentions: 'Mentions légales', cgu: "Conditions d'utilisation", confidentialite: 'Confidentialité' };
+        fond.querySelectorAll('[data-legal]').forEach(function (el) { el.classList.toggle(el.tagName === 'BUTTON' ? 'actif' : 'actif', el.getAttribute('data-legal') === cle); });
+        document.getElementById('legal-titre').textContent = titres[cle] || 'Informations légales';
+        document.getElementById('legal-corps').scrollTop = 0;
+        if (!fond.classList.contains('ouvert')) {
+            fond.classList.add('ouvert');
+            requestAnimationFrame(function () { fond.classList.add('visible'); });
+            document.addEventListener('keydown', echapLegal);
+        }
+    }
+    function fermerLegal() {
+        var fond = document.getElementById('legal-fond');
+        if (!fond) return;
+        fond.classList.remove('visible');
+        document.removeEventListener('keydown', echapLegal);
+        setTimeout(function () { fond.classList.remove('ouvert'); }, 260);
+    }
+    function echapLegal(e) { if (e.key === 'Escape') fermerLegal(); }
 
     function vitrineVersFormulaire(champ) {
         var form = document.querySelector('#login-screen .login-form-container');
