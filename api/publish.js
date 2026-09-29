@@ -74,6 +74,14 @@ async function postizFetch(path, options) {
     return data;
 }
 
+// Hashtags ajoutés à toutes les descriptions Instagram, quel que soit le contenu.
+const HASHTAGS_INSTAGRAM = ['#foryou', '#pourtoi'];
+function legendeInstagram(texte) {
+    const t = String(texte || '').trim();
+    const manquants = HASHTAGS_INSTAGRAM.filter(h => !new RegExp(h + '(?![\\w])', 'i').test(t));
+    return manquants.length ? (t ? t + '\n\n' : '') + manquants.join(' ') : t;
+}
+
 async function postizPublishInstagram(ig, item, imagePath, postType) {
     await postizFetch('/posts', {
         method: 'POST',
@@ -81,7 +89,7 @@ async function postizPublishInstagram(ig, item, imagePath, postType) {
             type: 'now', date: new Date().toISOString(), shortLink: false, tags: [],
             posts: [{
                 integration: { id: ig.id },
-                value: [{ content: item.caption, image: [{ id: item.id, path: imagePath }] }],
+                value: [{ content: legendeInstagram(item.caption), image: [{ id: item.id, path: imagePath }] }],
                 settings: { __type: 'instagram', post_type: postType }
             }]
         })
@@ -103,7 +111,7 @@ async function postizPublish(item, integrations) {
                     posts: [{
                         integration: { id: ig.id },
                         value: [{
-                            content: item.caption,
+                            content: legendeInstagram(item.caption),
                             image: item.carousel_images.map(function (url, i) { return { id: item.id + '-' + i, path: url }; })
                         }],
                         settings: { __type: 'instagram', post_type: 'post' }
