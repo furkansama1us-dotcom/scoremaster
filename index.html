@@ -2551,7 +2551,7 @@ async function fetchApiScore(id, dateRaw) {
             <div class="vip-header"><h2><i class="fas fa-brain" style="color:var(--primary-yellow);"></i> Pronostics AI</h2></div>
             <div class="ai-intro-banner">
                 <div class="ai-intro-badge"><i class="fas fa-microchip"></i> AI-POWERED</div>
-                <div class="ai-intro-text">Analyse automatique des prochains matchs (forme, contexte, cote domicile/extérieur), gratuite et ouverte à tous. Certains pronostics, marqués <span style="color:#FFC107;font-weight:700;">VIP</span>, atteignent une fiabilité de 95 à 99% et restent floutés tant que tu n'as pas rejoint le VIP+ — débloque-les dès maintenant pour ne plus jamais rater un ticket ultra-fiable.</div>
+                <div class="ai-intro-text">Analyse automatique des prochains matchs (forme, contexte, cote domicile/extérieur), gratuite et ouverte à tous. Certains pronostics, marqués <span style="color:#FFC107;font-weight:700;">VIP</span>, obtiennent nos indices de confiance les plus élevés et restent floutés tant que tu n'as pas rejoint le VIP+ — débloque-les dès maintenant pour ne plus rien manquer.</div>
                 <div class="ai-scene" id="ai-scene" aria-hidden="true">
                     <div class="sc-sol"></div>
                     <div class="sc-bulle">Batterie faible…</div>
@@ -8601,7 +8601,7 @@ async function clearAllPublicationHistory() {
         if (packType === 'journalier') {
             icon.innerHTML = '<i class="fas fa-calendar-check"></i>'; icon.style.background = 'rgba(34,197,94, 0.15)'; icon.style.color = 'var(--green)';
             title.textContent = 'SM Score Exact Journalier';
-            desc.textContent = 'Notre algorithme et nos experts analysent quotidiennement des dizaines de paramètres pour dénicher LE match le plus fiable de la journée.';
+            desc.textContent = 'Notre algorithme et nos experts analysent quotidiennement des dizaines de paramètres pour dénicher LE match à suivre de la journée.';
             extra.innerHTML = '<ul style="text-align:left; padding-left:20px; color:var(--text-light-gray);"><li style="margin-bottom:8px">Cotes moyennes : <span style="color:var(--green)">12.00 à 50.00</span></li><li style="margin-bottom:8px">Publié chaque jour avant 12h</li><li>Parfait pour faire monter sa bankroll</li></ul>';
         } else if (packType === 'vip') {
             icon.innerHTML = '<i class="fas fa-crown"></i>'; icon.style.background = 'rgba(244,63,94, 0.15)'; icon.style.color = 'var(--red)';
