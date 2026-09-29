@@ -12385,7 +12385,7 @@ async function autoFetchFinalScores(combined) {
 
         try {
             var updatePub = await supabaseClient.from('combineds_public')
-                .update({ status: finalStatus, matches: publicMatches })
+                .update({ status: finalStatus, matches: publicMatches, diffusable: true })  // ouvre la séquence résultat (Telegram + story)
                 .eq('id', validationCombinedId);
             if (updatePub.error) throw updatePub.error;
 
