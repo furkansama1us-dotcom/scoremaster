@@ -6,7 +6,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
-    <title>Score Master</title>
+    <title>Score Master — Pronostics football analysés par l'IA</title>
+    <meta name="description" content="Score Master : des pronostics football fiables, analysés par l'IA et validés par notre équipe avant chaque publication. Rejoins la communauté sur Telegram et Instagram.">
+    <link rel="canonical" href="https://scoremaster.fr/">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Score Master">
+    <meta property="og:locale" content="fr_FR">
+    <meta property="og:url" content="https://scoremaster.fr/">
+    <meta property="og:title" content="Score Master — Pronostics football analysés par l'IA">
+    <meta property="og:description" content="Des pronostics fiables, préparés par notre IA et validés par notre équipe. Rejoins la communauté Score Master.">
+    <meta property="og:image" content="https://scoremaster.fr/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Score Master : des pronostics fiables, analysés par l'IA.">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Score Master — Pronostics football analysés par l'IA">
+    <meta name="twitter:description" content="Des pronostics fiables, préparés par notre IA et validés par notre équipe.">
+    <meta name="twitter:image" content="https://scoremaster.fr/og-image.jpg">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Score Master","url":"https://scoremaster.fr/","logo":"https://scoremaster.fr/logo-dark.png","description":"Score Master : des pronostics football fiables, analysés par l'IA et validés par notre équipe avant chaque publication. Rejoins la communauté sur Telegram et Instagram.","sameAs":["https://www.instagram.com/scoresmasters.fr/","https://t.me/scoremasteroff"]}</script>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Score Master">
@@ -16,7 +34,7 @@
     <link rel="apple-touch-icon" href="logo-dark.png">
     <link rel="icon" type="image/png" href="logo-dark.png">
     
-    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiU2NvcmUgTWVyaWRpYW4iLCJzaG9ydF9uYW1lIjoiU2NvcmUgTWVyaWRpYW4iLCJzdGFydF91cmwiOiIuIiwiZGlzcGxheSI6InN0YW5kYWxvbmUiLCJiYWNrZ3JvdW5kX2NvbG9yIjoiIzBBMEUxRiIsInRoZW1lX2NvbG9yIjoiIzBBMEUxRiIsIm9yaWVudGF0aW9uIjoicG9ydHJhaXQiLCJpY29ucyI6W3sic3JjIjoibG9nby1kYXJrLnBuZyIsInNpemVzIjoiMTkyeDE5MiA1MTJ4NTEyIiwidHlwZSI6ImltYWdlL3BuZyIsInB1cnBvc2UiOiJhbnkgbWFza2FibGUifV19">
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoiU2NvcmUgTWFzdGVyIiwic2hvcnRfbmFtZSI6IlNjb3JlIE1hc3RlciIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMEEwRTFGIiwidGhlbWVfY29sb3IiOiIjMEEwRTFGIiwib3JpZW50YXRpb24iOiJwb3J0cmFpdCIsImljb25zIjpbeyJzcmMiOiJsb2dvLWRhcmsucG5nIiwic2l6ZXMiOiIxOTJ4MTkyIDUxMng1MTIiLCJ0eXBlIjoiaW1hZ2UvcG5nIiwicHVycG9zZSI6ImFueSBtYXNrYWJsZSJ9XX0=">
     
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=Anton&family=Manrope:wght@400;700;800&family=Bangers&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -1778,7 +1796,7 @@ async function fetchApiScore(id, dateRaw) {
 </script>
 
 <!-- SPLASH -->
-<div id="splash-screen">
+<div data-nosnippet id="splash-screen">
     <div class="splash-content">
         <img id="img-splash" alt="Score Master" class="splash-logo-img">
         <div class="splash-robot" aria-hidden="true">
@@ -2034,10 +2052,10 @@ async function fetchApiScore(id, dateRaw) {
     <button class="vt-connexion-flottante" id="vt-connexion-flottante" onclick="vitrineConnexion()"><i class="fas fa-right-to-bracket"></i> Se connecter</button>
 </div>
     
-<div class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toast-message"></span></div>
+<div data-nosnippet class="toast" id="toast"><i class="fas fa-check-circle"></i><span id="toast-message"></span></div>
 
 <!-- APP -->
-<div id="app">
+<div data-nosnippet id="app">
     <div id="promo-ticker-wrap" style="flex-shrink:0; padding-top:var(--safe-top);">
         <div class="promo-ticker">
             <div class="promo-ticker-track">
@@ -2516,7 +2534,7 @@ async function fetchApiScore(id, dateRaw) {
     </div>
 </div>
     <!-- ADMIN PANEL -->
-<div id="admin-page">
+<div data-nosnippet id="admin-page">
     <div class="admin-header">
         <h2><img id="img-admin" alt="SM" class="admin-header-logo"> Panel Admin</h2>
         <button onclick="openContentPlanner()" title="Content Planner" style="margin-left:auto;margin-right:10px;width:38px;height:38px;border-radius:50%;background:linear-gradient(145deg,#f2cf7c,#e8b84b);color:#141821;border:none;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;"><i class="fas fa-calendar-days"></i></button>
@@ -2946,7 +2964,7 @@ async function fetchApiScore(id, dateRaw) {
 <!-- =====================================================
      POPUP PROFIL ENRICHI
      ===================================================== -->
-<div id="profile-modal" class="profile-modal-overlay" style="display:none;">
+<div data-nosnippet id="profile-modal" class="profile-modal-overlay" style="display:none;">
     <div class="profile-modal-box">
         <div class="profile-modal-header">
             <h3>👤 Mon Profil</h3>
@@ -3021,7 +3039,7 @@ async function fetchApiScore(id, dateRaw) {
 </div>
 
 <!-- CAMPAGNE PARRAINAGE — 5 filleuls = un combiné score exact -->
-<div id="campagne-modal" class="profile-modal-overlay" style="display:none;">
+<div data-nosnippet id="campagne-modal" class="profile-modal-overlay" style="display:none;">
     <div class="profile-modal-box">
         <div class="profile-modal-header">
             <h3><i class="fas fa-gift" style="color:var(--primary-yellow);"></i> Campagne parrainage</h3>
@@ -3059,7 +3077,7 @@ async function fetchApiScore(id, dateRaw) {
 </div>
 
 <!-- OVERLAY LIVE — combiné flouté + scores en direct -->
-<div id="combo-live-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:10002;flex-direction:column;opacity:0;transition:opacity 0.3s;">
+<div data-nosnippet id="combo-live-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:10002;flex-direction:column;opacity:0;transition:opacity 0.3s;">
     <div style="display:flex; align-items:center; justify-content:space-between; padding:calc(16px + var(--safe-top)) 20px 16px;">
         <div style="display:flex; align-items:center; gap:8px;">
             <span style="width:8px;height:8px;background:var(--red);border-radius:50%;animation:pulse 1.2s infinite;"></span>
@@ -3074,7 +3092,7 @@ async function fetchApiScore(id, dateRaw) {
     </div>
 </div>
 
-<div id="full-history-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:10002;flex-direction:column;opacity:0;transition:opacity 0.3s;">
+<div data-nosnippet id="full-history-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:10002;flex-direction:column;opacity:0;transition:opacity 0.3s;">
     <div style="display:flex; align-items:center; justify-content:space-between; padding:calc(16px + var(--safe-top)) 20px 16px;">
         <span style="font-weight:900; font-size:16px; color:#fff;">Historique des combinés</span>
         <i class="fas fa-times" onclick="closeFullHistory()" style="color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
@@ -3085,7 +3103,7 @@ async function fetchApiScore(id, dateRaw) {
 </div>
 
 <!-- ÉCRAN DE CHARGEMENT avant « Mes tickets » : charge réellement l'historique pendant l'affichage -->
-<div id="ticket-loader" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:10003;opacity:0;transition:opacity 0.25s;">
+<div data-nosnippet id="ticket-loader" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:10003;opacity:0;transition:opacity 0.25s;">
     <div class="tl-inner">
         <img src="logo-dark.png" alt="Score Master" class="tl-logo">
         <div class="tl-text" id="tl-text">Chargement de l'historique…</div>
@@ -3095,7 +3113,7 @@ async function fetchApiScore(id, dateRaw) {
 </div>
 
 <!-- HISTORIQUE DES TICKETS — nouvelle page, ouverte par le badge bookmaker de la bannière « API sportifs connectés » -->
-<div id="ticket-history-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:10002;flex-direction:column;opacity:0;transition:opacity 0.3s;">
+<div data-nosnippet id="ticket-history-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:10002;flex-direction:column;opacity:0;transition:opacity 0.3s;">
     <div class="tk-top">
         <button class="tk-back" onclick="closeTicketHistory()"><i class="fas fa-chevron-left"></i><img src="logo-dark.png" alt="">Retour sur Score Master</button>
         <div class="tk-title">
@@ -3121,7 +3139,7 @@ async function fetchApiScore(id, dateRaw) {
 <!-- CONTENT PLANNER — vue calendrier de toutes les publications générées
      (Conseil IA, Combiné du jour, Carrousel Story, Victoire), branchée sur
      les vraies données pending_publications (pas de données d'exemple). -->
-<div id="content-planner-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#f7f3ec;z-index:10003;flex-direction:column;opacity:0;transition:opacity 0.3s;">
+<div data-nosnippet id="content-planner-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#f7f3ec;z-index:10003;flex-direction:column;opacity:0;transition:opacity 0.3s;">
     <style>
         /* Thème clair, propre à cette page uniquement (le reste de l'admin
            reste en thème sombre) — inspiré du planner de référence "studio". */
@@ -3521,15 +3539,15 @@ async function fetchApiScore(id, dateRaw) {
         <button class="cp-tab" data-tab="settings" onclick="cpTab('settings')"><span class="ic">⚙️</span>Réglages</button>
     </nav>
 </div>
-<div class="overlay" id="cp-sheet-overlay" style="position:fixed;inset:0;background:rgba(6,8,14,.6);z-index:10004;opacity:0;pointer-events:none;transition:opacity .28s;" onclick="cpCloseSheet()"></div>
-<div id="cp-sheet" style="position:fixed;left:50%;transform:translateX(-50%) translateY(100%);bottom:0;width:100%;max-width:480px;z-index:10005;background:#0e111a;border-radius:20px 20px 0 0;box-shadow:0 -14px 40px rgba(0,0,0,.5);max-height:88vh;display:flex;flex-direction:column;transition:transform .32s cubic-bezier(.2,.8,.2,1);border:1px solid #232838;border-bottom:none;font-family:'Manrope',sans-serif;color:#f0f1f4;">
+<div data-nosnippet class="overlay" id="cp-sheet-overlay" style="position:fixed;inset:0;background:rgba(6,8,14,.6);z-index:10004;opacity:0;pointer-events:none;transition:opacity .28s;" onclick="cpCloseSheet()"></div>
+<div data-nosnippet id="cp-sheet" style="position:fixed;left:50%;transform:translateX(-50%) translateY(100%);bottom:0;width:100%;max-width:480px;z-index:10005;background:#0e111a;border-radius:20px 20px 0 0;box-shadow:0 -14px 40px rgba(0,0,0,.5);max-height:88vh;display:flex;flex-direction:column;transition:transform .32s cubic-bezier(.2,.8,.2,1);border:1px solid #232838;border-bottom:none;font-family:'Manrope',sans-serif;color:#f0f1f4;">
     <div style="width:36px;height:4px;border-radius:2px;background:#232838;margin:10px auto 2px;"></div>
     <div id="cpSheetHead" style="padding:8px 18px 13px;border-bottom:1px solid #232838;display:flex;align-items:center;gap:9px;flex-wrap:wrap;"></div>
     <div id="cpSheetBody" style="overflow-y:auto;padding:15px 18px 28px;"></div>
 </div>
 
 <!-- AUTRES POPUPS -->
-<div id="vip-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+<div data-nosnippet id="vip-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
     <div style="background:var(--bg-card);padding:40px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);">
         <div style="width:70px;height:70px;background:rgba(239,83,80,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 25px auto;"><i class="fas fa-lock" style="font-size:35px;color:var(--red);"></i></div>
         <h3 style="font-size:22px;font-weight:700;margin-bottom:12px;color:#fff;font-family:'Montserrat',sans-serif;">Accès Réservé</h3>
@@ -3540,7 +3558,7 @@ async function fetchApiScore(id, dateRaw) {
 </div>
 
 <!-- Pop-up : historique « Mes tickets » réservé aux SM VIP+ -->
-<div id="history-vip-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:10004;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);" onclick="if(event.target===this)closeHistoryVipPopup()">
+<div data-nosnippet id="history-vip-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:10004;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);" onclick="if(event.target===this)closeHistoryVipPopup()">
     <div style="background:var(--bg-card);padding:34px 26px 24px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,193,7,0.18);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);position:relative;">
         <i class="fas fa-times" onclick="closeHistoryVipPopup()" style="position:absolute;top:18px;right:18px;color:var(--text-gray);font-size:18px;cursor:pointer;"></i>
         <div style="width:70px;height:70px;background:rgba(255,193,7,0.12);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 22px;"><i class="fas fa-crown" style="font-size:30px;color:var(--primary-yellow);"></i></div>
@@ -3552,7 +3570,7 @@ async function fetchApiScore(id, dateRaw) {
     </div>
 </div>
 
-<div id="info-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+<div data-nosnippet id="info-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
     <div style="background:var(--bg-card);padding:30px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);position:relative;">
         <i class="fas fa-times" onclick="closeInfoPopup()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
         <div id="info-popup-icon" style="width:65px;height:65px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px auto;font-size:26px;"></div>
@@ -3563,7 +3581,7 @@ async function fetchApiScore(id, dateRaw) {
     </div>
 </div>
 
-<div id="subscribe-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+<div data-nosnippet id="subscribe-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
     <div style="background:var(--bg-card);padding:30px;border-radius:24px;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);position:relative;">
         <i class="fas fa-times" onclick="closeSubscribePopup()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
         <h3 style="font-size:18px;font-weight:800;margin-bottom:8px;color:#fff;font-family:'Montserrat',sans-serif;" id="subscribe-pack-title">Souscrire au pack</h3>
@@ -3575,7 +3593,7 @@ async function fetchApiScore(id, dateRaw) {
 </div>
 
 <!-- POPUP SUCCESS -->
-<div id="success-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+<div data-nosnippet id="success-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
     <div style="background:var(--bg-card);padding:40px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);">
         <div style="width:80px;height:80px;background:rgba(34,197,94, 0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px auto;"><i class="fas fa-check" style="font-size:40px;color:var(--green);"></i></div>
         <h3 style="font-size:22px;font-weight:800;margin-bottom:12px;color:#fff;font-family:'Montserrat',sans-serif;">Demande envoyée !</h3>
@@ -3586,7 +3604,7 @@ async function fetchApiScore(id, dateRaw) {
 <!-- FIN DU POPUP SUCCESS -->
 
 <!-- POPUP GOOGLE EN ATTENTE (Doit être placé JUSTE ICI, après la fermeture du précédent) -->
-<div id="google-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+<div data-nosnippet id="google-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
     <div style="background:var(--bg-card);padding:30px;border-radius:24px;text-align:center;width:90%;max-width:380px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);position:relative;">
         <i class="fas fa-times" onclick="closeGooglePopup()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
         <div style="width:70px;height:70px;background:rgba(234, 67, 53, 0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px auto;">
@@ -3602,13 +3620,13 @@ async function fetchApiScore(id, dateRaw) {
 <!-- FIN DU POPUP GOOGLE -->
 
 <!-- BOUTON FLOTTANT PANIER -->
-<div class="cart-fab" id="cart-fab" onclick="openCart()" style="display:none;">
+<div data-nosnippet class="cart-fab" id="cart-fab" onclick="openCart()" style="display:none;">
     <i class="fas fa-shopping-cart"></i>
     <div class="cart-fab-badge" id="cart-fab-badge">0</div>
 </div>
 
 <!-- POPUP PANIER -->
-<div id="cart-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+<div data-nosnippet id="cart-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
     <div style="background:var(--bg-card);padding:26px;border-radius:24px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);position:relative;">
         <i class="fas fa-times" onclick="closeCart()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
         <h3 style="font-size:18px;font-weight:800;margin-bottom:16px;color:#fff;font-family:'Montserrat',sans-serif;"><i class="fas fa-shopping-cart" style="color:var(--primary-yellow);"></i> Mon panier</h3>
@@ -3636,7 +3654,7 @@ async function fetchApiScore(id, dateRaw) {
 </div>
 
 <!-- POPUP PANIER VALIDÉ (choix WhatsApp / Telegram) -->
-<div id="cart-validated-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+<div data-nosnippet id="cart-validated-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
     <div style="background:var(--bg-card);padding:30px;border-radius:24px;text-align:center;width:90%;max-width:400px;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);">
         <div style="width:70px;height:70px;background:rgba(34,197,94, 0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px auto;"><i class="fas fa-check" style="font-size:32px;color:var(--green);"></i></div>
         <h3 style="font-size:20px;font-weight:800;margin-bottom:6px;color:#fff;font-family:'Montserrat',sans-serif;">Panier validé !</h3>
@@ -3654,7 +3672,7 @@ async function fetchApiScore(id, dateRaw) {
 </div>
 
 <!-- POPUP MES COMMANDES (raccourci depuis le header) -->
-<div id="my-orders-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+<div data-nosnippet id="my-orders-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
     <div style="background:var(--bg-card);padding:26px;border-radius:24px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);position:relative;">
         <i class="fas fa-times" onclick="closeMyOrdersPopup()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
         <h3 style="font-size:18px;font-weight:800;margin-bottom:16px;color:#fff;font-family:'Montserrat',sans-serif;"><i class="fas fa-receipt" style="color:var(--primary-yellow);"></i> Mes commandes</h3>
@@ -3663,7 +3681,7 @@ async function fetchApiScore(id, dateRaw) {
 </div>
 
 <!-- POPUP SUCCÈS DÉBLOCAGE (juste après avoir saisi le code) -->
-<div id="unlock-success-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+<div data-nosnippet id="unlock-success-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
     <div style="background:#000000;padding:26px;border-radius:24px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto;border:1px solid rgba(255,215,0,0.25);box-shadow:0 10px 40px rgba(0,0,0,0.6), 0 0 30px rgba(255,215,0,0.08);transform:scale(0.9);transition:transform 0.3s;position:relative;">
         <i class="fas fa-times" onclick="closeUnlockSuccessPopup()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
         <div style="text-align:center; margin-bottom:16px;">
@@ -3677,7 +3695,7 @@ async function fetchApiScore(id, dateRaw) {
 </div>
 
 <!-- POPUP COMBINÉ DÉBLOQUÉ (page spéciale, réouvrable via le bouton persistant) -->
-<div id="unlocked-combo-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
+<div data-nosnippet id="unlocked-combo-popup" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);">
     <div style="background:var(--bg-card);padding:26px;border-radius:24px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto;border:1px solid rgba(255,255,255,0.06);transform:scale(0.9);transition:transform 0.3s;box-shadow:0 10px 40px rgba(0,0,0,0.4);position:relative;">
         <i class="fas fa-times" onclick="closeUnlockedComboPage()" style="position:absolute; top:20px; right:20px; color:var(--text-gray); font-size:20px; cursor:pointer;"></i>
         <h3 style="font-size:18px;font-weight:800;margin-bottom:16px;color:#fff;font-family:'Montserrat',sans-serif;"><i class="fas fa-unlock" style="color:var(--primary-yellow);"></i> Combiné débloqué</h3>
@@ -15453,7 +15471,7 @@ function sendInstaPrompt(id) {
 <!-- =====================================================
      OVERLAY : GÉNÉRATEUR PROMPT IA
      ===================================================== -->
-<div id="prompt-gen-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;flex-direction:column;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(8px);">
+<div data-nosnippet id="prompt-gen-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;flex-direction:column;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(8px);">
     <!-- Header -->
     <div style="border-bottom:1px solid rgba(249,115,22,0.3);background:#0a0a0a;padding:50px 20px 14px;display:flex;align-items:center;gap:14px;flex-shrink:0;">
         <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#f97316,#fbbf24);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 18px rgba(249,115,22,0.35);">⚽</div>
@@ -15479,7 +15497,7 @@ function sendInstaPrompt(id) {
     <!-- =====================================================
      OVERLAY : GÉNÉRATEUR ÉCUSSON BRODÉ
      ===================================================== -->
-<div id="ecusson-gen-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;flex-direction:column;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(8px);">
+<div data-nosnippet id="ecusson-gen-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:99999;flex-direction:column;opacity:0;transition:opacity 0.3s;backdrop-filter:blur(8px);">
     <!-- Header -->
     <div style="border-bottom:1px solid rgba(255,193,7,0.3);background:#0a0a0a;padding:50px 20px 14px;display:flex;align-items:center;gap:14px;flex-shrink:0;">
         <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#ffc107,#b8860b);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 18px rgba(255,193,7,0.35);">🛡️</div>
