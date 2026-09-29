@@ -975,6 +975,9 @@
         .masc{position:absolute;left:38px;bottom:0;width:64px;height:68px;transform:translate(0,70px);transform-origin:50% 100%;will-change:transform}
         .masc img{position:absolute;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
         .masc-corps{left:0;top:0;width:64px;height:68px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+        /* Membres SM VIP+ : mascotte en version dorée */
+        .masc.dore img{filter:sepia(1) saturate(2.8) hue-rotate(-4deg) brightness(1.15) contrast(1.05) drop-shadow(0 0 6px rgba(255,200,40,.75))}
+        .masc.dore::before{content:'';position:absolute;left:50%;top:-2px;width:30px;height:8px;margin-left:-15px;border-radius:50%;border:2px solid rgba(255,224,130,.9);box-shadow:0 0 8px rgba(255,200,40,.9);z-index:3;pointer-events:none}
         .masc-bras{left:47.5px;top:45.7px;width:15.2px;height:43.9px;transform-origin:50% 4%;z-index:1}
         /* Page Pronostics AI : scène « pile VIP » — la mascotte déchargée avale une
            pile VIP et devient le roi des méchas */
@@ -11457,6 +11460,7 @@ async function fetchMatchesFromAPI() {
         var tour = ++mascotteTour; // un nouveau rendu arrête la boucle précédente
         var m = document.getElementById('masc-debloquer');
         if (!m || !m.animate) return;
+        m.classList.toggle('dore', window.isUserVip === true);
         var b = m.querySelector('.masc-bras');
         if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             m.style.transform = 'translate(0,30px)'; // simple regard fixe, sans mouvement
