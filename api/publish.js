@@ -1350,8 +1350,11 @@ async function handleParisVipPublic(req, res) {
     const user = await u.json();
     const prof = ((await sbFetch('profiles?id=eq.' + user.id + '&select=is_vip,is_admin')) || [])[0] || {};
     const acces = !!(prof.is_vip || prof.is_admin);
+    // Même pour un VIP, les paris du jour ne sont envoyés en clair que sur demande
+    // explicite (bouton « Afficher les prédictions »), jamais au chargement de la page.
+    const reveler = acces && !!(req.body && req.body.reveler);
     const lignes = await sbFetch('vip_paris?select=*&order=kickoff.desc&limit=120') || [];
-    const paris = lignes.map(p => (acces || p.statut !== 'en_attente') ? p : Object.assign({}, p, { libelle: '••••••••', cote: 0, marche: null, bookmaker: null }));
+    const paris = lignes.map(p => (reveler || p.statut !== 'en_attente') ? p : Object.assign({}, p, { libelle: '••••••••', cote: 0, marche: null, bookmaker: null }));
     res.status(200).json({ acces, paris });
 }
 

@@ -12526,11 +12526,11 @@ async function autoFetchFinalScores(combined) {
         var dates = paDates();
         afficherAnalyses(dates.length ? dates[0] : null);
     }
-    async function chargerParisVip() {
+    async function chargerParisVip(reveler) {
         var corps = document.getElementById('pv-corps');
         corps.innerHTML = '<div class="pv-vide"><i class="fas fa-spinner fa-spin"></i> Chargement…</div>';
         var r;
-        try { var rep = await adminApiCall('/api/publish', { action: 'paris-vip-public' }); r = { data: rep.paris }; }
+        try { var rep = await adminApiCall('/api/publish', { action: 'paris-vip-public', reveler: !!reveler }); r = { data: rep.paris }; }
         catch (e) { corps.innerHTML = '<div class="pv-vide">Paris VIP momentanément indisponibles.</div>'; return; }
         var a = await supabaseClient.from('analyses_apres_match').select('fixture_date,statut,payload').eq('statut', 'publie').order('fixture_date', { ascending: false }).limit(90);
         PV_ANALYSES = a.error ? [] : (a.data || []);
@@ -12697,8 +12697,11 @@ async function autoFetchFinalScores(combined) {
     function deflouterParisVip() {
         if (window.isUserVip === true || window.isAdmin === true) {
             var o = document.getElementById('paris-vip-overlay');
-            o.classList.remove('smvip');
-            var b = document.getElementById('pv-deflouter'); if (b) b.style.display = 'none';
+            // Les vrais paris ne sont demandés au serveur qu'à ce moment-là
+            chargerParisVip(true).then(function () {
+                o.classList.remove('smvip');
+                var b = document.getElementById('pv-deflouter'); if (b) b.style.display = 'none';
+            });
         } else if (typeof openCheckout === 'function') {
             openCheckout('vip', 99.99);
         }
