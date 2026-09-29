@@ -12387,7 +12387,10 @@ async function autoFetchFinalScores(combined) {
         var liste = document.getElementById('pv-lecture-liste');
         try {
             var r = await adminApiCall('/api/publish', { action: 'paris-vip-lecture' });
-            if (!r.matchs || !r.matchs.length) { liste.innerHTML = '<div class="pv-vide">Aucun match analysé terminé hier.</div>'; return; }
+            if (!r.matchs || !r.matchs.length) {
+                var raison = (r.erreurs && r.erreurs.length) ? 'Réponse de l\'API : ' + r.erreurs.join(' · ') : (r.info || ('Scores récupérés : ' + (r.trouves || 0) + '. Aucun match terminé trouvé.'));
+                liste.innerHTML = '<div class="pv-vide">Aucun match exploitable pour hier.<br><small style="opacity:.7">' + pvEchap(raison) + '</small></div>'; return;
+            }
             liste.innerHTML = r.matchs.map(function (m) {
                 return '<div class="pv-carte"><div class="pv-ligne1"><span>' + pvEchap(m.ligue || 'Football') + ' · ' + pvJour(r.date) + ' ' + pvHeure(m.kickoff) + '</span><span class="pv-score">' + pvEchap(m.score) + '</span></div>'
                     + '<div class="pv-match">' + pvEchap(m.home) + ' - ' + pvEchap(m.away) + '</div>'

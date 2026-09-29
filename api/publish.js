@@ -1268,6 +1268,26 @@ async function genererParisVip(now) {
     return bilan;
 }
 
+// Scores finaux de plusieurs rencontres. L'appel groupé (ids=) n'est pas
+// accepté par toutes les formules API-Football : repli match par match.
+async function pvFixtures(ids) {
+    const erreurs = [];
+    try {
+        const j = await apiFootballPublish('/fixtures?ids=' + ids.join('-'));
+        if (j.errors && Object.keys(j.errors).length) erreurs.push(JSON.stringify(j.errors));
+        if (j.response && j.response.length) return { liste: j.response, erreurs };
+    } catch (e) { erreurs.push(String(e)); }
+    const liste = [];
+    for (const id of ids) {
+        try {
+            const j = await apiFootballPublish('/fixtures?id=' + id);
+            if (j.errors && Object.keys(j.errors).length) erreurs.push(JSON.stringify(j.errors));
+            (j.response || []).forEach(x => liste.push(x));
+        } catch (e) { erreurs.push(String(e)); }
+    }
+    return { liste, erreurs };
+}
+
 function pvResultat(marche, h, a) {
     const t = h + a;
     return ({ plus25: t > 2.5, moins25: t < 2.5, plus15: t > 1.5, moins35: t < 3.5, bttsoui: h > 0 && a > 0, bttsnon: !(h > 0 && a > 0), dc1x: h >= a, dcx2: a >= h, dc12: h !== a })[marche];
@@ -1280,7 +1300,7 @@ async function corrigerParisVip() {
     const attente = await sbFetch('vip_paris?statut=eq.en_attente&kickoff=lt.' + encodeURIComponent(avant) + '&select=id,fixture_id,marche&limit=20') || [];
     if (!attente.length) return bilan;
     const ids = Array.from(new Set(attente.map(x => x.fixture_id)));
-    const fx = (await apiFootballPublish('/fixtures?ids=' + ids.join('-'))).response || [];
+    const fx = (await pvFixtures(ids)).liste;
     for (const pari of attente) {
         const f = fx.find(x => x.fixture && x.fixture.id === pari.fixture_id);
         if (!f) continue;
@@ -1330,11 +1350,13 @@ async function handleParisVipLecture(req, res) {
     const hier = veille(parisNowParts().dateStr);
     const rencontres = (await sbFetch('ai_fixtures?fixture_date=eq.' + hier + '&select=*') || [])
         .sort((x, y) => (prioriteLigue(x.league_code) - prioriteLigue(y.league_code)) || (Date.parse(x.kickoff) - Date.parse(y.kickoff)))
-        .slice(0, 6);
-    if (!rencontres.length) return res.status(200).json({ date: hier, matchs: [] });
-    const fx = (await apiFootballPublish('/fixtures?ids=' + rencontres.map(r => r.fixture_id).join('-'))).response || [];
+        .slice(0, 8);
+    if (!rencontres.length) return res.status(200).json({ date: hier, matchs: [], info: 'Aucune rencontre analysée en base pour ' + hier });
+    const recup = await pvFixtures(rencontres.map(r => r.fixture_id));
+    const fx = recup.liste;
     const matchs = [];
     for (const r of rencontres) {
+        if (matchs.length >= 3) break;
         const f = fx.find(x => x.fixture && x.fixture.id === r.fixture_id);
         if (!f || !['FT', 'AET', 'PEN'].includes(f.fixture.status && f.fixture.status.short) || f.goals.home === null) continue;
         const h = f.goals.home, a = f.goals.away, t = h + a;
@@ -1352,9 +1374,11 @@ async function handleParisVipLecture(req, res) {
         ];
         if (t > 1.5) realises.push({ libelle: 'Plus de 1,5 but', cote: cote(5, 'Over 1.5') });
         if (t < 3.5) realises.push({ libelle: 'Moins de 3,5 buts', cote: cote(5, 'Under 3.5') });
-        matchs.push({ home: r.home, away: r.away, ligue: r.league_name, kickoff: r.kickoff, score: h + '-' + a, realises });
+        const dansPlage = x => x.cote && x.cote >= PV_COTE_MIN && x.cote <= PV_COTE_MAX;
+        realises.sort((x, y) => (dansPlage(y) - dansPlage(x)) || ((y.cote || 0) - (x.cote || 0)));
+        matchs.push({ home: r.home, away: r.away, ligue: r.league_name, kickoff: r.kickoff, score: h + '-' + a, realises: realises.slice(0, 3) });
     }
-    res.status(200).json({ date: hier, matchs });
+    res.status(200).json({ date: hier, matchs, erreurs: recup.erreurs.slice(0, 3), trouves: fx.length });
 }
 
 // POST { action: 'annonce-combine', id } (admin) : bouton « Relancer l'annonce »
