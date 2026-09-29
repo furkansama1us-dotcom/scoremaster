@@ -3497,7 +3497,7 @@ async function fetchApiScore(id, dateRaw) {
         #content-planner-overlay .cp-fold{width:100%;text-align:left;background:none;border:none;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8a8290;font-weight:800;cursor:pointer;padding:0 2px 10px;}
         #content-planner-overlay .cp-view{display:none;}
         #content-planner-overlay .cp-view.active{display:block;}
-        #content-planner-overlay .cp-tabbar{flex:0 0 auto;display:grid;grid-template-columns:repeat(6,1fr);background:#12151e;border-top:1px solid #232838;padding:8px 4px calc(8px + env(safe-area-inset-bottom));}
+        #content-planner-overlay .cp-tabbar{flex:0 0 auto;display:grid;grid-template-columns:repeat(7,1fr);background:#12151e;border-top:1px solid #232838;padding:8px 4px calc(8px + env(safe-area-inset-bottom));}
         #content-planner-overlay .cp-tab{background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:#8a90a2;font-family:'Manrope',sans-serif;font-size:10.5px;font-weight:800;padding:4px 0;}
         #content-planner-overlay .cp-tab .ic{font-size:19px;line-height:1;filter:grayscale(.35);opacity:.85;transition:transform .2s;}
         #content-planner-overlay .cp-tab.active{color:#e8a13a;}
@@ -3685,6 +3685,22 @@ async function fetchApiScore(id, dateRaw) {
             <div id="cpLibList"></div>
         </div>
 
+        <!-- Onglet Event / Promo -->
+        <div class="cp-view" id="cp-view-events">
+            <div class="cp-eyebrow">Event / Promo · nouveautés de l'app</div>
+            <div id="cpEventsList"></div>
+            <div class="cp-eyebrow" style="margin-top:18px;">Ajouter une nouveauté</div>
+            <div class="cp-set-card">
+                <input class="cp-input" id="cpEvTitre" placeholder="Titre (ex. Paris SMVIP+)" style="margin-bottom:8px;">
+                <input class="cp-input" id="cpEvSous" placeholder="Sous-titre (ex. Nouvelle rubrique)" style="margin-bottom:8px;">
+                <textarea class="cp-input" id="cpEvDesc" rows="3" placeholder="Description courte" style="margin-bottom:8px;resize:vertical;"></textarea>
+                <input class="cp-input" id="cpEvP1" placeholder="Point fort 1" style="margin-bottom:6px;">
+                <input class="cp-input" id="cpEvP2" placeholder="Point fort 2" style="margin-bottom:6px;">
+                <input class="cp-input" id="cpEvP3" placeholder="Point fort 3" style="margin-bottom:10px;">
+                <button class="cp-secondary" onclick="cpAjouterEvent(this)"><i class="fas fa-plus"></i> Ajouter la nouveauté</button>
+            </div>
+        </div>
+
         <!-- Onglet Valider -->
         <div class="cp-view" id="cp-view-validate">
             <div class="cp-eyebrow" id="cpValLabel">À valider</div>
@@ -3782,6 +3798,11 @@ async function fetchApiScore(id, dateRaw) {
                     <div style="flex:1;min-width:0;"><b>Promotion quotidienne de l'app</b><br><span style="font-size:11.5px;color:#8a8290;">Chaque jour à 12h30, une affiche Score Master sur Telegram et en story Instagram (pronostics gratuits, VIP+, parrainage, transparence…), jamais la même deux jours de suite.</span></div>
                 </div>
                 <div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:14px;border-top:1px dashed #e7e0d5;">
+                    <label class="cp-switch"><input type="checkbox" id="cpEventToggle" onchange="cpSetEventAuto(this.checked)"><span></span></label>
+                    <div style="flex:1;min-width:0;"><b>Promotion des nouveautés (Event/Promo)</b><br><span style="font-size:11.5px;color:#8a8290;">Chaque jour à <b id="cpEventHeureTxt">18h30</b>, une nouveauté active de l'onglet Event/Promo part en story + post Instagram et sur le canal Telegram, à tour de rôle.</span></div>
+                    <button class="cp-manage" onclick="cpTab('events')">Gérer</button>
+                </div>
+                <div style="display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:14px;border-top:1px dashed #e7e0d5;">
                     <label class="cp-switch"><input type="checkbox" id="cpCampagneToggle" onchange="cpSetCampagne(this.checked)"><span></span></label>
                     <div style="flex:1;min-width:0;"><b>Campagne de parrainage</b><br><span style="font-size:11.5px;color:#8a8290;">Cochée, la campagne est en cours : le bandeau s'affiche dans l'app et les filleuls sont comptés. Décochée, plus rien n'est proposé ni récompensé.</span></div>
                     <button class="cp-manage" onclick="cpOpenCampagne()">Gérer</button>
@@ -3833,6 +3854,7 @@ async function fetchApiScore(id, dateRaw) {
         <button class="cp-tab" data-tab="generate" onclick="cpTab('generate')"><span class="ic">✨</span>Générer</button>
         <button class="cp-tab" data-tab="biblio" onclick="cpTab('biblio')"><span class="ic">📚</span>Biblio</button>
         <button class="cp-tab" data-tab="validate" onclick="cpTab('validate')"><span class="ic">✅</span>Valider</button>
+        <button class="cp-tab" data-tab="events" onclick="cpTab('events')"><span class="ic">🎉</span>Event/Promo</button>
         <button class="cp-tab" data-tab="settings" onclick="cpTab('settings')"><span class="ic">⚙️</span>Réglages</button>
     </nav>
 </div>
@@ -6921,6 +6943,7 @@ function cpTab(name) {
     if (name === 'generate') cpRenderGenerate();
     if (name === 'biblio') cpRenderBiblio();
     if (name === 'validate') cpRenderValidate();
+    if (name === 'events') cpRenderEvents();
     if (name === 'settings') {
         cpRenderAutoCard();
         var dateReseau = document.getElementById('cpReseauDate');
@@ -7207,6 +7230,9 @@ async function cpRenderAutoCard() {
     if (promo) { promo.disabled = !('auto_promo' in r); promo.checked = !!r.auto_promo; }
     var rapport = document.getElementById('cpRapportToggle');
     if (rapport) { rapport.disabled = !('auto_rapport' in r); rapport.checked = !!r.auto_rapport; }
+    var ev = document.getElementById('cpEventToggle');
+    if (ev) { ev.disabled = !('promo_event_auto' in r); ev.checked = !!r.promo_event_auto; }
+    var evH = document.getElementById('cpEventHeureTxt'); if (evH) evH.textContent = cpHeureTxt(r.promo_event_heure || '18:30');
     var campagne = document.getElementById('cpCampagneToggle');
     if (campagne) { campagne.disabled = !('campagne_active' in r); campagne.checked = !!r.campagne_active; }
     cpRenderCampagneEtat();
@@ -7360,6 +7386,59 @@ async function cpSetVps(actif) {
 // ============================================================
 // CAMPAGNE DE PARRAINAGE — pilotage complet depuis les réglages
 // ============================================================
+// ---------- Event / Promo ----------
+async function cpSetEventAuto(actif) {
+    if (await cpSaveAuto({ promo_event_auto: !!actif })) showToast(actif ? 'Promotion automatique des nouveautés activée.' : 'Promotion automatique des nouveautés arrêtée.');
+}
+async function cpRenderEvents() {
+    var box = document.getElementById('cpEventsList');
+    if (!box) return;
+    box.innerHTML = '<div class="cp-set-card">Chargement…</div>';
+    var r = await supabaseClient.from('promo_events').select('*').order('created_at', { ascending: false });
+    if (r.error) { box.innerHTML = '<div class="cp-set-card" style="color:#b4232f;">Table promo_events absente : exécute la migration SQL « EVENT / PROMO » dans Supabase.</div>'; return; }
+    var evs = r.data || [];
+    if (!evs.length) { box.innerHTML = '<div class="cp-set-card">Aucune nouveauté pour le moment.</div>'; return; }
+    box.innerHTML = evs.map(function (e) {
+        var derniere = e.derniere_publication ? new Date(e.derniere_publication).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }) : 'jamais';
+        return '<div class="cp-set-card"><div style="display:flex;align-items:center;gap:12px;">'
+            + '<label class="cp-switch"><input type="checkbox" ' + (e.actif ? 'checked' : '') + ' onchange="cpEventActif(' + e.id + ', this.checked)"><span></span></label>'
+            + '<div style="flex:1;min-width:0;"><b>' + pvEchap(e.titre) + '</b>' + (e.sous_titre ? ' · ' + pvEchap(e.sous_titre) : '')
+            + '<br><span style="font-size:11.5px;color:#8a8290;">' + pvEchap(e.description || '') + '</span>'
+            + ((e.points || []).length ? '<br><span style="font-size:11.5px;color:#5a5262;">' + e.points.filter(Boolean).map(function (p) { return '✓ ' + pvEchap(p); }).join('<br>') + '</span>' : '')
+            + '<br><span style="font-size:11px;color:#8a8290;">Publiée ' + (e.publications || 0) + ' fois · dernière : ' + derniere + '</span></div></div>'
+            + '<div style="display:flex;gap:8px;margin-top:10px;"><button class="cp-manage" style="flex:1" onclick="cpPublierEvent(this,' + e.id + ')"><i class="fas fa-bullhorn"></i> Publier maintenant</button>'
+            + '<button class="cp-manage" style="border-color:#e0b4b4;color:#b4232f" onclick="cpSupprimerEvent(' + e.id + ')"><i class="fas fa-trash"></i></button></div></div>';
+    }).join('');
+}
+async function cpEventActif(id, actif) {
+    var r = await supabaseClient.from('promo_events').update({ actif: !!actif }).eq('id', id);
+    showToast(r.error ? 'Erreur : ' + r.error.message : (actif ? 'Nouveauté activée.' : 'Nouveauté mise en pause.'), !!r.error);
+}
+async function cpSupprimerEvent(id) {
+    if (!confirm('Supprimer cette nouveauté ? Les publications déjà parties ne sont pas touchées.')) return;
+    var r = await supabaseClient.from('promo_events').delete().eq('id', id);
+    if (r.error) { showToast('Erreur : ' + r.error.message, true); return; }
+    cpRenderEvents();
+}
+async function cpAjouterEvent(btn) {
+    var v = function (id) { return (document.getElementById(id).value || '').trim(); };
+    if (!v('cpEvTitre')) { showToast('Le titre est obligatoire.', true); return; }
+    btn.disabled = true;
+    var r = await supabaseClient.from('promo_events').insert([{ titre: v('cpEvTitre'), sous_titre: v('cpEvSous') || null, description: v('cpEvDesc') || null, points: [v('cpEvP1'), v('cpEvP2'), v('cpEvP3')].filter(Boolean) }]);
+    btn.disabled = false;
+    if (r.error) { showToast('Erreur : ' + r.error.message, true); return; }
+    ['cpEvTitre', 'cpEvSous', 'cpEvDesc', 'cpEvP1', 'cpEvP2', 'cpEvP3'].forEach(function (id) { document.getElementById(id).value = ''; });
+    showToast('Nouveauté ajoutée.');
+    cpRenderEvents();
+}
+async function cpPublierEvent(btn, id) {
+    if (!confirm('Publier maintenant cette nouveauté en story + post Instagram et sur Telegram ?')) return;
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publication…';
+    try { await adminApiCall('/api/publish', { action: 'promo-event-publier', id: id }); showToast('Publication préparée : elle part au prochain passage.'); }
+    catch (e) { showToast('Erreur : ' + e.message, true); }
+    cpRenderEvents();
+}
+
 async function cpSetCampagne(actif) {
     if (await cpSaveAuto({ campagne_active: !!actif })) {
         showToast(actif ? 'Campagne de parrainage lancée.' : 'Campagne de parrainage arrêtée.');

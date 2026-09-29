@@ -874,3 +874,31 @@ create policy "Les admins lisent les analyses" on public.analyses_apres_match fo
 drop policy if exists "Les membres lisent les analyses publiees" on public.analyses_apres_match;
 create policy "Les membres lisent les analyses publiees" on public.analyses_apres_match for select
   using (statut = 'publie' and auth.uid() is not null);
+
+
+-- ============================================================
+-- EVENT / PROMO : nouveautés de l'app promues automatiquement (Content Planner)
+-- ============================================================
+create table if not exists public.promo_events (
+  id bigint generated always as identity primary key,
+  titre text not null,
+  sous_titre text,
+  description text,
+  points jsonb not null default '[]'::jsonb,
+  actif boolean not null default true,
+  publications integer not null default 0,
+  derniere_publication timestamptz,
+  created_at timestamptz not null default now()
+);
+alter table public.promo_events enable row level security;
+drop policy if exists "Les admins gerent les events" on public.promo_events;
+create policy "Les admins gerent les events" on public.promo_events for all
+  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true))
+  with check (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));
+insert into public.promo_events (titre, sous_titre, description, points)
+select 'Paris SMVIP+', 'Nouvelle rubrique', 'Chaque jour, notre IA sélectionne les paris SMVIP+ avant les matchs, et publie l''analyse des matchs passés.',
+  '["Les paris SMVIP+ du jour, choisis avant les matchs", "Un compte à rebours avant le premier match", "Les analyses IA des matchs passés"]'::jsonb
+where not exists (select 1 from public.promo_events where titre = 'Paris SMVIP+');
+alter table public.automation_settings add column if not exists promo_event_auto boolean not null default false;
+alter table public.automation_settings add column if not exists promo_event_heure text default '18:30';
+alter table public.automation_settings add column if not exists promo_event_le date;

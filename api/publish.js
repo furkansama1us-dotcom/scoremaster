@@ -1201,6 +1201,81 @@ async function relanceCampagne(now) {
     return { actif: true, publiee: true };
 }
 
+// ------------------------------------------------------------
+// EVENT / PROMO : promotion des nouveautés de l'app (table promo_events).
+// Même principe que la relance de parrainage : chaque jour à l'heure réglée,
+// une nouveauté active (la moins récemment promue) part en story + post
+// Instagram et sur le canal Telegram.
+// ------------------------------------------------------------
+const ACCROCHES_EVENT = [
+    '🚀 NOUVEAU SUR SCORE MASTER !',
+    '✨ Ça vient d\'arriver dans l\'app Score Master !',
+    '🔥 Nouvelle fonctionnalité disponible !',
+    '👑 On a pensé à toi : découvre la nouveauté du moment !'
+];
+function texteEvent(ev, dateStr) {
+    const points = (ev.points || []).filter(Boolean);
+    return choisir(ACCROCHES_EVENT, dateStr, 0)
+        + '\n\n' + ev.titre.toUpperCase() + (ev.sous_titre ? ' — ' + ev.sous_titre : '')
+        + (ev.description ? '\n\n' + ev.description : '')
+        + (points.length ? '\n\n' + points.map(p => '✅ ' + p).join('\n') : '')
+        + '\n\n👉 Disponible dès maintenant dans l\'app : scoremaster.fr'
+        + '\n\n' + CONTACT;
+}
+async function publierEvent(ev, now) {
+    const { composerCampagne } = await import('./_compositeur.mjs');
+    const commun = {
+        fondUrl: await fondStoryRecent(now.dateStr, 7),
+        badge: 'Nouveau',
+        titreHaut: ev.titre,
+        titreBas: ev.sous_titre || 'Disponible dans l\'app',
+        etapes: (ev.points || []).filter(Boolean).slice(0, 3),
+        recompense: null,
+        conditions: [],
+        echeance: 'Disponible dès maintenant',
+        cta: 'scoremaster.fr   ·   @ScoreMasterOfficiel'
+    };
+    const [story, post] = await Promise.all([
+        composerCampagne(Object.assign({ format: 'story' }, commun)),
+        composerCampagne(Object.assign({ format: 'post' }, commun))
+    ]);
+    const [urlStory, urlPost] = await televerserSlides('event-' + ev.id + '-' + now.dateStr, [
+        'data:image/jpeg;base64,' + story.toString('base64'),
+        'data:image/jpeg;base64,' + post.toString('base64')
+    ]);
+    const base = { scheduled_for: now.dateStr, scheduled_time: hhmm(now.minutes), content_type: 'Event/Promo', status: 'approved',
+        caption: texteEvent(ev, now.dateStr), overlay_data: { source: 'event', event_id: ev.id, date: now.dateStr } };
+    await insererPublications([
+        Object.assign({}, base, { platform: 'instagram', image_url: urlStory, image_url_story: urlStory, image_url_post: urlPost, publish_as_story: true, publish_as_post: true }),
+        Object.assign({}, base, { platform: 'telegram', image_url: urlPost })
+    ]);
+    await sbFetch('promo_events?id=eq.' + ev.id, { method: 'PATCH', body: JSON.stringify({ publications: (ev.publications || 0) + 1, derniere_publication: new Date().toISOString() }) });
+    return { story: urlStory, post: urlPost };
+}
+async function promoEventAutomatique(now) {
+    const reglages = await lireReglagesAuto();
+    if (!reglages || !reglages.promo_event_auto) return { actif: false };
+    const [hh, mm] = String(reglages.promo_event_heure || '18:30').split(':').map(Number);
+    if (now.minutes < hh * 60 + mm) return { actif: true, attente: reglages.promo_event_heure };
+    if (reglages.promo_event_le === now.dateStr) return { actif: true, deja: true };
+    const evs = await sbFetch('promo_events?actif=is.true&select=*&order=derniere_publication.asc.nullsfirst&limit=1') || [];
+    await enregistrerReglages({ promo_event_le: now.dateStr });
+    if (!evs.length) return { actif: true, aucun: true };
+    await publierEvent(evs[0], now);
+    await prevenirAdmin('🎉 EVENT/PROMO PUBLIÉ : « ' + evs[0].titre + ' »\n\nStory + post Instagram et message Telegram envoyés à la communauté.');
+    return { actif: true, publie: evs[0].id };
+}
+// POST { action: 'promo-event-publier', id } (admin) : bouton « Publier maintenant ».
+async function handlePromoEventPublier(req, res) {
+    const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    if (!(await verifyAdmin(accessToken))) return res.status(403).json({ error: 'Accès refusé' });
+    const id = req.body && req.body.id;
+    const ev = ((await sbFetch('promo_events?id=eq.' + encodeURIComponent(id) + '&select=*')) || [])[0];
+    if (!ev) return res.status(404).json({ error: 'Nouveauté introuvable' });
+    const urls = await publierEvent(ev, parisNowParts());
+    res.status(200).json({ ok: true, image: urls.post });
+}
+
 // POST { action: 'campagne-relance' } (admin) : publie la relance tout de suite.
 async function handleCampagneRelance(req, res) {
     const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
@@ -1923,6 +1998,7 @@ async function handleCronSweep(req, res) {
         summary.rapport = await rapportAutomatique(now);
         summary.trame = await trameAutomatique(now);
         summary.campagne = await relanceCampagne(now);
+        try { summary.promoEvent = await promoEventAutomatique(now); } catch (e) { summary.promoEvent = { erreur: String(e) }; }
     } catch (e) {
         summary.rapport = { erreur: String(e) };
     }
@@ -2282,6 +2358,7 @@ module.exports = async function handler(req, res) {
         if (req.method === 'POST' && req.body && req.body.action === 'recap-reseau') return await handleRecapReseau(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'campagne-filleul') return await handleCampagneFilleul(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'campagne-relance') return await handleCampagneRelance(req, res);
+        if (req.method === 'POST' && req.body && req.body.action === 'promo-event-publier') return await handlePromoEventPublier(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'annonce-combine') return await handleAnnonceCombine(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'paris-vip') return await handleParisVip(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'paris-vip-public') return await handleParisVipPublic(req, res);
