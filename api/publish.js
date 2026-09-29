@@ -1213,6 +1213,110 @@ async function handleCampagneRelance(req, res) {
     res.status(200).json({ ok: true, image: urls.post });
 }
 
+
+// ------------------------------------------------------------
+// PARIS VIP (aperçu admin) : chaque jour, AVANT les matchs, jusqu'à 3 paris
+// simples (buts, les deux équipes marquent, double chance) cohérents avec
+// l'analyse de la rencontre, avec la vraie cote du marché entre 1,50 et 2,00.
+// Après les matchs, chaque pari est corrigé d'après le score final. Rien n'est
+// choisi après coup : l'historique reflète ce qui a réellement été proposé.
+// ------------------------------------------------------------
+const PV_COTE_MIN = 1.5, PV_COTE_MAX = 2.0, PV_PAR_JOUR = 3;
+
+function pvCandidats(bets, r, p) {
+    const val = (id, v) => { const b = bets.find(x => x.id === id); const e = b && (b.values || []).find(y => String(y.value) === v); return e ? parseFloat(e.odd) : null; };
+    const plus = String(p.under_over || '').startsWith('+'), moins = String(p.under_over || '').startsWith('-');
+    const h = p.home_prob || 0, n = p.draw_prob || 0, a = p.away_prob || 0;
+    const liste = [
+        { marche: 'plus25', libelle: 'Plus de 2,5 buts', cote: val(5, 'Over 2.5'), score: plus ? 2 : moins ? -2 : 0 },
+        { marche: 'moins25', libelle: 'Moins de 2,5 buts', cote: val(5, 'Under 2.5'), score: moins ? 2 : plus ? -2 : 0 },
+        { marche: 'plus15', libelle: 'Plus de 1,5 but', cote: val(5, 'Over 1.5'), score: plus ? 1.2 : 0.3 },
+        { marche: 'moins35', libelle: 'Moins de 3,5 buts', cote: val(5, 'Under 3.5'), score: moins ? 1.2 : 0.3 },
+        { marche: 'bttsoui', libelle: 'Les deux équipes marquent', cote: val(8, 'Yes'), score: (Math.min(h, a) >= 25 && plus) ? 1.6 : (Math.min(h, a) >= 30 ? 0.8 : -1) },
+        { marche: 'bttsnon', libelle: 'Les deux équipes ne marquent pas', cote: val(8, 'No'), score: (moins || Math.max(h, a) >= 55) ? 1.3 : -0.5 },
+        { marche: 'dc1x', libelle: r.home + ' ou nul', cote: val(12, 'Home/Draw'), score: (h + n - 62) / 8 },
+        { marche: 'dcx2', libelle: 'Nul ou ' + r.away, cote: val(12, 'Draw/Away'), score: (a + n - 62) / 8 },
+        { marche: 'dc12', libelle: r.home + ' ou ' + r.away, cote: val(12, 'Home/Away'), score: (h + a - 72) / 8 }
+    ];
+    return liste.filter(c => c.cote && c.cote >= PV_COTE_MIN && c.cote <= PV_COTE_MAX && c.score > 0);
+}
+
+async function genererParisVip(now) {
+    const bilan = { crees: 0 };
+    if (!APIFOOTBALL_KEY) return { erreur: 'APIFOOTBALL_KEY absente' };
+    const deja = await sbFetch('vip_paris?fixture_date=eq.' + now.dateStr + '&select=id&limit=1') || [];
+    if (deja.length) return { deja: true };
+    const limite = Date.now() + 60 * 60000;
+    const rencontres = (await sbFetch('ai_fixtures?fixture_date=eq.' + now.dateStr + '&select=*') || [])
+        .filter(l => l.kickoff && Date.parse(l.kickoff) > limite)
+        .sort((x, y) => (prioriteLigue(x.league_code) - prioriteLigue(y.league_code)) || (Date.parse(x.kickoff) - Date.parse(y.kickoff)));
+    const preds = await sbFetch('ai_predictions?fixture_date=eq.' + now.dateStr + '&select=*') || [];
+    const lignes = [];
+    for (const r of rencontres.slice(0, 8)) {
+        if (lignes.length >= PV_PAR_JOUR) break;
+        const p = preds.find(x => memesEquipes(x.home, r.home) && memesEquipes(x.away, r.away));
+        if (!p) continue;
+        const o = ((await apiFootballPublish('/odds?fixture=' + r.fixture_id)).response || [])[0];
+        if (!o || !o.bookmakers || !o.bookmakers.length) continue;
+        const bk = BOOKMAKERS_PREFERES.map(id => o.bookmakers.find(b => b.id === id)).find(Boolean) || o.bookmakers[0];
+        const choix = pvCandidats(bk.bets || [], r, p).sort((x, y) => (y.score - x.score) || (Math.abs(x.cote - 1.75) - Math.abs(y.cote - 1.75)))[0];
+        if (!choix) continue;
+        lignes.push({ fixture_id: r.fixture_id, fixture_date: now.dateStr, kickoff: r.kickoff, home: r.home, away: r.away, ligue: r.league_name || null,
+            marche: choix.marche, libelle: choix.libelle, cote: choix.cote, bookmaker: bk.name || null });
+    }
+    for (const l of lignes) { await sbFetch('vip_paris', { method: 'POST', body: JSON.stringify([l]) }); bilan.crees++; }
+    return bilan;
+}
+
+function pvResultat(marche, h, a) {
+    const t = h + a;
+    return ({ plus25: t > 2.5, moins25: t < 2.5, plus15: t > 1.5, moins35: t < 3.5, bttsoui: h > 0 && a > 0, bttsnon: !(h > 0 && a > 0), dc1x: h >= a, dcx2: a >= h, dc12: h !== a })[marche];
+}
+
+async function corrigerParisVip() {
+    const bilan = { corriges: 0 };
+    if (!APIFOOTBALL_KEY) return bilan;
+    const avant = new Date(Date.now() - 110 * 60000).toISOString();
+    const attente = await sbFetch('vip_paris?statut=eq.en_attente&kickoff=lt.' + encodeURIComponent(avant) + '&select=id,fixture_id,marche&limit=20') || [];
+    if (!attente.length) return bilan;
+    const ids = Array.from(new Set(attente.map(x => x.fixture_id)));
+    const fx = (await apiFootballPublish('/fixtures?ids=' + ids.join('-'))).response || [];
+    for (const pari of attente) {
+        const f = fx.find(x => x.fixture && x.fixture.id === pari.fixture_id);
+        if (!f) continue;
+        const etat = f.fixture.status && f.fixture.status.short;
+        let maj = null;
+        if (['FT', 'AET', 'PEN'].includes(etat) && f.goals && f.goals.home !== null) {
+            const h = f.goals.home, a = f.goals.away;
+            maj = { statut: pvResultat(pari.marche, h, a) ? 'gagne' : 'perdu', score_final: h + '-' + a };
+        } else if (['PST', 'CANC', 'ABD', 'AWD', 'WO'].includes(etat)) {
+            maj = { statut: 'annule' };
+        }
+        if (maj) {
+            maj.corrige_le = new Date().toISOString();
+            await sbFetch('vip_paris?id=eq.' + pari.id, { method: 'PATCH', body: JSON.stringify(maj) });
+            bilan.corriges++;
+        }
+    }
+    return bilan;
+}
+
+async function parisVipAutomatique(now) {
+    const bilan = { correction: await corrigerParisVip() };
+    if (now.minutes >= 9 * 60) bilan.generation = await genererParisVip(now);
+    return bilan;
+}
+
+// POST { action: 'paris-vip' } (admin) : bouton « Générer maintenant » de l'aperçu.
+async function handleParisVip(req, res) {
+    const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    if (!(await verifyAdmin(accessToken))) return res.status(403).json({ error: 'Accès refusé' });
+    const now = parisNowParts();
+    const correction = await corrigerParisVip();
+    const generation = await genererParisVip(now);
+    res.status(200).json({ ok: true, correction, generation });
+}
+
 // POST { action: 'annonce-combine', id } (admin) : bouton « Relancer l'annonce »
 // d'un combiné en cours. Remplace les brouillons d'annonce non publiés de ce
 // combiné, recrée le visuel et publie tout de suite (Telegram + story).
@@ -1532,6 +1636,11 @@ async function handleCronSweep(req, res) {
         summary.annonces = await rattraperAnnonces(now);
     } catch (e) {
         summary.annonces = { erreur: String(e) };
+    }
+    try {
+        summary.parisVip = await parisVipAutomatique(now);
+    } catch (e) {
+        summary.parisVip = { erreur: String(e) };
     }
     try {
         summary.promotion = await promotionQuotidienne(now);
@@ -1902,6 +2011,7 @@ module.exports = async function handler(req, res) {
         if (req.method === 'POST' && req.body && req.body.action === 'campagne-filleul') return await handleCampagneFilleul(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'campagne-relance') return await handleCampagneRelance(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'annonce-combine') return await handleAnnonceCombine(req, res);
+        if (req.method === 'POST' && req.body && req.body.action === 'paris-vip') return await handleParisVip(req, res);
         if (req.method === 'POST') return await handleForcePublish(req, res);
         return res.status(405).json({ error: 'Méthode non autorisée' });
     } catch (error) {

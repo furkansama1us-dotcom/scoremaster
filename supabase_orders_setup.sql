@@ -817,3 +817,34 @@ alter table public.automation_settings
   add column if not exists campagne_relance boolean not null default false,
   add column if not exists campagne_relance_heure text not null default '17:30',
   add column if not exists campagne_relance_le date;
+
+
+-- ============================================================
+-- PARIS VIP (aperçu admin) : paris simples proposés AVANT les matchs
+-- (buts, les deux équipes marquent, double chance), cote réelle entre 1,50 et
+-- 2,00, puis corrigés d'après le score final. Écrits par le serveur (service
+-- role) ; lecture réservée aux admins tant que la rubrique n'est pas publique.
+-- ============================================================
+create table if not exists public.vip_paris (
+  id bigint generated always as identity primary key,
+  fixture_id bigint not null,
+  fixture_date date not null,
+  kickoff timestamptz,
+  home text not null,
+  away text not null,
+  ligue text,
+  marche text not null,
+  libelle text not null,
+  cote numeric(5,2) not null,
+  bookmaker text,
+  statut text not null default 'en_attente',
+  score_final text,
+  publie_le timestamptz not null default now(),
+  corrige_le timestamptz,
+  unique (fixture_id, marche)
+);
+create index if not exists vip_paris_date_idx on public.vip_paris (fixture_date desc);
+alter table public.vip_paris enable row level security;
+drop policy if exists "Les admins lisent les paris VIP" on public.vip_paris;
+create policy "Les admins lisent les paris VIP" on public.vip_paris for select
+  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));

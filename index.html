@@ -208,6 +208,45 @@
         .vt-hero h1,.vt-hero p,.vt-atouts span{animation:vtEntree .7s ease-out backwards}
         .vt-hero p{animation-delay:.12s}.vt-atouts span:nth-child(1){animation-delay:.22s}.vt-atouts span:nth-child(2){animation-delay:.3s}.vt-atouts span:nth-child(3){animation-delay:.38s}
         @keyframes vtEntree{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+        /* Paris VIP (aperçu admin) */
+        .pv-banniere{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;cursor:pointer;background:linear-gradient(135deg,#1b2440,#131a30);border:1px solid rgba(255,193,7,.35);box-shadow:0 8px 22px rgba(0,0,0,.3)}
+        .pv-banniere .ico{flex:0 0 42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#FFE082,#FFC107 55%,#B8860B);color:#2a1c00;font-size:18px}
+        .pv-banniere b{display:block;font:800 14.5px 'Montserrat',sans-serif;color:#fff}
+        .pv-banniere small{display:block;margin-top:2px;font:600 11.5px 'Inter',sans-serif;color:var(--primary-yellow)}
+        .pv-banniere .fas.fa-chevron-right{margin-left:auto;color:#8b93a7}
+        #paris-vip-overlay{position:fixed;inset:0;z-index:10030;background:#0a0e1a;display:none;flex-direction:column;overflow:hidden}
+        #paris-vip-overlay.ouvert{display:flex}
+        .pv-tete{position:relative;flex-shrink:0;display:flex;align-items:center;gap:10px;padding:calc(14px + var(--safe-top)) 16px 12px;border-bottom:1px solid rgba(255,255,255,.07)}
+        .pv-tete h2{margin:0;font:800 17px 'Montserrat',sans-serif;color:#fff}
+        .pv-tete h2 small{display:block;font:600 10.5px 'Inter',sans-serif;color:#8b93a7;margin-top:2px}
+        .pv-tete .fermer{margin-left:auto;width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#fff;cursor:pointer}
+        .pv-secret{position:absolute;left:0;top:0;width:64px;height:100%;background:transparent;border:none;opacity:0;cursor:default}
+        .pv-corps{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px calc(30px + var(--safe-bottom))}
+        .pv-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+        .pv-stats div{background:#121829;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:10px;text-align:center}
+        .pv-stats b{display:block;font:800 18px 'Montserrat',sans-serif;color:#fff}
+        .pv-stats span{font:600 10px 'Inter',sans-serif;color:#8b93a7}
+        .pv-section{margin:6px 2px 8px;font:800 11px 'Montserrat',sans-serif;letter-spacing:1.3px;color:#8fb3ea}
+        .pv-carte{background:#121829;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:12px 13px;margin-bottom:8px}
+        .pv-ligne1{display:flex;justify-content:space-between;gap:8px;font:600 10.5px 'Inter',sans-serif;color:#8b93a7}
+        .pv-match{margin:4px 0 8px;font:700 13.5px 'Montserrat',sans-serif;color:#fff}
+        .pv-pari{display:flex;align-items:center;justify-content:space-between;gap:10px}
+        .pv-pari .lib{font:700 13px 'Inter',sans-serif;color:#e6e9f0}
+        .pv-pari .cote{flex-shrink:0;font:800 13px 'Montserrat',sans-serif;color:#fff;background:#232d6b;padding:4px 9px;border-radius:7px}
+        .pv-statut{font:800 10px 'Montserrat',sans-serif;letter-spacing:.5px;padding:3px 8px;border-radius:20px}
+        .pv-statut.en_attente{background:rgba(255,193,7,.12);color:var(--primary-yellow)}
+        .pv-statut.gagne{background:rgba(34,197,94,.14);color:#4ade80}
+        .pv-statut.perdu{background:rgba(244,63,94,.14);color:#fb7185}
+        .pv-statut.annule{background:rgba(255,255,255,.06);color:#8b93a7}
+        .pv-vide{padding:18px;text-align:center;font:500 12.5px 'Inter',sans-serif;color:#8b93a7;background:#121829;border-radius:14px;border:1px dashed rgba(255,255,255,.1)}
+        .pv-generer{width:100%;margin:6px 0 16px;padding:11px;border-radius:12px;border:1px solid rgba(143,179,234,.3);background:rgba(143,179,234,.08);color:#cfe1ff;font:700 12.5px 'Montserrat',sans-serif;cursor:pointer}
+        .pv-note{margin-top:14px;font:500 10.5px/1.5 'Inter',sans-serif;color:#5f677a;text-align:center}
+        /* Mode SMVIP+ (bouton invisible) : autocollant sur les infos clés du jour */
+        #paris-vip-overlay.smvip .pv-cle{position:relative;color:transparent !important;background:none !important}
+        #paris-vip-overlay.smvip .pv-cle::after{content:'SMVIP+';position:absolute;left:-4px;right:-4px;top:-3px;bottom:-3px;min-width:62px;display:flex;align-items:center;justify-content:center;
+            background:linear-gradient(135deg,#FFE9A8,#FFC107 55%,#B8860B);color:#2a1c00;font:900 11px 'Montserrat',sans-serif;letter-spacing:.6px;border-radius:5px;transform:rotate(-2.5deg);
+            box-shadow:0 2px 6px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.35)}
+        #paris-vip-overlay.smvip .pv-pari .cote.pv-cle::after{transform:rotate(3deg);min-width:0;left:-18px;right:-2px}
         /* Ciel de la page vitrine : ballons-étoiles filantes et étoiles qui scintillent */
         .vt-ciel{position:absolute;left:0;right:0;top:0;height:360px;overflow:hidden;pointer-events:none;z-index:0}
         .vt-ciel .scintille{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;box-shadow:0 0 4px 1px rgba(255,236,170,.7);opacity:.2;animation:vtScintille 3.4s ease-in-out infinite}
@@ -3206,6 +3245,14 @@ async function fetchApiScore(id, dateRaw) {
 </div>
 
 <!-- HISTORIQUE DES TICKETS — nouvelle page, ouverte par le badge bookmaker de la bannière « API sportifs connectés » -->
+<div data-nosnippet id="paris-vip-overlay" role="dialog" aria-modal="true" aria-label="Paris VIP">
+    <div class="pv-tete">
+        <button class="pv-secret" onclick="basculerSmvip()" aria-hidden="true" tabindex="-1"></button>
+        <h2><i class="fas fa-crown" style="color:var(--primary-yellow);margin-right:6px;"></i>Paris VIP<small>Aperçu admin · non visible par les membres</small></h2>
+        <button class="fermer" onclick="fermerParisVip()" aria-label="Fermer"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="pv-corps" id="pv-corps"></div>
+</div>
 <div data-nosnippet id="ticket-history-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:10002;flex-direction:column;opacity:0;transition:opacity 0.3s;">
     <div class="tk-top">
         <button class="tk-back" onclick="closeTicketHistory()"><i class="fas fa-chevron-left"></i><img src="logo-dark.png" alt="">Retour sur Score Master</button>
@@ -12281,6 +12328,67 @@ async function autoFetchFinalScores(combined) {
     }
 
     // ============================================================
+    // PARIS VIP (aperçu admin) : paris proposés avant les matchs (table
+    // vip_paris, lecture admin), corrigés après les matchs. Bouton invisible
+    // en haut à gauche : autocollants SMVIP+ sur les infos clés du jour.
+    // ============================================================
+    function pvDateParis(d) { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d || new Date()); }
+    function pvHeure(iso) { return iso ? new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', minute: '2-digit' }).format(new Date(iso)) : '--:--'; }
+    function pvJour(date) { var p = String(date).split('-'); return p[2] + '/' + p[1]; }
+    function pvEchap(t) { return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+    function pvCote(c) { return Number(c).toFixed(2).replace('.', ','); }
+    var PV_STATUTS = { en_attente: 'EN ATTENTE', gagne: 'GAGNÉ', perdu: 'PERDU', annule: 'ANNULÉ' };
+
+    function pvCarte(p, cleJour) {
+        var cle = cleJour ? ' pv-cle' : '';
+        return '<div class="pv-carte"><div class="pv-ligne1"><span>' + pvEchap(p.ligue || 'Football') + ' · ' + pvJour(p.fixture_date) + ' ' + pvHeure(p.kickoff) + '</span>'
+            + '<span class="pv-statut ' + p.statut + '">' + (PV_STATUTS[p.statut] || p.statut) + (p.score_final ? ' · ' + pvEchap(p.score_final) : '') + '</span></div>'
+            + '<div class="pv-match">' + pvEchap(p.home) + ' - ' + pvEchap(p.away) + '</div>'
+            + '<div class="pv-pari"><span class="lib' + cle + '">' + pvEchap(p.libelle) + '</span><span class="cote' + cle + '">' + pvCote(p.cote) + '</span></div></div>';
+    }
+
+    async function chargerParisVip() {
+        var corps = document.getElementById('pv-corps');
+        corps.innerHTML = '<div class="pv-vide"><i class="fas fa-spinner fa-spin"></i> Chargement…</div>';
+        var r = await supabaseClient.from('vip_paris').select('*').order('kickoff', { ascending: false }).limit(120);
+        if (r.error) {
+            corps.innerHTML = '<div class="pv-vide">La table des paris VIP n\'existe pas encore ou n\'est pas lisible.<br>Exécute le script SQL « PARIS VIP » dans Supabase.</div>';
+            return;
+        }
+        var tous = r.data || [], auj = pvDateParis();
+        var jour = tous.filter(function (p) { return p.fixture_date === auj; }).sort(function (a, b) { return Date.parse(a.kickoff) - Date.parse(b.kickoff); });
+        var histo = tous.filter(function (p) { return p.fixture_date !== auj || p.statut !== 'en_attente'; }).filter(function (p) { return p.statut !== 'en_attente'; });
+        var g = histo.filter(function (p) { return p.statut === 'gagne'; }).length, pe = histo.filter(function (p) { return p.statut === 'perdu'; }).length;
+        var taux = (g + pe) ? Math.round(g / (g + pe) * 100) + ' %' : '—';
+        var html = '<div class="pv-stats"><div><b>' + g + '</b><span>gagnés</span></div><div><b>' + pe + '</b><span>perdus</span></div><div><b>' + taux + '</b><span>réussite réelle</span></div></div>';
+        html += '<button class="pv-generer" onclick="genererParisVipMaintenant(this)"><i class="fas fa-rotate"></i> Générer / corriger maintenant</button>';
+        html += '<div class="pv-section">PARIS DU JOUR</div>';
+        html += jour.length ? jour.map(function (p) { return pvCarte(p, true); }).join('') : '<div class="pv-vide">Aucun pari pour aujourd\'hui pour l\'instant. Ils sont choisis chaque matin à partir de 9 h, avant les matchs.</div>';
+        html += '<div class="pv-section" style="margin-top:18px;">HISTORIQUE</div>';
+        html += histo.length ? histo.map(function (p) { return pvCarte(p, false); }).join('') : '<div class="pv-vide">L\'historique se remplira dès que les premiers paris seront corrigés, après leurs matchs.</div>';
+        html += '<p class="pv-note">Paris choisis avant les matchs, cotes du marché entre 1,50 et 2,00, corrigés automatiquement d\'après le score final.</p>';
+        corps.innerHTML = html;
+    }
+
+    function ouvrirParisVip() {
+        if (window.isAdmin !== true) return;
+        var o = document.getElementById('paris-vip-overlay');
+        o.classList.add('ouvert');
+        chargerParisVip();
+    }
+    function fermerParisVip() { document.getElementById('paris-vip-overlay').classList.remove('ouvert'); }
+    function basculerSmvip() { if (window.isAdmin === true) document.getElementById('paris-vip-overlay').classList.toggle('smvip'); }
+    async function genererParisVipMaintenant(btn) {
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche des paris et des cotes…';
+        try {
+            var r = await adminApiCall('/api/publish', { action: 'paris-vip' });
+            var n = (r.generation && r.generation.crees) || 0, c = (r.correction && r.correction.corriges) || 0;
+            showToast(r.generation && r.generation.deja ? 'Paris du jour déjà choisis' + (c ? ' · ' + c + ' corrigé(s)' : '') : (n + ' pari(s) choisi(s)' + (c ? ' · ' + c + ' corrigé(s)' : '')));
+        } catch (e) { showToast('Erreur : ' + e.message, true); }
+        chargerParisVip();
+    }
+
+    // ============================================================
     // APERÇU ADMIN — les « ••• » de la carte basculent sur une copie de la
     // page où le combiné reste présenté « en cours » (ni imminent, ni live,
     // ni terminé). Réservé à l'admin, purement visuel : rien n'est modifié en base.
@@ -12450,7 +12558,8 @@ async function autoFetchFinalScores(combined) {
         var combo = apercuAdminActif() ? comboVersionAdmin(currentCombined) : currentCombined;
         if (vc) vc.innerHTML = buildCC(combo, sc, sl, pw, false);
         if (hc) hc.innerHTML = buildCC(combo, sc, sl, pw, true);
-        if (sc === 'en-cours' && sb) sb.innerHTML = '<div class="platform-bg-display hist-banner" onclick="openTicketHistoryWithLoader()" style="background:' + platformColors().background + '; color:' + platformColors().color + ';">'
+        if (window.isAdmin === true && sb) sb.innerHTML = '<div class="pv-banniere" onclick="ouvrirParisVip()"><span class="ico"><i class="fas fa-crown"></i></span><span><b>Paris VIP du jour</b><small>Historique réel · aperçu admin</small></span><i class="fas fa-chevron-right"></i></div>';
+        else if (sc === 'en-cours' && sb) sb.innerHTML = '<div class="platform-bg-display hist-banner" onclick="openTicketHistoryWithLoader()" style="background:' + platformColors().background + '; color:' + platformColors().color + ';">'
             + '<span class="vipx-badge"><img src="logo-dark.png" alt=""><em>VIP+</em></span>'
             + '<span class="hist-banner-txt"><b>Aperçu historique bookmaker favori</b><small>👑 Exclusivité SM VIP+ !</small></span>'
             + '<i class="fas fa-chevron-right"></i></div>';
