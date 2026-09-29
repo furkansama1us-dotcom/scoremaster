@@ -1334,6 +1334,7 @@ async function corrigerParisVip() {
 
 async function parisVipAutomatique(now) {
     const bilan = { correction: await corrigerParisVip() };
+    try { bilan.analyses = await analysesAutomatiques(now); } catch (e) { bilan.analyses = { erreur: String(e) }; }
     if (now.minutes >= 9 * 60) bilan.generation = await genererParisVip(now);
     return bilan;
 }
@@ -1478,20 +1479,16 @@ async function contexteAvantMatch(fixtureId) {
     } catch (e) { return null; }
 }
 
-async function handleParisVipLecture(req, res) {
-    const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-    if (!(await verifyAdmin(accessToken))) return res.status(403).json({ error: 'Accès refusé' });
-    if (!APIFOOTBALL_KEY) return res.status(500).json({ error: 'APIFOOTBALL_KEY absente' });
-    const hier = veille(parisNowParts().dateStr);
-    // Déjà générées : servies depuis le cache
-    let enCache = [];
-    try { enCache = await sbFetch('analyses_apres_match?fixture_date=eq.' + hier + '&select=payload&order=kickoff.asc') || []; }
-    catch (e) { return res.status(200).json({ date: hier, matchs: [], info: 'Table analyses_apres_match absente : exécute le script SQL « ANALYSES APRÈS-MATCH » dans Supabase.' }); }
-    if (enCache.length >= 3) return res.status(200).json({ date: hier, matchs: enCache.map(x => x.payload) });
+// Génère (ou complète jusqu'à 3) les analyses des matchs terminés d'une date.
+// Enregistrées « a_valider » : l'admin valide dans Paris VIP, sinon publication
+// automatique à 7 h. Une fois enregistrées, elles ne sont jamais régénérées.
+async function genererAnalyses(dateStr) {
+    const enCache = await sbFetch('analyses_apres_match?fixture_date=eq.' + dateStr + '&select=payload') || [];
+    if (enCache.length >= 3) return { deja: enCache.length, nouvelles: 0 };
     const dejaIds = enCache.map(x => x.payload.fixture_id);
-    const preds = await sbFetch('ai_predictions?fixture_date=eq.' + hier + '&select=*') || [];
-    const dansCombine = await matchsDesCombines(hier);
-    const rencontres = (await sbFetch('ai_fixtures?fixture_date=eq.' + hier + '&select=*') || [])
+    const preds = await sbFetch('ai_predictions?fixture_date=eq.' + dateStr + '&select=*') || [];
+    const dansCombine = await matchsDesCombines(dateStr);
+    const rencontres = (await sbFetch('ai_fixtures?fixture_date=eq.' + dateStr + '&select=*') || [])
         .filter(r => !dejaIds.includes(r.fixture_id))
         .map(r => ({ r, p: preds.find(x => memesEquipes(x.home, r.home) && memesEquipes(x.away, r.away)) }))
         .filter(x => x.p) // seulement les rencontres analysées AVANT le match
@@ -1501,7 +1498,7 @@ async function handleParisVipLecture(req, res) {
         // Classement sur la seule confiance d'avant-match : le résultat n'intervient pas
         .sort((x, y) => (y.confiance - x.confiance) || (prioriteLigue(x.r.league_code) - prioriteLigue(y.r.league_code)))
         .slice(0, 6);
-    if (!rencontres.length && !enCache.length) return res.status(200).json({ date: hier, matchs: [], info: 'Aucune rencontre analysée avant match pour ' + hier });
+    if (!rencontres.length) return { deja: enCache.length, nouvelles: 0 };
     const recup = await pvFixtures(rencontres.map(x => x.r.fixture_id));
     const terminees = rencontres
         .map(x => ({ ...x, f: recup.liste.find(y => y.fixture && y.fixture.id === x.r.fixture_id) }))
@@ -1510,10 +1507,55 @@ async function handleParisVipLecture(req, res) {
     const nouvelles = await Promise.all(terminees.map(async x => analyserRencontre(x.r, x.f, x.p, await contexteAvantMatch(x.r.fixture_id))));
     for (const a of nouvelles) {
         await sbFetch('analyses_apres_match', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates' },
-            body: JSON.stringify([{ fixture_id: a.fixture_id, fixture_date: hier, kickoff: a.kickoff, payload: a }]) }).catch(() => {});
+            body: JSON.stringify([{ fixture_id: a.fixture_id, fixture_date: dateStr, kickoff: a.kickoff, statut: 'a_valider', payload: a }]) });
     }
-    const matchs = enCache.map(x => x.payload).concat(nouvelles).sort((x, y) => Date.parse(x.kickoff) - Date.parse(y.kickoff));
-    res.status(200).json({ date: hier, matchs, erreurs: recup.erreurs.slice(0, 3), trouves: recup.liste.length });
+    return { deja: enCache.length, nouvelles: nouvelles.length, erreurs: recup.erreurs.slice(0, 3) };
+}
+
+// Soir (dès 23 h 30) : analyses des matchs du jour ; nuit : rattrapage de la veille.
+// Le matin à 7 h : publication automatique de ce que l'admin n'a pas validé.
+async function analysesAutomatiques(now) {
+    const bilan = {};
+    const cible = now.minutes >= 23 * 60 + 30 ? now.dateStr : (now.minutes < 7 * 60 ? veille(now.dateStr) : null);
+    if (cible && APIFOOTBALL_KEY) {
+        const marque = 'ANALYSES DES MATCHS DU ' + dateCourte(cible);
+        const deja = await sbFetch('telegram_queue?select=id&message=like.' + encodeURIComponent('*' + marque + '*') + '&limit=1').catch(() => []) || [];
+        if (!deja.length) {
+            const g = await genererAnalyses(cible);
+            bilan.generation = g;
+            if (g.nouvelles > 0 || g.deja > 0) {
+                await prevenirAdmin('📊 ' + marque + ' PRÊTES (' + (g.deja + g.nouvelles) + ' match' + (g.deja + g.nouvelles > 1 ? 's' : '') + ')\n\n'
+                    + 'Vérifie-les dans le panneau : Espace VIP > Paris VIP du jour > Analyses des matchs passés, puis « Valider et publier ».\n\n'
+                    + 'Sans validation, publication automatique demain à 7h00 avec le combiné en cours.');
+            }
+        }
+    }
+    if (now.minutes >= 7 * 60) {
+        const aPublier = await sbFetch('analyses_apres_match?statut=eq.a_valider&fixture_date=lt.' + now.dateStr + '&select=fixture_id').catch(() => []) || [];
+        if (aPublier.length) {
+            await sbFetch('analyses_apres_match?statut=eq.a_valider&fixture_date=lt.' + now.dateStr, { method: 'PATCH', body: JSON.stringify({ statut: 'publie', valide_le: new Date().toISOString() }) });
+            bilan.publiees = aPublier.length;
+        }
+    }
+    return bilan;
+}
+
+// POST { action: 'paris-vip-lecture', date? } (admin) : génération manuelle de secours.
+async function handleParisVipLecture(req, res) {
+    const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    if (!(await verifyAdmin(accessToken))) return res.status(403).json({ error: 'Accès refusé' });
+    const date = (req.body && req.body.date) || veille(parisNowParts().dateStr);
+    res.status(200).json(Object.assign({ date }, await genererAnalyses(date)));
+}
+
+// POST { action: 'analyses-valider', date } (admin) : bouton « Valider et publier ».
+async function handleAnalysesValider(req, res) {
+    const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    if (!(await verifyAdmin(accessToken))) return res.status(403).json({ error: 'Accès refusé' });
+    const date = req.body && req.body.date;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date || '')) return res.status(400).json({ error: 'date requise' });
+    await sbFetch('analyses_apres_match?statut=eq.a_valider&fixture_date=eq.' + date, { method: 'PATCH', body: JSON.stringify({ statut: 'publie', valide_le: new Date().toISOString() }) });
+    res.status(200).json({ ok: true });
 }
 
 // POST { action: 'annonce-combine', id } (admin) : bouton « Relancer l'annonce »
@@ -2212,6 +2254,7 @@ module.exports = async function handler(req, res) {
         if (req.method === 'POST' && req.body && req.body.action === 'annonce-combine') return await handleAnnonceCombine(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'paris-vip') return await handleParisVip(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'paris-vip-lecture') return await handleParisVipLecture(req, res);
+        if (req.method === 'POST' && req.body && req.body.action === 'analyses-valider') return await handleAnalysesValider(req, res);
         if (req.method === 'POST') return await handleForcePublish(req, res);
         return res.status(405).json({ error: 'Méthode non autorisée' });
     } catch (error) {

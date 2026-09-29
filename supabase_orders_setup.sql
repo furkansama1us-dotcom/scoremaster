@@ -863,3 +863,9 @@ create table if not exists public.analyses_apres_match (
 );
 create index if not exists analyses_apres_match_date_idx on public.analyses_apres_match (fixture_date desc);
 alter table public.analyses_apres_match enable row level security;
+
+alter table public.analyses_apres_match add column if not exists statut text not null default 'a_valider';
+alter table public.analyses_apres_match add column if not exists valide_le timestamptz;
+drop policy if exists "Les admins lisent les analyses" on public.analyses_apres_match;
+create policy "Les admins lisent les analyses" on public.analyses_apres_match for select
+  using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));

@@ -296,6 +296,18 @@
         .pa-detail{display:none}
         .pa-carte.ouverte .pa-detail{display:block}
         .pa-legende{margin:8px 0 0;font:500 10px 'Inter',sans-serif;color:#5f677a}
+        .pv-resume{display:flex;justify-content:space-around;align-items:center;background:#121829;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:10px 6px;margin-bottom:16px;font:600 10.5px 'Inter',sans-serif;color:#8b93a7;text-align:center}
+        .pv-resume b{display:block;font:800 16px 'Montserrat',sans-serif;color:#fff}
+        .pv-dates{display:flex;gap:6px;overflow-x:auto;margin:0 -2px 12px;padding:2px;scrollbar-width:none}
+        .pv-dates::-webkit-scrollbar{display:none}
+        .pv-date{flex:0 0 auto;min-width:58px;padding:7px 8px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:#121829;color:#aab3c7;text-align:center;cursor:pointer;font-family:'Montserrat',sans-serif;position:relative}
+        .pv-date small{display:block;font:700 9px 'Montserrat',sans-serif;letter-spacing:.8px;color:#6f7890}
+        .pv-date b{display:block;font:800 17px 'Montserrat',sans-serif;color:#fff;line-height:1.15}
+        .pv-date.actif{background:linear-gradient(135deg,#FFE082,#FFC107);border-color:#FFC107}
+        .pv-date.actif small,.pv-date.actif b{color:#1a1200}
+        .pv-date.attente::after{content:'';position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:#fb923c}
+        .pv-valider{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:12px;margin-bottom:12px;background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.35);font:600 11.5px/1.4 'Inter',sans-serif;color:#fdba74}
+        .pv-valider button{flex-shrink:0;padding:8px 12px;border-radius:10px;border:none;background:#FFC107;color:#1a1200;font:800 11.5px 'Montserrat',sans-serif;cursor:pointer}
         .pv-note{margin-top:14px;font:500 10.5px/1.5 'Inter',sans-serif;color:#5f677a;text-align:center}
         /* Mode SMVIP+ (bouton invisible) : autocollant sur les infos clés du jour */
         #paris-vip-overlay.smvip .pv-cle{position:relative;color:transparent !important;background:none !important}
@@ -3306,7 +3318,8 @@ async function fetchApiScore(id, dateRaw) {
     <div class="pv-tete">
         <button class="pv-secret" onclick="basculerSmvip()" aria-hidden="true" tabindex="-1"></button>
         <h2><i class="fas fa-crown" style="color:var(--primary-yellow);margin-right:6px;"></i>Paris VIP<small>Aperçu admin · non visible par les membres</small></h2>
-        <button class="fermer" onclick="fermerParisVip()" aria-label="Fermer"><i class="fas fa-times"></i></button>
+        <button class="fermer" style="margin-left:auto" onclick="genererParisVipMaintenant(this)" aria-label="Actualiser les paris"><i class="fas fa-rotate"></i></button>
+        <button class="fermer" style="margin-left:8px" onclick="fermerParisVip()" aria-label="Fermer"><i class="fas fa-times"></i></button>
     </div>
     <div class="pv-corps" id="pv-corps"></div>
 </div>
@@ -12404,30 +12417,58 @@ async function autoFetchFinalScores(combined) {
             + '<div class="pv-pari"><span class="lib' + cle + '">' + pvEchap(p.libelle) + '</span><span class="cote' + cle + '">' + pvCote(p.cote) + '</span></div></div>';
     }
 
+    var PV_ANALYSES = [], PV_DATE_ACTIVE = null;
     async function chargerParisVip() {
         var corps = document.getElementById('pv-corps');
         corps.innerHTML = '<div class="pv-vide"><i class="fas fa-spinner fa-spin"></i> Chargement…</div>';
         var r = await supabaseClient.from('vip_paris').select('*').order('kickoff', { ascending: false }).limit(120);
-        if (r.error) {
-            corps.innerHTML = '<div class="pv-vide">La table des paris VIP n\'existe pas encore ou n\'est pas lisible.<br>Exécute le script SQL « PARIS VIP » dans Supabase.</div>';
-            return;
-        }
+        if (r.error) { corps.innerHTML = '<div class="pv-vide">Table des paris VIP illisible : exécute le script SQL « PARIS VIP » dans Supabase.</div>'; return; }
+        var a = await supabaseClient.from('analyses_apres_match').select('fixture_date,statut,payload').order('fixture_date', { ascending: false }).limit(90);
+        PV_ANALYSES = a.error ? [] : (a.data || []);
         var tous = r.data || [], auj = pvDateParis();
-        var jour = tous.filter(function (p) { return p.fixture_date === auj; }).sort(function (a, b) { return Date.parse(a.kickoff) - Date.parse(b.kickoff); });
-        var histo = tous.filter(function (p) { return p.fixture_date !== auj || p.statut !== 'en_attente'; }).filter(function (p) { return p.statut !== 'en_attente'; });
+        var jour = tous.filter(function (p) { return p.fixture_date === auj; }).sort(function (x, y) { return Date.parse(x.kickoff) - Date.parse(y.kickoff); });
+        var histo = tous.filter(function (p) { return p.statut !== 'en_attente'; });
         var g = histo.filter(function (p) { return p.statut === 'gagne'; }).length, pe = histo.filter(function (p) { return p.statut === 'perdu'; }).length;
-        var taux = (g + pe) ? Math.round(g / (g + pe) * 100) + ' %' : '—';
-        var html = '<div class="pv-stats"><div><b>' + g + '</b><span>gagnés</span></div><div><b>' + pe + '</b><span>perdus</span></div><div><b>' + taux + '</b><span>réussite réelle</span></div></div>';
-        html += '<button class="pv-generer" onclick="genererParisVipMaintenant(this)"><i class="fas fa-rotate"></i> Générer / corriger maintenant</button>';
+        var html = '<div class="pv-resume"><div><b>' + g + '</b>gagnés</div><div><b>' + pe + '</b>perdus</div><div><b>' + ((g + pe) ? Math.round(g / (g + pe) * 100) + ' %' : '—') + '</b>réussite</div></div>';
         html += '<div class="pv-section">PARIS DU JOUR</div>';
-        html += jour.length ? jour.map(function (p) { return pvCarte(p, true); }).join('') : '<div class="pv-vide">Aucun pari pour aujourd\'hui pour l\'instant. Ils sont choisis chaque matin à partir de 9 h, avant les matchs.</div>';
-        html += '<div class="pv-section" style="margin-top:18px;">HISTORIQUE</div>';
-        html += histo.length ? histo.map(function (p) { return pvCarte(p, false); }).join('') : '<div class="pv-vide">L\'historique se remplira dès que les premiers paris seront corrigés, après leurs matchs.</div>';
-        html += '<p class="pv-note">Paris choisis avant les matchs, cotes du marché entre 1,50 et 2,00, corrigés automatiquement d\'après le score final.</p>';
-        html += '<div class="pv-lecture"><div class="pv-section" style="margin-top:0;">ANALYSE APRÈS-MATCH · HIER</div>'
-            + '<p class="avert"><i class="fas fa-circle-info"></i> Lecture éducative : prédictions calculées avec les seules données d\'avant-match, comparées au score final. Hors historique et hors statistiques.</p>'
-            + '<div id="pv-lecture-liste"><button class="pv-generer" style="margin:0;" onclick="chargerLectureHier(this)"><i class="fas fa-magnifying-glass-chart"></i> Charger l\'analyse d\'hier</button></div></div>';
+        html += jour.length ? jour.map(function (p) { return pvCarte(p, true); }).join('') : '<div class="pv-vide">Les paris du jour sont choisis chaque matin à partir de 9 h.</div>';
+        if (histo.length) html += '<div class="pv-section" style="margin-top:18px;">HISTORIQUE</div>' + histo.map(function (p) { return pvCarte(p, false); }).join('');
+        html += '<div class="pv-section" style="margin-top:22px;">ANALYSES DES MATCHS PASSÉS</div><div id="pv-analyses"></div>';
         corps.innerHTML = html;
+        var dates = paDates();
+        afficherAnalyses(dates.length ? dates[0] : null);
+    }
+    function paDates() {
+        var vues = {};
+        return PV_ANALYSES.map(function (x) { return x.fixture_date; }).filter(function (d) { if (vues[d]) return false; vues[d] = 1; return true; });
+    }
+    function afficherAnalyses(date) {
+        PV_DATE_ACTIVE = date;
+        var box = document.getElementById('pv-analyses');
+        if (!box) return;
+        var dates = paDates();
+        if (!dates.length) { box.innerHTML = '<div class="pv-vide">Les analyses sont générées chaque soir, une fois les matchs terminés.</div>'; return; }
+        var jours = ['DIM', 'LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM'], mois = ['JAN', 'FÉV', 'MAR', 'AVR', 'MAI', 'JUIN', 'JUIL', 'AOÛT', 'SEP', 'OCT', 'NOV', 'DÉC'];
+        var hier = (function () { var d = new Date(pvDateParis() + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10); })();
+        var frise = '<div class="pv-dates">' + dates.map(function (d) {
+            var o = new Date(d + 'T12:00:00Z');
+            var attente = PV_ANALYSES.some(function (x) { return x.fixture_date === d && x.statut === 'a_valider'; });
+            return '<button class="pv-date' + (d === date ? ' actif' : '') + (attente ? ' attente' : '') + '" onclick="afficherAnalyses(\'' + d + '\')"><small>' + (d === hier ? 'HIER' : jours[o.getUTCDay()]) + '</small><b>' + o.getUTCDate() + '</b><small>' + mois[o.getUTCMonth()] + '</small></button>';
+        }).join('') + '</div>';
+        var lignes = PV_ANALYSES.filter(function (x) { return x.fixture_date === date; });
+        var matchs = lignes.map(function (x) { return x.payload; }).sort(function (x, y) { return Date.parse(x.kickoff) - Date.parse(y.kickoff); });
+        var aValider = lignes.some(function (x) { return x.statut === 'a_valider'; });
+        var bandeau = aValider ? '<div class="pv-valider"><span><i class="fas fa-hourglass-half"></i> À valider · publication automatique à 7h00</span><button onclick="validerAnalyses(this,\'' + date + '\')">Valider et publier</button></div>' : '';
+        box.innerHTML = frise + bandeau + paTauxGlobal(matchs) + matchs.map(function (m, k) { return paCarte(m, date, k); }).join('');
+    }
+    async function validerAnalyses(btn, date) {
+        btn.disabled = true; btn.textContent = 'Publication…';
+        try {
+            await adminApiCall('/api/publish', { action: 'analyses-valider', date: date });
+            PV_ANALYSES.forEach(function (x) { if (x.fixture_date === date) x.statut = 'publie'; });
+            showToast('Analyses publiées');
+            afficherAnalyses(date);
+        } catch (e) { showToast('Erreur : ' + e.message, true); btn.disabled = false; btn.textContent = 'Valider et publier'; }
     }
 
     function paEmbleme(nom, logo) {
@@ -12439,7 +12480,7 @@ async function autoFetchFinalScores(combined) {
     function paTauxGlobal(matchs) {
         var tous = [].concat.apply([], matchs.map(function (m) { return m.marches || []; }));
         var ok = tous.filter(function (x) { return x.realise; }).length;
-        return tous.length ? '<div class="pv-stats" style="grid-template-columns:repeat(2,1fr)"><div><b>' + ok + ' / ' + tous.length + '</b><span>paris réalisés</span></div><div><b>' + Math.round(ok / tous.length * 100) + ' %</b><span>réussite réelle (confiance ≥ 70 %)</span></div></div>' : '';
+        return tous.length ? '<div class="pv-stats" style="grid-template-columns:repeat(2,1fr)"><div><b>' + ok + ' / ' + tous.length + '</b><span>paris réalisés</span></div><div><b>' + Math.round(ok / tous.length * 100) + ' %</b><span>réussite réelle</span></div></div>' : '';
     }
     function paCarte(m, date, index) {
         var p = m.probabilites || { domicile: 0, nul: 0, exterieur: 0 };
@@ -12494,18 +12535,19 @@ async function autoFetchFinalScores(combined) {
     function ouvrirParisVip() {
         if (window.isAdmin !== true) return;
         var o = document.getElementById('paris-vip-overlay');
-        o.classList.add('ouvert');
+        o.classList.add('ouvert', 'smvip');
         chargerParisVip();
     }
     function fermerParisVip() { document.getElementById('paris-vip-overlay').classList.remove('ouvert'); }
     function basculerSmvip() { if (window.isAdmin === true) document.getElementById('paris-vip-overlay').classList.toggle('smvip'); }
     async function genererParisVipMaintenant(btn) {
-        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche des paris et des cotes…';
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-rotate fa-spin"></i>';
         try {
             var r = await adminApiCall('/api/publish', { action: 'paris-vip' });
             var n = (r.generation && r.generation.crees) || 0, c = (r.correction && r.correction.corriges) || 0;
             showToast(r.generation && r.generation.deja ? 'Paris du jour déjà choisis' + (c ? ' · ' + c + ' corrigé(s)' : '') : (n + ' pari(s) choisi(s)' + (c ? ' · ' + c + ' corrigé(s)' : '')));
         } catch (e) { showToast('Erreur : ' + e.message, true); }
+        btn.disabled = false; btn.innerHTML = '<i class="fas fa-rotate"></i>';
         chargerParisVip();
     }
 
