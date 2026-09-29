@@ -1396,7 +1396,8 @@ function modeleAvantMatch(p) {
     }
     const g = grille(meilleur.lh, meilleur.la);
     const mode = g.reduce((m, x) => x.p > m.p ? x : m, g[0]);
-    return { g, lh: meilleur.lh, la: meilleur.la, predit: mode.i + '-' + mode.j };
+    const top3 = g.slice().sort((x, y) => y.p - x.p).slice(0, 3).map(x => ({ score: x.i + '-' + x.j, proba: Math.round(x.p * 100) }));
+    return { g, lh: meilleur.lh, la: meilleur.la, predit: mode.i + '-' + mode.j, top3 };
 }
 function coteEstimee(prob) { return prob > 0.02 ? Math.max(1.03, Math.min(25, Math.round(100 / (prob * PV_MARGE)) / 100)) : null; }
 
@@ -1479,7 +1480,7 @@ async function analyserRencontre(r, f, pred, contexte) {
         fixture_id: r.fixture_id, date: r.fixture_date, kickoff: r.kickoff, ligue: r.league_name, home: r.home, away: r.away,
         home_logo: r.home_logo || null, away_logo: r.away_logo || null,
         score: h + '-' + a, mi_temps: mt ? mt.home + '-' + mt.away : null,
-        probabilites: pr, predit: m.predit, marches, analyse, genere_le: new Date().toISOString()
+        probabilites: pr, predit: m.predit, top3: m.top3, marches, analyse, genere_le: new Date().toISOString()
     };
 }
 
