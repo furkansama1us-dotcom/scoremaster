@@ -2772,7 +2772,7 @@ async function fetchApiScore(id, dateRaw) {
         <button class="admin-tab-btn" id="btn-tab-notifications" onclick="switchAdminTab('notifications')"><i class="fas fa-bell"></i> Notifs</button>
         <button class="admin-tab-btn" id="btn-tab-calendar" onclick="switchAdminTab('calendar')"><i class="fas fa-calendar-days"></i> Calendrier</button>
         <button class="admin-tab-btn" id="btn-tab-publications" onclick="switchAdminTab('publications')"><i class="fas fa-paper-plane"></i> Publications</button>
-        <button class="admin-tab-btn" id="btn-tab-smpoints" onclick="switchAdminTab('smpoints')"><i class="fas fa-coins"></i> SM Points</button>
+        <button class="admin-tab-btn" id="btn-tab-analyses" onclick="switchAdminTab('analyses')"><i class="fas fa-magnifying-glass-chart"></i> Analyses</button>
     </div>
 
     <!-- ONGLET 1 : DASHBOARD -->
@@ -3116,7 +3116,16 @@ async function fetchApiScore(id, dateRaw) {
         </div>
     </div>
 
-    <!-- ONGLET SM POINTS (phase de test) -->
+    <!-- ONGLET ANALYSES : vue complète des analyses des matchs passés (admin) -->
+    <div class="admin-tab-content" id="admin-tab-analyses">
+        <div class="admin-section">
+            <div class="admin-section-title" style="font-size:16px; margin-bottom:8px;"><i class="fas fa-magnifying-glass-chart"></i> Analyses des matchs passés</div>
+            <p style="font-size:13px; color:var(--text-gray); margin-bottom:16px; line-height:1.5;">Vue complète : tous les paris retenus avant le match, réalisés ou non.</p>
+            <div id="admin-analyses"><div class="pv-vide"><i class="fas fa-spinner fa-spin"></i> Chargement…</div></div>
+        </div>
+    </div>
+
+    <!-- ONGLET SM POINTS (phase de test, plus accessible depuis la barre d'onglets) -->
     <div class="admin-tab-content" id="admin-tab-smpoints">
         <div class="admin-section">
             <div class="admin-section-title" style="font-size:16px; margin-bottom:8px;"><i class="fas fa-coins"></i> SM Points <span class="smp-badge">Test</span></div>
@@ -8936,6 +8945,7 @@ async function loadSmPointsHistory() {
         if (tabName === 'calendar') renderAdminCalendar();
         if (tabName === 'publications') loadAdminPublications();
         if (tabName === 'smpoints') loadAdminSmPoints();
+        if (tabName === 'analyses') chargerAnalysesAdmin();
     }
 
     // ============================================================
@@ -12473,8 +12483,14 @@ async function autoFetchFinalScores(combined) {
             + '<div class="pv-pari"><span class="lib' + cle + '">' + pvEchap(p.libelle) + '</span><span class="cote' + cle + '">' + pvCote(p.cote) + '</span></div></div>';
     }
 
-    var PV_ANALYSES = [], PV_DATE_ACTIVE = null, PV_VUE = 'realises';
-    function changerVueAnalyses(vue) { PV_VUE = vue; afficherAnalyses(PV_DATE_ACTIVE); }
+    var PV_ANALYSES = [], PV_DATE_ACTIVE = null, PV_VUE = 'realises', PV_CIBLE = 'pv-analyses';
+    async function chargerAnalysesAdmin() {
+        var a = await supabaseClient.from('analyses_apres_match').select('fixture_date,statut,payload').order('fixture_date', { ascending: false }).limit(90);
+        PV_ANALYSES = a.error ? [] : (a.data || []);
+        PV_VUE = 'complete'; PV_CIBLE = 'admin-analyses';
+        var dates = paDates();
+        afficherAnalyses(dates.length ? dates[0] : null);
+    }
     async function chargerParisVip() {
         var corps = document.getElementById('pv-corps');
         corps.innerHTML = '<div class="pv-vide"><i class="fas fa-spinner fa-spin"></i> Chargement…</div>';
@@ -12482,6 +12498,7 @@ async function autoFetchFinalScores(combined) {
         if (r.error) { corps.innerHTML = '<div class="pv-vide">Table des paris VIP illisible : exécute le script SQL « PARIS VIP » dans Supabase.</div>'; return; }
         var a = await supabaseClient.from('analyses_apres_match').select('fixture_date,statut,payload').order('fixture_date', { ascending: false }).limit(90);
         PV_ANALYSES = a.error ? [] : (a.data || []);
+        PV_VUE = 'realises'; PV_CIBLE = 'pv-analyses';
         var tous = r.data || [], auj = pvDateParis();
         var jour = tous.filter(function (p) { return p.fixture_date === auj; }).sort(function (x, y) { return Date.parse(x.kickoff) - Date.parse(y.kickoff); });
         var histo = tous.filter(function (p) { return p.statut !== 'en_attente'; });
@@ -12501,7 +12518,7 @@ async function autoFetchFinalScores(combined) {
     }
     function afficherAnalyses(date) {
         PV_DATE_ACTIVE = date;
-        var box = document.getElementById('pv-analyses');
+        var box = document.getElementById(PV_CIBLE);
         if (!box) return;
         var dates = paDates();
         if (!dates.length) { box.innerHTML = '<div class="pv-vide">Les analyses sont générées chaque soir, une fois les matchs terminés.</div>'; return; }
@@ -12518,10 +12535,8 @@ async function autoFetchFinalScores(combined) {
             return '<div class="ligne"><div class="m"><span>' + pvEchap(m.home) + ' - ' + pvEchap(m.away) + '</span><span>' + pvEchap(m.score) + '</span></div>'
                 + '<div class="p">' + ok.map(function (x) { return '<span>✓ ' + pvEchap(x.libelle) + '</span>'; }).join('') + '</div></div>';
         }).join('') + '</div>';
-        var vues = '<div class="pv-vues"><button class="' + (PV_VUE === 'realises' ? 'actif' : '') + '" onclick="changerVueAnalyses(\'realises\')">Paris réalisés</button>'
-            + '<button class="' + (PV_VUE === 'complete' ? 'actif' : '') + '" onclick="changerVueAnalyses(\'complete\')"><i class="fas fa-user-shield"></i> Vue complète</button></div>';
         var mention = PV_VUE === 'realises' ? '<p class="pv-mention">Seuls les paris réalisés sont affichés · taux de réussite réel ci-dessus</p>' : '';
-        box.innerHTML = frise + vues + paTauxGlobal(matchs) + mention + bilan + matchs.map(function (m, k) { return paCarte(m, date, k); }).join('');
+        box.innerHTML = frise + paTauxGlobal(matchs) + mention + bilan + matchs.map(function (m, k) { return paCarte(m, date, k); }).join('');
     }
     async function validerAnalyses(btn, date) {
         btn.disabled = true; btn.textContent = 'Publication…';
