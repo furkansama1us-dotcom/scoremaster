@@ -12650,7 +12650,7 @@ async function autoFetchFinalScores(combined) {
             + '<div class="pa-affiche"><div class="pa-eq">' + paEmbleme(m.home, m.home_logo) + '<span>' + pvEchap(m.home) + '</span></div><div class="pa-score"><b>' + pvEchap(m.score).replace('-', ' - ') + '</b><small>Score final</small></div><div class="pa-eq">' + paEmbleme(m.away, m.away_logo) + '<span>' + pvEchap(m.away) + '</span></div></div>'
             + '<div class="pa-bloc"><p class="pa-titre">SCORE GRILLE VS RÉSULTAT</p>' + vs + '</div>'
             + '<div class="pa-detail"><div class="pa-bloc"><p class="pa-titre">PROBABILITÉS AVANT-MATCH</p>' + proba + '</div>'
-            + '<div class="pa-bloc"><p class="pa-titre">PARIS & TOTAUX</p>' + marches + '</div>' + paGrille(m) + analyse + '</div>'
+            + '<div class="pa-bloc"><p class="pa-titre">PARIS & TOTAUX</p>' + marches + '</div>' + (PV_VUE === 'complete' ? paGrille(m) : '') + analyse + '</div>'
             + '<button class="pa-plus" onclick="paBascule(this)">' + (index === 0 ? 'Réduire' : 'Voir l\'analyse complète') + '</button>'
             + '</div>';
     }
