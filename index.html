@@ -3689,16 +3689,6 @@ async function fetchApiScore(id, dateRaw) {
         <div class="cp-view" id="cp-view-events">
             <div class="cp-eyebrow">Event / Promo · nouveautés de l'app</div>
             <div id="cpEventsList"></div>
-            <div class="cp-eyebrow" style="margin-top:18px;">Ajouter une nouveauté</div>
-            <div class="cp-set-card">
-                <input class="cp-input" id="cpEvTitre" placeholder="Titre (ex. Paris SMVIP+)" style="margin-bottom:8px;">
-                <input class="cp-input" id="cpEvSous" placeholder="Sous-titre (ex. Nouvelle rubrique)" style="margin-bottom:8px;">
-                <textarea class="cp-input" id="cpEvDesc" rows="3" placeholder="Description courte" style="margin-bottom:8px;resize:vertical;"></textarea>
-                <input class="cp-input" id="cpEvP1" placeholder="Point fort 1" style="margin-bottom:6px;">
-                <input class="cp-input" id="cpEvP2" placeholder="Point fort 2" style="margin-bottom:6px;">
-                <input class="cp-input" id="cpEvP3" placeholder="Point fort 3" style="margin-bottom:10px;">
-                <button class="cp-secondary" onclick="cpAjouterEvent(this)"><i class="fas fa-plus"></i> Ajouter la nouveauté</button>
-            </div>
         </div>
 
         <!-- Onglet Valider -->
@@ -7398,6 +7388,23 @@ async function cpRenderEvents() {
     if (r.error) { box.innerHTML = '<div class="cp-set-card" style="color:#b4232f;">Table promo_events absente : exécute la migration SQL « EVENT / PROMO » dans Supabase.</div>'; return; }
     var evs = r.data || [];
     if (!evs.length) { box.innerHTML = '<div class="cp-set-card">Aucune nouveauté pour le moment.</div>'; return; }
+    var pubs = await supabaseClient.from('pending_publications').select('id,platform,status,error,image_url,image_url_post,image_url_story,created_at,published_at,overlay_data').eq('content_type', 'Event/Promo').order('created_at', { ascending: false }).limit(40);
+    var parEvent = {};
+    (pubs.data || []).forEach(function (p) { var k = p.overlay_data && p.overlay_data.event_id; if (k != null) (parEvent[k] = parEvent[k] || []).push(p); });
+    var statuts = { approved: ['⏳ En attente d\'envoi', '#b7791f'], published: ['✅ Publiée', '#1f8a5b'], failed: ['❌ Erreur', '#b4232f'], pending: ['À valider', '#8a8290'] };
+    var apercu = function (liste) {
+        if (!liste || !liste.length) return '<div style="font-size:11.5px;color:#8a8290;margin-top:10px;">Aucune publication pour l\'instant.</div>';
+        return '<div style="margin-top:12px;border-top:1px dashed #e7e0d5;padding-top:10px;"><div style="font-size:10.5px;letter-spacing:.14em;font-weight:800;color:#8a8290;margin-bottom:8px;">DERNIÈRES PUBLICATIONS</div>'
+            + liste.slice(0, 2).map(function (p) {
+                var st = statuts[p.status] || [p.status, '#8a8290'];
+                var img = p.image_url_post || p.image_url || p.image_url_story;
+                return '<div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">'
+                    + (img ? '<a href="' + pvEchap(img) + '" target="_blank" rel="noopener"><img src="' + pvEchap(img) + '" style="width:52px;height:65px;object-fit:cover;border-radius:8px;border:1px solid #e7e0d5;"></a>' : '')
+                    + '<div style="flex:1;min-width:0;font-size:12px;"><b>' + (p.platform === 'instagram' ? '📸 Instagram (story + post)' : '✈️ Telegram') + '</b><br><span style="color:' + st[1] + ';font-weight:800;">' + st[0] + '</span>'
+                    + ' · <span style="color:#8a8290;">' + new Date(p.published_at || p.created_at).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) + '</span>'
+                    + (p.error ? '<br><span style="color:#b4232f;font-size:11px;">' + pvEchap(String(p.error).slice(0, 140)) + '</span>' : '') + '</div></div>';
+            }).join('') + '</div>';
+    };
     box.innerHTML = evs.map(function (e) {
         var derniere = e.derniere_publication ? new Date(e.derniere_publication).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit' }) : 'jamais';
         return '<div class="cp-set-card"><div style="display:flex;align-items:center;gap:12px;">'
@@ -7407,7 +7414,7 @@ async function cpRenderEvents() {
             + ((e.points || []).length ? '<br><span style="font-size:11.5px;color:#5a5262;">' + e.points.filter(Boolean).map(function (p) { return '✓ ' + pvEchap(p); }).join('<br>') + '</span>' : '')
             + '<br><span style="font-size:11px;color:#8a8290;">Publiée ' + (e.publications || 0) + ' fois · dernière : ' + derniere + '</span></div></div>'
             + '<div style="display:flex;gap:8px;margin-top:10px;"><button class="cp-manage" style="flex:1" onclick="cpPublierEvent(this,' + e.id + ')"><i class="fas fa-bullhorn"></i> Publier maintenant</button>'
-            + '<button class="cp-manage" style="border-color:#e0b4b4;color:#b4232f" onclick="cpSupprimerEvent(' + e.id + ')"><i class="fas fa-trash"></i></button></div></div>';
+            + '<button class="cp-manage" style="border-color:#e0b4b4;color:#b4232f" onclick="cpSupprimerEvent(' + e.id + ')"><i class="fas fa-trash"></i></button></div>' + apercu(parEvent[e.id]) + '</div>';
     }).join('');
 }
 async function cpEventActif(id, actif) {
@@ -7434,7 +7441,11 @@ async function cpAjouterEvent(btn) {
 async function cpPublierEvent(btn, id) {
     if (!confirm('Publier maintenant cette nouveauté en story + post Instagram et sur Telegram ?')) return;
     btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publication…';
-    try { await adminApiCall('/api/publish', { action: 'promo-event-publier', id: id }); showToast('Publication préparée : elle part au prochain passage.'); }
+    try {
+        var rep = await adminApiCall('/api/publish', { action: 'promo-event-publier', id: id });
+        var noms = { instagram: 'Instagram', telegram: 'Telegram' };
+        showToast((rep.publiees || []).length ? 'Publiée : ' + rep.publiees.map(function (p) { return noms[p] || p; }).join(' + ') + ((rep.echecs || []).length ? ' · échec : ' + rep.echecs.length : '') : 'Échec de publication : ' + (rep.echecs || []).join(' | '), !(rep.publiees || []).length);
+    }
     catch (e) { showToast('Erreur : ' + e.message, true); }
     cpRenderEvents();
 }

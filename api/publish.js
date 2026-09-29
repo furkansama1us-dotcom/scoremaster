@@ -1273,7 +1273,21 @@ async function handlePromoEventPublier(req, res) {
     const ev = ((await sbFetch('promo_events?id=eq.' + encodeURIComponent(id) + '&select=*')) || [])[0];
     if (!ev) return res.status(404).json({ error: 'Nouveauté introuvable' });
     const urls = await publierEvent(ev, parisNowParts());
-    res.status(200).json({ ok: true, image: urls.post });
+    // Envoi immédiat (sans attendre le passage automatique), comme « Relancer l'annonce »
+    const lignes = await sbFetch('pending_publications?overlay_data->>event_id=eq.' + ev.id + '&status=eq.approved&select=*') || [];
+    const integrations = await postizFetch('/integrations');
+    const resultat = { publiees: [], echecs: [] };
+    for (const item of lignes) {
+        try {
+            await postizPublish(item, integrations);
+            await sbFetch('pending_publications?id=eq.' + item.id, { method: 'PATCH', body: JSON.stringify({ status: 'published', published_at: new Date().toISOString() }) });
+            resultat.publiees.push(item.platform);
+        } catch (e) {
+            await sbFetch('pending_publications?id=eq.' + item.id, { method: 'PATCH', body: JSON.stringify({ status: 'failed', error: String(e) }) }).catch(function () {});
+            resultat.echecs.push(item.platform + ' : ' + String(e).slice(0, 120));
+        }
+    }
+    res.status(200).json(Object.assign({ ok: resultat.publiees.length > 0, image: urls.post }, resultat));
 }
 
 // POST { action: 'campagne-relance' } (admin) : publie la relance tout de suite.
