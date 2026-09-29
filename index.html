@@ -248,6 +248,11 @@
         #paris-vip-overlay .pv-carte:has(.pv-cle){border-color:rgba(255,193,7,.35);box-shadow:0 0 18px rgba(255,193,7,.07)}
         #paris-vip-overlay .pa-carte{background:linear-gradient(180deg,#131a2e,#0f1526);border-color:rgba(255,193,7,.18)}
         #paris-vip-overlay .pv-bilan{background:radial-gradient(ellipse 80% 60% at 90% 0%,rgba(255,193,7,.1),transparent 70%),#121829;border-color:rgba(255,193,7,.35)}
+        .pv-compteur{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 0 10px;padding:10px 12px;border-radius:14px;background:#121829;border:1px solid rgba(255,193,7,.25)}
+        .pv-compteur span{font:600 11px 'Inter',sans-serif;color:#9aa3b8}
+        .pv-compteur b{font:900 18px 'Montserrat',sans-serif;color:#FFE082;letter-spacing:1px;font-variant-numeric:tabular-nums}
+        .pv-deflouter{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:0 0 12px;padding:11px;border:none;border-radius:12px;cursor:pointer;
+            background:linear-gradient(135deg,#FFC107,#B8860B);color:#1a1200;font:800 12.5px 'Montserrat',sans-serif;box-shadow:0 6px 18px rgba(255,193,7,.25)}
         .pv-apparait{animation:vtEntree .6s ease-out backwards}
         .pv-reseaux{margin-top:26px;padding:16px 14px;border-radius:20px;background:#0f1424;border:1px solid rgba(255,255,255,.07)}
         .pv-reseaux .rx-boutons{margin-top:12px}
@@ -12530,6 +12535,9 @@ async function autoFetchFinalScores(combined) {
         var g = histo.filter(function (p) { return p.statut === 'gagne'; }).length, pe = histo.filter(function (p) { return p.statut === 'perdu'; }).length;
         var html = '<div class="pv-hero pv-apparait"><i class="etoile" style="left:12%;top:18%;animation-delay:0.0s"></i><i class="etoile" style="left:30%;top:70%;animation-delay:0.5s"></i><i class="etoile" style="left:55%;top:12%;animation-delay:1.0s"></i><i class="etoile" style="left:70%;top:82%;animation-delay:1.5s"></i><i class="etoile" style="left:88%;top:30%;animation-delay:2.0s"></i><i class="etoile" style="left:46%;top:55%;animation-delay:2.5s"></i><div class="txt"><small>SCORE MASTER · VIP</small><h3>Les paris <span>VIP du jour</span></h3><p>Sélectionnés par notre IA avant les matchs, validés par notre équipe.</p></div><div class="robot"><img src="mascotte-roi-mecha.webp" alt=""></div></div>';
         html += '<div class="pv-titre pv-apparait"><small>AUJOURD\'HUI</small><b>Paris du <span>jour</span></b></div>';
+        var aVenir = jour.filter(function (p) { return Date.parse(p.kickoff) > Date.now(); });
+        if (aVenir.length) html += '<div class="pv-compteur pv-apparait"><span><i class="fas fa-stopwatch"></i> Premier match dans</span><b id="pv-compteur" data-cible="' + aVenir[0].kickoff + '">--:--:--</b></div>';
+        if (jour.length) html += '<button class="pv-deflouter cta-hypnose" style="--hyp:rgba(255,193,7,.5)" id="pv-deflouter" onclick="deflouterParisVip()"><span><i class="fas fa-eye"></i> Déflouter les prédictions</span></button>';
         html += jour.length ? jour.map(function (p) { return pvCarte(p, true); }).join('') : '<div class="pv-vide">Les paris du jour sont choisis chaque matin à partir de 9 h.</div>';
         if (histo.length) html += '<div class="pv-titre"><small>SUIVI</small><b>Historique</b></div>' + histo.map(function (p) { return pvCarte(p, false); }).join('');
         html += '<div class="pv-titre pv-apparait"><small>ANALYSES IA</small><b>Analyses des <span>matchs passés</span></b></div><div id="pv-analyses"></div>';
@@ -12539,6 +12547,7 @@ async function autoFetchFinalScores(combined) {
             + '<div class="rx-boutons"><a class="vt-bouton ig" href="https://www.instagram.com/scoresmasters.fr/" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> Suivre</a>'
             + '<a class="vt-bouton tg" href="#" onclick="window.open(TELEGRAM_LINK, \'_blank\'); return false;"><i class="fab fa-telegram-plane"></i> Rejoindre</a></div></div>';
         corps.innerHTML = html;
+        demarrerCompteurPv();
         var dates = paDates();
         afficherAnalyses(dates.length ? dates[0] : null);
     }
@@ -12649,7 +12658,30 @@ async function autoFetchFinalScores(combined) {
         o.classList.add('ouvert', 'smvip');
         chargerParisVip();
     }
-    function fermerParisVip() { document.getElementById('paris-vip-overlay').classList.remove('ouvert'); }
+    function demarrerCompteurPv() {
+        clearInterval(window._pvCompteur);
+        var el = document.getElementById('pv-compteur');
+        if (!el) return;
+        var cible = Date.parse(el.getAttribute('data-cible'));
+        var maj = function () {
+            var d = cible - Date.now();
+            if (d <= 0) { el.textContent = 'C\'est parti !'; clearInterval(window._pvCompteur); return; }
+            var hh = Math.floor(d / 3600000), mm = Math.floor(d % 3600000 / 60000), ss = Math.floor(d % 60000 / 1000);
+            el.textContent = String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0') + ':' + String(ss).padStart(2, '0');
+        };
+        maj(); window._pvCompteur = setInterval(maj, 1000);
+    }
+    // Réservé SM VIP+ : les autres reçoivent la fenêtre de contact habituelle (Telegram / WhatsApp)
+    function deflouterParisVip() {
+        if (window.isUserVip === true || window.isAdmin === true) {
+            var o = document.getElementById('paris-vip-overlay');
+            o.classList.remove('smvip');
+            var b = document.getElementById('pv-deflouter'); if (b) b.style.display = 'none';
+        } else if (typeof openCheckout === 'function') {
+            openCheckout('vip', 99.99);
+        }
+    }
+    function fermerParisVip() { clearInterval(window._pvCompteur); document.getElementById('paris-vip-overlay').classList.remove('ouvert'); }
     function basculerSmvip() { if (window.isAdmin === true) document.getElementById('paris-vip-overlay').classList.toggle('smvip'); }
     async function genererParisVipMaintenant(btn) {
         btn.disabled = true; btn.innerHTML = '<i class="fas fa-rotate fa-spin"></i>';
