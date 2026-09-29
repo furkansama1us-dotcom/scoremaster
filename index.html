@@ -12621,7 +12621,7 @@ async function autoFetchFinalScores(combined) {
                 html += '<div class="' + (proche[0] === i && proche[1] === j ? 'reel' : '') + '">' + i + '-' + j + (p != null ? '<small>' + String(p).replace('.', ',') + ' %</small>' : '') + '</div>';
             });
         });
-        html += '</div><p class="pa-legende">' + (m.grille ? 'Probabilité de chaque score calculée avant le match. ' : '') + (dedans ? 'Score final surligné.' : 'Score final ' + pvEchap(m.score) + ' hors grille · score de la grille le plus proche du résultat : ' + proche[0] + '-' + proche[1] + ' (surligné).') + '</p>';
+        html += '</div><p class="pa-legende">' + (m.grille ? 'Probabilité de chaque score calculée avant le match. ' : '') + 'Score de la grille le plus proche du résultat : ' + proche[0] + '-' + proche[1] + (dedans ? ' (score final)' : ' · score final ' + pvEchap(m.score)) + '</p>';
         return '<div class="pa-bloc"><p class="pa-titre">GRILLE DES SCORES 0-0 → 3-3</p>' + html + '</div>';
     }
     function paCarte(m, date, index) {
@@ -12653,7 +12653,7 @@ async function autoFetchFinalScores(combined) {
             + '<div class="pa-affiche"><div class="pa-eq">' + paEmbleme(m.home, m.home_logo) + '<span>' + pvEchap(m.home) + '</span></div><div class="pa-score"><b>' + pvEchap(m.score).replace('-', ' - ') + '</b><small>Score final</small></div><div class="pa-eq">' + paEmbleme(m.away, m.away_logo) + '<span>' + pvEchap(m.away) + '</span></div></div>'
             + '<div class="pa-bloc"><p class="pa-titre">PRÉDIT VS RÉEL</p>' + vs + '</div>'
             + '<div class="pa-detail"><div class="pa-bloc"><p class="pa-titre">PROBABILITÉS AVANT-MATCH</p>' + proba + '</div>'
-            + '<div class="pa-bloc"><p class="pa-titre">PARIS & TOTAUX</p>' + marches + '</div>' + (PV_VUE === 'complete' ? paGrille(m) : '') + analyse + '</div>'
+            + '<div class="pa-bloc"><p class="pa-titre">PARIS & TOTAUX</p>' + marches + '</div>' + paGrille(m) + analyse + '</div>'
             + '<button class="pa-plus" onclick="paBascule(this)">' + (index === 0 ? 'Réduire' : 'Voir l\'analyse complète') + '</button>'
             + '</div>';
     }
