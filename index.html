@@ -12537,7 +12537,7 @@ async function autoFetchFinalScores(combined) {
         }).join('') + '</div>';
         var tousM = [].concat.apply([], matchs.map(function (m) { return m.marches || []; })), okM = tousM.filter(function (x) { return x.realise; }).length;
         var entete = PV_VUE === 'realises'
-            ? (tousM.length ? '<p class="pv-mention">Paris réalisés uniquement · ' + Math.round(okM / tousM.length * 100) + ' % de réussite réelle</p>' : '')
+            ? ''
             : paTauxGlobal(matchs);
         box.innerHTML = frise + entete + bilan + matchs.map(function (m, k) { return paCarte(m, date, k); }).join('');
     }
