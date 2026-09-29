@@ -254,7 +254,7 @@
         .pv-deflouter{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:0 0 12px;padding:11px;border:none;border-radius:12px;cursor:pointer;
             background:linear-gradient(135deg,#FFC107,#B8860B);color:#1a1200;font:800 12.5px 'Montserrat',sans-serif;box-shadow:0 6px 18px rgba(255,193,7,.25)}
         .pv-apparait{animation:vtEntree .6s ease-out backwards}
-        .pv-reseaux{margin-top:26px;padding:16px 14px;border-radius:20px;background:#0f1424;border:1px solid rgba(255,255,255,.07)}
+        .pv-reseaux{margin:0 0 14px;padding:16px 14px;border-radius:20px;background:#0f1424;border:1px solid rgba(255,255,255,.07)}
         .pv-reseaux .rx-boutons{margin-top:12px}
         @media (prefers-reduced-motion:reduce){.pv-hero .robot,.pv-hero .etoile,.pv-hero h3 span,.pv-apparait{animation:none}}
         .pv-carte{background:#121829;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:12px 13px;margin-bottom:8px}
@@ -12541,15 +12541,17 @@ async function autoFetchFinalScores(combined) {
         html += jour.length ? jour.map(function (p) { return pvCarte(p, true); }).join('') : '<div class="pv-vide">Les paris du jour sont choisis chaque matin à partir de 9 h.</div>';
         if (histo.length) html += '<div class="pv-titre"><small>SUIVI</small><b>Historique</b></div>' + histo.map(function (p) { return pvCarte(p, false); }).join('');
         html += '<div class="pv-titre pv-apparait"><small>ANALYSES IA</small><b>Analyses des <span>matchs passés</span></b></div><div id="pv-analyses"></div>';
-        html += '<div class="pv-reseaux pv-apparait"><div class="pv-titre" style="margin-top:0"><small>NOS RÉSEAUX</small><b>Score Master, <span>partout où tu es</span></b></div>'
-            + '<div class="rx-fusion"><div class="rx-duo"><div class="logos"><div class="sm"><img src="logo-dark.png" alt=""></div><div class="pf ig"><i class="fab fa-instagram"></i></div><div class="eclat" aria-hidden="true"></div></div><span>SM <b>×</b> INSTAGRAM</span></div>'
-            + '<div class="rx-duo"><div class="logos"><div class="sm"><img src="logo-dark.png" alt=""></div><div class="pf tg"><i class="fab fa-telegram-plane"></i></div><div class="eclat" aria-hidden="true" style="animation-delay:.4s"></div></div><span>SM <b>×</b> TELEGRAM</span></div></div>'
-            + '<div class="rx-boutons"><a class="vt-bouton ig" href="https://www.instagram.com/scoresmasters.fr/" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> Suivre</a>'
-            + '<a class="vt-bouton tg" href="#" onclick="window.open(TELEGRAM_LINK, \'_blank\'); return false;"><i class="fab fa-telegram-plane"></i> Rejoindre</a></div></div>';
         corps.innerHTML = html;
         demarrerCompteurPv();
         var dates = paDates();
         afficherAnalyses(dates.length ? dates[0] : null);
+    }
+    function pvReseauxHtml() {
+        return '<div class="pv-reseaux pv-apparait"><div class="pv-titre" style="margin-top:0"><small>NOS RÉSEAUX</small><b>Score Master, <span>partout où tu es</span></b></div>'
+            + '<div class="rx-fusion"><div class="rx-duo"><div class="logos"><div class="sm"><img src="logo-dark.png" alt=""></div><div class="pf ig"><i class="fab fa-instagram"></i></div><div class="eclat" aria-hidden="true"></div></div><span>SM <b>×</b> INSTAGRAM</span></div>'
+            + '<div class="rx-duo"><div class="logos"><div class="sm"><img src="logo-dark.png" alt=""></div><div class="pf tg"><i class="fab fa-telegram-plane"></i></div><div class="eclat" aria-hidden="true" style="animation-delay:.4s"></div></div><span>SM <b>×</b> TELEGRAM</span></div></div>'
+            + '<div class="rx-boutons"><a class="vt-bouton ig" href="https://www.instagram.com/scoresmasters.fr/" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> Suivre</a>'
+            + '<a class="vt-bouton tg" href="#" onclick="window.open(TELEGRAM_LINK, \'_blank\'); return false;"><i class="fab fa-telegram-plane"></i> Rejoindre</a></div></div>';
     }
     function paDates() {
         var vues = {};
@@ -12560,7 +12562,8 @@ async function autoFetchFinalScores(combined) {
         var box = document.getElementById(PV_CIBLE);
         if (!box) return;
         var dates = paDates();
-        if (!dates.length) { box.innerHTML = '<div class="pv-vide">Les analyses sont générées chaque soir, une fois les matchs terminés.</div>'; return; }
+        var reseaux = PV_CIBLE === 'pv-analyses' ? pvReseauxHtml() : '';
+        if (!dates.length) { box.innerHTML = '<div class="pv-vide">Les analyses sont générées chaque soir, une fois les matchs terminés.</div>' + reseaux; return; }
         var jours = ['DIM', 'LUN', 'MAR', 'MER', 'JEU', 'VEN', 'SAM'], mois = ['JAN', 'FÉV', 'MAR', 'AVR', 'MAI', 'JUIN', 'JUIL', 'AOÛT', 'SEP', 'OCT', 'NOV', 'DÉC'];
         var hier = (function () { var d = new Date(pvDateParis() + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10); })();
         var frise = '<div class="pv-dates">' + dates.map(function (d) {
@@ -12578,7 +12581,7 @@ async function autoFetchFinalScores(combined) {
         var entete = PV_VUE === 'realises'
             ? ''
             : paTauxGlobal(matchs);
-        box.innerHTML = frise + entete + bilan + matchs.map(function (m, k) { return paCarte(m, date, k); }).join('');
+        box.innerHTML = frise + entete + bilan + reseaux + matchs.map(function (m, k) { return paCarte(m, date, k); }).join('');
     }
     async function validerAnalyses(btn, date) {
         btn.disabled = true; btn.textContent = 'Publication…';
