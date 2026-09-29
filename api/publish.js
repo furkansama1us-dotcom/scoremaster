@@ -1440,7 +1440,11 @@ function definitionsMarches(r) {
         ['Moins de 2,5 buts', (i, j) => i + j < 2.5], ['Moins de 3,5 buts', (i, j) => i + j < 3.5], ['Moins de 4,5 buts', (i, j) => i + j < 4.5],
         ['Les deux équipes marquent', (i, j) => i > 0 && j > 0], ['Les deux équipes ne marquent pas', (i, j) => !(i > 0 && j > 0)],
         [r.home + ' ou nul', (i, j) => i >= j], ['Nul ou ' + r.away, (i, j) => j >= i], [r.home + ' ou ' + r.away, (i, j) => i !== j],
-        [r.home + ' marque', (i, j) => i > 0], [r.away + ' marque', (i, j) => j > 0]
+        [r.home + ' marque', (i, j) => i > 0], [r.away + ' marque', (i, j) => j > 0],
+        ['Moins de 5,5 buts', (i, j) => i + j < 5.5], ['Entre 1 et 3 buts', (i, j) => i + j >= 1 && i + j <= 3], ['Entre 1 et 4 buts', (i, j) => i + j >= 1 && i + j <= 4],
+        ['Écart de 2 buts maximum', (i, j) => Math.abs(i - j) <= 2], ['Pas plus d\'un but d\'écart', (i, j) => Math.abs(i - j) <= 1],
+        [r.home + ' marque moins de 3 buts', (i, j) => i < 2.5], [r.away + ' marque moins de 3 buts', (i, j) => j < 2.5],
+        [r.home + ' ne gagne pas par 3 buts ou plus', (i, j) => i - j < 3], [r.away + ' ne gagne pas par 3 buts ou plus', (i, j) => j - i < 3]
     ];
 }
 function marchesConfiants(r, pred) {
@@ -1455,8 +1459,12 @@ async function analyserRencontre(r, f, pred, contexte) {
     const g = m.g;
     const marche = (libelle, prob, realise) => ({ libelle, proba: Math.round(prob * 100), realise, cote: coteEstimee(prob), estimee: true });
     // Sélection faite AVANT de regarder le score : seuls les marchés à ≥ 70 % de confiance
-    const marches = marchesConfiants(r, pred).sort((x, y) => y.prob - x.prob).slice(0, 4)
+    const marches = marchesConfiants(r, pred).sort((x, y) => y.prob - x.prob).slice(0, 6)
         .map(x => marche(x.libelle, x.prob, x.cond(h, a)));
+    // Le pari VIP proposé avant ce match, avec sa vraie cote de marché
+    const pv = await sbFetch('vip_paris?fixture_id=eq.' + r.fixture_id + '&select=marche,libelle,cote').catch(() => []) || [];
+    const conds = { plus25: (i, j) => i + j > 2.5, moins25: (i, j) => i + j < 2.5, plus15: (i, j) => i + j > 1.5, moins35: (i, j) => i + j < 3.5, bttsoui: (i, j) => i > 0 && j > 0, bttsnon: (i, j) => !(i > 0 && j > 0), dc1x: (i, j) => i >= j, dcx2: (i, j) => j >= i, dc12: (i, j) => i !== j };
+    pv.forEach(p => { const c = conds[p.marche]; if (c) marches.unshift({ libelle: 'Pari VIP · ' + p.libelle, proba: Math.round(somme(g, c) * 100), realise: c(h, a), cote: Number(p.cote), estimee: false, vip: true }); });
     const pr = pred ? { domicile: pred.home_prob, nul: pred.draw_prob, exterieur: pred.away_prob } : null;
     const donnees = {
         competition: r.league_name, domicile: r.home, exterieur: r.away,
@@ -1504,6 +1512,7 @@ async function genererAnalyses(dateStr) {
     const dejaIds = enCache.map(x => x.payload.fixture_id);
     const preds = await sbFetch('ai_predictions?fixture_date=eq.' + dateStr + '&select=*') || [];
     const dansCombine = await matchsDesCombines(dateStr);
+    const idsVip = ((await sbFetch('vip_paris?fixture_date=eq.' + dateStr + '&select=fixture_id').catch(() => [])) || []).map(x => x.fixture_id);
     const rencontres = (await sbFetch('ai_fixtures?fixture_date=eq.' + dateStr + '&select=*') || [])
         .filter(r => !dejaIds.includes(r.fixture_id))
         .map(r => ({ r, p: preds.find(x => memesEquipes(x.home, r.home) && memesEquipes(x.away, r.away)) }))
@@ -1512,7 +1521,7 @@ async function genererAnalyses(dateStr) {
         .map(x => ({ ...x, confiance: marchesConfiants(x.r, x.p).length }))
         .filter(x => x.confiance > 0)
         // Classement sur la seule confiance d'avant-match : le résultat n'intervient pas
-        .sort((x, y) => (y.confiance - x.confiance) || (prioriteLigue(x.r.league_code) - prioriteLigue(y.r.league_code)))
+        .sort((x, y) => ((idsVip.includes(y.r.fixture_id) ? 1 : 0) - (idsVip.includes(x.r.fixture_id) ? 1 : 0)) || (y.confiance - x.confiance) || (prioriteLigue(x.r.league_code) - prioriteLigue(y.r.league_code)))
         .slice(0, 6);
     if (!rencontres.length) return { deja: enCache.length, nouvelles: 0 };
     const recup = await pvFixtures(rencontres.map(x => x.r.fixture_id));
