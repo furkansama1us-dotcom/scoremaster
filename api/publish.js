@@ -1338,47 +1338,158 @@ async function handleParisVip(req, res) {
 }
 
 
-// POST { action: 'paris-vip-lecture' } (admin) : LECTURE APRÈS-MATCH d'hier,
-// à but éducatif. Pour chaque rencontre analysée la veille : score final réel
-// et marchés qui se sont réalisés, avec la cote d'avant-match quand elle existe.
-// Rien n'est enregistré : ce ne sont pas des paris proposés, et ils n'entrent
-// ni dans l'historique ni dans les statistiques.
+// POST { action: 'paris-vip-lecture' } (admin) : ANALYSE APRÈS-MATCH d'hier, à
+// but éducatif, 3 rencontres par jour. Pour chacune : probabilités d'avant-match
+// réelles (ai_predictions, enregistrées avant le coup d'envoi), score et marchés
+// prédits par un modèle de Poisson calé sur ces seules données d'avant-match,
+// comparaison avec le score final, cotes estimées, et une analyse rédigée par
+// Claude. Mise en cache dans analyses_apres_match : générée une seule fois.
+// Rien de tout cela n'est présenté comme des paris proposés avant les matchs.
+const PV_MARGE = 1.07; // marge bookmaker appliquée aux cotes estimées
+
+function poisson(k, l) { let p = Math.exp(-l); for (let i = 1; i <= k; i++) p *= l / i; return p; }
+function grille(lh, la) {
+    const g = [];
+    for (let i = 0; i <= 8; i++) for (let j = 0; j <= 8; j++) g.push({ i, j, p: poisson(i, lh) * poisson(j, la) });
+    return g;
+}
+function somme(g, cond) { return g.filter(x => cond(x.i, x.j)).reduce((t, x) => t + x.p, 0); }
+
+// Buts attendus de chaque équipe, calés sur les probabilités 1N2 d'avant-match
+// et la tendance de buts (+/-) : aucune donnée d'après-match n'entre ici.
+function modeleAvantMatch(p) {
+    const total = String(p.under_over || '').startsWith('+') ? 2.9 : String(p.under_over || '').startsWith('-') ? 2.1 : 2.5;
+    const cible = ((p.home_prob || 0) - (p.away_prob || 0)) / 100;
+    let meilleur = { e: 9, lh: total / 2, la: total / 2 };
+    for (let part = 0.15; part <= 0.851; part += 0.01) {
+        const lh = total * part, la = total - lh, g = grille(lh, la);
+        const e = Math.abs((somme(g, (i, j) => i > j) - somme(g, (i, j) => i < j)) - cible);
+        if (e < meilleur.e) meilleur = { e, lh, la };
+    }
+    const g = grille(meilleur.lh, meilleur.la);
+    const mode = g.reduce((m, x) => x.p > m.p ? x : m, g[0]);
+    return { g, lh: meilleur.lh, la: meilleur.la, predit: mode.i + '-' + mode.j };
+}
+function coteEstimee(prob) { return prob > 0.02 ? Math.max(1.03, Math.min(25, Math.round(100 / (prob * PV_MARGE)) / 100)) : null; }
+
+async function analyseClaude(donnees) {
+    if (!process.env.ANTHROPIC_API_KEY) return null;
+    const AnthropicMod = require('@anthropic-ai/sdk');
+    const Anthropic = AnthropicMod.default || AnthropicMod;
+    const client = new Anthropic();
+    const schema = {
+        type: 'object', additionalProperties: false,
+        required: ['explication', 'verdict', 'domicile', 'exterieur'],
+        properties: {
+            explication: { type: 'string' },
+            verdict: { type: 'string' },
+            domicile: { type: 'object', additionalProperties: false, required: ['forces', 'faiblesses'], properties: { forces: { type: 'array', items: { type: 'string' } }, faiblesses: { type: 'array', items: { type: 'string' } } } },
+            exterieur: { type: 'object', additionalProperties: false, required: ['forces', 'faiblesses'], properties: { forces: { type: 'array', items: { type: 'string' } }, faiblesses: { type: 'array', items: { type: 'string' } } } }
+        }
+    };
+    const reponse = await client.beta.messages.create({
+        model: 'claude-opus-5',
+        max_tokens: 4000,
+        betas: ['server-side-fallback-2026-07-01'],
+        fallbacks: 'default',
+        output_config: { effort: 'low', format: { type: 'json_schema', schema } },
+        system: "Tu es l'analyste football de Score Master. Tu rédiges en français une analyse d'après-match sobre et précise, destinée à des passionnés. "
+            + "Tu t'appuies uniquement sur les données fournies : n'invente aucune statistique, aucun joueur, aucun fait de match. "
+            + "explication : 4 à 6 phrases qui expliquent ce que les données d'avant-match laissaient attendre, puis comment le score final confirme ou contredit cette lecture. "
+            + "verdict : une phrase courte qui qualifie la prédiction (juste, partiellement juste ou manquée) et pourquoi. "
+            + "forces et faiblesses : 2 à 3 éléments courts par équipe, chacun fondé sur un chiffre ou un fait présent dans les données.",
+        messages: [{ role: 'user', content: 'Données du match (JSON) :\n' + JSON.stringify(donnees) }]
+    });
+    if (reponse.stop_reason === 'refusal') return null;
+    const bloc = (reponse.content || []).find(b => b.type === 'text');
+    try { return bloc ? JSON.parse(bloc.text) : null; } catch (e) { return null; }
+}
+
+async function analyserRencontre(r, f, pred, contexte) {
+    const h = f.goals.home, a = f.goals.away, t = h + a;
+    const mt = f.score && f.score.halftime ? f.score.halftime : null;
+    const m = modeleAvantMatch(pred);
+    const g = m.g;
+    const marche = (libelle, prob, realise) => ({ libelle, proba: Math.round(prob * 100), realise, cote: coteEstimee(prob), estimee: true });
+    const marches = [
+        marche('Plus de 1,5 but', somme(g, (i, j) => i + j > 1.5), t > 1.5),
+        marche('Plus de 2,5 buts', somme(g, (i, j) => i + j > 2.5), t > 2.5),
+        marche('Moins de 2,5 buts', somme(g, (i, j) => i + j < 2.5), t < 2.5),
+        marche('Plus de 3,5 buts', somme(g, (i, j) => i + j > 3.5), t > 3.5),
+        marche('Les deux équipes marquent', somme(g, (i, j) => i > 0 && j > 0), h > 0 && a > 0),
+        marche('Les deux équipes ne marquent pas', somme(g, (i, j) => !(i > 0 && j > 0)), !(h > 0 && a > 0)),
+        marche(r.home + ' ne prend pas de but', somme(g, (i, j) => j === 0), a === 0),
+        marche(r.away + ' ne prend pas de but', somme(g, (i, j) => i === 0), h === 0)
+    ];
+    const pr = pred ? { domicile: pred.home_prob, nul: pred.draw_prob, exterieur: pred.away_prob } : null;
+    const donnees = {
+        competition: r.league_name, domicile: r.home, exterieur: r.away,
+        avant_match: { probabilites_1N2: pr, conseil_modele: pred && pred.advice, tendance_buts: pred && pred.under_over, buts_attendus: { domicile: +m.lh.toFixed(2), exterieur: +m.la.toFixed(2) }, score_predit: m.predit },
+        statistiques_avant_match: contexte,
+        resultat: { score_final: h + '-' + a, mi_temps: mt ? mt.home + '-' + mt.away : null },
+        marches: marches.map(x => ({ marche: x.libelle, probabilite: x.proba + ' %', realise: x.realise }))
+    };
+    let analyse = null;
+    try { analyse = await analyseClaude(donnees); } catch (e) { analyse = null; }
+    return {
+        fixture_id: r.fixture_id, date: r.fixture_date, kickoff: r.kickoff, ligue: r.league_name, home: r.home, away: r.away,
+        home_logo: r.home_logo || null, away_logo: r.away_logo || null,
+        score: h + '-' + a, mi_temps: mt ? mt.home + '-' + mt.away : null,
+        probabilites: pr, predit: m.predit, marches, analyse, genere_le: new Date().toISOString()
+    };
+}
+
+// Statistiques d'avant-match (forme, moyennes de buts, confrontations) pour nourrir l'analyse.
+async function contexteAvantMatch(fixtureId) {
+    try {
+        const p = ((await apiFootballPublish('/predictions?fixture=' + fixtureId)).response || [])[0];
+        if (!p) return null;
+        const equipe = t => t ? {
+            nom: t.name,
+            forme_5_derniers: t.last_5 && t.last_5.form, attaque_5_derniers: t.last_5 && t.last_5.att, defense_5_derniers: t.last_5 && t.last_5.def,
+            buts_marques_moyenne: t.league && t.league.goals && t.league.goals.for && t.league.goals.for.average && t.league.goals.for.average.total,
+            buts_encaisses_moyenne: t.league && t.league.goals && t.league.goals.against && t.league.goals.against.average && t.league.goals.against.average.total,
+            serie: t.league && t.league.form
+        } : null;
+        return {
+            domicile: equipe(p.teams && p.teams.home), exterieur: equipe(p.teams && p.teams.away),
+            comparaison: p.comparison || null,
+            confrontations: (p.h2h || []).slice(0, 5).map(x => (x.teams.home.name + ' ' + x.goals.home + '-' + x.goals.away + ' ' + x.teams.away.name + ' (' + String(x.fixture.date).slice(0, 10) + ')'))
+        };
+    } catch (e) { return null; }
+}
+
 async function handleParisVipLecture(req, res) {
     const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
     if (!(await verifyAdmin(accessToken))) return res.status(403).json({ error: 'Accès refusé' });
     if (!APIFOOTBALL_KEY) return res.status(500).json({ error: 'APIFOOTBALL_KEY absente' });
     const hier = veille(parisNowParts().dateStr);
+    // Déjà générées : servies depuis le cache
+    let enCache = [];
+    try { enCache = await sbFetch('analyses_apres_match?fixture_date=eq.' + hier + '&select=payload&order=kickoff.asc') || []; }
+    catch (e) { return res.status(200).json({ date: hier, matchs: [], info: 'Table analyses_apres_match absente : exécute le script SQL « ANALYSES APRÈS-MATCH » dans Supabase.' }); }
+    if (enCache.length >= 3) return res.status(200).json({ date: hier, matchs: enCache.map(x => x.payload) });
+    const dejaIds = enCache.map(x => x.payload.fixture_id);
+    const preds = await sbFetch('ai_predictions?fixture_date=eq.' + hier + '&select=*') || [];
     const rencontres = (await sbFetch('ai_fixtures?fixture_date=eq.' + hier + '&select=*') || [])
-        .sort((x, y) => (prioriteLigue(x.league_code) - prioriteLigue(y.league_code)) || (Date.parse(x.kickoff) - Date.parse(y.kickoff)))
-        .slice(0, 8);
-    if (!rencontres.length) return res.status(200).json({ date: hier, matchs: [], info: 'Aucune rencontre analysée en base pour ' + hier });
-    const recup = await pvFixtures(rencontres.map(r => r.fixture_id));
-    const fx = recup.liste;
-    const matchs = [];
-    for (const r of rencontres) {
-        if (matchs.length >= 3) break;
-        const f = fx.find(x => x.fixture && x.fixture.id === r.fixture_id);
-        if (!f || !['FT', 'AET', 'PEN'].includes(f.fixture.status && f.fixture.status.short) || f.goals.home === null) continue;
-        const h = f.goals.home, a = f.goals.away, t = h + a;
-        let bets = [];
-        try {
-            const o = ((await apiFootballPublish('/odds?fixture=' + r.fixture_id)).response || [])[0];
-            const bk = o && o.bookmakers && (BOOKMAKERS_PREFERES.map(id => o.bookmakers.find(b => b.id === id)).find(Boolean) || o.bookmakers[0]);
-            bets = (bk && bk.bets) || [];
-        } catch (e) { bets = []; }
-        const cote = (id, v) => { const b = bets.find(x => x.id === id); const e = b && (b.values || []).find(y => String(y.value) === v); return e ? parseFloat(e.odd) : null; };
-        const realises = [
-            t > 2.5 ? { libelle: 'Plus de 2,5 buts', cote: cote(5, 'Over 2.5') } : { libelle: 'Moins de 2,5 buts', cote: cote(5, 'Under 2.5') },
-            (h > 0 && a > 0) ? { libelle: 'Les deux équipes marquent', cote: cote(8, 'Yes') } : { libelle: 'Les deux équipes ne marquent pas', cote: cote(8, 'No') },
-            h > a ? { libelle: 'Victoire ' + r.home, cote: cote(1, 'Home') } : h < a ? { libelle: 'Victoire ' + r.away, cote: cote(1, 'Away') } : { libelle: 'Match nul', cote: cote(1, 'Draw') }
-        ];
-        if (t > 1.5) realises.push({ libelle: 'Plus de 1,5 but', cote: cote(5, 'Over 1.5') });
-        if (t < 3.5) realises.push({ libelle: 'Moins de 3,5 buts', cote: cote(5, 'Under 3.5') });
-        const dansPlage = x => x.cote && x.cote >= PV_COTE_MIN && x.cote <= PV_COTE_MAX;
-        realises.sort((x, y) => (dansPlage(y) - dansPlage(x)) || ((y.cote || 0) - (x.cote || 0)));
-        matchs.push({ home: r.home, away: r.away, ligue: r.league_name, kickoff: r.kickoff, score: h + '-' + a, realises: realises.slice(0, 3) });
+        .filter(r => !dejaIds.includes(r.fixture_id))
+        .map(r => ({ r, p: preds.find(x => memesEquipes(x.home, r.home) && memesEquipes(x.away, r.away)) }))
+        .filter(x => x.p) // seulement les rencontres analysées AVANT le match
+        .sort((x, y) => (prioriteLigue(x.r.league_code) - prioriteLigue(y.r.league_code)) || (Date.parse(x.r.kickoff) - Date.parse(y.r.kickoff)))
+        .slice(0, 6);
+    if (!rencontres.length && !enCache.length) return res.status(200).json({ date: hier, matchs: [], info: 'Aucune rencontre analysée avant match pour ' + hier });
+    const recup = await pvFixtures(rencontres.map(x => x.r.fixture_id));
+    const terminees = rencontres
+        .map(x => ({ ...x, f: recup.liste.find(y => y.fixture && y.fixture.id === x.r.fixture_id) }))
+        .filter(x => x.f && ['FT', 'AET', 'PEN'].includes(x.f.fixture.status && x.f.fixture.status.short) && x.f.goals.home !== null)
+        .slice(0, 3 - enCache.length);
+    const nouvelles = await Promise.all(terminees.map(async x => analyserRencontre(x.r, x.f, x.p, await contexteAvantMatch(x.r.fixture_id))));
+    for (const a of nouvelles) {
+        await sbFetch('analyses_apres_match', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates' },
+            body: JSON.stringify([{ fixture_id: a.fixture_id, fixture_date: hier, kickoff: a.kickoff, payload: a }]) }).catch(() => {});
     }
-    res.status(200).json({ date: hier, matchs, erreurs: recup.erreurs.slice(0, 3), trouves: fx.length });
+    const matchs = enCache.map(x => x.payload).concat(nouvelles).sort((x, y) => Date.parse(x.kickoff) - Date.parse(y.kickoff));
+    res.status(200).json({ date: hier, matchs, erreurs: recup.erreurs.slice(0, 3), trouves: recup.liste.length });
 }
 
 // POST { action: 'annonce-combine', id } (admin) : bouton « Relancer l'annonce »

@@ -848,3 +848,18 @@ alter table public.vip_paris enable row level security;
 drop policy if exists "Les admins lisent les paris VIP" on public.vip_paris;
 create policy "Les admins lisent les paris VIP" on public.vip_paris for select
   using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));
+
+
+-- ============================================================
+-- ANALYSES APRÈS-MATCH (aperçu admin, éducatif) : générées une fois par match
+-- terminé et mises en cache. Lues et écrites par le serveur uniquement.
+-- ============================================================
+create table if not exists public.analyses_apres_match (
+  fixture_id bigint primary key,
+  fixture_date date not null,
+  kickoff timestamptz,
+  payload jsonb not null,
+  created_at timestamptz not null default now()
+);
+create index if not exists analyses_apres_match_date_idx on public.analyses_apres_match (fixture_date desc);
+alter table public.analyses_apres_match enable row level security;

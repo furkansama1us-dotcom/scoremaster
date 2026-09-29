@@ -3,6 +3,7 @@
   "private": true,
   "description": "Dépendances des fonctions serveur (api/). Le site lui-même n'a pas d'étape de build.",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.129.0",
     "@napi-rs/canvas": "^0.1.65"
   }
 }
