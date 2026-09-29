@@ -227,6 +227,31 @@
         .pv-stats b{display:block;font:800 18px 'Montserrat',sans-serif;color:#fff}
         .pv-stats span{font:600 10px 'Inter',sans-serif;color:#8b93a7}
         .pv-section{margin:6px 2px 8px;font:800 11px 'Montserrat',sans-serif;letter-spacing:1.3px;color:#8fb3ea}
+        /* Paris VIP façon page d'accueil */
+        #paris-vip-overlay{background:radial-gradient(ellipse 90% 45% at 50% 0%,rgba(255,193,7,.1),transparent 70%),#0a0e1a}
+        #paris-vip-overlay .pv-tete{border-bottom-color:rgba(255,193,7,.15)}
+        .pv-hero{position:relative;display:flex;align-items:center;gap:14px;padding:16px 16px 14px;margin-bottom:16px;border-radius:22px;overflow:hidden;
+            background:radial-gradient(ellipse 80% 90% at 85% 40%,rgba(255,193,7,.16),transparent 70%),linear-gradient(180deg,#141b30,#0f1424);border:1.5px solid rgba(255,193,7,.35);box-shadow:0 12px 30px rgba(0,0,0,.35)}
+        .pv-hero .txt{flex:1;min-width:0;position:relative;z-index:1}
+        .pv-hero small{display:block;font:800 10px 'Montserrat',sans-serif;letter-spacing:1.6px;color:#8fb3ea}
+        .pv-hero h3{margin:5px 0 6px;font:800 19px/1.2 'Montserrat',sans-serif;color:#fff}
+        .pv-hero h3 span{background:linear-gradient(90deg,#FFE9A8,#FFC107,#FFE9A8);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:vipTextShine 4s linear infinite}
+        .pv-hero p{margin:0;font:500 11.5px/1.45 'Inter',sans-serif;color:#9aa3b8}
+        .pv-hero .robot{position:relative;z-index:1;flex:0 0 96px;height:97px;filter:drop-shadow(0 6px 14px rgba(255,193,7,.35));animation:logoFlotte 5s ease-in-out infinite}
+        .pv-hero .robot img{width:96px;height:97px;object-fit:contain}
+        .pv-hero .etoile{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;box-shadow:0 0 4px 1px rgba(255,236,170,.7);animation:vtScintille 3.4s ease-in-out infinite}
+        .pv-titre{margin:22px 2px 12px;text-align:center}
+        .pv-titre small{display:block;font:800 10px 'Montserrat',sans-serif;letter-spacing:1.6px;color:#8fb3ea}
+        .pv-titre b{display:block;margin-top:4px;font:800 17px 'Montserrat',sans-serif;color:#fff}
+        .pv-titre b span{color:var(--primary-yellow)}
+        #paris-vip-overlay .pv-carte{background:linear-gradient(180deg,#141b30,#10162a);border-color:rgba(255,255,255,.08)}
+        #paris-vip-overlay .pv-carte:has(.pv-cle){border-color:rgba(255,193,7,.35);box-shadow:0 0 18px rgba(255,193,7,.07)}
+        #paris-vip-overlay .pa-carte{background:linear-gradient(180deg,#131a2e,#0f1526);border-color:rgba(255,193,7,.18)}
+        #paris-vip-overlay .pv-bilan{background:radial-gradient(ellipse 80% 60% at 90% 0%,rgba(255,193,7,.1),transparent 70%),#121829;border-color:rgba(255,193,7,.35)}
+        .pv-apparait{animation:vtEntree .6s ease-out backwards}
+        .pv-reseaux{margin-top:26px;padding:16px 14px;border-radius:20px;background:#0f1424;border:1px solid rgba(255,255,255,.07)}
+        .pv-reseaux .rx-boutons{margin-top:12px}
+        @media (prefers-reduced-motion:reduce){.pv-hero .robot,.pv-hero .etoile,.pv-hero h3 span,.pv-apparait{animation:none}}
         .pv-carte{background:#121829;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:12px 13px;margin-bottom:8px}
         .pv-ligne1{display:flex;justify-content:space-between;gap:8px;font:600 10.5px 'Inter',sans-serif;color:#8b93a7}
         .pv-match{margin:4px 0 8px;font:700 13.5px 'Montserrat',sans-serif;color:#fff}
@@ -12503,11 +12528,17 @@ async function autoFetchFinalScores(combined) {
         var jour = tous.filter(function (p) { return p.fixture_date === auj; }).sort(function (x, y) { return Date.parse(x.kickoff) - Date.parse(y.kickoff); });
         var histo = tous.filter(function (p) { return p.statut !== 'en_attente'; });
         var g = histo.filter(function (p) { return p.statut === 'gagne'; }).length, pe = histo.filter(function (p) { return p.statut === 'perdu'; }).length;
-        var html = '<div class="pv-resume"><div><b>' + g + '</b>gagnés</div><div><b>' + pe + '</b>perdus</div><div><b>' + ((g + pe) ? Math.round(g / (g + pe) * 100) + ' %' : '—') + '</b>réussite</div></div>';
-        html += '<div class="pv-section">PARIS DU JOUR</div>';
+        var html = '<div class="pv-hero pv-apparait"><i class="etoile" style="left:12%;top:18%;animation-delay:0.0s"></i><i class="etoile" style="left:30%;top:70%;animation-delay:0.5s"></i><i class="etoile" style="left:55%;top:12%;animation-delay:1.0s"></i><i class="etoile" style="left:70%;top:82%;animation-delay:1.5s"></i><i class="etoile" style="left:88%;top:30%;animation-delay:2.0s"></i><i class="etoile" style="left:46%;top:55%;animation-delay:2.5s"></i><div class="txt"><small>SCORE MASTER · VIP</small><h3>Les paris <span>VIP du jour</span></h3><p>Sélectionnés par notre IA avant les matchs, validés par notre équipe.</p></div><div class="robot"><img src="mascotte-roi-mecha.webp" alt=""></div></div>';
+        html += '<div class="pv-resume pv-apparait"><div><b>' + g + '</b>gagnés</div><div><b>' + pe + '</b>perdus</div><div><b>' + ((g + pe) ? Math.round(g / (g + pe) * 100) + ' %' : '—') + '</b>réussite</div></div>';
+        html += '<div class="pv-titre pv-apparait"><small>AUJOURD\'HUI</small><b>Paris du <span>jour</span></b></div>';
         html += jour.length ? jour.map(function (p) { return pvCarte(p, true); }).join('') : '<div class="pv-vide">Les paris du jour sont choisis chaque matin à partir de 9 h.</div>';
-        if (histo.length) html += '<div class="pv-section" style="margin-top:18px;">HISTORIQUE</div>' + histo.map(function (p) { return pvCarte(p, false); }).join('');
-        html += '<div class="pv-section" style="margin-top:22px;">ANALYSES DES MATCHS PASSÉS</div><div id="pv-analyses"></div>';
+        if (histo.length) html += '<div class="pv-titre"><small>SUIVI</small><b>Historique</b></div>' + histo.map(function (p) { return pvCarte(p, false); }).join('');
+        html += '<div class="pv-titre pv-apparait"><small>ANALYSES IA</small><b>Analyses des <span>matchs passés</span></b></div><div id="pv-analyses"></div>';
+        html += '<div class="pv-reseaux pv-apparait"><div class="pv-titre" style="margin-top:0"><small>NOS RÉSEAUX</small><b>Score Master, <span>partout où tu es</span></b></div>'
+            + '<div class="rx-fusion"><div class="rx-duo"><div class="logos"><div class="sm"><img src="logo-dark.png" alt=""></div><div class="pf ig"><i class="fab fa-instagram"></i></div><div class="eclat" aria-hidden="true"></div></div><span>SM <b>×</b> INSTAGRAM</span></div>'
+            + '<div class="rx-duo"><div class="logos"><div class="sm"><img src="logo-dark.png" alt=""></div><div class="pf tg"><i class="fab fa-telegram-plane"></i></div><div class="eclat" aria-hidden="true" style="animation-delay:.4s"></div></div><span>SM <b>×</b> TELEGRAM</span></div></div>'
+            + '<div class="rx-boutons"><a class="vt-bouton ig" href="https://www.instagram.com/scoresmasters.fr/" target="_blank" rel="noopener"><i class="fab fa-instagram"></i> Suivre</a>'
+            + '<a class="vt-bouton tg" href="#" onclick="window.open(TELEGRAM_LINK, \'_blank\'); return false;"><i class="fab fa-telegram-plane"></i> Rejoindre</a></div></div>';
         corps.innerHTML = html;
         var dates = paDates();
         afficherAnalyses(dates.length ? dates[0] : null);
