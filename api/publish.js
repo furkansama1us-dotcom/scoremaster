@@ -1480,7 +1480,9 @@ async function analyserRencontre(r, f, pred, contexte) {
         fixture_id: r.fixture_id, date: r.fixture_date, kickoff: r.kickoff, ligue: r.league_name, home: r.home, away: r.away,
         home_logo: r.home_logo || null, away_logo: r.away_logo || null,
         score: h + '-' + a, mi_temps: mt ? mt.home + '-' + mt.away : null,
-        probabilites: pr, predit: m.predit, top3: m.top3, marches, analyse, genere_le: new Date().toISOString()
+        probabilites: pr, predit: m.predit, top3: m.top3,
+        grille: [0, 1, 2, 3].map(i => [0, 1, 2, 3].map(j => Math.round((m.g.find(x => x.i === i && x.j === j) || { p: 0 }).p * 1000) / 10)),
+        marches, analyse, genere_le: new Date().toISOString()
     };
 }
 

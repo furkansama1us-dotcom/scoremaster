@@ -322,6 +322,11 @@
         .pa-ff li{list-style:none;display:flex;gap:5px;font:500 10.5px/1.4 'Inter',sans-serif;color:#aab3c7;margin-bottom:5px}
         .pa-ff li b{flex-shrink:0;font-weight:800}
         .pa-ff ul{margin:0;padding:0}
+        .pa-grille{display:grid;grid-template-columns:28px repeat(4,1fr);gap:4px;font:700 11px 'Montserrat',sans-serif}
+        .pa-grille div{text-align:center;padding:7px 2px;border-radius:7px;background:#151c30;color:#dfe5f1}
+        .pa-grille .en{background:none;color:#6f7890;font-size:9.5px;padding:7px 0}
+        .pa-grille .reel{background:rgba(34,197,94,.2);outline:1.5px solid #4ade80;color:#fff}
+        .pa-grille small{display:block;font:600 9px 'Inter',sans-serif;color:#8b93a7;margin-top:2px}
         .pa-plus{width:100%;margin-top:12px;padding:9px;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:none;color:#cfe1ff;font:700 11.5px 'Montserrat',sans-serif;cursor:pointer}
         .pa-detail{display:none}
         .pa-carte.ouverte .pa-detail{display:block}
@@ -12604,6 +12609,20 @@ async function autoFetchFinalScores(combined) {
         var ok = tous.filter(function (x) { return x.realise; }).length;
         return tous.length ? '<div class="pv-stats" style="grid-template-columns:repeat(2,1fr)"><div><b>' + ok + ' / ' + tous.length + '</b><span>paris réalisés</span></div><div><b>' + Math.round(ok / tous.length * 100) + ' %</b><span>réussite réelle</span></div></div>' : '';
     }
+    // Onglet admin : probabilités d'avant-match des 16 scores de 0-0 à 3-3, score final surligné
+    function paGrille(m) {
+        var sf = String(m.score || '').split('-').map(Number), dedans = sf[0] <= 3 && sf[1] <= 3;
+        var html = '<div class="pa-grille"><div class="en"></div>' + [0, 1, 2, 3].map(function (j) { return '<div class="en">' + pvEchap(m.away).slice(0, 3).toUpperCase() + ' ' + j + '</div>'; }).join('');
+        [0, 1, 2, 3].forEach(function (i) {
+            html += '<div class="en">' + i + '</div>';
+            [0, 1, 2, 3].forEach(function (j) {
+                var p = m.grille && m.grille[i] ? m.grille[i][j] : null;
+                html += '<div class="' + (sf[0] === i && sf[1] === j ? 'reel' : '') + '">' + i + '-' + j + (p != null ? '<small>' + String(p).replace('.', ',') + ' %</small>' : '') + '</div>';
+            });
+        });
+        html += '</div><p class="pa-legende">' + (m.grille ? 'Probabilité de chaque score calculée avant le match. ' : '') + (dedans ? 'Score final surligné.' : 'Score final hors grille (' + pvEchap(m.score) + ').') + '</p>';
+        return '<div class="pa-bloc"><p class="pa-titre">GRILLE DES SCORES 0-0 → 3-3</p>' + html + '</div>';
+    }
     function paCarte(m, date, index) {
         var p = m.probabilites || { domicile: 0, nul: 0, exterieur: 0 };
         var proba = '<div class="pa-proba"><div><b style="color:#60a5fa">' + p.domicile + ' %</b><span>' + pvEchap(m.home) + '</span></div><div><b style="color:#94a3b8">' + p.nul + ' %</b><span>Nul</span></div><div><b style="color:#fb7185">' + p.exterieur + ' %</b><span>' + pvEchap(m.away) + '</span></div></div>'
@@ -12633,7 +12652,7 @@ async function autoFetchFinalScores(combined) {
             + '<div class="pa-affiche"><div class="pa-eq">' + paEmbleme(m.home, m.home_logo) + '<span>' + pvEchap(m.home) + '</span></div><div class="pa-score"><b>' + pvEchap(m.score).replace('-', ' - ') + '</b><small>Score final</small></div><div class="pa-eq">' + paEmbleme(m.away, m.away_logo) + '<span>' + pvEchap(m.away) + '</span></div></div>'
             + '<div class="pa-bloc"><p class="pa-titre">PRÉDIT VS RÉEL</p>' + vs + '</div>'
             + '<div class="pa-detail"><div class="pa-bloc"><p class="pa-titre">PROBABILITÉS AVANT-MATCH</p>' + proba + '</div>'
-            + '<div class="pa-bloc"><p class="pa-titre">PARIS & TOTAUX</p>' + marches + '</div>' + analyse + '</div>'
+            + '<div class="pa-bloc"><p class="pa-titre">PARIS & TOTAUX</p>' + marches + '</div>' + (PV_VUE === 'complete' ? paGrille(m) : '') + analyse + '</div>'
             + '<button class="pa-plus" onclick="paBascule(this)">' + (index === 0 ? 'Réduire' : 'Voir l\'analyse complète') + '</button>'
             + '</div>';
     }
