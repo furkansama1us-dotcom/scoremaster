@@ -2562,7 +2562,8 @@ async function fetchApiScore(id, dateRaw) {
                 </div>
                 <button id="admin-panel-btn" onclick="promptAdminCode()" style="display: none; align-items:center; gap:8px; padding:10px 16px; background:transparent; border:none; color:transparent; border-radius:12px; font-size:13px; font-weight:800; font-family:'Montserrat',sans-serif; cursor:pointer;"><i class="fas fa-shield-halved" style="color:transparent;"></i> Panel Admin</button>
             </div>
-            <div class="vip-notice">Le prochain combiné apparaîtra ci-dessous une fois disponible ! (activez vos notifs !)</div>
+            <div class="vip-notice" id="vip-notice">Le prochain combiné apparaîtra ci-dessous une fois disponible ! (activez vos notifs !)</div>
+            <div class="pv-banniere" id="pv-acces" style="display:none;margin:0 20px 15px;" onclick="ouvrirParisVip()"><span class="ico"><i class="fas fa-crown"></i></span><span><b>Paris VIP du jour</b><small>Historique réel · aperçu admin</small></span><i class="fas fa-chevron-right"></i></div>
             <div class="api-banner" style="margin:0 20px 15px;">
                 <div class="api-icon"><i class="fas fa-plug"></i></div>
                 <div class="api-info">
@@ -12545,6 +12546,9 @@ async function autoFetchFinalScores(combined) {
     }
 
     function renderCombined() {
+        // L'admin voit l'accès Paris VIP à la place du cadre « Le prochain combiné… »
+        var notice = document.getElementById('vip-notice'), accesPv = document.getElementById('pv-acces');
+        if (notice && accesPv) { var adm = window.isAdmin === true; notice.style.display = adm ? 'none' : ''; accesPv.style.display = adm ? 'flex' : 'none'; }
         var vc = document.getElementById('vip-combined-container');
         var hc = document.getElementById('home-combined-container');
         var sb = document.getElementById('vip-combined-status-bar');
@@ -12558,8 +12562,7 @@ async function autoFetchFinalScores(combined) {
         var combo = apercuAdminActif() ? comboVersionAdmin(currentCombined) : currentCombined;
         if (vc) vc.innerHTML = buildCC(combo, sc, sl, pw, false);
         if (hc) hc.innerHTML = buildCC(combo, sc, sl, pw, true);
-        if (window.isAdmin === true && sb) sb.innerHTML = '<div class="pv-banniere" onclick="ouvrirParisVip()"><span class="ico"><i class="fas fa-crown"></i></span><span><b>Paris VIP du jour</b><small>Historique réel · aperçu admin</small></span><i class="fas fa-chevron-right"></i></div>';
-        else if (sc === 'en-cours' && sb) sb.innerHTML = '<div class="platform-bg-display hist-banner" onclick="openTicketHistoryWithLoader()" style="background:' + platformColors().background + '; color:' + platformColors().color + ';">'
+        if (sc === 'en-cours' && sb) sb.innerHTML = '<div class="platform-bg-display hist-banner" onclick="openTicketHistoryWithLoader()" style="background:' + platformColors().background + '; color:' + platformColors().color + ';">'
             + '<span class="vipx-badge"><img src="logo-dark.png" alt=""><em>VIP+</em></span>'
             + '<span class="hist-banner-txt"><b>Aperçu historique bookmaker favori</b><small>👑 Exclusivité SM VIP+ !</small></span>'
             + '<i class="fas fa-chevron-right"></i></div>';
