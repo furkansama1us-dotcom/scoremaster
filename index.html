@@ -12531,12 +12531,12 @@ async function autoFetchFinalScores(combined) {
         PV_VUE = 'realises'; PV_CIBLE = 'pv-analyses';
         var tous = r.data || [], auj = pvDateParis();
         var jour = tous.filter(function (p) { return p.fixture_date === auj; }).sort(function (x, y) { return Date.parse(x.kickoff) - Date.parse(y.kickoff); });
-        var histo = tous.filter(function (p) { return p.statut !== 'en_attente'; });
+        var histo = tous.filter(function (p) { return p.statut !== 'en_attente' && p.fixture_date !== auj; });
         var g = histo.filter(function (p) { return p.statut === 'gagne'; }).length, pe = histo.filter(function (p) { return p.statut === 'perdu'; }).length;
         var html = '<div class="pv-hero pv-apparait"><i class="etoile" style="left:12%;top:18%;animation-delay:0.0s"></i><i class="etoile" style="left:30%;top:70%;animation-delay:0.5s"></i><i class="etoile" style="left:55%;top:12%;animation-delay:1.0s"></i><i class="etoile" style="left:70%;top:82%;animation-delay:1.5s"></i><i class="etoile" style="left:88%;top:30%;animation-delay:2.0s"></i><i class="etoile" style="left:46%;top:55%;animation-delay:2.5s"></i><div class="txt"><small>SCORE MASTER · VIP</small><h3>Les paris <span>VIP du jour</span></h3><p>Sélectionnés par notre IA avant les matchs, validés par notre équipe.</p></div><div class="robot"><img src="mascotte-roi-mecha.webp" alt=""></div></div>';
         html += '<div class="pv-titre pv-apparait"><small>AUJOURD\'HUI</small><b>Paris du <span>jour</span></b></div>';
         var aVenir = jour.filter(function (p) { return Date.parse(p.kickoff) > Date.now(); });
-        if (aVenir.length) html += '<div class="pv-compteur pv-apparait"><span><i class="fas fa-stopwatch"></i> Premier match dans</span><b id="pv-compteur" data-cible="' + aVenir[0].kickoff + '">--:--:--</b></div>';
+        if (aVenir.length) html += '<div class="pv-compteur pv-apparait"><span><i class="fas fa-stopwatch"></i> ' + (aVenir.length === jour.length ? 'Premier match dans' : 'Prochain match dans') + '</span><b id="pv-compteur" data-cible="' + aVenir[0].kickoff + '">--:--:--</b></div>';
         if (jour.length) html += '<button class="pv-deflouter cta-hypnose" style="--hyp:rgba(255,193,7,.5)" id="pv-deflouter" onclick="deflouterParisVip()"><span><i class="fas fa-eye"></i> Déflouter les prédictions</span></button>';
         html += jour.length ? jour.map(function (p) { return pvCarte(p, true); }).join('') : '<div class="pv-vide">Les paris du jour sont choisis chaque matin à partir de 9 h.</div>';
         if (histo.length) html += '<div class="pv-titre"><small>SUIVI</small><b>Historique</b></div>' + histo.map(function (p) { return pvCarte(p, false); }).join('');

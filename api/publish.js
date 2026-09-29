@@ -1541,7 +1541,7 @@ async function analysesAutomatiques(now) {
             bilan.generation = g;
             if (g.nouvelles > 0 || g.deja > 0) {
                 await prevenirAdmin('📊 ' + marque + ' PRÊTES (' + (g.deja + g.nouvelles) + ' match' + (g.deja + g.nouvelles > 1 ? 's' : '') + ')\n\n'
-                    + 'Vérifie-les dans le panneau : Espace VIP > Paris VIP du jour > Analyses des matchs passés, puis « Valider et publier ».\n\n'
+                    + 'Vérifie-les dans le panneau admin (onglet Analyses), puis valide dans Content Planner > Réglages > « Valider et publier ».\n\n'
                     + 'Sans validation, publication automatique demain à 7h00 avec le combiné en cours.');
             }
         }
