@@ -12508,17 +12508,11 @@ async function autoFetchFinalScores(combined) {
         }).join('') + '</div>';
         var lignes = PV_ANALYSES.filter(function (x) { return x.fixture_date === date; });
         var matchs = lignes.map(function (x) { return x.payload; }).sort(function (x, y) { return Date.parse(x.kickoff) - Date.parse(y.kickoff); });
-        var coteTot = 1, tousOk = true;
-        var bilan = '<div class="pv-bilan"><h4><i class="fas fa-list-check"></i> RÉSUMÉ DES MATCHS DU ' + date.split('-').reverse().join('/') + '</h4>' + matchs.map(function (m) {
-            var ms = m.marches || [], cote = 1, ok = true;
-            ms.forEach(function (x) { if (x.cote) cote *= x.cote; if (!x.realise) ok = false; });
-            coteTot *= cote; if (!ok) tousOk = false;
+        var bilan = '<div class="pv-bilan"><h4><i class="fas fa-list-check"></i> PARIS RÉALISÉS · MATCHS DU ' + date.split('-').reverse().join('/') + '</h4>' + matchs.map(function (m) {
+            var ok = (m.marches || []).filter(function (x) { return x.realise; });
             return '<div class="ligne"><div class="m"><span>' + pvEchap(m.home) + ' - ' + pvEchap(m.away) + '</span><span>' + pvEchap(m.score) + '</span></div>'
-                + '<div class="p">' + ms.map(function (x) { return '<span' + (x.realise ? '' : ' class="n"') + '>' + (x.realise ? '✓ ' : '✗ ') + pvEchap(x.libelle) + (x.cote ? '<i>≈ ' + pvCote(x.cote) + '</i>' : '') + '</span>'; }).join('') + '</div>'
-                + '<div class="tot"><span>Cote cumulée du match<span class="etat ' + (ok ? 'g">GAGNÉ' : 'p">PERDU') + '</span></span><b>≈ ' + pvCote(cote) + '</b></div></div>';
-        }).join('')
-            + '<div class="final"><span>COTE TOTALE · ' + matchs.length + ' MATCHS<span class="etat ' + (tousOk ? 'g">GAGNÉ' : 'p">PERDU') + '</span></span><b>≈ ' + pvCote(coteTot) + '</b></div>'
-            + '<p class="note">Tous les paris retenus avant le match, réalisés ou non · cotes estimées d\'après les probabilités d\'avant-match.</p></div>';
+                + '<div class="p">' + ok.map(function (x) { return '<span>✓ ' + pvEchap(x.libelle) + '</span>'; }).join('') + '</div></div>';
+        }).join('') + '</div>';
         box.innerHTML = frise + paTauxGlobal(matchs) + bilan + matchs.map(function (m, k) { return paCarte(m, date, k); }).join('');
     }
     async function validerAnalyses(btn, date) {
