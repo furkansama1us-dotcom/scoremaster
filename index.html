@@ -12535,8 +12535,11 @@ async function autoFetchFinalScores(combined) {
             return '<div class="ligne"><div class="m"><span>' + pvEchap(m.home) + ' - ' + pvEchap(m.away) + '</span><span>' + pvEchap(m.score) + '</span></div>'
                 + '<div class="p">' + ok.map(function (x) { return '<span>✓ ' + pvEchap(x.libelle) + '</span>'; }).join('') + '</div></div>';
         }).join('') + '</div>';
-        var mention = PV_VUE === 'realises' ? '<p class="pv-mention">Seuls les paris réalisés sont affichés · taux de réussite réel ci-dessus</p>' : '';
-        box.innerHTML = frise + paTauxGlobal(matchs) + mention + bilan + matchs.map(function (m, k) { return paCarte(m, date, k); }).join('');
+        var tousM = [].concat.apply([], matchs.map(function (m) { return m.marches || []; })), okM = tousM.filter(function (x) { return x.realise; }).length;
+        var entete = PV_VUE === 'realises'
+            ? (tousM.length ? '<p class="pv-mention">Paris réalisés uniquement · ' + Math.round(okM / tousM.length * 100) + ' % de réussite réelle</p>' : '')
+            : paTauxGlobal(matchs);
+        box.innerHTML = frise + entete + bilan + matchs.map(function (m, k) { return paCarte(m, date, k); }).join('');
     }
     async function validerAnalyses(btn, date) {
         btn.disabled = true; btn.textContent = 'Publication…';
