@@ -12760,7 +12760,7 @@ async function autoFetchFinalScores(combined) {
             return '<div><h5>' + pvEchap(eq) + '</h5><ul>' + (d.forces || []).map(function (x) { return '<li><b style="color:#4ade80">+</b>' + pvEchap(x) + '</li>'; }).join('')
                 + (d.faiblesses || []).map(function (x) { return '<li><b style="color:#fb7185">−</b>' + pvEchap(x) + '</li>'; }).join('') + '</ul></div>';
         };
-        var analyse = a ? '<div class="pa-bloc"><p class="pa-titre">ANALYSE IA</p><p class="pa-texte">' + pvEchap(a.explication) + '</p>' + (a.verdict ? '<div class="pa-verdict"><i class="fas fa-flag-checkered"></i> ' + pvEchap(a.verdict) + '</div>' : '') + '</div>'
+        var analyse = a ? '<div class="pa-bloc"><p class="pa-titre">ANALYSE IA</p><p class="pa-texte">' + pvEchap(a.explication) + '</p>' + '</div>'
             + '<div class="pa-bloc"><p class="pa-titre">FORCES & FAIBLESSES</p><div class="pa-ff">' + ff(m.home, a.domicile) + ff(m.away, a.exterieur) + '</div></div>'
             : '<div class="pa-bloc"><p class="pa-legende">Analyse rédigée indisponible pour ce match.</p></div>';
         return '<div class="pa-carte' + (index === 0 ? ' ouverte' : '') + '">'
