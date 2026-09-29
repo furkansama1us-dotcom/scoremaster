@@ -356,6 +356,19 @@ module.exports = async function handler(req, res) {
                 if (secours) return res.status(200).json(secours);
             } catch (e) { /* cache indisponible : on renvoie la réponse d'origine */ }
         }
+        // football-data (plan gratuit) peut ne renvoyer que des compétitions
+        // secondaires (Brésil…) alors que les grandes affiches du jour (Ligue
+        // des Nations, coupes) sont dans le cache API-Football : on complète.
+        if (SUPABASE_SERVICE_ROLE_KEY && data && Array.isArray(data.matches)) {
+            try {
+                const secours = await matchsDepuisCache(dateFrom);
+                if (secours) {
+                    const cle = m => String((m.homeTeam && m.homeTeam.name) || '').toLowerCase().replace(/[^a-z]/g, '').slice(0, 5);
+                    const vus = new Set(data.matches.map(cle));
+                    data.matches = data.matches.concat(secours.matches.filter(m => !vus.has(cle(m))));
+                }
+            } catch (e) { /* complément au mieux */ }
+        }
 
         if (!data) {
             return res.status(apiRes.status === 429 ? 429 : 502).json({ error: 'football-data.org indisponible', details: brut.slice(0, 120) });
