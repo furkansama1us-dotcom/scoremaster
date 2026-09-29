@@ -12725,7 +12725,9 @@ async function autoFetchFinalScores(combined) {
     function pvCarte(p, cleJour) {
         var cle = cleJour ? ' pv-cle' : '';
         return '<div class="pv-carte"><div class="pv-ligne1"><span>' + pvEchap(p.ligue || 'Football') + ' · ' + pvJour(p.fixture_date) + ' ' + pvHeure(p.kickoff) + '</span>'
-            + '<span class="pv-statut ' + p.statut + '">' + (PV_STATUTS[p.statut] || p.statut) + (p.score_final ? ' · ' + pvEchap(p.score_final) : '') + '</span></div>'
+            + (cleJour && (p.statut === 'gagne' || p.statut === 'perdu')
+                ? '<span class="pv-statut en_attente">Ci-dessous les analyses</span></div>'
+                : '<span class="pv-statut ' + p.statut + '">' + (PV_STATUTS[p.statut] || p.statut) + (p.score_final ? ' · ' + pvEchap(p.score_final) : '') + '</span></div>')
             + '<div class="pv-match">' + pvEchap(p.home) + ' - ' + pvEchap(p.away) + '</div>'
             + '<div class="pv-pari"><span class="lib' + cle + '">' + pvEchap(p.libelle) + '</span><span class="cote' + cle + '">' + pvCote(p.cote) + '</span></div></div>';
     }
