@@ -696,6 +696,7 @@
         .hist-banner > i{font-size:12px;flex:0 0 auto}
         .vipx-badge{position:relative;flex:0 0 auto;width:42px;height:42px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#2a2410,#0d0d12 70%);border:2px solid var(--primary-yellow);box-shadow:0 0 10px rgba(255,193,7,.45);overflow:hidden;animation:vipxFloat 2.4s ease-in-out infinite}
         .vipx-badge img{width:100%;height:100%;object-fit:contain;padding:5px 5px 9px}
+        .pv-badge-rouge em{background:#E11D48 !important;color:#fff !important}
         .vipx-badge em{position:absolute;left:50%;bottom:1px;transform:translateX(-50%);font-style:normal;font-size:8px;font-weight:900;color:#000;background:var(--primary-yellow);padding:0 4px;border-radius:4px;line-height:11px;letter-spacing:.2px}
         .vipx-badge::after{content:'';position:absolute;top:-40%;left:-80%;width:50%;height:180%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:rotate(18deg);animation:vipxShine 2.8s ease-in-out infinite}
         @keyframes vipxFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-2px) scale(1.05);box-shadow:0 0 16px rgba(255,193,7,.7)}}
@@ -2688,7 +2689,7 @@ async function fetchApiScore(id, dateRaw) {
                 <button id="admin-panel-btn" onclick="promptAdminCode()" style="display: none; align-items:center; gap:8px; padding:10px 16px; background:transparent; border:none; color:transparent; border-radius:12px; font-size:13px; font-weight:800; font-family:'Montserrat',sans-serif; cursor:pointer;"><i class="fas fa-shield-halved" style="color:transparent;"></i> Panel Admin</button>
             </div>
             <div class="vip-notice" id="vip-notice">Le prochain combiné apparaîtra ci-dessous une fois disponible ! (activez vos notifs !)</div>
-            <div class="pv-banniere" id="pv-acces" style="display:none;margin:0 20px 15px;" onclick="ouvrirParisVip()"><span class="ico"><i class="fas fa-crown"></i></span><span><b>Paris VIP du jour</b><small>La sélection du jour par notre IA</small></span><i class="fas fa-chevron-right"></i></div>
+            <div class="pv-banniere" id="pv-acces" style="display:none;margin:0 20px 15px;" onclick="ouvrirParisVip()"><span class="vipx-badge pv-badge-rouge"><img src="logo-dark.png" alt=""><em>VIP+</em></span><span><b>Paris SMVIP+ du jour</b><small>La sélection du jour par notre IA</small></span><i class="fas fa-chevron-right"></i></div>
             <div class="api-banner" style="margin:0 20px 15px;">
                 <div class="api-icon"><i class="fas fa-plug"></i></div>
                 <div class="api-info">
@@ -3383,7 +3384,7 @@ async function fetchApiScore(id, dateRaw) {
 <div data-nosnippet id="paris-vip-overlay" role="dialog" aria-modal="true" aria-label="Paris VIP">
     <div class="pv-tete">
         <button class="pv-secret" onclick="basculerSmvip()" aria-hidden="true" tabindex="-1"></button>
-        <img src="logo-dark.png" alt="Score Master" style="width:40px;height:40px;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 0 10px rgba(255,193,7,.35));"><h2>Paris SMVIP+<small>Sélection du jour par notre IA</small></h2>
+        <span class="vipx-badge pv-badge-rouge"><img src="logo-dark.png" alt=""><em>VIP+</em></span><h2>Paris SMVIP+<small>Sélection du jour par notre IA</small></h2>
         <button class="fermer" style="margin-left:auto" onclick="fermerParisVip()" aria-label="Fermer"><i class="fas fa-times"></i></button>
     </div>
     <div class="pv-corps" id="pv-corps"></div>
@@ -12538,7 +12539,7 @@ async function autoFetchFinalScores(combined) {
         var jour = tous.filter(function (p) { return p.fixture_date === auj; }).sort(function (x, y) { return Date.parse(x.kickoff) - Date.parse(y.kickoff); });
         var histo = tous.filter(function (p) { return p.statut !== 'en_attente' && p.fixture_date !== auj; });
         var g = histo.filter(function (p) { return p.statut === 'gagne'; }).length, pe = histo.filter(function (p) { return p.statut === 'perdu'; }).length;
-        var html = '<div class="pv-hero pv-apparait"><i class="etoile" style="left:12%;top:18%;animation-delay:0.0s"></i><i class="etoile" style="left:30%;top:70%;animation-delay:0.5s"></i><i class="etoile" style="left:55%;top:12%;animation-delay:1.0s"></i><i class="etoile" style="left:70%;top:82%;animation-delay:1.5s"></i><i class="etoile" style="left:88%;top:30%;animation-delay:2.0s"></i><i class="etoile" style="left:46%;top:55%;animation-delay:2.5s"></i><div class="txt"><small>SCORE MASTER · VIP</small><h3>Les paris <span>VIP du jour</span></h3><p>Sélectionnés par notre IA avant les matchs, validés par notre équipe.</p></div><div class="robot"><img src="mascotte-roi-mecha.webp" alt=""></div></div>';
+        var html = '<div class="pv-hero pv-apparait"><i class="etoile" style="left:12%;top:18%;animation-delay:0.0s"></i><i class="etoile" style="left:30%;top:70%;animation-delay:0.5s"></i><i class="etoile" style="left:55%;top:12%;animation-delay:1.0s"></i><i class="etoile" style="left:70%;top:82%;animation-delay:1.5s"></i><i class="etoile" style="left:88%;top:30%;animation-delay:2.0s"></i><i class="etoile" style="left:46%;top:55%;animation-delay:2.5s"></i><div class="txt"><small>SCORE MASTER · VIP</small><h3>Les paris <span>SMVIP+ du jour</span></h3><p>Sélectionnés par notre IA avant les matchs, validés par notre équipe.</p></div><div class="robot"><img src="mascotte-roi-mecha.webp" alt=""></div></div>';
         html += '<div class="pv-titre pv-apparait"><small>AUJOURD\'HUI</small><b>Paris du <span>jour</span></b></div>';
         var aVenir = jour.filter(function (p) { return Date.parse(p.kickoff) > Date.now(); });
         if (aVenir.length) html += '<div class="pv-compteur pv-apparait"><span><i class="fas fa-stopwatch"></i> ' + (aVenir.length === jour.length ? 'Premier match dans' : 'Prochain match dans') + '</span><b id="pv-compteur" data-cible="' + aVenir[0].kickoff + '">--:--:--</b></div>';
