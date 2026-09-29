@@ -240,6 +240,14 @@
         .pv-statut.annule{background:rgba(255,255,255,.06);color:#8b93a7}
         .pv-vide{padding:18px;text-align:center;font:500 12.5px 'Inter',sans-serif;color:#8b93a7;background:#121829;border-radius:14px;border:1px dashed rgba(255,255,255,.1)}
         .pv-generer{width:100%;margin:6px 0 16px;padding:11px;border-radius:12px;border:1px solid rgba(143,179,234,.3);background:rgba(143,179,234,.08);color:#cfe1ff;font:700 12.5px 'Montserrat',sans-serif;cursor:pointer}
+        .pv-lecture{margin-top:22px;padding:12px;border-radius:16px;border:1px dashed rgba(143,179,234,.35);background:rgba(143,179,234,.04)}
+        .pv-lecture .avert{margin:0 0 10px;font:600 11px/1.45 'Inter',sans-serif;color:#8fb3ea}
+        .pv-lecture .pv-carte{background:#0f1526}
+        .pv-realise{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px solid rgba(255,255,255,.05);font:600 12px 'Inter',sans-serif;color:#dfe5f1}
+        .pv-realise:first-of-type{border-top:none}
+        .pv-realise i{color:#4ade80;margin-right:6px;font-size:11px}
+        .pv-realise .c{flex-shrink:0;font:700 11.5px 'Montserrat',sans-serif;color:#aab3c7}
+        .pv-score{font:800 12px 'Montserrat',sans-serif;color:#fff;background:rgba(255,255,255,.08);padding:3px 8px;border-radius:6px}
         .pv-note{margin-top:14px;font:500 10.5px/1.5 'Inter',sans-serif;color:#5f677a;text-align:center}
         /* Mode SMVIP+ (bouton invisible) : autocollant sur les infos clés du jour */
         #paris-vip-overlay.smvip .pv-cle{position:relative;color:transparent !important;background:none !important}
@@ -12368,7 +12376,27 @@ async function autoFetchFinalScores(combined) {
         html += '<div class="pv-section" style="margin-top:18px;">HISTORIQUE</div>';
         html += histo.length ? histo.map(function (p) { return pvCarte(p, false); }).join('') : '<div class="pv-vide">L\'historique se remplira dès que les premiers paris seront corrigés, après leurs matchs.</div>';
         html += '<p class="pv-note">Paris choisis avant les matchs, cotes du marché entre 1,50 et 2,00, corrigés automatiquement d\'après le score final.</p>';
+        html += '<div class="pv-lecture"><div class="pv-section" style="margin-top:0;">LECTURE APRÈS-MATCH · HIER</div>'
+            + '<p class="avert"><i class="fas fa-circle-info"></i> Non proposés avant les matchs : lecture éducative à partir des scores finaux, hors historique et hors statistiques.</p>'
+            + '<div id="pv-lecture-liste"><button class="pv-generer" style="margin:0;" onclick="chargerLectureHier(this)"><i class="fas fa-magnifying-glass-chart"></i> Charger la lecture d\'hier</button></div></div>';
         corps.innerHTML = html;
+    }
+
+    async function chargerLectureHier(btn) {
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Récupération des scores et des cotes…';
+        var liste = document.getElementById('pv-lecture-liste');
+        try {
+            var r = await adminApiCall('/api/publish', { action: 'paris-vip-lecture' });
+            if (!r.matchs || !r.matchs.length) { liste.innerHTML = '<div class="pv-vide">Aucun match analysé terminé hier.</div>'; return; }
+            liste.innerHTML = r.matchs.map(function (m) {
+                return '<div class="pv-carte"><div class="pv-ligne1"><span>' + pvEchap(m.ligue || 'Football') + ' · ' + pvJour(r.date) + ' ' + pvHeure(m.kickoff) + '</span><span class="pv-score">' + pvEchap(m.score) + '</span></div>'
+                    + '<div class="pv-match">' + pvEchap(m.home) + ' - ' + pvEchap(m.away) + '</div>'
+                    + m.realises.map(function (x) { return '<div class="pv-realise"><span><i class="fas fa-check"></i>' + pvEchap(x.libelle) + '</span><span class="c">' + (x.cote ? pvCote(x.cote) : '—') + '</span></div>'; }).join('')
+                    + '</div>';
+            }).join('');
+        } catch (e) {
+            liste.innerHTML = '<div class="pv-vide">Erreur : ' + pvEchap(e.message) + '</div>';
+        }
     }
 
     function ouvrirParisVip() {

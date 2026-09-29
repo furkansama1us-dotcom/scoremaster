@@ -1317,6 +1317,46 @@ async function handleParisVip(req, res) {
     res.status(200).json({ ok: true, correction, generation });
 }
 
+
+// POST { action: 'paris-vip-lecture' } (admin) : LECTURE APRÈS-MATCH d'hier,
+// à but éducatif. Pour chaque rencontre analysée la veille : score final réel
+// et marchés qui se sont réalisés, avec la cote d'avant-match quand elle existe.
+// Rien n'est enregistré : ce ne sont pas des paris proposés, et ils n'entrent
+// ni dans l'historique ni dans les statistiques.
+async function handleParisVipLecture(req, res) {
+    const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    if (!(await verifyAdmin(accessToken))) return res.status(403).json({ error: 'Accès refusé' });
+    if (!APIFOOTBALL_KEY) return res.status(500).json({ error: 'APIFOOTBALL_KEY absente' });
+    const hier = veille(parisNowParts().dateStr);
+    const rencontres = (await sbFetch('ai_fixtures?fixture_date=eq.' + hier + '&select=*') || [])
+        .sort((x, y) => (prioriteLigue(x.league_code) - prioriteLigue(y.league_code)) || (Date.parse(x.kickoff) - Date.parse(y.kickoff)))
+        .slice(0, 6);
+    if (!rencontres.length) return res.status(200).json({ date: hier, matchs: [] });
+    const fx = (await apiFootballPublish('/fixtures?ids=' + rencontres.map(r => r.fixture_id).join('-'))).response || [];
+    const matchs = [];
+    for (const r of rencontres) {
+        const f = fx.find(x => x.fixture && x.fixture.id === r.fixture_id);
+        if (!f || !['FT', 'AET', 'PEN'].includes(f.fixture.status && f.fixture.status.short) || f.goals.home === null) continue;
+        const h = f.goals.home, a = f.goals.away, t = h + a;
+        let bets = [];
+        try {
+            const o = ((await apiFootballPublish('/odds?fixture=' + r.fixture_id)).response || [])[0];
+            const bk = o && o.bookmakers && (BOOKMAKERS_PREFERES.map(id => o.bookmakers.find(b => b.id === id)).find(Boolean) || o.bookmakers[0]);
+            bets = (bk && bk.bets) || [];
+        } catch (e) { bets = []; }
+        const cote = (id, v) => { const b = bets.find(x => x.id === id); const e = b && (b.values || []).find(y => String(y.value) === v); return e ? parseFloat(e.odd) : null; };
+        const realises = [
+            t > 2.5 ? { libelle: 'Plus de 2,5 buts', cote: cote(5, 'Over 2.5') } : { libelle: 'Moins de 2,5 buts', cote: cote(5, 'Under 2.5') },
+            (h > 0 && a > 0) ? { libelle: 'Les deux équipes marquent', cote: cote(8, 'Yes') } : { libelle: 'Les deux équipes ne marquent pas', cote: cote(8, 'No') },
+            h > a ? { libelle: 'Victoire ' + r.home, cote: cote(1, 'Home') } : h < a ? { libelle: 'Victoire ' + r.away, cote: cote(1, 'Away') } : { libelle: 'Match nul', cote: cote(1, 'Draw') }
+        ];
+        if (t > 1.5) realises.push({ libelle: 'Plus de 1,5 but', cote: cote(5, 'Over 1.5') });
+        if (t < 3.5) realises.push({ libelle: 'Moins de 3,5 buts', cote: cote(5, 'Under 3.5') });
+        matchs.push({ home: r.home, away: r.away, ligue: r.league_name, kickoff: r.kickoff, score: h + '-' + a, realises });
+    }
+    res.status(200).json({ date: hier, matchs });
+}
+
 // POST { action: 'annonce-combine', id } (admin) : bouton « Relancer l'annonce »
 // d'un combiné en cours. Remplace les brouillons d'annonce non publiés de ce
 // combiné, recrée le visuel et publie tout de suite (Telegram + story).
@@ -2012,6 +2052,7 @@ module.exports = async function handler(req, res) {
         if (req.method === 'POST' && req.body && req.body.action === 'campagne-relance') return await handleCampagneRelance(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'annonce-combine') return await handleAnnonceCombine(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'paris-vip') return await handleParisVip(req, res);
+        if (req.method === 'POST' && req.body && req.body.action === 'paris-vip-lecture') return await handleParisVipLecture(req, res);
         if (req.method === 'POST') return await handleForcePublish(req, res);
         return res.status(405).json({ error: 'Méthode non autorisée' });
     } catch (error) {
