@@ -253,6 +253,30 @@
         .pv-compteur b{font:900 18px 'Montserrat',sans-serif;color:#FFE082;letter-spacing:1px;font-variant-numeric:tabular-nums}
         .pv-deflouter{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:0 0 12px;padding:11px;border:none;border-radius:12px;cursor:pointer;
             background:linear-gradient(135deg,#FFC107,#B8860B);color:#1a1200;font:800 12.5px 'Montserrat',sans-serif;box-shadow:0 6px 18px rgba(255,193,7,.25)}
+        /* Chargement Paris SMVIP+ */
+        .pv-load{display:flex;flex-direction:column;align-items:center;padding:26px 10px 10px;text-align:center}
+        .pv-load .scene{position:relative;width:150px;height:150px;margin-bottom:10px}
+        .pv-load .scene::before{content:'';position:absolute;inset:14px;border-radius:50%;background:radial-gradient(circle,rgba(255,193,7,.32),transparent 68%);animation:logoHalo 2.4s ease-in-out infinite}
+        .pv-load .anneau{position:absolute;inset:0;border-radius:50%;border:2px solid transparent;border-top-color:#FFC107;border-right-color:rgba(255,193,7,.35);animation:pvTourne 1.4s linear infinite}
+        .pv-load .anneau.b{inset:12px;border-top-color:rgba(143,179,234,.7);border-right-color:transparent;border-left-color:rgba(143,179,234,.3);animation-duration:2.2s;animation-direction:reverse}
+        .pv-load .robot{position:absolute;left:50%;top:50%;width:92px;margin:-50px 0 0 -46px;filter:drop-shadow(0 6px 14px rgba(255,193,7,.4));animation:logoFlotte 2.4s ease-in-out infinite}
+        .pv-load .logo{position:absolute;right:6px;bottom:6px;width:38px;height:38px;border-radius:50%;background:#0b0f1a;border:2px solid #FFC107;padding:4px;box-shadow:0 0 12px rgba(255,193,7,.5);animation:pvPulse 1.6s ease-in-out infinite}
+        .pv-load b{font:800 15px 'Montserrat',sans-serif;color:#fff}
+        .pv-load b span{color:var(--primary-yellow)}
+        .pv-load .msg{margin-top:6px;min-height:17px;font:600 11.5px 'Inter',sans-serif;color:#9aa3b8;transition:opacity .2s}
+        .pv-load .barre{width:200px;height:4px;margin:12px auto 0;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden}
+        .pv-load .barre i{display:block;height:100%;width:40%;border-radius:4px;background:linear-gradient(90deg,#B8860B,#FFC107,#FFE082);animation:pvBarre 1.3s ease-in-out infinite}
+        .pv-squelette{width:100%;margin-top:22px}
+        .pv-squelette div{height:86px;margin-bottom:10px;border-radius:16px;border:1px solid rgba(255,193,7,.12);
+            background:linear-gradient(100deg,#121829 30%,#1a2238 50%,#121829 70%);background-size:220% 100%;animation:pvReflet 1.4s linear infinite}
+        @keyframes pvTourne{to{transform:rotate(360deg)}}
+        @keyframes pvPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+        @keyframes pvBarre{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
+        @keyframes pvReflet{from{background-position:120% 0}to{background-position:-100% 0}}
+        @media (prefers-reduced-motion:reduce){.pv-load *,.pv-load .scene::before,.pv-squelette div{animation:none !important}}
+        .pv-nouveau{display:inline-block;margin-left:7px;vertical-align:2px;padding:2px 7px;border-radius:20px;background:#E11D48;color:#fff;font:900 9px 'Montserrat',sans-serif;letter-spacing:.5px;box-shadow:0 0 10px rgba(225,29,72,.7);animation:pvClignote 1s steps(2,start) infinite}
+        @keyframes pvClignote{50%{opacity:.25}}
+        @media (prefers-reduced-motion:reduce){.pv-nouveau{animation:none}}
         .pv-apparait{animation:vtEntree .6s ease-out backwards}
         .pv-reseaux{margin:0 0 14px;padding:16px 14px;border-radius:20px;background:#0f1424;border:1px solid rgba(255,255,255,.07)}
         .pv-reseaux .rx-boutons{margin-top:12px}
@@ -2689,7 +2713,7 @@ async function fetchApiScore(id, dateRaw) {
                 <button id="admin-panel-btn" onclick="promptAdminCode()" style="display: none; align-items:center; gap:8px; padding:10px 16px; background:transparent; border:none; color:transparent; border-radius:12px; font-size:13px; font-weight:800; font-family:'Montserrat',sans-serif; cursor:pointer;"><i class="fas fa-shield-halved" style="color:transparent;"></i> Panel Admin</button>
             </div>
             <div class="vip-notice" id="vip-notice">Le prochain combiné apparaîtra ci-dessous une fois disponible ! (activez vos notifs !)</div>
-            <div class="pv-banniere" id="pv-acces" style="display:none;margin:0 20px 15px;" onclick="ouvrirParisVip()"><span class="vipx-badge pv-badge-rouge"><img src="logo-dark.png" alt=""><em>VIP+</em></span><span><b>Paris SMVIP+ du jour</b><small>La sélection du jour par notre IA</small></span><i class="fas fa-chevron-right"></i></div>
+            <div class="pv-banniere" id="pv-acces" style="display:none;margin:0 20px 15px;" onclick="ouvrirParisVip()"><span class="vipx-badge pv-badge-rouge"><img src="logo-dark.png" alt=""><em>VIP+</em></span><span><b>Paris SMVIP+ du jour<span class="pv-nouveau">Nouveau !</span></b><small>La sélection du jour par notre IA</small></span><i class="fas fa-chevron-right"></i></div>
             <div class="api-banner" style="margin:0 20px 15px;">
                 <div class="api-icon"><i class="fas fa-plug"></i></div>
                 <div class="api-info">
@@ -12528,7 +12552,17 @@ async function autoFetchFinalScores(combined) {
     }
     async function chargerParisVip(reveler) {
         var corps = document.getElementById('pv-corps');
-        corps.innerHTML = '<div class="pv-vide"><i class="fas fa-spinner fa-spin"></i> Chargement…</div>';
+        corps.innerHTML = '<div class="pv-load"><div class="scene"><div class="anneau"></div><div class="anneau b"></div><img class="robot" src="mascotte-roi-mecha.webp" alt=""><img class="logo" src="logo-dark.png" alt=""></div>'
+            + '<b>Paris <span>SMVIP+</span></b><div class="msg" id="pv-load-msg">Connexion sécurisée…</div><div class="barre"><i></i></div>'
+            + '<div class="pv-squelette"><div></div><div></div><div></div></div></div>';
+        clearInterval(window._pvLoadMsg);
+        var msgs = ['Connexion sécurisée…', 'Récupération des paris du jour…', 'Chargement des analyses IA…', 'Préparation de ta sélection…'], k = 0;
+        window._pvLoadMsg = setInterval(function () {
+            var el = document.getElementById('pv-load-msg');
+            if (!el) { clearInterval(window._pvLoadMsg); return; }
+            k = (k + 1) % msgs.length; el.style.opacity = '0';
+            setTimeout(function () { el.textContent = msgs[k]; el.style.opacity = '1'; }, 200);
+        }, 900);
         var r;
         try { var rep = await adminApiCall('/api/publish', { action: 'paris-vip-public', reveler: !!reveler }); r = { data: rep.paris }; }
         catch (e) { corps.innerHTML = '<div class="pv-vide">Paris VIP momentanément indisponibles.</div>'; return; }
