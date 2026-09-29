@@ -12611,7 +12611,7 @@ async function autoFetchFinalScores(combined) {
         var juste = String(m.predit) === String(m.score);
         var vs = '<div class="pa-vs"><div class="ia"><small>IA · AVANT-MATCH</small><b>' + pvEchap(m.predit).replace('-', ' - ') + '</b><em>score le plus probable</em></div>'
             + '<div class="reel"><small>RÉSULTAT</small><b>' + pvEchap(m.score).replace('-', ' - ') + '</b><em>' + (m.mi_temps ? 'mi-temps ' + pvEchap(m.mi_temps) : '&nbsp;') + '</em></div></div>'
-            + '<p class="pa-legende">' + (juste ? '<span style="color:#4ade80">✓ Score exact trouvé.</span>' : 'Score exact non trouvé : c\'est l\'exercice le plus difficile.') + '</p>';
+            + (juste ? '<p class="pa-legende"><span style="color:#4ade80">✓ Score exact trouvé.</span></p>' : '');
         var liste = PV_VUE === 'realises' ? (m.marches || []).filter(function (x) { return x.realise; }) : (m.marches || []);
         var marches = '<div class="pa-marches">' + liste.map(function (x) {
             return '<div class="pa-m' + (x.realise ? ' ok' : '') + '"><div class="lib">' + pvEchap(x.libelle) + '</div><div class="pct">' + x.proba + ' %</div><div class="barre"><i style="width:' + x.proba + '%"></i></div>'
