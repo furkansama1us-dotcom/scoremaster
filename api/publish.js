@@ -1241,6 +1241,15 @@ function pvCandidats(bets, r, p) {
     return liste.filter(c => c.cote && c.cote >= PV_COTE_MIN && c.cote <= PV_COTE_MAX && c.score > 0);
 }
 
+// Rencontres déjà utilisées dans un combiné score exact de cette date : exclues des paris VIP.
+async function matchsDesCombines(dateStr) {
+    const combos = await sbFetch('combineds_public?date=eq.' + dateStr + '&select=matches').catch(() => []) || [];
+    const paires = [];
+    combos.forEach(c => (c.matches || []).forEach(m => { const p = String(m.teams || '').split(' - '); if (p.length >= 2) paires.push([p[0], p.slice(1).join(' - ')]); }));
+    return r => paires.some(([h, a]) => memesEquipes(h, r.home) && memesEquipes(a, r.away));
+}
+const PV_CONFIANCE_MIN = 70; // % de confiance du modèle AVANT le match
+
 async function genererParisVip(now) {
     const bilan = { crees: 0 };
     if (!APIFOOTBALL_KEY) return { erreur: 'APIFOOTBALL_KEY absente' };
@@ -1251,9 +1260,11 @@ async function genererParisVip(now) {
         .filter(l => l.kickoff && Date.parse(l.kickoff) > limite)
         .sort((x, y) => (prioriteLigue(x.league_code) - prioriteLigue(y.league_code)) || (Date.parse(x.kickoff) - Date.parse(y.kickoff)));
     const preds = await sbFetch('ai_predictions?fixture_date=eq.' + now.dateStr + '&select=*') || [];
+    const dansCombine = await matchsDesCombines(now.dateStr);
     const lignes = [];
     for (const r of rencontres.slice(0, 8)) {
         if (lignes.length >= PV_PAR_JOUR) break;
+        if (dansCombine(r)) continue;
         const p = preds.find(x => memesEquipes(x.home, r.home) && memesEquipes(x.away, r.away));
         if (!p) continue;
         const o = ((await apiFootballPublish('/odds?fixture=' + r.fixture_id)).response || [])[0];
@@ -1405,22 +1416,30 @@ async function analyseClaude(donnees) {
     try { return bloc ? JSON.parse(bloc.text) : null; } catch (e) { return null; }
 }
 
+// Marchés dont la probabilité d'avant-match atteint le seuil de confiance.
+function definitionsMarches(r) {
+    return [
+        ['Plus de 0,5 but', (i, j) => i + j > 0.5], ['Plus de 1,5 but', (i, j) => i + j > 1.5], ['Plus de 2,5 buts', (i, j) => i + j > 2.5],
+        ['Moins de 2,5 buts', (i, j) => i + j < 2.5], ['Moins de 3,5 buts', (i, j) => i + j < 3.5], ['Moins de 4,5 buts', (i, j) => i + j < 4.5],
+        ['Les deux équipes marquent', (i, j) => i > 0 && j > 0], ['Les deux équipes ne marquent pas', (i, j) => !(i > 0 && j > 0)],
+        [r.home + ' ou nul', (i, j) => i >= j], ['Nul ou ' + r.away, (i, j) => j >= i], [r.home + ' ou ' + r.away, (i, j) => i !== j],
+        [r.home + ' marque', (i, j) => i > 0], [r.away + ' marque', (i, j) => j > 0]
+    ];
+}
+function marchesConfiants(r, pred) {
+    const g = modeleAvantMatch(pred).g;
+    return definitionsMarches(r).map(([l, c]) => ({ libelle: l, cond: c, prob: somme(g, c) })).filter(x => x.prob * 100 >= PV_CONFIANCE_MIN);
+}
+
 async function analyserRencontre(r, f, pred, contexte) {
     const h = f.goals.home, a = f.goals.away, t = h + a;
     const mt = f.score && f.score.halftime ? f.score.halftime : null;
     const m = modeleAvantMatch(pred);
     const g = m.g;
     const marche = (libelle, prob, realise) => ({ libelle, proba: Math.round(prob * 100), realise, cote: coteEstimee(prob), estimee: true });
-    const marches = [
-        marche('Plus de 1,5 but', somme(g, (i, j) => i + j > 1.5), t > 1.5),
-        marche('Plus de 2,5 buts', somme(g, (i, j) => i + j > 2.5), t > 2.5),
-        marche('Moins de 2,5 buts', somme(g, (i, j) => i + j < 2.5), t < 2.5),
-        marche('Plus de 3,5 buts', somme(g, (i, j) => i + j > 3.5), t > 3.5),
-        marche('Les deux équipes marquent', somme(g, (i, j) => i > 0 && j > 0), h > 0 && a > 0),
-        marche('Les deux équipes ne marquent pas', somme(g, (i, j) => !(i > 0 && j > 0)), !(h > 0 && a > 0)),
-        marche(r.home + ' ne prend pas de but', somme(g, (i, j) => j === 0), a === 0),
-        marche(r.away + ' ne prend pas de but', somme(g, (i, j) => i === 0), h === 0)
-    ];
+    // Sélection faite AVANT de regarder le score : seuls les marchés à ≥ 70 % de confiance
+    const marches = marchesConfiants(r, pred).sort((x, y) => y.prob - x.prob).slice(0, 4)
+        .map(x => marche(x.libelle, x.prob, x.cond(h, a)));
     const pr = pred ? { domicile: pred.home_prob, nul: pred.draw_prob, exterieur: pred.away_prob } : null;
     const donnees = {
         competition: r.league_name, domicile: r.home, exterieur: r.away,
@@ -1471,11 +1490,16 @@ async function handleParisVipLecture(req, res) {
     if (enCache.length >= 3) return res.status(200).json({ date: hier, matchs: enCache.map(x => x.payload) });
     const dejaIds = enCache.map(x => x.payload.fixture_id);
     const preds = await sbFetch('ai_predictions?fixture_date=eq.' + hier + '&select=*') || [];
+    const dansCombine = await matchsDesCombines(hier);
     const rencontres = (await sbFetch('ai_fixtures?fixture_date=eq.' + hier + '&select=*') || [])
         .filter(r => !dejaIds.includes(r.fixture_id))
         .map(r => ({ r, p: preds.find(x => memesEquipes(x.home, r.home) && memesEquipes(x.away, r.away)) }))
         .filter(x => x.p) // seulement les rencontres analysées AVANT le match
-        .sort((x, y) => (prioriteLigue(x.r.league_code) - prioriteLigue(y.r.league_code)) || (Date.parse(x.r.kickoff) - Date.parse(y.r.kickoff)))
+        .filter(x => !dansCombine(x.r))
+        .map(x => ({ ...x, confiance: marchesConfiants(x.r, x.p).length }))
+        .filter(x => x.confiance > 0)
+        // Classement sur la seule confiance d'avant-match : le résultat n'intervient pas
+        .sort((x, y) => (y.confiance - x.confiance) || (prioriteLigue(x.r.league_code) - prioriteLigue(y.r.league_code)))
         .slice(0, 6);
     if (!rencontres.length && !enCache.length) return res.status(200).json({ date: hier, matchs: [], info: 'Aucune rencontre analysée avant match pour ' + hier });
     const recup = await pvFixtures(rencontres.map(x => x.r.fixture_id));

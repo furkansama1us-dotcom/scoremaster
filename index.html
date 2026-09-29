@@ -12436,6 +12436,11 @@ async function autoFetchFinalScores(combined) {
         if (logo) return '<img src="' + pvEchap(logo) + '" alt="">';
         return '<i class="fas fa-shield-halved" style="font-size:22px;color:#3b4a6b"></i>';
     }
+    function paTauxGlobal(matchs) {
+        var tous = [].concat.apply([], matchs.map(function (m) { return m.marches || []; }));
+        var ok = tous.filter(function (x) { return x.realise; }).length;
+        return tous.length ? '<div class="pv-stats" style="grid-template-columns:repeat(2,1fr)"><div><b>' + ok + ' / ' + tous.length + '</b><span>paris réalisés</span></div><div><b>' + Math.round(ok / tous.length * 100) + ' %</b><span>réussite réelle (confiance ≥ 70 %)</span></div></div>' : '';
+    }
     function paCarte(m, date, index) {
         var p = m.probabilites || { domicile: 0, nul: 0, exterieur: 0 };
         var proba = '<div class="pa-proba"><div><b style="color:#60a5fa">' + p.domicile + ' %</b><span>' + pvEchap(m.home) + '</span></div><div><b style="color:#94a3b8">' + p.nul + ' %</b><span>Nul</span></div><div><b style="color:#fb7185">' + p.exterieur + ' %</b><span>' + pvEchap(m.away) + '</span></div></div>'
@@ -12447,7 +12452,7 @@ async function autoFetchFinalScores(combined) {
         var marches = '<div class="pa-marches">' + (m.marches || []).map(function (x) {
             return '<div class="pa-m' + (x.realise ? ' ok' : '') + '"><div class="lib">' + pvEchap(x.libelle) + '</div><div class="pct">' + x.proba + ' %</div><div class="barre"><i style="width:' + x.proba + '%"></i></div>'
                 + '<div class="pied">' + (x.realise ? '<span class="r">✓ Réalisé</span>' : '<span class="n">✗ Non réalisé</span>') + '<span class="c">' + (x.cote ? '≈ ' + pvCote(x.cote) : '—') + '</span></div></div>';
-        }).join('') + '</div><p class="pa-legende">Probabilités du modèle d\'avant-match · ≈ cote estimée à partir de ces probabilités (marge incluse), pas une cote de bookmaker.</p>';
+        }).join('') + '</div><p class="pa-legende">Paris retenus avant le match (confiance ≥ 70 %), résultat compris ou non · ≈ cote estimée à partir de ces probabilités (marge incluse), pas une cote de bookmaker.</p>';
         var a = m.analyse;
         var ff = function (eq, d) {
             if (!d) return '';
@@ -12480,7 +12485,7 @@ async function autoFetchFinalScores(combined) {
                 var raison = (r.erreurs && r.erreurs.length) ? 'Réponse de l\'API : ' + r.erreurs.join(' · ') : (r.info || ('Scores récupérés : ' + (r.trouves || 0) + '. Aucun match terminé trouvé.'));
                 liste.innerHTML = '<div class="pv-vide">Aucun match exploitable pour hier.<br><small style="opacity:.7">' + pvEchap(raison) + '</small></div>'; return;
             }
-            liste.innerHTML = r.matchs.map(function (m, k) { return paCarte(m, r.date, k); }).join('');
+            liste.innerHTML = paTauxGlobal(r.matchs) + r.matchs.map(function (m, k) { return paCarte(m, r.date, k); }).join('');
         } catch (e) {
             liste.innerHTML = '<div class="pv-vide">Erreur : ' + pvEchap(e.message) + '</div>';
         }
