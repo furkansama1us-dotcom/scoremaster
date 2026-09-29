@@ -902,3 +902,6 @@ where not exists (select 1 from public.promo_events where titre = 'Paris SMVIP+'
 alter table public.automation_settings add column if not exists promo_event_auto boolean not null default false;
 alter table public.automation_settings add column if not exists promo_event_heure text default '18:30';
 alter table public.automation_settings add column if not exists promo_event_le date;
+
+-- Relevés de score en direct du combiné (milieu et fin de match)
+alter table public.combineds_public add column if not exists live jsonb;

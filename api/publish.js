@@ -1429,6 +1429,41 @@ async function corrigerParisVip() {
     return bilan;
 }
 
+// Scores en direct du combiné en cours, économes en quota : le minuteur tourne
+// côté app depuis le coup d'envoi ; le serveur fait seulement 2 relevés réels par
+// match (vers la 55e minute écoulée, puis après la fin), stockés dans
+// combineds_public.live pour recaler le minuteur et afficher le score.
+async function liveCombine(now) {
+    if (!APIFOOTBALL_KEY) return null;
+    const combos = await sbFetch('combineds_public?status=eq.en-cours&date=eq.' + now.dateStr + '&select=id,date,time,matches,live').catch(() => []) || [];
+    const bilan = [];
+    for (const c of combos) {
+        const live = Array.isArray(c.live) ? c.live.slice() : [];
+        const fixtures = await sbFetch('ai_fixtures?fixture_date=eq.' + c.date + '&select=fixture_id,home,away,kickoff') || [];
+        const aRelever = [];
+        (c.matches || []).forEach((m, i) => {
+            const p = String(m.teams || '').split(' - ');
+            const f = fixtures.find(x => memesEquipes(x.home, p[0]) && memesEquipes(x.away, p.slice(1).join(' - ')));
+            if (!f || !f.kickoff) return;
+            const ecoule = (Date.now() - Date.parse(f.kickoff)) / 60000;
+            const deja = live[i] && live[i].releve;
+            const releve = ecoule >= 115 ? 'fin' : (ecoule >= 50 ? 'mi' : null);
+            if (releve && deja !== releve && deja !== 'fin') aRelever.push({ i, id: f.fixture_id, releve });
+        });
+        if (!aRelever.length) continue;
+        const fx = (await pvFixtures(aRelever.map(x => x.id))).liste;
+        for (const a of aRelever) {
+            const f = fx.find(x => x.fixture && x.fixture.id === a.id);
+            if (!f) continue;
+            const st = f.fixture.status || {};
+            live[a.i] = { releve: ['FT', 'AET', 'PEN'].includes(st.short) ? 'fin' : a.releve, status: st.short, elapsed: st.elapsed, score: f.goals && f.goals.home !== null ? f.goals.home + '-' + f.goals.away : null, at: new Date().toISOString() };
+        }
+        await sbFetch('combineds_public?id=eq.' + c.id, { method: 'PATCH', body: JSON.stringify({ live }) });
+        bilan.push({ id: c.id, releves: aRelever.length });
+    }
+    return bilan;
+}
+
 async function parisVipAutomatique(now) {
     const bilan = { correction: await corrigerParisVip() };
     try { bilan.analyses = await analysesAutomatiques(now); } catch (e) { bilan.analyses = { erreur: String(e) }; }
@@ -2008,6 +2043,7 @@ async function handleCronSweep(req, res) {
     }
     try {
         summary.parisVip = await parisVipAutomatique(now);
+        try { summary.live = await liveCombine(now); } catch (e) { summary.live = { erreur: String(e) }; }
     } catch (e) {
         summary.parisVip = { erreur: String(e) };
     }

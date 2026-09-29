@@ -14705,7 +14705,7 @@ ${aiPrompt}
             var apiMatches = (data.matches || []).filter(function (m) { return m.utcDate && m.utcDate.slice(0, 10) === dateStr; });
 
             var finishedCount = 0;
-            var html = (currentCombined.matches || []).map(function (m) {
+            var html = (currentCombined.matches || []).map(function (m, idx) {
                 var live = findLiveMatchFor(m.teams, apiMatches);
                 var statusLabel = 'À venir';
                 var statusColor = 'var(--text-gray)';
@@ -14737,6 +14737,17 @@ ${aiPrompt}
                     if (live.score && live.score.fullTime && live.score.fullTime.home !== null) {
                         scoreDisplay = `${live.score.fullTime.home} - ${live.score.fullTime.away}`;
                     }
+                }
+                // Relevé réel du serveur (milieu / fin de match) : recale le minuteur et donne le score
+                var sync = currentCombined.live && currentCombined.live[idx];
+                if (sync && sync.status) {
+                    var depuis = Math.floor((Date.now() - Date.parse(sync.at)) / 60000);
+                    var base = Number(sync.elapsed) || 0, mn = base + depuis;
+                    if (['FT', 'AET', 'PEN'].indexOf(sync.status) >= 0) { statusLabel = 'Terminé'; statusColor = 'var(--green)'; if (!live || matchsStatusBucket(live.status) !== 'finished') finishedCount++; }
+                    else if (sync.status === 'HT') { if (depuis < 15) { statusLabel = '🔴 Mi-temps'; } else { statusLabel = '🔴 EN DIRECT ' + Math.min(46 + depuis - 15, 90) + (46 + depuis - 15 > 90 ? "+'" : "'"); } statusColor = 'var(--red)'; }
+                    else if (sync.status === '1H') { statusLabel = mn <= 45 ? '🔴 EN DIRECT ' + mn + "'" : (mn <= 60 ? '🔴 Mi-temps' : '🔴 EN DIRECT ' + Math.min(mn - 15, 90) + "'"); statusColor = 'var(--red)'; }
+                    else { statusLabel = '🔴 EN DIRECT ' + Math.min(mn, 90) + (mn > 90 ? "+'" : "'"); statusColor = 'var(--red)'; }
+                    if (sync.score) scoreDisplay = sync.score.replace('-', ' - ') + (sync.releve === 'fin' ? '' : ' · relevé à ' + base + "'");
                 }
                 return `
                 <div class="order-history-card" style="margin-bottom:10px;">
