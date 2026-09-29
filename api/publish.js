@@ -1248,7 +1248,7 @@ async function matchsDesCombines(dateStr) {
     combos.forEach(c => (c.matches || []).forEach(m => { const p = String(m.teams || '').split(' - '); if (p.length >= 2) paires.push([p[0], p.slice(1).join(' - ')]); }));
     return r => paires.some(([h, a]) => memesEquipes(h, r.home) && memesEquipes(a, r.away));
 }
-const PV_CONFIANCE_MIN = 70; // % de confiance du modèle AVANT le match
+const PV_CONFIANCE_MIN = 85; // % de confiance du modèle AVANT le match
 
 async function genererParisVip(now) {
     const bilan = { crees: 0 };

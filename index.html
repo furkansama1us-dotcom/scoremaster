@@ -12616,7 +12616,7 @@ async function autoFetchFinalScores(combined) {
         var marches = '<div class="pa-marches">' + liste.map(function (x) {
             return '<div class="pa-m' + (x.realise ? ' ok' : '') + '"><div class="lib">' + pvEchap(x.libelle) + '</div><div class="pct">' + x.proba + ' %</div><div class="barre"><i style="width:' + x.proba + '%"></i></div>'
                 + '<div class="pied">' + (x.realise ? '<span class="r">✓ Réalisé</span>' : '<span class="n">✗ Non réalisé</span>') + '<span class="c">' + (x.cote ? (x.estimee === false ? '' : '≈ ') + pvCote(x.cote) : '—') + '</span></div></div>';
-        }).join('') + '</div><p class="pa-legende">' + (PV_VUE === 'realises' ? 'Paris réalisés parmi ceux retenus avant le match (confiance ≥ 70 %)' : 'Paris retenus avant le match (confiance ≥ 70 %), résultat compris ou non') + ' · ≈ cote estimée à partir de ces probabilités (marge incluse), pas une cote de bookmaker.</p>';
+        }).join('') + '</div><p class="pa-legende">' + (PV_VUE === 'realises' ? 'Paris réalisés parmi ceux retenus avant le match (confiance ≥ 85 %)' : 'Paris retenus avant le match (confiance ≥ 85 %), résultat compris ou non') + ' · ≈ cote estimée à partir de ces probabilités (marge incluse), pas une cote de bookmaker.</p>';
         var a = m.analyse;
         var ff = function (eq, d) {
             if (!d) return '';
