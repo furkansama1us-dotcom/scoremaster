@@ -3383,7 +3383,7 @@ async function fetchApiScore(id, dateRaw) {
 <div data-nosnippet id="paris-vip-overlay" role="dialog" aria-modal="true" aria-label="Paris VIP">
     <div class="pv-tete">
         <button class="pv-secret" onclick="basculerSmvip()" aria-hidden="true" tabindex="-1"></button>
-        <h2><i class="fas fa-crown" style="color:var(--primary-yellow);margin-right:6px;"></i>Paris VIP<small>Sélection du jour par notre IA</small></h2>
+        <img src="logo-dark.png" alt="Score Master" style="width:40px;height:40px;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 0 10px rgba(255,193,7,.35));"><h2>Paris VIP<small>Sélection du jour par notre IA</small></h2>
         <button class="fermer" style="margin-left:auto" onclick="fermerParisVip()" aria-label="Fermer"><i class="fas fa-times"></i></button>
     </div>
     <div class="pv-corps" id="pv-corps"></div>
@@ -12629,7 +12629,7 @@ async function autoFetchFinalScores(combined) {
         var proba = '<div class="pa-proba"><div><b style="color:#60a5fa">' + p.domicile + ' %</b><span>' + pvEchap(m.home) + '</span></div><div><b style="color:#94a3b8">' + p.nul + ' %</b><span>Nul</span></div><div><b style="color:#fb7185">' + p.exterieur + ' %</b><span>' + pvEchap(m.away) + '</span></div></div>'
             + '<div class="pa-barre3"><i style="flex:' + p.domicile + ';background:#3b82f6"></i><i style="flex:' + p.nul + ';background:#64748b"></i><i style="flex:' + p.exterieur + ';background:#f43f5e"></i></div>';
         var sfv = String(m.score || '').split('-').map(Number), grilleProche = Math.min(sfv[0], 3) + '-' + Math.min(sfv[1], 3);
-        var vs = '<div class="pa-vs"><div class="ia"><small>SCORE GRILLE</small><b>' + grilleProche.replace('-', ' - ') + '</b><em>le plus proche du résultat</em></div>'
+        var vs = '<div class="pa-vs"><div class="ia"><small>Prédiction AI avant match</small><b>' + grilleProche.replace('-', ' - ') + '</b><em>le plus proche du résultat</em></div>'
             + '<div class="reel"><small>RÉSULTAT</small><b>' + pvEchap(m.score).replace('-', ' - ') + '</b><em>' + (m.mi_temps ? 'mi-temps ' + pvEchap(m.mi_temps) : '&nbsp;') + '</em></div></div>';
         var liste = PV_VUE === 'realises' ? (m.marches || []).filter(function (x) { return x.realise; }) : (m.marches || []);
         var marches = '<div class="pa-marches">' + liste.map(function (x) {
@@ -12648,7 +12648,7 @@ async function autoFetchFinalScores(combined) {
         return '<div class="pa-carte' + (index === 0 ? ' ouverte' : '') + '">'
             + '<div class="pa-tete"><span>' + pvEchap(m.ligue || 'Football') + ' · ' + pvJour(date) + ' ' + pvHeure(m.kickoff) + '</span><span class="ia"><i class="fas fa-microchip"></i> Analyse IA</span></div>'
             + '<div class="pa-affiche"><div class="pa-eq">' + paEmbleme(m.home, m.home_logo) + '<span>' + pvEchap(m.home) + '</span></div><div class="pa-score"><b>' + pvEchap(m.score).replace('-', ' - ') + '</b><small>Score final</small></div><div class="pa-eq">' + paEmbleme(m.away, m.away_logo) + '<span>' + pvEchap(m.away) + '</span></div></div>'
-            + '<div class="pa-bloc"><p class="pa-titre">SCORE GRILLE VS RÉSULTAT</p>' + vs + '</div>'
+            + '<div class="pa-bloc"><p class="pa-titre">Prédiction AI avant match VS RÉSULTAT</p>' + vs + '</div>'
             + '<div class="pa-detail"><div class="pa-bloc"><p class="pa-titre">PROBABILITÉS AVANT-MATCH</p>' + proba + '</div>'
             + '<div class="pa-bloc"><p class="pa-titre">PARIS & TOTAUX</p>' + marches + '</div>' + (PV_VUE === 'complete' ? paGrille(m) : '') + analyse + '</div>'
             + '<button class="pa-plus" onclick="paBascule(this)">' + (index === 0 ? 'Réduire' : 'Voir l\'analyse complète') + '</button>'
