@@ -975,6 +975,13 @@
         .masc{position:absolute;left:38px;bottom:0;width:64px;height:68px;transform:translate(0,70px);transform-origin:50% 100%;will-change:transform}
         .masc img{position:absolute;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
         .masc-corps{left:0;top:0;width:64px;height:68px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45))}
+        /* Membres SM VIP+ : SUPER SM sort du bouton, survole l'app et y revient */
+        .masc-vol{position:fixed;left:0;top:0;width:78px;height:79px;z-index:9500;pointer-events:none;opacity:0;will-change:transform,opacity}
+        .masc-vol img{width:78px;height:79px;display:block;filter:drop-shadow(0 0 10px rgba(255,200,40,.7)) drop-shadow(0 6px 12px rgba(0,0,0,.45))}
+        .masc-vol::before{content:'';position:absolute;inset:-16px;border-radius:50%;background:radial-gradient(circle,rgba(255,214,64,.35),transparent 65%);z-index:-1}
+        .masc-fissure{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:visible}
+        .masc-fissure polyline{fill:none;stroke:#3a2600;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:60;stroke-dashoffset:60}
+        .masc-fissure polyline.lum{stroke:#FFF3B0;stroke-width:.8;filter:drop-shadow(0 0 2px #FFC107)}
         /* Membres SM VIP+ : mascotte en version dorée */
         .masc.dore img{filter:sepia(1) saturate(2.8) hue-rotate(-4deg) brightness(1.15) contrast(1.05) drop-shadow(0 0 6px rgba(255,200,40,.75))}
         .masc.dore::before{content:'';position:absolute;left:50%;top:-2px;width:30px;height:8px;margin-left:-15px;border-radius:50%;border:2px solid rgba(255,224,130,.9);box-shadow:0 0 8px rgba(255,200,40,.9);z-index:3;pointer-events:none}
@@ -11456,11 +11463,82 @@ async function fetchMatchesFromAPI() {
     // suspicieux, fait coucou, se recache, et varie ses sorties au hasard.
     // ============================================================
     var mascotteTour = 0;
+    function lancerVolVip(m, tour) {
+        var wrap = m.closest('.masc-wrap'), btn = wrap && wrap.querySelector('.btn-debloquer');
+        if (!wrap || !btn) return;
+        var clip = wrap.querySelector('.masc-clip'); if (clip) clip.style.display = 'none';
+        var calme = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var vol = document.querySelector('.masc-vol');
+        if (!vol) { vol = document.createElement('div'); vol.className = 'masc-vol'; vol.innerHTML = '<img src="mascotte-roi-mecha.webp" alt="">'; document.body.appendChild(vol); }
+        var fis = wrap.querySelector('.masc-fissure');
+        if (!fis) {
+            fis = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            fis.setAttribute('class', 'masc-fissure'); fis.setAttribute('viewBox', '0 0 100 40'); fis.setAttribute('preserveAspectRatio', 'none');
+            var traits = ['50,0 46,9 53,15 44,24 50,31 47,40', '46,9 36,12 30,19', '53,15 64,13 71,20 78,18', '44,24 34,28 26,27', '50,31 60,33 66,38'];
+            fis.innerHTML = traits.map(function (p) { return '<polyline points="' + p + '"/><polyline class="lum" points="' + p + '"/>'; }).join('');
+            btn.parentNode.appendChild(fis);
+            fis.style.left = btn.offsetLeft + 'px'; fis.style.top = btn.offsetTop + 'px'; fis.style.width = btn.offsetWidth + 'px'; fis.style.height = btn.offsetHeight + 'px'; fis.style.inset = 'auto';
+        }
+        var vivant = function () { return tour === mascotteTour && document.body.contains(btn); };
+        var visible = function () {
+            var page = btn.closest('.page'), app = document.getElementById('app');
+            if (page && !page.classList.contains('active')) return false; // autre onglet affiché
+            if (app && !app.classList.contains('active')) return false;
+            var r = btn.getBoundingClientRect(); return !document.hidden && btn.offsetParent !== null && r.bottom > 0 && r.top < innerHeight;
+        };
+        var pause = function (ms) { return new Promise(function (ok) { setTimeout(ok, ms); }); };
+        var anime = function (el, images, ms, easing) { return el.animate(images, { duration: ms, easing: easing || 'ease-in-out', fill: 'forwards' }).finished; };
+        var pos = function (x, y, s, r) { return { transform: 'translate(' + x + 'px,' + y + 'px) scale(' + (s || 1) + ') rotate(' + (r || 0) + 'deg)' }; };
+        if (calme) {
+            var r0 = btn.getBoundingClientRect();
+            vol.style.opacity = '1'; vol.style.transform = 'translate(' + (r0.left + r0.width / 2 - 39) + 'px,' + (r0.top - 76) + 'px) scale(.8)';
+            return;
+        }
+        (async function boucle() {
+            await pause(1200);
+            while (vivant()) {
+                if (!visible()) { vol.style.opacity = '0'; await pause(1500); continue; }
+                var r = btn.getBoundingClientRect(), W = innerWidth, H = innerHeight;
+                var x0 = r.left + r.width / 2 - 39, yCache = r.top + 6, yHaut = r.top - 84;
+                // 1. Sort entièrement du bouton, lentement, solennel
+                vol.style.opacity = '1';
+                await anime(vol, [Object.assign(pos(x0, yCache, .5), { opacity: 0 }), Object.assign(pos(x0, yHaut + 10, .95), { opacity: 1, offset: .7 }), pos(x0, yHaut, 1)], 1400, 'cubic-bezier(.2,.8,.3,1)');
+                await pause(700);
+                // 2. Survole toute l'interface : grande boucle autour de l'écran
+                // Limites : le cadre de l'app (plein écran sur téléphone, cadre de 420 px sur ordinateur)
+                var appR = (document.getElementById('app') || document.body).getBoundingClientRect();
+                var m1 = 16, xG = appR.left + m1, xD = appR.right - 78 - m1, yH = appR.top + Math.max(70, appR.height * .12), yB = appR.top + Math.min(appR.height - 170, appR.height * .72);
+                var chemin = [pos(x0, yHaut, 1), pos(xD, yH, .9, 8), pos((xD + xG) / 2, yH - 20, .85, 0), pos(xG, yH + 40, .9, -8), pos(xG + 20, yB, 1, -4), pos((xD + xG) / 2, yB + 30, 1.05, 0), pos(xD, yB - 20, 1, 6), pos(x0, yHaut, 1, 0)];
+                chemin.forEach(function (k, i) { k.offset = i / (chemin.length - 1); });
+                var envol = vol.animate(chemin, { duration: 9000, easing: 'ease-in-out', fill: 'forwards' });
+                var garde = setInterval(function () { if (!visible()) { envol.cancel(); vol.style.opacity = '0'; } }, 300);
+                await envol.finished.catch(function () {});
+                clearInterval(garde);
+                if (!visible()) continue;
+                if (!vivant()) break;
+                await pause(500);
+                // 3. Replonge dans le bouton
+                r = btn.getBoundingClientRect(); x0 = r.left + r.width / 2 - 39; yCache = r.top + 6;
+                await anime(vol, [pos(x0, r.top - 84, 1), Object.assign(pos(x0, yCache, .55), { opacity: 0 })], 520, 'cubic-bezier(.6,0,.9,.4)');
+                // 4. Fissure, secousse, puis réparation
+                btn.animate([{ transform: 'translate(0,0)' }, { transform: 'translate(-2px,1px)' }, { transform: 'translate(2px,-1px)' }, { transform: 'translate(-1px,0)' }, { transform: 'translate(0,0)' }], { duration: 380 });
+                var lignes = fis.querySelectorAll('polyline');
+                await Promise.all(Array.prototype.map.call(lignes, function (l, i) { return l.animate([{ strokeDashoffset: 60 }, { strokeDashoffset: 0 }], { duration: 420, delay: (i % 10) * 35, easing: 'ease-out', fill: 'forwards' }).finished; }));
+                await pause(900);
+                await Promise.all(Array.prototype.map.call(lignes, function (l) { return l.animate([{ strokeDashoffset: 0, opacity: 1 }, { strokeDashoffset: 60, opacity: .2 }], { duration: 900, easing: 'ease-in-out', fill: 'forwards' }).finished; }));
+                btn.animate([{ boxShadow: '0 0 0 0 rgba(255,214,64,0)' }, { boxShadow: '0 0 22px 4px rgba(255,214,64,.8)' }, { boxShadow: '0 0 0 0 rgba(255,214,64,0)' }], { duration: 700 });
+                await pause(4000 + Math.random() * 3000);
+            }
+            vol.style.opacity = '0';
+        })();
+    }
+
     function lancerMascotte() {
         var tour = ++mascotteTour; // un nouveau rendu arrête la boucle précédente
         var m = document.getElementById('masc-debloquer');
         if (!m || !m.animate) return;
         m.classList.toggle('dore', window.isUserVip === true);
+        if (window.isUserVip === true) { lancerVolVip(m, tour); return; }
         var b = m.querySelector('.masc-bras');
         if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             m.style.transform = 'translate(0,30px)'; // simple regard fixe, sans mouvement
