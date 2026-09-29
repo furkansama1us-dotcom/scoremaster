@@ -1339,6 +1339,22 @@ async function parisVipAutomatique(now) {
     return bilan;
 }
 
+// POST { action: 'paris-vip-public' } (membre connecté) : paris VIP pour la rubrique
+// publique. Les paris du jour encore en attente ne sont envoyés en clair qu'aux
+// membres SM VIP+ (et à l'admin) ; pour les autres, pari et cote sont masqués.
+async function handleParisVipPublic(req, res) {
+    const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    if (!accessToken) return res.status(401).json({ error: 'Connexion requise' });
+    const u = await fetch(SUPABASE_URL + '/auth/v1/user', { headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + accessToken } });
+    if (!u.ok) return res.status(401).json({ error: 'Session invalide' });
+    const user = await u.json();
+    const prof = ((await sbFetch('profiles?id=eq.' + user.id + '&select=is_vip,is_admin')) || [])[0] || {};
+    const acces = !!(prof.is_vip || prof.is_admin);
+    const lignes = await sbFetch('vip_paris?select=*&order=kickoff.desc&limit=120') || [];
+    const paris = lignes.map(p => (acces || p.statut !== 'en_attente') ? p : Object.assign({}, p, { libelle: '••••••••', cote: 0, marche: null, bookmaker: null }));
+    res.status(200).json({ acces, paris });
+}
+
 // POST { action: 'paris-vip' } (admin) : bouton « Générer maintenant » de l'aperçu.
 async function handleParisVip(req, res) {
     const accessToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
@@ -2253,6 +2269,7 @@ module.exports = async function handler(req, res) {
         if (req.method === 'POST' && req.body && req.body.action === 'campagne-relance') return await handleCampagneRelance(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'annonce-combine') return await handleAnnonceCombine(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'paris-vip') return await handleParisVip(req, res);
+        if (req.method === 'POST' && req.body && req.body.action === 'paris-vip-public') return await handleParisVipPublic(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'paris-vip-lecture') return await handleParisVipLecture(req, res);
         if (req.method === 'POST' && req.body && req.body.action === 'analyses-valider') return await handleAnalysesValider(req, res);
         if (req.method === 'POST') return await handleForcePublish(req, res);

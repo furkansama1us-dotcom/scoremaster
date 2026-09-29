@@ -869,3 +869,8 @@ alter table public.analyses_apres_match add column if not exists valide_le times
 drop policy if exists "Les admins lisent les analyses" on public.analyses_apres_match;
 create policy "Les admins lisent les analyses" on public.analyses_apres_match for select
   using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));
+
+-- Rubrique Paris VIP publique : les analyses publiées sont lisibles par les membres connectés.
+drop policy if exists "Les membres lisent les analyses publiees" on public.analyses_apres_match;
+create policy "Les membres lisent les analyses publiees" on public.analyses_apres_match for select
+  using (statut = 'publie' and auth.uid() is not null);
