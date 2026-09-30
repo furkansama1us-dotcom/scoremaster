@@ -821,6 +821,35 @@ async function scoreExact(rencontre, pronostics) {
     return choix ? Object.assign({ bookmaker: bk.name }, choix) : null;
 }
 
+// Journée sans combiné : cherche, jour après jour (7 jours max), la prochaine
+// date qui compte au moins 2 rencontres du soir dans les ligues suivies. C'est
+// ce jour-là que le combiné automatique a de quoi construire ses 2 matchs.
+async function prochaineDateCombine(depuis) {
+    let d = depuis;
+    for (let i = 0; i < 7; i++) {
+        d = lendemain(d);
+        if ((await rencontresDuSoir(d)).length >= 2) return d;
+    }
+    return null;
+}
+
+// Message pour le groupe Telegram, déposé en brouillon dans Publications :
+// rien ne part sans validation de l'admin.
+async function preparerMessageSansCombine(cible, prochaine, now) {
+    const quand = cible === now.dateStr ? 'CE SOIR' : dateLongue(cible).toUpperCase();
+    const legende = '📅 PAS DE COMBINÉ ' + quand + '\n\n'
+        + 'Le calendrier est trop léger : pas assez de grandes affiches en soirée pour vous proposer un combiné à la hauteur.\n\n'
+        + 'Plutôt que de forcer un choix, on préfère attendre les bons matchs. 🎯\n\n'
+        + (prochaine ? '🔜 Prochain combiné prévu : ' + dateLongue(prochaine) + '.\n\n' : '🔜 On vous annonce très vite la date du prochain combiné.\n\n')
+        + 'Restez connectés, on vous prévient dès qu\'il est disponible. 🔔\n\n' + CONTACT;
+    await insererPublications([{
+        platform: 'telegram', caption: legende, status: 'pending',
+        scheduled_for: now.dateStr, scheduled_time: hhmm(now.minutes),
+        content_type: 'Pas de combiné',
+        overlay_data: { source: 'sans-combine', cible, prochaine }
+    }]);
+}
+
 async function construireCombine(cible) {
     const toutes = await rencontresDuSoir(cible);
     if (toutes.length < 2) return null;
@@ -988,7 +1017,12 @@ async function combineAutomatique(now) {
         // Une seule alerte par journée visée : les essais suivants restent silencieux.
         const dejaPrevenu = await sbFetch('telegram_queue?message=like.' + encodeURIComponent('*exploitable pour le ' + cible + '*') + '&select=id&limit=1').catch(() => null);
         if (!(dejaPrevenu && dejaPrevenu.length)) {
-            await prevenirAdmin('ℹ️ Combiné automatique : aucun couple de matchs du soir exploitable pour le ' + cible + ' (cotes score exact indisponibles ou pas assez de rencontres). Je réessaie chaque heure sans te renvoyer ce message, et je te préviens dès qu\'un combiné est prêt.');
+            let prochaine = null;
+            try { prochaine = await prochaineDateCombine(cible); } catch (e) { /* recherche au mieux */ }
+            try { await preparerMessageSansCombine(cible, prochaine, now); } catch (e) { /* message au mieux */ }
+            await prevenirAdmin('ℹ️ Combiné automatique : aucun couple de matchs du soir exploitable pour le ' + cible + ' (cotes score exact indisponibles ou pas assez de rencontres). Je réessaie chaque heure sans te renvoyer ce message, et je te préviens dès qu\'un combiné est prêt.'
+                + '\n\n📅 Prochaine date avec au moins 2 matchs du soir : ' + (prochaine ? dateLongue(prochaine) : 'aucune dans les 7 prochains jours')
+                + '.\n📝 Un message pour le groupe est prêt dans Publications (à valider avant envoi).');
         }
         return { actif: true, rien: cible };
     }
