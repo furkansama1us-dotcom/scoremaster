@@ -6620,13 +6620,24 @@ async function retryGeneration(id) {
     resumeOneGeneration(row);
 }
 
+// Légende Instagram telle qu'elle part réellement : le serveur (legendeInstagram
+// dans api/publish.js) ajoute #foryou #pourtoi s'ils manquent. On l'affiche et
+// on la copie à l'identique pour que l'aperçu corresponde au post.
+var HASHTAGS_INSTAGRAM = ['#foryou', '#pourtoi'];
+function legendePublication(row) {
+    var t = String((row && row.caption) || '').trim();
+    if (!row || row.platform !== 'instagram') return t;
+    var manquants = HASHTAGS_INSTAGRAM.filter(function (h) { return !new RegExp(h + '(?![\\w])', 'i').test(t); });
+    return manquants.length ? (t ? t + '\n\n' : '') + manquants.join(' ') : t;
+}
+
 // Copie la légende telle quelle (hashtags compris) pour la coller à la main
 // (ex: quand un carrousel est reposté manuellement en Reel via l'app Instagram).
 function copyPublicationCaption(id) {
     var row = (window.adminPublicationsCache && window.adminPublicationsCache[id])
         || (window._cpRows || []).find(function (r) { return String(r.id) === String(id); });
     if (!row || !row.caption) { showToast('Description introuvable — recharge la page.', true); return; }
-    navigator.clipboard.writeText(row.caption).then(function () {
+    navigator.clipboard.writeText(legendePublication(row)).then(function () {
         showToast('Description copiée (hashtags compris) !');
     }).catch(function () {
         showToast('Impossible de copier automatiquement.', true);
@@ -8350,7 +8361,7 @@ function renderPublicationCard(p) {
             </div>
             <div style="font-size:11px; color:var(--text-gray); margin:6px 0;">${ligneInfosPublication(p, 'Carrousel ' + p.carousel_images.length + ' slides')}</div>
             <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:6px; margin-bottom:10px;">${thumbs}</div>
-            <div style="font-size:13px; color:#fff; line-height:1.5; white-space:pre-wrap; margin-bottom:12px;">${p.caption}</div>
+            <div style="font-size:13px; color:#fff; line-height:1.5; white-space:pre-wrap; margin-bottom:12px;">${legendePublication(p)}</div>
             <button onclick="copyPublicationCaption('${p.id}')" style="width:100%;margin-bottom:8px;padding:9px;background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-copy"></i> Copier la description (# compris)</button>
             <div style="display:flex; gap:8px;">
                 <button onclick="approvePublication('${p.id}')" style="flex:1;padding:10px;background:linear-gradient(135deg,var(--green),#16A34A);color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-check"></i> Approuver</button>
@@ -8368,7 +8379,7 @@ function renderPublicationCard(p) {
             </div>
             <div style="font-size:11px; color:var(--text-gray); margin:6px 0;">${ligneInfosPublication(p)}</div>
             <img src="${p.image_url}" style="width:100%; border-radius:10px; margin-bottom:10px; display:block;" onerror="this.style.display='none'">
-            <div style="font-size:13px; color:#fff; line-height:1.5; white-space:pre-wrap; margin-bottom:12px;">${p.caption}</div>
+            <div style="font-size:13px; color:#fff; line-height:1.5; white-space:pre-wrap; margin-bottom:12px;">${legendePublication(p)}</div>
             <button onclick="copyPublicationCaption('${p.id}')" style="width:100%;margin-bottom:8px;padding:9px;background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-copy"></i> Copier la description (# compris)</button>
             <div style="display:flex; gap:8px;">
                 <a href="${p.image_url}" download="score-master.jpg" style="flex:1;padding:10px;background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;text-align:center;text-decoration:none;"><i class="fas fa-download"></i> Enregistrer</a>
@@ -8408,7 +8419,7 @@ function renderPublicationCard(p) {
                 ${p.image_url_post ? `<a href="${p.image_url_post}" download="score-master-post.jpg" style="display:block; text-align:center; margin-top:4px; padding:6px; background:rgba(255,255,255,.06); color:#fff; border:1px solid rgba(255,255,255,.12); border-radius:7px; font-size:10px; font-weight:700; text-decoration:none;"><i class="fas fa-download"></i> Enregistrer</a>` : ''}
             </div>
         </div>
-        <div style="font-size:13px; color:#fff; line-height:1.5; white-space:pre-wrap; margin-bottom:12px;">${p.caption}</div>
+        <div style="font-size:13px; color:#fff; line-height:1.5; white-space:pre-wrap; margin-bottom:12px;">${legendePublication(p)}</div>
         <button onclick="copyPublicationCaption('${p.id}')" style="width:100%;margin-bottom:8px;padding:9px;background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.12);border-radius:9px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-copy"></i> Copier la description (# compris)</button>
         <div style="display:flex; gap:8px;">
             <button onclick="approvePublication('${p.id}')" style="flex:1;padding:10px;background:linear-gradient(135deg,var(--green),#16A34A);color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;"><i class="fas fa-check"></i> Approuver</button>
