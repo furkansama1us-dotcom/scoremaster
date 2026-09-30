@@ -985,7 +985,11 @@ async function combineAutomatique(now) {
     await enregistrerReglages({ combo_essai_le: new Date().toISOString() });
     const matches = await construireCombine(cible);
     if (!matches) {
-        await prevenirAdmin('ℹ️ Combiné automatique : aucun couple de matchs du soir exploitable pour le ' + cible + ' (cotes score exact indisponibles ou pas assez de rencontres). Nouvel essai dans une heure si la fenêtre le permet.');
+        // Une seule alerte par journée visée : les essais suivants restent silencieux.
+        const dejaPrevenu = await sbFetch('telegram_queue?message=like.' + encodeURIComponent('*exploitable pour le ' + cible + '*') + '&select=id&limit=1').catch(() => null);
+        if (!(dejaPrevenu && dejaPrevenu.length)) {
+            await prevenirAdmin('ℹ️ Combiné automatique : aucun couple de matchs du soir exploitable pour le ' + cible + ' (cotes score exact indisponibles ou pas assez de rencontres). Je réessaie chaque heure sans te renvoyer ce message, et je te préviens dès qu\'un combiné est prêt.');
+        }
         return { actif: true, rien: cible };
     }
     const publierA = new Date(Date.now() + VETO_MINUTES * 60000).toISOString();
