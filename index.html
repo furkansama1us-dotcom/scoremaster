@@ -1594,12 +1594,29 @@
         .testimonial-inline p { font-size: 13px; color: var(--text-light-gray); font-style: italic; line-height: 1.5; margin-bottom: 6px; }
         .testimonial-inline .testimonial-author { font-size: 11px; color: var(--text-gray); }
 
-        .comparison-table { background: var(--bg-card); border-radius: 14px; overflow: hidden; border: 1px solid var(--border-color); }
-        .comp-row { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; border-bottom: 1px solid var(--border-color); }
+        .comparison-table { position: relative; background: radial-gradient(120% 70% at 85% 0%, rgba(255,193,7,0.10), transparent 60%), radial-gradient(90% 60% at 0% 100%, rgba(59,130,246,0.10), transparent 60%), linear-gradient(170deg, #121a33 0%, #0b1022 55%, #070a16 100%); border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 14px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05); }
+        .comp-row { display: grid; grid-template-columns: minmax(0,2fr) repeat(3, minmax(0,1fr)); border-bottom: 1px solid rgba(255,255,255,0.06); }
+        .comp-row:not(.comp-header):nth-child(odd) .comp-cell:not(.comp-vip) { background: rgba(255,255,255,0.025); }
         .comp-row:last-child { border-bottom: none; }
-        .comp-row.comp-header { background: var(--bg-input); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .comp-row.comp-header { background: rgba(255,255,255,0.05); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
         .comp-cell { padding: 12px 10px; font-size: 12px; text-align: center; display: flex; align-items: center; justify-content: center; color: var(--text-light-gray); }
         /* Colonne SM VIP+ : or mêlé de noir, dégradé qui ondule, reflet qui la balaie de haut en bas */
+        /* Lisibilité du tableau comparatif */
+        .comparison-table .comp-row { grid-template-columns: minmax(0,1.7fr) repeat(3, minmax(0,1fr)); }
+        .comparison-table .comp-cell { padding: 13px 6px; font-size: 13px; }
+        .comparison-table .comp-feat { display: flex; align-items: center; gap: 10px; padding-left: 14px; font-weight: 600; color: #fff; line-height: 1.3; }
+        .comparison-table .comp-feat span { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+        .comparison-table .comp-ic { width: 26px; height: 26px; flex-shrink: 0; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; color: #FFC107; background: rgba(255,193,7,0.1); }
+        .comparison-table .comp-new { font-style: normal; margin-left: 0; }
+        .comparison-table .comp-feat-h { padding-left: 14px; font-size: 10px; color: var(--text-gray); }
+        .comparison-table .comp-h { flex-direction: column; gap: 5px; font-size: 10px; padding: 12px 4px; letter-spacing: .4px; }
+        .comparison-table .comp-h i { font-size: 15px; }
+        .comparison-table .comp-header .comp-vip { color: #FFF3C4 !important; }
+        .comparison-table .comp-header .comp-vip i { color: #FFC107; filter: drop-shadow(0 0 4px rgba(255,193,7,.8)); }
+        .comparison-table .comp-yes { font-size: 17px; color: #34d399; }
+        .comparison-table .comp-no { font-size: 12px; color: rgba(255,255,255,0.22); }
+        .comparison-table .comp-vip .comp-yes { color: #FFE9A8; filter: drop-shadow(0 0 4px rgba(255,214,90,.9)); }
+        .comparison-table .comp-cell:not(.comp-feat):not(.comp-feat-h) { font-weight: 600; color: #d6dae6; }
         .comp-cell.comp-vip { position: relative; overflow: hidden; background: linear-gradient(115deg, #120d00 0%, #4a3500 30%, #b8860b 50%, #4a3500 70%, #120d00 100%) 0 0 / 300% 100%; animation: compOr 7s ease-in-out infinite; box-shadow: inset 1px 0 0 rgba(255,214,90,0.55), inset -1px 0 0 rgba(255,214,90,0.55); color: #FFE9A8 !important; text-shadow: 0 1px 2px rgba(0,0,0,.8); }
         .comp-cell.comp-vip::after { content: ''; position: absolute; left: -10%; right: -10%; height: 60%; top: -60%; background: linear-gradient(180deg, transparent, rgba(255,240,190,0.45), transparent); transform: skewY(-12deg); animation: compReflet 3.2s ease-in-out infinite; pointer-events: none; }
         .comp-cell.comp-vip i.fa-check { color: #FFE9A8 !important; filter: drop-shadow(0 0 3px rgba(255,214,90,.9)); }
@@ -2650,29 +2667,6 @@ async function fetchApiScore(id, dateRaw) {
                     <div class="pk-guar"><i class="fas fa-shield-alt"></i> Satisfait ou remboursé sous 48h</div>
                     <button class="pk-btn cta-hypnose" style="--hyp:rgba(34,197,94,.55)" onclick="openCheckout('journalier', 50)"><span><i class="fab fa-telegram-plane"></i> J'adhère !</span></button>
                 </div>
-                <div class="pk-card pk-vip" style="--pk:#FFC107">
-                    <div class="pk-ribbon"><i class="fas fa-crown"></i> LE PLUS COMPLET</div><span class="pk-shine"></span>
-                    <div class="pk-top">
-                        <div class="pk-logo"><span class="pk-logo-ring"></span><div class="logo-pack-detail" id="pack-detail-2"></div><span class="pk-logo-shine"></span><span class="pk-logo-badge"><i class="fas fa-gem"></i></span></div>
-                        <div class="pk-head">
-                            <div class="pk-name">SM VIP+ <span class="pk-life">à vie</span> <i class="fas fa-crown pk-crown"></i></div>
-                            <div class="pack-subscribers"><i class="fas fa-users"></i> 1,247 membres VIP+</div>
-                            <div class="pk-tag"><i class="fas fa-gem"></i> Accès complet</div>
-                        </div>
-                        <button class="pk-info" onclick="showPackInfo('vip')" aria-label="Détails du pack"><i class="fas fa-info"></i></button>
-                    </div>
-                    <p class="pk-desc">Tout Score Master, à vie : le combiné de chaque soir de match, les paris du jour, les analyses IA et le suivi en direct, dans votre espace VIP+.</p>
-                    <div class="pk-feats"><div class="pk-feat" style="--d:0.35s"><i class="fas fa-check"></i>Accès à vie</div><div class="pk-feat" style="--d:0.42s"><i class="fas fa-check"></i>1 combiné S.E chaque soir de match</div><div class="pk-feat" style="--d:0.49s"><i class="fas fa-check"></i>Espace membre VIP+</div><div class="pk-feat" style="--d:0.56s"><i class="fas fa-check"></i>Canal Telegram VIP</div><div class="pk-feat" style="--d:0.63s"><i class="fas fa-check"></i>Priorité support</div><div class="pk-feat" style="--d:0.70s"><i class="fas fa-check"></i>Paris du jour SMVIP+</div><div class="pk-feat" style="--d:0.77s"><i class="fas fa-check"></i>Analyses IA des matchs</div><div class="pk-feat" style="--d:0.84s"><i class="fas fa-check"></i>Suivi LIVE du combiné</div><div class="pk-feat pk-feat-star" style="--d:0.91s"><i class="fas fa-star"></i>Accès fondateurs</div></div>
-                    <div class="spots-container">
-                        <div class="spots-header">
-                            <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:var(--red);"></i> Plus que <strong id="spots-2" style="color:var(--red);">3</strong> places à ce prix !</span>
-                            <span class="spots-percent" style="color:var(--red);">94% vendus</span>
-                        </div>
-                        <div class="spots-bar"><div class="spots-fill" style="width:94%; background:linear-gradient(90deg, var(--red), #B71C1C);"></div></div>
-                    </div>
-                    <div class="pk-guar"><i class="fas fa-shield-alt"></i> Garantie satisfait ou remboursé 7 jours</div>
-                    <button class="pk-btn pk-btn-vip cta-hypnose" style="--hyp:rgba(255,193,7,.6)" onclick="openCheckout('vip', 99.99)"><span><i class="fas fa-crown"></i> J'adhère !</span></button>
-                </div>
                 <div class="pk-card pk-week" style="--pk:#3B82F6">
                     
                     <div class="pk-top">
@@ -2696,26 +2690,49 @@ async function fetchApiScore(id, dateRaw) {
                     <div class="pk-guar"><i class="fas fa-shield-alt"></i> Satisfait ou remboursé sous 48h</div>
                     <button class="pk-btn cta-hypnose" style="--hyp:rgba(59,130,246,.55)" onclick="openCheckout('hebdo', 69.99)"><span><i class="fab fa-telegram-plane"></i> J'adhère !</span></button>
                 </div>
+                <div class="pk-card pk-vip" style="--pk:#FFC107">
+                    <div class="pk-ribbon"><i class="fas fa-crown"></i> LE PLUS COMPLET</div><span class="pk-shine"></span>
+                    <div class="pk-top">
+                        <div class="pk-logo"><span class="pk-logo-ring"></span><div class="logo-pack-detail" id="pack-detail-2"></div><span class="pk-logo-shine"></span><span class="pk-logo-badge"><i class="fas fa-gem"></i></span></div>
+                        <div class="pk-head">
+                            <div class="pk-name">SM VIP+ <span class="pk-life">à vie</span> <i class="fas fa-crown pk-crown"></i></div>
+                            <div class="pack-subscribers"><i class="fas fa-users"></i> 1,247 membres VIP+</div>
+                            <div class="pk-tag"><i class="fas fa-gem"></i> Accès complet</div>
+                        </div>
+                        <button class="pk-info" onclick="showPackInfo('vip')" aria-label="Détails du pack"><i class="fas fa-info"></i></button>
+                    </div>
+                    <p class="pk-desc">Tout Score Master, à vie : le combiné de chaque soir de match, les paris du jour, les analyses IA et le suivi en direct, dans votre espace VIP+.</p>
+                    <div class="pk-feats"><div class="pk-feat" style="--d:0.35s"><i class="fas fa-check"></i>Accès à vie</div><div class="pk-feat" style="--d:0.42s"><i class="fas fa-check"></i>1 combiné S.E chaque soir de match</div><div class="pk-feat" style="--d:0.49s"><i class="fas fa-check"></i>Espace membre VIP+</div><div class="pk-feat" style="--d:0.56s"><i class="fas fa-check"></i>Canal Telegram VIP</div><div class="pk-feat" style="--d:0.63s"><i class="fas fa-check"></i>Priorité support</div><div class="pk-feat" style="--d:0.70s"><i class="fas fa-check"></i>Paris du jour SMVIP+</div><div class="pk-feat" style="--d:0.77s"><i class="fas fa-check"></i>Analyses IA des matchs</div><div class="pk-feat" style="--d:0.84s"><i class="fas fa-check"></i>Suivi LIVE du combiné</div><div class="pk-feat pk-feat-star" style="--d:0.91s"><i class="fas fa-star"></i>Accès fondateurs</div></div>
+                    <div class="spots-container">
+                        <div class="spots-header">
+                            <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:var(--red);"></i> Plus que <strong id="spots-2" style="color:var(--red);">3</strong> places à ce prix !</span>
+                            <span class="spots-percent" style="color:var(--red);">94% vendus</span>
+                        </div>
+                        <div class="spots-bar"><div class="spots-fill" style="width:94%; background:linear-gradient(90deg, var(--red), #B71C1C);"></div></div>
+                    </div>
+                    <div class="pk-guar"><i class="fas fa-shield-alt"></i> Garantie satisfait ou remboursé 7 jours</div>
+                    <button class="pk-btn pk-btn-vip cta-hypnose" style="--hyp:rgba(255,193,7,.6)" onclick="openCheckout('vip', 99.99)"><span><i class="fas fa-crown"></i> J'adhère !</span></button>
+                </div>
             </div>
 
             <div style="padding: 0 20px; margin-bottom:25px;">
                 <h3 class="pk-sec"><span class="pk-sec-ic"><i class="fas fa-layer-group"></i></span>Comparer les packs</h3>
                 <div class="comparison-table">
                     <div class="comp-row comp-header">
-                        <div class="comp-cell">Fonctionnalité</div>
-                        <div class="comp-cell" style="color:var(--green);">Journalier</div>
-                        <div class="comp-cell" style="color:var(--blue);">Hebdo</div>
-                        <div class="comp-cell comp-vip" style="color:#FFC107;">VIP+ <i class="fas fa-crown" style="font-size:10px;"></i></div>
+                        <div class="comp-cell comp-feat-h">Ce qui est inclus</div>
+                        <div class="comp-cell comp-h" style="color:var(--green);"><i class="fas fa-calendar-day"></i>Journalier</div>
+                        <div class="comp-cell comp-h" style="color:#60a5fa;"><i class="fas fa-calendar-week"></i>Hebdo</div>
+                        <div class="comp-cell comp-h comp-vip"><i class="fas fa-crown"></i>SM VIP+</div>
                     </div>
-                    <div class="comp-row"><div class="comp-cell">Scores exacts</div><div class="comp-cell">1/jour</div><div class="comp-cell">5/sem.</div><div class="comp-cell comp-vip"><b style="color:#FFC107;">Chaque soir de match</b></div></div>
-                    <div class="comp-row"><div class="comp-cell">Canal Telegram</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-check" style="color:var(--green);"></i></div><div class="comp-cell comp-vip"><i class="fas fa-check" style="color:var(--green);"></i></div></div>
-                    <div class="comp-row"><div class="comp-cell">Support prioritaire</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-check" style="color:var(--green);"></i></div><div class="comp-cell comp-vip"><i class="fas fa-check" style="color:var(--green);"></i></div></div>
-                    <div class="comp-row"><div class="comp-cell">Suivi LIVE du combiné <span class="comp-new">NOUVEAU</span></div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-check" style="color:var(--green);"></i></div><div class="comp-cell comp-vip"><i class="fas fa-check" style="color:var(--green);"></i></div></div>
-                    <div class="comp-row"><div class="comp-cell">Espace membre VIP+</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell comp-vip"><i class="fas fa-check" style="color:var(--green);"></i></div></div>
-                    <div class="comp-row"><div class="comp-cell">Paris du jour SMVIP+ <span class="comp-new">NOUVEAU</span></div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell comp-vip"><i class="fas fa-check" style="color:var(--green);"></i></div></div>
-                    <div class="comp-row"><div class="comp-cell">Analyses IA des matchs <span class="comp-new">NOUVEAU</span></div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell comp-vip"><i class="fas fa-check" style="color:var(--green);"></i></div></div>
-                    <div class="comp-row"><div class="comp-cell">Durée</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell">7 jours</div><div class="comp-cell comp-vip"><b style="color:#FFC107;">À VIE</b></div></div>
-                    <div class="comp-row"><div class="comp-cell">Accès fondateurs</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell comp-vip"><i class="fas fa-crown" style="color:#FFC107;"></i></div></div>
+                    <div class="comp-row"><div class="comp-cell comp-feat"><i class="fas fa-bullseye comp-ic"></i><span>Scores exacts</span></div><div class="comp-cell">1/jour</div><div class="comp-cell">5/sem.</div><div class="comp-cell comp-vip"><b style="color:#FFC107;">Chaque soir de match</b></div></div>
+                    <div class="comp-row"><div class="comp-cell comp-feat"><i class="fas fa-paper-plane comp-ic"></i><span>Canal Telegram</span></div><div class="comp-cell"><i class="fas fa-minus comp-no" aria-label="Non inclus"></i></div><div class="comp-cell"><i class="fas fa-circle-check comp-yes" aria-label="Inclus"></i></div><div class="comp-cell comp-vip"><i class="fas fa-circle-check comp-yes" aria-label="Inclus"></i></div></div>
+                    <div class="comp-row"><div class="comp-cell comp-feat"><i class="fas fa-headset comp-ic"></i><span>Support prioritaire</span></div><div class="comp-cell"><i class="fas fa-minus comp-no" aria-label="Non inclus"></i></div><div class="comp-cell"><i class="fas fa-circle-check comp-yes" aria-label="Inclus"></i></div><div class="comp-cell comp-vip"><i class="fas fa-circle-check comp-yes" aria-label="Inclus"></i></div></div>
+                    <div class="comp-row"><div class="comp-cell comp-feat"><i class="fas fa-tower-broadcast comp-ic"></i><span>Suivi LIVE du combiné<em class="comp-new">NOUVEAU</em></span></div><div class="comp-cell"><i class="fas fa-minus comp-no" aria-label="Non inclus"></i></div><div class="comp-cell"><i class="fas fa-circle-check comp-yes" aria-label="Inclus"></i></div><div class="comp-cell comp-vip"><i class="fas fa-circle-check comp-yes" aria-label="Inclus"></i></div></div>
+                    <div class="comp-row"><div class="comp-cell comp-feat"><i class="fas fa-user-shield comp-ic"></i><span>Espace membre VIP+</span></div><div class="comp-cell"><i class="fas fa-minus comp-no" aria-label="Non inclus"></i></div><div class="comp-cell"><i class="fas fa-minus comp-no" aria-label="Non inclus"></i></div><div class="comp-cell comp-vip"><i class="fas fa-circle-check comp-yes" aria-label="Inclus"></i></div></div>
+                    <div class="comp-row"><div class="comp-cell comp-feat"><i class="fas fa-ticket comp-ic"></i><span>Paris du jour SMVIP+<em class="comp-new">NOUVEAU</em></span></div><div class="comp-cell"><i class="fas fa-minus comp-no" aria-label="Non inclus"></i></div><div class="comp-cell"><i class="fas fa-minus comp-no" aria-label="Non inclus"></i></div><div class="comp-cell comp-vip"><i class="fas fa-circle-check comp-yes" aria-label="Inclus"></i></div></div>
+                    <div class="comp-row"><div class="comp-cell comp-feat"><i class="fas fa-microchip comp-ic"></i><span>Analyses IA des matchs<em class="comp-new">NOUVEAU</em></span></div><div class="comp-cell"><i class="fas fa-minus comp-no" aria-label="Non inclus"></i></div><div class="comp-cell"><i class="fas fa-minus comp-no" aria-label="Non inclus"></i></div><div class="comp-cell comp-vip"><i class="fas fa-circle-check comp-yes" aria-label="Inclus"></i></div></div>
+                    <div class="comp-row"><div class="comp-cell comp-feat"><i class="fas fa-hourglass-half comp-ic"></i><span>Durée</span></div><div class="comp-cell"><i class="fas fa-minus comp-no" aria-label="Non inclus"></i></div><div class="comp-cell">7 jours</div><div class="comp-cell comp-vip"><b style="color:#FFC107;">À VIE</b></div></div>
+                    <div class="comp-row"><div class="comp-cell comp-feat"><i class="fas fa-star comp-ic"></i><span>Accès fondateurs</span></div><div class="comp-cell"><i class="fas fa-minus comp-no" aria-label="Non inclus"></i></div><div class="comp-cell"><i class="fas fa-minus comp-no" aria-label="Non inclus"></i></div><div class="comp-cell comp-vip"><i class="fas fa-crown" style="color:#FFC107;"></i></div></div>
                 </div>
             </div>
 
