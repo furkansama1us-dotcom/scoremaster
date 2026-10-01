@@ -933,6 +933,56 @@
         .page-title-bar h2{font-size:22px;font-weight:800}
         
         .packs-page-list{padding:0 20px}
+
+        /* ---------- Page « Nos packs » ---------- */
+        .pk-hero{position:relative;text-align:center;padding:26px 20px 10px;overflow:hidden}
+        .pk-hero-glow{position:absolute;left:50%;top:-60px;width:320px;height:240px;margin-left:-160px;background:radial-gradient(closest-side,rgba(255,193,7,.28),transparent);filter:blur(10px);animation:pkGlow 5s ease-in-out infinite;pointer-events:none}
+        @keyframes pkGlow{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.12)}}
+        .pk-hero-logo{position:relative;width:86px;height:86px;margin:0 auto 12px;border-radius:24px;background:linear-gradient(145deg,#1d2233,#0f1320);border:1px solid rgba(255,193,7,.35);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,.45),0 0 26px rgba(255,193,7,.25);animation:pkFloat 4s ease-in-out infinite}
+        .pk-hero-logo img{width:62px;height:62px;object-fit:contain;position:relative;z-index:1}
+        .pk-hero-ring{position:absolute;inset:-6px;border-radius:28px;border:2px solid rgba(255,193,7,.55);animation:pkRing 2.6s ease-out infinite}
+        @keyframes pkFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+        @keyframes pkRing{0%{opacity:.8;transform:scale(.92)}100%{opacity:0;transform:scale(1.25)}}
+        .pk-hero-title{font-family:'Montserrat',sans-serif;font-size:26px;font-weight:900;letter-spacing:.3px;margin-bottom:6px;position:relative}
+        .pk-hero-title span{background:linear-gradient(90deg,#C9971C,#FFE9A8,#FFC107,#FFE9A8,#C9971C);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:pkGold 4s linear infinite}
+        @keyframes pkGold{to{background-position:200% center}}
+        .pk-hero-sub{font-size:13px;color:var(--text-gray);line-height:1.5;max-width:330px;margin:0 auto 14px;position:relative}
+        .pk-hero-sub b{color:#fff}
+        .pk-trust{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;position:relative}
+        .pk-trust span{font-size:11px;font-weight:700;color:var(--text-light-gray);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);padding:6px 10px;border-radius:20px;display:inline-flex;gap:6px;align-items:center}
+        .pk-trust i{color:var(--primary-yellow)}
+        .pk-list{padding:12px 20px 6px}
+        .pk-card{position:relative;background:linear-gradient(160deg,rgba(255,255,255,.045),rgba(255,255,255,.01)),var(--bg-card);border:1px solid rgba(255,255,255,.08);border-top:3px solid var(--pk);border-radius:20px;padding:18px;margin-bottom:16px;overflow:hidden;opacity:0;transform:translateY(18px);animation:pkIn .6s cubic-bezier(.2,.8,.2,1) forwards}
+        .pk-card:nth-child(1){animation-delay:.08s}.pk-card:nth-child(2){animation-delay:.18s}.pk-card:nth-child(3){animation-delay:.28s}
+        @keyframes pkIn{to{opacity:1;transform:none}}
+        .pk-top{display:flex;align-items:center;gap:12px}
+        .pk-logo{position:relative;flex-shrink:0}
+        .pk-logo .logo-pack-detail{width:56px;height:56px;border-radius:16px;padding:9px;background:linear-gradient(145deg,color-mix(in srgb,var(--pk) 85%,#fff 0%),color-mix(in srgb,var(--pk) 60%,#000));box-shadow:0 6px 18px color-mix(in srgb,var(--pk) 40%,transparent)}
+        .pk-head{flex:1;min-width:0}
+        .pk-name{font-family:'Montserrat',sans-serif;font-size:16px;font-weight:800;color:#fff;line-height:1.25}
+        .pk-tag{display:inline-flex;align-items:center;gap:5px;margin-top:5px;font-size:11px;font-weight:700;color:var(--pk);background:color-mix(in srgb,var(--pk) 14%,transparent);padding:3px 9px;border-radius:12px}
+        .pk-info{width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--text-gray);cursor:pointer;flex-shrink:0}
+        .pk-desc{font-size:13px;color:var(--text-light-gray);line-height:1.5;margin:12px 0}
+        .pk-feats{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px}
+        .pk-feat{font-size:12px;font-weight:600;color:#e7e9f0;background:rgba(255,255,255,.04);border-radius:9px;padding:8px 9px;display:flex;align-items:center;gap:7px;opacity:0;transform:scale(.9);animation:pkPop .4s ease forwards;animation-delay:var(--d)}
+        .pk-feat i{color:var(--pk);font-size:11px}
+        @keyframes pkPop{to{opacity:1;transform:none}}
+        .pk-guar{font-size:12px;font-weight:600;color:var(--text-gray);display:flex;align-items:center;gap:7px;margin-bottom:14px}
+        .pk-guar i{color:var(--pk)}
+        .pk-btn{width:100%;padding:14px;border:none;border-radius:14px;background:var(--pk);color:#fff;font-family:'Montserrat',sans-serif;font-size:15px;font-weight:900;cursor:pointer}
+        .pk-btn span{display:inline-flex;align-items:center;gap:8px}
+        .pk-vip{border:1px solid transparent;border-top:3px solid transparent;background:linear-gradient(160deg,rgba(255,193,7,.09),rgba(255,193,7,.01)) padding-box,linear-gradient(var(--bg-card),var(--bg-card)) padding-box,conic-gradient(from var(--pk-a,0deg),#FFC107,#7a5a00,#FFE9A8,#B8860B,#FFC107) border-box;animation:pkIn .6s cubic-bezier(.2,.8,.2,1) forwards,pkSpin 6s linear infinite;box-shadow:0 12px 36px rgba(255,193,7,.12)}
+        @property --pk-a{syntax:'<angle>';inherits:false;initial-value:0deg}
+        @keyframes pkSpin{to{--pk-a:360deg}}
+        .pk-vip .pk-name{color:#FFC107}
+        .pk-life{font-size:11px;font-weight:800;color:#000;background:linear-gradient(135deg,#FFE9A8,#FFC107);padding:2px 7px;border-radius:8px;vertical-align:middle}
+        .pk-crown{color:#FFC107;font-size:14px;display:inline-block;animation:pkCrown 2.4s ease-in-out infinite}
+        @keyframes pkCrown{0%,100%{transform:rotate(-8deg) translateY(0)}50%{transform:rotate(8deg) translateY(-2px)}}
+        .pk-ribbon{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:900;letter-spacing:.8px;color:#000;background:linear-gradient(90deg,#FFC107,#FFE9A8,#FFC107);background-size:200% auto;animation:pkGold 3s linear infinite;padding:5px 10px;border-radius:10px;margin-bottom:12px}
+        .pk-shine{position:absolute;top:-30%;bottom:-30%;left:-60%;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.12),transparent);transform:skewX(-20deg);animation:pkShine 5s ease-in-out infinite;pointer-events:none}
+        @keyframes pkShine{0%,60%{left:-60%}100%{left:130%}}
+        .pk-btn-vip{background:linear-gradient(135deg,#FFC107,#B8860B);color:#000}
+        @media (prefers-reduced-motion:reduce){.pk-card,.pk-feat{animation:none;opacity:1;transform:none}.pk-hero-logo,.pk-hero-ring,.pk-hero-glow,.pk-crown,.pk-shine,.pk-vip{animation:none}}
         .pack-detail-card{background:var(--bg-card);border-radius:16px;padding:20px;margin-bottom:14px;border:1px solid var(--border-color)}
         .pack-detail-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
         .pack-detail-name{font-size:17px;font-weight:800;margin-bottom:4px; color:#fff;}
@@ -2488,132 +2538,62 @@ async function fetchApiScore(id, dateRaw) {
 
         <!-- PACKS PAGE -->
         <div class="page" id="page-packs">
-            <div class="page-title-bar">
-                <h2>Nos Packs</h2>
-                <div style="display:flex; align-items:center; gap:8px;">
-                    <div style="width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;"></div>
-                    <span style="font-size:12px; color:var(--green); font-weight:600;" id="online-count">127 personnes en ligne</span>
+            <div class="pk-hero">
+                <div class="pk-hero-glow"></div>
+                <div class="pk-hero-logo"><img src="logo-dark.png" alt="Score Master"><span class="pk-hero-ring"></span></div>
+                <h2 class="pk-hero-title">Nos <span>packs</span></h2>
+                <p class="pk-hero-sub">Choisissez votre formule et recevez les analyses de nos IA, <b>vérifiées par notre équipe</b> avant chaque publication.</p>
+                <div class="pk-trust">
+                    <span><i class="fas fa-microchip"></i> Analyses IA</span>
+                    <span><i class="fas fa-user-check"></i> Validé à la main</span>
+                    <span><i class="fab fa-telegram-plane"></i> Accès Telegram</span>
                 </div>
             </div>
-            <div class="urgency-bar">
-                <div class="urgency-inner">
-                    <i class="fas fa-fire"></i>
-                    <span>🔥 OFFRE LIMITÉE — Expire dans </span>
-                    <span id="countdown-timer" style="font-weight:900; color:#FFC107; margin-left:4px;">23:59:59</span>
+            <div class="packs-page-list pk-list">
+                <div class="pk-card pk-day" style="--pk:#22C55E">
+                    
+                    <div class="pk-top">
+                        <div class="pk-logo"><div class="logo-pack-detail" id="pack-detail-1"></div></div>
+                        <div class="pk-head">
+                            <div class="pk-name">SM Score Exact Journalier</div>
+                            <div class="pk-tag"><i class="fas fa-calendar-day"></i> À la journée</div>
+                        </div>
+                        <button class="pk-info" onclick="showPackInfo('journalier')" aria-label="Détails du pack"><i class="fas fa-info"></i></button>
+                    </div>
+                    <p class="pk-desc">Recevez votre pronostic en score exact unique, accompagné de son analyse détaillée.</p>
+                    <div class="pk-feats"><div class="pk-feat" style="--d:0.35s"><i class="fas fa-check"></i>1 score exact</div><div class="pk-feat" style="--d:0.42s"><i class="fas fa-check"></i>Analyse détaillée</div><div class="pk-feat" style="--d:0.49s"><i class="fas fa-check"></i>Support 7j/7</div><div class="pk-feat" style="--d:0.56s"><i class="fas fa-check"></i>Notification push</div></div>
+                    <div class="pk-guar"><i class="fas fa-shield-alt"></i> Satisfait ou remboursé sous 48h</div>
+                    <button class="pk-btn cta-hypnose" style="--hyp:rgba(34,197,94,.55)" onclick="openCheckout('journalier', 50)"><span><i class="fab fa-telegram-plane"></i> J'adhère !</span></button>
                 </div>
-            </div>
-            <div class="packs-page-list">
-                <div class="pack-detail-card pack-animated" style="animation-delay: 0.1s;">
-                    <div class="pack-detail-top">
-                        <div class="logo-pack-detail green" id="pack-detail-1"></div>
-                        <div style="flex:1;">
-                            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                <div>
-                                    <div class="pack-detail-name">SM Score Exact Journalier</div>
-                                    <div class="pack-subscribers"><i class="fas fa-users"></i> 342 abonnés actifs</div>
-                                </div>
-                                <div class="pack-info-btn" onclick="showPackInfo('journalier')"><i class="fas fa-info" style="color:var(--text-gray); font-size:14px;"></i></div>
-                            </div>
-                            <div class="pack-detail-desc">Recevez votre pronostic en score exact unique avec une analyse détaillée.</div>
-                            <div class="delivery-badge"><i class="fas fa-bolt" style="margin-right:4px;"></i>Livraison instantanée</div>
+                <div class="pk-card pk-vip" style="--pk:#FFC107">
+                    <div class="pk-ribbon"><i class="fas fa-crown"></i> LE PLUS COMPLET</div><span class="pk-shine"></span>
+                    <div class="pk-top">
+                        <div class="pk-logo"><div class="logo-pack-detail" id="pack-detail-2"></div></div>
+                        <div class="pk-head">
+                            <div class="pk-name">SM VIP+ <span class="pk-life">à vie</span> <i class="fas fa-crown pk-crown"></i></div>
+                            <div class="pk-tag"><i class="fas fa-gem"></i> Accès complet</div>
                         </div>
+                        <button class="pk-info" onclick="showPackInfo('vip')" aria-label="Détails du pack"><i class="fas fa-info"></i></button>
                     </div>
-                    <div class="pack-detail-features">
-                        <div class="pack-feature"><i class="fas fa-check"></i> 1 score exact seulement</div>
-                        <div class="pack-feature"><i class="fas fa-check"></i> Analyse détaillée</div>
-                        <div class="pack-feature"><i class="fas fa-check"></i> Support 7j/7</div>
-                        <div class="pack-feature"><i class="fas fa-check"></i> Notification push</div>
-                    </div>
-                    <div class="spots-container">
-                        <div class="spots-header">
-                            <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:#FF9800;"></i> Plus que <strong id="spots-1">7</strong> places à ce prix !</span>
-                            <span class="spots-percent">86% vendus</span>
-                        </div>
-                        <div class="spots-bar"><div class="spots-fill" style="width:86%; background:linear-gradient(90deg, #FF9800, #FF5722);"></div></div>
-                    </div>
-                    <div class="guarantee-badge"><i class="fas fa-shield-alt"></i><span>Satisfait ou remboursé sous 48h</span></div>
-                    <div class="pack-detail-bottom">
-                        <button class="pack-subscribe-btn cta-hypnose" style="--hyp:rgba(34,197,94,.55);background:var(--green);color:#fff;" onclick="openCheckout('journalier', 50)"><span><i class="fab fa-telegram-plane" style="margin-right:6px;"></i> J'adhère !</span></button>
-                    </div>
+                    <p class="pk-desc">Accès illimité et à vie à tous nos pronostics, aux combinés exclusifs et à l'espace membre VIP+.</p>
+                    <div class="pk-feats"><div class="pk-feat" style="--d:0.35s"><i class="fas fa-check"></i>Accès à vie</div><div class="pk-feat" style="--d:0.42s"><i class="fas fa-check"></i>4 à 5 combinés S.E / sem.</div><div class="pk-feat" style="--d:0.49s"><i class="fas fa-check"></i>Espace membre VIP+</div><div class="pk-feat" style="--d:0.56s"><i class="fas fa-check"></i>Canal Telegram VIP</div><div class="pk-feat" style="--d:0.63s"><i class="fas fa-check"></i>Priorité support</div><div class="pk-feat" style="--d:0.70s"><i class="fas fa-check"></i>Accès fondateurs</div></div>
+                    <div class="pk-guar"><i class="fas fa-shield-alt"></i> Garantie satisfait ou remboursé 7 jours</div>
+                    <button class="pk-btn pk-btn-vip cta-hypnose" style="--hyp:rgba(255,193,7,.6)" onclick="openCheckout('vip', 99.99)"><span><i class="fas fa-crown"></i> J'adhère !</span></button>
                 </div>
-
-                <div class="pack-detail-card pack-popular pack-animated" style="animation-delay: 0.2s;">
-                    <div class="popular-ribbon"><i class="fas fa-crown"></i> LE PLUS POPULAIRE</div>
-                    <div class="pack-detail-top" style="margin-top:10px;">
-                        <div class="logo-pack-detail red" id="pack-detail-2"></div>
-                        <div style="flex:1;">
-                            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                <div>
-                                    <div class="pack-detail-name" style="color:#FFC107;">SM VIP+ (à vie) <i class="fas fa-crown" style="color:#FFC107; font-size:14px;"></i></div>
-                                    <div class="pack-subscribers"><i class="fas fa-users"></i> 1,247 membres VIP+</div>
-                                </div>
-                                <div class="pack-info-btn" onclick="showPackInfo('vip')"><i class="fas fa-info" style="color:var(--text-gray); font-size:14px;"></i></div>
-                            </div>
-                            <div class="pack-detail-desc">Accès illimité et à vie à tous nos pronostics, combinés exclusifs et espace membre VIP+.</div>
-                            <div class="delivery-badge"><i class="fas fa-bolt" style="margin-right:4px;"></i>Livraison instantanée</div>
+                <div class="pk-card pk-week" style="--pk:#3B82F6">
+                    
+                    <div class="pk-top">
+                        <div class="pk-logo"><div class="logo-pack-detail" id="pack-detail-3"></div></div>
+                        <div class="pk-head">
+                            <div class="pk-name">SM Combiné Hebdo</div>
+                            <div class="pk-tag"><i class="fas fa-calendar-week"></i> 7 jours</div>
                         </div>
+                        <button class="pk-info" onclick="showPackInfo('hebdo')" aria-label="Détails du pack"><i class="fas fa-info"></i></button>
                     </div>
-                    <div class="pack-detail-features">
-                        <div class="pack-feature"><i class="fas fa-check"></i> Accès à vie</div>
-                        <div class="pack-feature"><i class="fas fa-check"></i> 4 à 5 combinés S.E / sem.</div>
-                        <div class="pack-feature"><i class="fas fa-check"></i> Espace membre VIP+</div>
-                        <div class="pack-feature"><i class="fas fa-check"></i> Canal Telegram VIP</div>
-                        <div class="pack-feature"><i class="fas fa-check"></i> Priorité support</div>
-                        <div class="pack-feature" style="background:rgba(255,193,7,0.15); color:#FFC107; font-weight:700;"><i class="fas fa-star" style="color:#FFC107;"></i> Accès fondateurs</div>
-                    </div>
-                    <div class="spots-container">
-                        <div class="spots-header">
-                            <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:var(--red);"></i> Plus que <strong id="spots-2" style="color:var(--red);">3</strong> places à ce prix !</span>
-                            <span class="spots-percent" style="color:var(--red);">94% vendus</span>
-                        </div>
-                        <div class="spots-bar"><div class="spots-fill" style="width:94%; background:linear-gradient(90deg, var(--red), #B71C1C);"></div></div>
-                    </div>
-                    <div class="testimonial-inline">
-                        <div class="testimonial-stars">★★★★★</div>
-                        <p>"J'ai récupéré ma mise x47 dès la première semaine. Le VIP+ est incroyable !"</p>
-                        <span class="testimonial-author">— Kévin M. <span style="color:var(--green);">✓ Achat vérifié</span></span>
-                    </div>
-                    <div class="guarantee-badge" style="border-color:rgba(255,193,7,0.3); background:rgba(255,193,7,0.05);">
-                        <i class="fas fa-shield-alt" style="color:#FFC107;"></i>
-                        <span style="color:#FFC107;">Garantie satisfait ou remboursé 7 jours</span>
-                    </div>
-                    <div class="pack-detail-bottom">
-                        <button class="pack-subscribe-btn cta-hypnose" style="--hyp:rgba(255,193,7,.55);background:linear-gradient(135deg, #FFC107, #B8860B);color:#000; font-size:15px; padding:12px 28px;" onclick="openCheckout('vip', 99.99)"><span><i class="fab fa-telegram-plane" style="margin-right:6px;"></i> J'adhère !</span></button>
-                    </div>
-                </div>
-
-                <div class="pack-detail-card pack-animated" style="animation-delay: 0.3s;">
-                    <div class="pack-detail-top">
-                        <div class="logo-pack-detail blue" id="pack-detail-3"></div>
-                        <div style="flex:1;">
-                            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                                <div>
-                                    <div class="pack-detail-name">SM Combiné Hebdo</div>
-                                    <div class="pack-subscribers"><i class="fas fa-users"></i> 589 abonnés actifs</div>
-                                </div>
-                                <div class="pack-info-btn" onclick="showPackInfo('hebdo')"><i class="fas fa-info" style="color:var(--text-gray); font-size:14px;"></i></div>
-                            </div>
-                            <div class="pack-detail-desc">Chaque semaine, recevez un combiné score exact soigneusement sélectionné avec des cotes élevées.</div>
-                            <div class="delivery-badge"><i class="fas fa-bolt" style="margin-right:4px;"></i>Livraison instantanée</div>
-                        </div>
-                    </div>
-                    <div class="pack-detail-features">
-                        <div class="pack-feature"><i class="fas fa-check"></i> 5 combinés S.E / semaine</div>
-                        <div class="pack-feature"><i class="fas fa-check"></i> Cotes élevées</div>
-                        <div class="pack-feature"><i class="fas fa-check"></i> Suivi en direct</div>
-                        <div class="pack-feature"><i class="fas fa-check"></i> Récap hebdomadaire</div>
-                    </div>
-                    <div class="spots-container">
-                        <div class="spots-header">
-                            <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:#FF9800;"></i> Plus que <strong id="spots-3">12</strong> places à ce prix !</span>
-                            <span class="spots-percent">76% vendus</span>
-                        </div>
-                        <div class="spots-bar"><div class="spots-fill" style="width:76%; background:linear-gradient(90deg, var(--blue), #2563EB);"></div></div>
-                    </div>
-                    <div class="guarantee-badge"><i class="fas fa-shield-alt"></i><span>Satisfait ou remboursé sous 48h</span></div>
-                    <div class="pack-detail-bottom">
-                        <button class="pack-subscribe-btn cta-hypnose" style="--hyp:rgba(59,130,246,.55);background:var(--blue);color:#fff;" onclick="openCheckout('hebdo', 69.99)"><span><i class="fab fa-telegram-plane" style="margin-right:6px;"></i> J'adhère !</span></button>
-                    </div>
+                    <p class="pk-desc">Chaque semaine, des combinés en score exact soigneusement sélectionnés, à cotes élevées.</p>
+                    <div class="pk-feats"><div class="pk-feat" style="--d:0.35s"><i class="fas fa-check"></i>5 combinés S.E / semaine</div><div class="pk-feat" style="--d:0.42s"><i class="fas fa-check"></i>Cotes élevées</div><div class="pk-feat" style="--d:0.49s"><i class="fas fa-check"></i>Suivi en direct</div><div class="pk-feat" style="--d:0.56s"><i class="fas fa-check"></i>Récap hebdomadaire</div></div>
+                    <div class="pk-guar"><i class="fas fa-shield-alt"></i> Satisfait ou remboursé sous 48h</div>
+                    <button class="pk-btn cta-hypnose" style="--hyp:rgba(59,130,246,.55)" onclick="openCheckout('hebdo', 69.99)"><span><i class="fab fa-telegram-plane"></i> J'adhère !</span></button>
                 </div>
             </div>
 
@@ -2674,7 +2654,7 @@ async function fetchApiScore(id, dateRaw) {
                     <h3 style="font-size:18px; font-weight:800; margin-bottom:8px;">Prêt à passer au niveau supérieur ?</h3>
                     <p style="font-size:13px; color:var(--text-gray); margin-bottom:18px;">Rejoignez notre communauté de passionnés et optimisez vos analyses</p>
                     <button class="final-cta-btn" onclick="openCheckout('vip', 99.99)"><i class="fas fa-crown"></i> Devenir VIP+ maintenant</button>
-                    <span style="font-size:11px; color:var(--text-gray); margin-top:10px; display:block;">🔒 Paiement sécurisé • Satisfait ou remboursé</span>
+                    <span style="font-size:11px; color:var(--text-gray); margin-top:10px; display:block;">🤝 Accès validé par notre équipe • Satisfait ou remboursé</span>
                 </div>
             </div>
         </div>
