@@ -622,6 +622,9 @@
         .nav-item.active .nav-svg{color:var(--primary-yellow);transform:translateY(-1px);filter:drop-shadow(0 0 6px rgba(255,193,7,.35))}
         .nav-item.active .nav-ballon{animation:navBallon 3s ease-in-out infinite}
         @keyframes navBallon{0%,100%{transform:translateY(-1px) rotate(0)}50%{transform:translateY(-3px) rotate(180deg)}}
+        .nav-maison .nav-couronne{opacity:0;transform:translateY(3px);transition:opacity .3s,transform .3s}
+        .nav-item.active .nav-maison .nav-couronne{opacity:1;transform:none;animation:navCouronne 2.6s ease-in-out infinite;transform-origin:12px 2.6px;filter:drop-shadow(0 0 3px rgba(255,193,7,.9))}
+        @keyframes navCouronne{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-1px) rotate(-6deg)}}
         .nav-item.active .nav-svg-eclat{transform-origin:20.3px 3.2px;animation:navEclat 2.4s ease-in-out infinite}
         @keyframes navEclat{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.6)}}
         .nav-item.active span{color:var(--primary-yellow)}
@@ -3038,7 +3041,7 @@ async function fetchApiScore(id, dateRaw) {
 
     <!-- BOTTOM NAV -->
     <div class="bottom-nav">
-        <div class="nav-item active" onclick="navigateTo('home')"><i class="fas fa-home"></i><span>Accueil</span></div>
+        <div class="nav-item active" onclick="navigateTo('home')"><svg class="nav-svg nav-maison" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13.4 12 6.4l9 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.4 12v7.4c0 .9.7 1.6 1.6 1.6h3.4v-4.4c0-.6.5-1.1 1.1-1.1h1c.6 0 1.1.5 1.1 1.1V21H17c.9 0 1.6-.7 1.6-1.6V12L12 7z" fill="currentColor" opacity=".88"/><path class="nav-couronne" d="M8.7 4.6 8.2 1.3l2.2 1.6L12 .6l1.6 2.3 2.2-1.6-.5 3.3z" fill="currentColor"/></svg><span>Accueil</span></div>
         <div class="nav-item" onclick="navigateTo('packs')"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="navPackMask"><rect width="24" height="24" fill="#fff"/><rect x="10.9" y="7" width="2.2" height="16" fill="#000"/><rect x="2" y="11.6" width="20" height="1.3" fill="#000"/></mask></defs><g mask="url(#navPackMask)"><rect x="3" y="7.6" width="18" height="4.6" rx="1.3" fill="currentColor"/><rect x="4.4" y="12.2" width="15.2" height="9.3" rx="1.6" fill="currentColor" opacity=".72"/></g><path d="M12 7.3c-1.1-2.6-3.6-4-5-2.8-1.2 1 .1 2.9 5 2.8zm0 0c1.1-2.6 3.6-4 5-2.8 1.2 1-.1 2.9-5 2.8z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path class="nav-svg-eclat" d="M20.3 1.2l.55 1.45 1.45.55-1.45.55-.55 1.45-.55-1.45-1.45-.55 1.45-.55z" fill="currentColor"/></svg><span>Nos packs</span></div>
         <div class="nav-item nav-item-ai" onclick="navigateTo('ai')"><i class="fas fa-brain"></i><span>Pronostics<br>AI</span></div>
         <div class="nav-item" onclick="navigateTo('matchs')"><svg class="nav-svg nav-ballon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.9"/><polygon points="12,7.4 15.4,9.9 14.1,13.9 9.9,13.9 8.6,9.9" fill="currentColor"/><path d="M12 7.4V3.2M15.4 9.9l3.9-1.6M14.1 13.9l2.5 3.6M9.9 13.9l-2.5 3.6M8.6 9.9L4.7 8.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path class="nav-svg-eclat" d="M20.3 1.2l.55 1.45 1.45.55-1.45.55-.55 1.45-.55-1.45-1.45-.55 1.45-.55z" fill="currentColor"/></svg><span>Matchs</span></div>
