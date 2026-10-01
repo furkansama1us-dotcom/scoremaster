@@ -1254,6 +1254,10 @@
         .history-card .status.termine { color:var(--green); }
         .history-card .status.perdu { color:var(--red); }
         /* Page « Mes tickets » (ouverte par le badge bookmaker) — palette et proportions calquées sur l'aperçu fourni */
+        /* Combiné en cours (accueil, SMVIP+) affiché comme le ticket de l'aperçu historique, dans un cadre */
+        .tk-cadre { --tk-bg:#0A0A0F; --tk-card:#16171c; --tk-soft:#2f2f36; --tk-line:#32353d; --tk-foot:#1b1c21; --tk-text:#ffffff; --tk-label:#b9b9b9; --tk-gray:#888888; --tk-team:#bcbcbc; --tk-dim:#717171; --tk-green:#73d5ab; --tk-green-bg:#18332a; --tk-red:#ef6b6b; --tk-red-bg:#3a1d20; --tk-amber:#efb43a; --tk-amber-bg:#3a2f14; --tk-pending:#a9abd8; --tk-odd:rgba(26,35,82,.8); font-family:Supreme,Roboto,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; background:radial-gradient(120% 65% at 78% 18%,#262a34 0%,#15161c 45%,var(--tk-bg) 80%) !important; border:1px solid rgba(255,255,255,.1) !important; border-radius:22px !important; padding:16px 12px 6px !important; }
+        .tk-cadre .hc { margin-bottom:12px; }
+        .tk-cadre .combined-cta-btn, .tk-cadre .combo-time-message, .tk-cadre .add-to-cart-btn, .tk-cadre .live-follow-btn { width:100% !important; margin-left:0 !important; margin-right:0 !important; }
         #ticket-history-overlay { --tk-bg:#0A0A0F; --tk-card:#16171c; --tk-soft:#2f2f36; --tk-line:#32353d; --tk-foot:#1b1c21; --tk-text:#ffffff; --tk-label:#b9b9b9; --tk-gray:#888888; --tk-team:#bcbcbc; --tk-dim:#717171; --tk-green:#73d5ab; --tk-green-bg:#18332a; --tk-red:#ef6b6b; --tk-red-bg:#3a1d20; --tk-amber:#efb43a; --tk-amber-bg:#3a2f14; --tk-pending:#a9abd8; --tk-odd:rgba(26,35,82,.8); font-family:Supreme,Roboto,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; background:radial-gradient(120% 65% at 78% 18%,#262a34 0%,#15161c 45%,var(--tk-bg) 80%) !important; }
         .tk-top { display:flex; flex-direction:column; align-items:flex-start; gap:12px; padding:calc(12px + var(--safe-top)) 16px 10px; background:#000; }
         .tk-top .tk-brand { display:flex; align-items:center; gap:10px; font-weight:800; font-size:18px; letter-spacing:.5px; color:var(--tk-text); }
@@ -14621,6 +14625,11 @@ ${aiPrompt}
         var statusBadgeClick = isLive ? ' onclick="openComboLiveView()" style="cursor:pointer;"' : '';
         var liveFollowBtn = isLive ? `<button class="live-follow-btn" onclick="openComboLiveView()" style="width:calc(100% - 32px); margin:12px 16px 0; display:flex; align-items:center; justify-content:center; gap:8px; background:rgba(244,63,94,0.15); border:1px solid rgba(244,63,94,0.3); color:var(--red); padding:12px; border-radius:10px; font-size:14px; font-weight:700; font-family:'Montserrat',sans-serif; cursor:pointer;"><span style="width:6px;height:6px;background:var(--red);border-radius:50%;animation:pulse 1s infinite;display:inline-block;"></span>Suivre en LIVE</button>` : '';
 
+        if (sc === 'en-cours' && typeof buildTicketCardHtml === 'function') {
+            return `<div class="combined-card tk-cadre" id="combined-card-${isHome ? 'home' : 'vip'}-${c.id}" style="width:100%;">`
+                + ticketEnCoursHtml(c, isHome)
+                + vipRevealBtn + ctaBtn + cartBtnHome + timeMessage + liveFollowBtn + `</div>`;
+        }
         return `
         <div class="combined-card" id="combined-card-${isHome ? 'home' : 'vip'}-${c.id}" style="width:100%;">
             <div class="combined-header">
@@ -14641,6 +14650,28 @@ ${aiPrompt}
             ${timeMessage}
             ${liveFollowBtn}
         </div>`;
+    }
+
+    // Ticket « aperçu historique » du combiné en cours, valeurs floutées.
+    // Sur l'accueil, les vraies valeurs ne sont même pas écrites dans la page :
+    // elles sont remplacées par des étoiles avant d'être floutées.
+    function ticketEnCoursHtml(c, isHome) {
+        var modeAvant = window.ticketVipMode;
+        window.ticketVipMode = false;
+        var html;
+        try { html = buildTicketCardHtml(c); } finally { window.ticketVipMode = modeAvant; }
+        var tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        tmp.querySelectorAll('.hc-leg-pick b:not(.locked), .hc-odd, .hc-row strong').forEach(function (el) {
+            if (isHome) el.textContent = el.closest('.hc-leg-pick') ? '* - *' : (el.closest('.hc-row') && /€/.test(el.textContent) ? '***,** €' : '**,**');
+            el.classList.add('blurred-value');
+        });
+        var cash = tmp.querySelector('.hc-cash');
+        if (cash) {
+            var montant = cash.textContent.replace('Cashout', '').trim();
+            cash.innerHTML = 'Cashout' + (montant ? ' <span class="blurred-value" style="min-width:0;">' + (isHome ? '**,** €' : montant) + '</span>' : '');
+        }
+        return tmp.innerHTML;
     }
 
     // FONCTION QUI GÈRE L'ANIMATION DE DÉFLOUTAGE
