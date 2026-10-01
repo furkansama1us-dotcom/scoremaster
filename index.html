@@ -14629,7 +14629,7 @@ ${aiPrompt}
         if (sc === 'en-cours' && typeof buildTicketCardHtml === 'function') {
             return `<div class="combined-card tk-cadre" id="combined-card-${isHome ? 'home' : 'vip'}-${c.id}" style="width:100%;">`
                 + ticketEnCoursHtml(c, isHome)
-                + vipRevealBtn + ctaBtn + cartBtnHome + timeMessage + liveFollowBtn + `</div>`;
+                + vipRevealBtn + cartBtnHome + timeMessage + liveFollowBtn + `</div>`; // sans le bouton Telegram bleu
         }
         return `
         <div class="combined-card" id="combined-card-${isHome ? 'home' : 'vip'}-${c.id}" style="width:100%;">
