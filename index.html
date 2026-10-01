@@ -854,7 +854,7 @@
         .ai-prob-value{width:36px;text-align:right;color:var(--text-light-gray);font-weight:600;flex-shrink:0}
         .ai-confidence-tag{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:800;letter-spacing:.3px;color:var(--primary-yellow);background:rgba(255,193,7,.15);border:1px solid rgba(255,193,7,.3);padding:3px 8px;border-radius:20px;margin-left:8px}
 
-        /* ===== PAGE MATCHS (façon sportmeridian.com) ===== */
+        /* ===== PAGE MATCHS ===== */
         .matchs-ticker{display:flex;gap:0;white-space:nowrap;overflow:hidden;background:#1a0505;border-bottom:2px solid var(--red)}
         .matchs-ticker-track{display:inline-flex;animation:tickerScroll 25s linear infinite}
         @keyframes tickerScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
@@ -899,6 +899,7 @@
 
 
         /* ---------- Page Matchs ---------- */
+        .mx-pv{display:flex;margin:0 20px 16px}
         .mx-hero{position:relative;overflow:hidden;padding:22px 20px 8px;background:radial-gradient(120% 90% at 50% 0%,#1a2140 0%,#0d1124 55%,transparent 100%)}
         .mx-hero>*:not(.pk-sky){position:relative}
         .mx-eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--primary-yellow);background:rgba(255,193,7,.1);border:1px solid rgba(255,193,7,.25);padding:5px 10px;border-radius:20px;margin-bottom:12px}
@@ -2834,7 +2835,7 @@ async function fetchApiScore(id, dateRaw) {
             </div>
         </div>
 
-        <!-- MATCHS (façon sportmeridian.com) -->
+        <!-- MATCHS -->
         <div class="page" id="page-matchs">
 
             <div class="matchs-hero mx-hero">
@@ -2849,6 +2850,7 @@ async function fetchApiScore(id, dateRaw) {
                 </div>
             </div>
 
+            <div class="pv-banniere mx-pv" onclick="ouvrirParisVip()"><span class="vipx-badge pv-badge-rouge"><img src="logo-dark.png" alt=""><em>VIP+</em></span><span><b>Paris SMVIP+ du jour<span class="pv-nouveau">Nouveau !</span></b><small>La sélection du jour par notre IA</small></span><i class="fas fa-chevron-right"></i></div>
             <div class="matchs-date-tabs" id="matchs-date-tabs"></div>
 
             <div class="matchs-filter-tabs" id="matchs-filter-tabs">
@@ -2863,7 +2865,7 @@ async function fetchApiScore(id, dateRaw) {
             </div>
 
             <div class="matchs-promo-block">
-                <div class="matchs-promo-badge"><i class="fas fa-shield-halved"></i> POURQUOI SCORE MERIDIAN</div>
+                <div class="matchs-promo-badge"><i class="fas fa-shield-halved"></i> POURQUOI SCORE MASTER</div>
                 <h3 class="matchs-promo-title">Scores, statistiques et pronostics boostés à l'IA</h3>
                 <p class="matchs-promo-desc">Suis chaque coup d'envoi des grandes ligues européennes. Scores en direct, pronostics IA sur l'issue des matchs, et des combinés VIP+ sélectionnés par notre équipe — tout au même endroit.</p>
                 <div class="matchs-promo-checklist">
@@ -10159,7 +10161,7 @@ async function fetchMatchesFromAPI() {
     }
 
     // ============================================================
-    // PAGE MATCHS — façon sportmeridian.com, ligues déjà couvertes par l'API
+    // PAGE MATCHS — ligues déjà couvertes par l'API
     // ============================================================
     window.matchsCurrentOffset = 0;
     window.matchsCurrentFilter = 'all';
