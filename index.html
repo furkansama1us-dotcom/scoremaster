@@ -935,6 +935,17 @@
         .packs-page-list{padding:0 20px}
 
         /* ---------- Page « Nos packs » ---------- */
+        /* Logo SM et SUPER SM en orbite autour d'un centre invisible : le duo tourne, chacun reste droit */
+        .pk-cta-duo{height:220px!important;margin:-6px 0 6px!important}
+        .pk-orbit{position:absolute;left:50%;top:50%;width:0;height:0;animation:pkOrbit 9s linear infinite}
+        .pk-orbit-a,.pk-orbit-b{position:absolute;left:0;top:0}
+        .pk-orbit-a{transform:translate(-58px,0)}.pk-orbit-b{transform:translate(58px,0)}
+        .pk-cta-duo .pk-orbit-a>*,.pk-cta-duo .pk-orbit-b>*{position:absolute;left:0;top:0;margin:0;translate:-50% -50%;animation:pkOrbitInv 9s linear infinite}
+        .pk-orbit-b .pk-cta-masc{animation:pkOrbitInv 9s linear infinite}
+        @keyframes pkOrbit{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+        @keyframes pkOrbitInv{from{rotate:0deg}to{rotate:-360deg}}
+        @media (prefers-reduced-motion:reduce){.pk-orbit,.pk-orbit-a>*,.pk-orbit-b>*{animation:none}}
+
         .pk-hero{background:radial-gradient(120% 90% at 50% 0%,#1a2140 0%,#0d1124 55%,transparent 100%)}
         .pk-sky{position:absolute;inset:0;overflow:hidden;pointer-events:none}
         .pk-dots{position:absolute;inset:0;background-image:radial-gradient(1px 1px at 12% 22%,rgba(255,255,255,.7),transparent),radial-gradient(1px 1px at 32% 68%,rgba(255,255,255,.5),transparent),radial-gradient(1.5px 1.5px at 58% 18%,rgba(255,230,150,.8),transparent),radial-gradient(1px 1px at 78% 52%,rgba(255,255,255,.6),transparent),radial-gradient(1px 1px at 90% 14%,rgba(255,255,255,.5),transparent),radial-gradient(1.5px 1.5px at 6% 80%,rgba(255,230,150,.6),transparent),radial-gradient(1px 1px at 46% 40%,rgba(255,255,255,.4),transparent),radial-gradient(1px 1px at 68% 84%,rgba(255,255,255,.5),transparent);animation:pkTwinkle 4s ease-in-out infinite}
@@ -1586,6 +1597,9 @@
         .comp-row:last-child { border-bottom: none; }
         .comp-row.comp-header { background: var(--bg-input); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
         .comp-cell { padding: 12px 10px; font-size: 12px; text-align: center; display: flex; align-items: center; justify-content: center; color: var(--text-light-gray); }
+        .comp-cell.comp-vip { background: rgba(255,193,7,0.07); box-shadow: inset 1px 0 0 rgba(255,193,7,0.25), inset -1px 0 0 rgba(255,193,7,0.25); }
+        .comp-header .comp-cell.comp-vip { background: rgba(255,193,7,0.16); }
+        .comp-new { display:inline-block; margin-left:6px; font-size:8px; font-weight:900; letter-spacing:.5px; color:#000; background:linear-gradient(90deg,#FFC107,#FFE9A8,#FFC107); background-size:200% auto; animation:pkGold 3s linear infinite; padding:2px 5px; border-radius:5px; vertical-align:middle; }
         .comp-cell:first-child { text-align: left; justify-content: flex-start; color: var(--text-white); font-weight: 500; }
 
         .testimonials-scroll { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
@@ -2672,14 +2686,18 @@ async function fetchApiScore(id, dateRaw) {
                     <div class="comp-row comp-header">
                         <div class="comp-cell">Fonctionnalité</div>
                         <div class="comp-cell" style="color:var(--green);">Journalier</div>
-                        <div class="comp-cell" style="color:#FFC107;">VIP+ <i class="fas fa-crown" style="font-size:10px;"></i></div>
                         <div class="comp-cell" style="color:var(--blue);">Hebdo</div>
+                        <div class="comp-cell comp-vip" style="color:#FFC107;">VIP+ <i class="fas fa-crown" style="font-size:10px;"></i></div>
                     </div>
-                    <div class="comp-row"><div class="comp-cell">Scores exacts</div><div class="comp-cell">1/jour</div><div class="comp-cell" style="color:#FFC107; font-weight:700;">Chaque soir de match</div><div class="comp-cell">5/sem.</div></div>
-                    <div class="comp-row"><div class="comp-cell">Canal Telegram</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-check" style="color:var(--green);"></i></div><div class="comp-cell"><i class="fas fa-check" style="color:var(--green);"></i></div></div>
-                    <div class="comp-row"><div class="comp-cell">Support prioritaire</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-check" style="color:var(--green);"></i></div><div class="comp-cell"><i class="fas fa-check" style="color:var(--green);"></i></div></div>
-                    <div class="comp-row"><div class="comp-cell">Durée</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell" style="color:#FFC107; font-weight:700;">À VIE</div><div class="comp-cell">7 jours</div></div>
-                    <div class="comp-row"><div class="comp-cell">Accès fondateurs</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-crown" style="color:#FFC107;"></i></div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div></div>
+                    <div class="comp-row"><div class="comp-cell">Scores exacts</div><div class="comp-cell">1/jour</div><div class="comp-cell">5/sem.</div><div class="comp-cell comp-vip"><b style="color:#FFC107;">Chaque soir de match</b></div></div>
+                    <div class="comp-row"><div class="comp-cell">Canal Telegram</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-check" style="color:var(--green);"></i></div><div class="comp-cell comp-vip"><i class="fas fa-check" style="color:var(--green);"></i></div></div>
+                    <div class="comp-row"><div class="comp-cell">Support prioritaire</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-check" style="color:var(--green);"></i></div><div class="comp-cell comp-vip"><i class="fas fa-check" style="color:var(--green);"></i></div></div>
+                    <div class="comp-row"><div class="comp-cell">Suivi LIVE du combiné <span class="comp-new">NOUVEAU</span></div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-check" style="color:var(--green);"></i></div><div class="comp-cell comp-vip"><i class="fas fa-check" style="color:var(--green);"></i></div></div>
+                    <div class="comp-row"><div class="comp-cell">Espace membre VIP+</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell comp-vip"><i class="fas fa-check" style="color:var(--green);"></i></div></div>
+                    <div class="comp-row"><div class="comp-cell">Paris du jour SMVIP+ <span class="comp-new">NOUVEAU</span></div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell comp-vip"><i class="fas fa-check" style="color:var(--green);"></i></div></div>
+                    <div class="comp-row"><div class="comp-cell">Analyses IA des matchs <span class="comp-new">NOUVEAU</span></div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell comp-vip"><i class="fas fa-check" style="color:var(--green);"></i></div></div>
+                    <div class="comp-row"><div class="comp-cell">Durée</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell">7 jours</div><div class="comp-cell comp-vip"><b style="color:#FFC107;">À VIE</b></div></div>
+                    <div class="comp-row"><div class="comp-cell">Accès fondateurs</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell comp-vip"><i class="fas fa-crown" style="color:#FFC107;"></i></div></div>
                 </div>
             </div>
 
@@ -2719,10 +2737,9 @@ async function fetchApiScore(id, dateRaw) {
             <div style="padding: 0 20px; margin-bottom:30px;">
                 <div class="final-cta">
                     <div class="final-cta-glow"></div>
-                    <i class="fas fa-crown pk-cta-crown" style="font-size:30px; color:#FFC107; margin-bottom:12px;"></i>
-                    <div class="pk-cta-duo">
-                        <div class="pk-hero-logo pk-cta-logo"><img src="logo-dark.png" alt="Score Master"><span class="pk-hero-ring"></span></div>
-                        <div class="pk-cta-masc"><div class="ssm"><img class="aile-g" src="mascotte-roi-mecha.webp" alt=""><img class="aile-d" src="mascotte-roi-mecha.webp" alt=""><img class="corps" src="mascotte-roi-mecha.webp" alt=""><img class="tete" src="mascotte-roi-mecha.webp" alt=""><i class="etincelle" style="left:14px;top:44px"></i><i class="etincelle" style="left:68px;top:44px;animation-delay:.6s"></i></div></div>
+                                        <div class="pk-cta-duo"><div class="pk-orbit"><div class="pk-orbit-a">
+                        <div class="pk-hero-logo pk-cta-logo"><img src="logo-dark.png" alt="Score Master"><span class="pk-hero-ring"></span></div></div>
+                        <div class="pk-orbit-b"><div class="pk-cta-masc"><div class="ssm"><img class="aile-g" src="mascotte-roi-mecha.webp" alt=""><img class="aile-d" src="mascotte-roi-mecha.webp" alt=""><img class="corps" src="mascotte-roi-mecha.webp" alt=""><img class="tete" src="mascotte-roi-mecha.webp" alt=""><i class="etincelle" style="left:14px;top:44px"></i><i class="etincelle" style="left:68px;top:44px;animation-delay:.6s"></i></div></div></div></div>
                     </div>
                     <h3 style="font-size:18px; font-weight:800; margin-bottom:8px;">Prêt à passer au niveau supérieur ?</h3>
                     <p style="font-size:13px; color:var(--text-gray); margin-bottom:18px;">Rejoignez notre communauté de passionnés et optimisez vos analyses</p>
