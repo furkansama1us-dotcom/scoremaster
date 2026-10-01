@@ -2549,6 +2549,17 @@ async function fetchApiScore(id, dateRaw) {
                     <span><i class="fab fa-telegram-plane"></i> Accès Telegram</span>
                 </div>
             </div>
+            <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin:4px 0 10px;">
+                <div style="width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;"></div>
+                <span style="font-size:12px; color:var(--green); font-weight:600;" id="online-count">127 personnes en ligne</span>
+            </div>
+            <div class="urgency-bar">
+                <div class="urgency-inner">
+                    <i class="fas fa-fire"></i>
+                    <span>🔥 OFFRE LIMITÉE — Expire dans </span>
+                    <span id="countdown-timer" style="font-weight:900; color:#FFC107; margin-left:4px;">23:59:59</span>
+                </div>
+            </div>
             <div class="packs-page-list pk-list">
                 <div class="pk-card pk-day" style="--pk:#22C55E">
                     
@@ -2556,12 +2567,20 @@ async function fetchApiScore(id, dateRaw) {
                         <div class="pk-logo"><div class="logo-pack-detail" id="pack-detail-1"></div></div>
                         <div class="pk-head">
                             <div class="pk-name">SM Score Exact Journalier</div>
+                            <div class="pack-subscribers"><i class="fas fa-users"></i> 342 abonnés actifs</div>
                             <div class="pk-tag"><i class="fas fa-calendar-day"></i> À la journée</div>
                         </div>
                         <button class="pk-info" onclick="showPackInfo('journalier')" aria-label="Détails du pack"><i class="fas fa-info"></i></button>
                     </div>
                     <p class="pk-desc">Recevez votre pronostic en score exact unique, accompagné de son analyse détaillée.</p>
                     <div class="pk-feats"><div class="pk-feat" style="--d:0.35s"><i class="fas fa-check"></i>1 score exact</div><div class="pk-feat" style="--d:0.42s"><i class="fas fa-check"></i>Analyse détaillée</div><div class="pk-feat" style="--d:0.49s"><i class="fas fa-check"></i>Support 7j/7</div><div class="pk-feat" style="--d:0.56s"><i class="fas fa-check"></i>Notification push</div></div>
+                    <div class="spots-container">
+                        <div class="spots-header">
+                            <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:#FF9800;"></i> Plus que <strong id="spots-1">7</strong> places à ce prix !</span>
+                            <span class="spots-percent">86% vendus</span>
+                        </div>
+                        <div class="spots-bar"><div class="spots-fill" style="width:86%; background:linear-gradient(90deg, #FF9800, #FF5722);"></div></div>
+                    </div>
                     <div class="pk-guar"><i class="fas fa-shield-alt"></i> Satisfait ou remboursé sous 48h</div>
                     <button class="pk-btn cta-hypnose" style="--hyp:rgba(34,197,94,.55)" onclick="openCheckout('journalier', 50)"><span><i class="fab fa-telegram-plane"></i> J'adhère !</span></button>
                 </div>
@@ -2571,12 +2590,20 @@ async function fetchApiScore(id, dateRaw) {
                         <div class="pk-logo"><div class="logo-pack-detail" id="pack-detail-2"></div></div>
                         <div class="pk-head">
                             <div class="pk-name">SM VIP+ <span class="pk-life">à vie</span> <i class="fas fa-crown pk-crown"></i></div>
+                            <div class="pack-subscribers"><i class="fas fa-users"></i> 1,247 membres VIP+</div>
                             <div class="pk-tag"><i class="fas fa-gem"></i> Accès complet</div>
                         </div>
                         <button class="pk-info" onclick="showPackInfo('vip')" aria-label="Détails du pack"><i class="fas fa-info"></i></button>
                     </div>
                     <p class="pk-desc">Accès illimité et à vie à tous nos pronostics, aux combinés exclusifs et à l'espace membre VIP+.</p>
                     <div class="pk-feats"><div class="pk-feat" style="--d:0.35s"><i class="fas fa-check"></i>Accès à vie</div><div class="pk-feat" style="--d:0.42s"><i class="fas fa-check"></i>4 à 5 combinés S.E / sem.</div><div class="pk-feat" style="--d:0.49s"><i class="fas fa-check"></i>Espace membre VIP+</div><div class="pk-feat" style="--d:0.56s"><i class="fas fa-check"></i>Canal Telegram VIP</div><div class="pk-feat" style="--d:0.63s"><i class="fas fa-check"></i>Priorité support</div><div class="pk-feat" style="--d:0.70s"><i class="fas fa-check"></i>Accès fondateurs</div></div>
+                    <div class="spots-container">
+                        <div class="spots-header">
+                            <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:var(--red);"></i> Plus que <strong id="spots-2" style="color:var(--red);">3</strong> places à ce prix !</span>
+                            <span class="spots-percent" style="color:var(--red);">94% vendus</span>
+                        </div>
+                        <div class="spots-bar"><div class="spots-fill" style="width:94%; background:linear-gradient(90deg, var(--red), #B71C1C);"></div></div>
+                    </div>
                     <div class="pk-guar"><i class="fas fa-shield-alt"></i> Garantie satisfait ou remboursé 7 jours</div>
                     <button class="pk-btn pk-btn-vip cta-hypnose" style="--hyp:rgba(255,193,7,.6)" onclick="openCheckout('vip', 99.99)"><span><i class="fas fa-crown"></i> J'adhère !</span></button>
                 </div>
@@ -2586,12 +2613,20 @@ async function fetchApiScore(id, dateRaw) {
                         <div class="pk-logo"><div class="logo-pack-detail" id="pack-detail-3"></div></div>
                         <div class="pk-head">
                             <div class="pk-name">SM Combiné Hebdo</div>
+                            <div class="pack-subscribers"><i class="fas fa-users"></i> 589 abonnés actifs</div>
                             <div class="pk-tag"><i class="fas fa-calendar-week"></i> 7 jours</div>
                         </div>
                         <button class="pk-info" onclick="showPackInfo('hebdo')" aria-label="Détails du pack"><i class="fas fa-info"></i></button>
                     </div>
                     <p class="pk-desc">Chaque semaine, des combinés en score exact soigneusement sélectionnés, à cotes élevées.</p>
                     <div class="pk-feats"><div class="pk-feat" style="--d:0.35s"><i class="fas fa-check"></i>5 combinés S.E / semaine</div><div class="pk-feat" style="--d:0.42s"><i class="fas fa-check"></i>Cotes élevées</div><div class="pk-feat" style="--d:0.49s"><i class="fas fa-check"></i>Suivi en direct</div><div class="pk-feat" style="--d:0.56s"><i class="fas fa-check"></i>Récap hebdomadaire</div></div>
+                    <div class="spots-container">
+                        <div class="spots-header">
+                            <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:#FF9800;"></i> Plus que <strong id="spots-3">12</strong> places à ce prix !</span>
+                            <span class="spots-percent">76% vendus</span>
+                        </div>
+                        <div class="spots-bar"><div class="spots-fill" style="width:76%; background:linear-gradient(90deg, var(--blue), #2563EB);"></div></div>
+                    </div>
                     <div class="pk-guar"><i class="fas fa-shield-alt"></i> Satisfait ou remboursé sous 48h</div>
                     <button class="pk-btn cta-hypnose" style="--hyp:rgba(59,130,246,.55)" onclick="openCheckout('hebdo', 69.99)"><span><i class="fab fa-telegram-plane"></i> J'adhère !</span></button>
                 </div>
