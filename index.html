@@ -1452,6 +1452,7 @@
         /* Combiné en cours (accueil, SMVIP+) affiché comme le ticket de l'aperçu historique, dans un cadre */
         .tk-cadre { --tk-bg:#0A0A0F; --tk-card:#16171c; --tk-soft:#2f2f36; --tk-line:#32353d; --tk-foot:#1b1c21; --tk-text:#ffffff; --tk-label:#b9b9b9; --tk-gray:#888888; --tk-team:#bcbcbc; --tk-dim:#717171; --tk-green:#73d5ab; --tk-green-bg:#18332a; --tk-red:#ef6b6b; --tk-red-bg:#3a1d20; --tk-amber:#efb43a; --tk-amber-bg:#3a2f14; --tk-pending:#a9abd8; --tk-odd:rgba(26,35,82,.8); font-family:Supreme,Roboto,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; background:radial-gradient(120% 65% at 78% 18%,#262a34 0%,#15161c 45%,var(--tk-bg) 80%) !important; border:1px solid rgba(255,255,255,.1) !important; border-radius:22px !important; padding:16px 12px 6px !important; }
         .tk-cadre .hc { margin-bottom:12px; }
+        .tk-cadre .hc-inactif { pointer-events:none; cursor:default; }
         .tk-cadre .hc-card { border-bottom-left-radius:0 !important; border-bottom-right-radius:0 !important; border-bottom:none !important; padding-bottom:4px !important; }
         .tk-cadre .combined-cta-btn, .tk-cadre .combo-time-message, .tk-cadre .add-to-cart-btn, .tk-cadre .live-follow-btn { width:100% !important; margin-left:0 !important; margin-right:0 !important; }
         #ticket-history-overlay { --tk-bg:#0A0A0F; --tk-card:#16171c; --tk-soft:#2f2f36; --tk-line:#32353d; --tk-foot:#1b1c21; --tk-text:#ffffff; --tk-label:#b9b9b9; --tk-gray:#888888; --tk-team:#bcbcbc; --tk-dim:#717171; --tk-green:#73d5ab; --tk-green-bg:#18332a; --tk-red:#ef6b6b; --tk-red-bg:#3a1d20; --tk-amber:#efb43a; --tk-amber-bg:#3a2f14; --tk-pending:#a9abd8; --tk-odd:rgba(26,35,82,.8); font-family:Supreme,Roboto,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif; background:radial-gradient(120% 65% at 78% 18%,#262a34 0%,#15161c 45%,var(--tk-bg) 80%) !important; }
@@ -14892,6 +14893,15 @@ ${aiPrompt}
         // Capture « coupée » net sous les gains potentiels : ni Cashout /
         // Compléter, ni référence et date.
         tmp.querySelectorAll('.hc-cta-row, .hc-foot').forEach(function (el) { el.remove(); });
+        // Accueil : affiche figée, toujours dépliée, sans menu « … » actif.
+        if (isHome) {
+            tmp.querySelectorAll('.hc-toggle, .hc-more').forEach(function (el) {
+                el.removeAttribute('onclick');
+                el.setAttribute('tabindex', '-1');
+                el.setAttribute('aria-disabled', 'true');
+                el.classList.add('hc-inactif');
+            });
+        }
         return tmp.innerHTML;
     }
 
