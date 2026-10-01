@@ -935,6 +935,13 @@
         .packs-page-list{padding:0 20px}
 
         /* ---------- Page « Nos packs » ---------- */
+        .pk-sec{display:flex;align-items:center;justify-content:center;gap:10px;font-family:'Montserrat',sans-serif;font-size:17px;font-weight:800;margin-bottom:15px}
+        .pk-sec-ic{width:32px;height:32px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(145deg,rgba(255,193,7,.22),rgba(255,193,7,.06));border:1px solid rgba(255,193,7,.35);color:#FFC107;font-size:14px;box-shadow:0 0 14px rgba(255,193,7,.18)}
+        .pk-stars{display:flex;gap:3px;color:#FFC107;font-size:12px}
+        .pk-stars i{animation:pkStar 2.8s ease-in-out infinite}
+        .pk-stars i:nth-child(2){animation-delay:.15s}.pk-stars i:nth-child(3){animation-delay:.3s}.pk-stars i:nth-child(4){animation-delay:.45s}.pk-stars i:nth-child(5){animation-delay:.6s}
+        @keyframes pkStar{0%,70%,100%{transform:scale(1);filter:none}80%{transform:scale(1.25);filter:drop-shadow(0 0 4px rgba(255,193,7,.8))}}
+
         .pk-hero{position:relative;text-align:center;padding:26px 20px 10px;overflow:hidden}
         .pk-hero-glow{position:absolute;left:50%;top:-60px;width:320px;height:240px;margin-left:-160px;background:radial-gradient(closest-side,rgba(255,193,7,.28),transparent);filter:blur(10px);animation:pkGlow 5s ease-in-out infinite;pointer-events:none}
         @keyframes pkGlow{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.12)}}
@@ -2556,7 +2563,7 @@ async function fetchApiScore(id, dateRaw) {
             <div class="urgency-bar">
                 <div class="urgency-inner">
                     <i class="fas fa-fire"></i>
-                    <span>🔥 OFFRE LIMITÉE — Expire dans </span>
+                    <span>OFFRE LIMITÉE — Expire dans </span>
                     <span id="countdown-timer" style="font-weight:900; color:#FFC107; margin-left:4px;">23:59:59</span>
                 </div>
             </div>
@@ -2633,12 +2640,12 @@ async function fetchApiScore(id, dateRaw) {
             </div>
 
             <div style="padding: 0 20px; margin-bottom:25px;">
-                <h3 style="font-size:17px; font-weight:800; margin-bottom:15px; text-align:center;">📊 Comparer les packs</h3>
+                <h3 class="pk-sec"><span class="pk-sec-ic"><i class="fas fa-layer-group"></i></span>Comparer les packs</h3>
                 <div class="comparison-table">
                     <div class="comp-row comp-header">
                         <div class="comp-cell">Fonctionnalité</div>
                         <div class="comp-cell" style="color:var(--green);">Journalier</div>
-                        <div class="comp-cell" style="color:#FFC107;">VIP+ ★</div>
+                        <div class="comp-cell" style="color:#FFC107;">VIP+ <i class="fas fa-crown" style="font-size:10px;"></i></div>
                         <div class="comp-cell" style="color:var(--blue);">Hebdo</div>
                     </div>
                     <div class="comp-row"><div class="comp-cell">Scores exacts</div><div class="comp-cell">1/jour</div><div class="comp-cell" style="color:#FFC107; font-weight:700;">Illimité</div><div class="comp-cell">5/sem.</div></div>
@@ -2650,20 +2657,20 @@ async function fetchApiScore(id, dateRaw) {
             </div>
 
             <div style="padding: 0 20px; margin-bottom:25px;">
-    <h3 style="font-size:17px; font-weight:800; margin-bottom:15px; text-align:center;">💬 Ce que disent nos membres</h3>
+    <h3 class="pk-sec"><span class="pk-sec-ic"><i class="fas fa-comments"></i></span>Ce que disent nos membres</h3>
     <div class="testimonials-scroll" id="testimonials-container">
         <div class="testimonial-card">
-            <div class="testimonial-stars">★★★★★</div>
+            <div class="testimonial-stars pk-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
             <p class="testimonial-text">"Première semaine, déjà 5 combinés gagnants. L'analyse détaillée des scores exacts apporte une vraie valeur ajoutée !"</p>
             <div class="testimonial-footer"><div class="testimonial-avatar" style="background:var(--green);">A</div><div><span class="testimonial-name">Alexandre D.</span><span class="testimonial-pack">Pack VIP+</span></div><span class="testimonial-verified"><i class="fas fa-check-circle"></i> Vérifié</span></div>
         </div>
         <div class="testimonial-card">
-            <div class="testimonial-stars">★★★★★</div>
+            <div class="testimonial-stars pk-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
             <p class="testimonial-text">"J'étais sceptique au début mais la régularité est là. Une vraie gestion professionnelle de la bankroll."</p>
             <div class="testimonial-footer"><div class="testimonial-avatar" style="background:var(--blue);">S</div><div><span class="testimonial-name">Sofiane K.</span><span class="testimonial-pack">Pack Hebdo</span></div><span class="testimonial-verified"><i class="fas fa-check-circle"></i> Vérifié</span></div>
         </div>
         <div class="testimonial-card">
-            <div class="testimonial-stars">★★★★★</div>
+            <div class="testimonial-stars pk-stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
             <p class="testimonial-text">"Le meilleur choix que j'ai pu faire. Le canal Telegram VIP est un énorme plus, et les analyses sont ultra précises."</p>
             <div class="testimonial-footer"><div class="testimonial-avatar" style="background:var(--red);">M</div><div><span class="testimonial-name">Mehdi B.</span><span class="testimonial-pack">Pack VIP+</span></div><span class="testimonial-verified"><i class="fas fa-check-circle"></i> Vérifié</span></div>
         </div>
@@ -2671,7 +2678,7 @@ async function fetchApiScore(id, dateRaw) {
 </div>
 
             <div style="padding: 0 20px; margin-bottom:25px;">
-                <h3 style="font-size:17px; font-weight:800; margin-bottom:15px; text-align:center;">❓ Questions fréquentes</h3>
+                <h3 class="pk-sec"><span class="pk-sec-ic"><i class="fas fa-circle-question"></i></span>Questions fréquentes</h3>
                 <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-question"><span>Comment l'IA analyse-t-elle les matchs ?</span><i class="fas fa-chevron-down faq-icon"></i></div><div class="faq-answer">C'est le cœur de Score Master, et c'est là que nous investissons le plus. Nos agents d'intelligence artificielle travaillent pour vous en continu : forme récente, confrontations directes, performances à domicile et à l'extérieur, contexte du match, mouvements des cotes… Ils croisent toutes ces données, confrontent leurs conclusions et relancent l'analyse encore et encore jusqu'au coup d'envoi. <b>Résultat : vous profitez d'un travail d'analyse qu'aucun parieur ne pourrait mener seul.</b></div></div>
                 <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-question"><span>Que signifie l'indice de fiabilité IA ?</span><i class="fas fa-chevron-down faq-icon"></i></div><div class="faq-answer">C'est votre boussole. Quand toutes nos analyses convergent vers le même score, l'indice grimpe. Les pronostics qui atteignent <b>95 à 99 %</b>, les plus solides, sont marqués <b>VIP</b> et réservés à nos membres SM VIP+ : c'est le meilleur de ce que nos IA produisent, servi en priorité à ceux qui nous font confiance.</div></div>
                 <div class="faq-item" onclick="toggleFaq(this)"><div class="faq-question"><span>L'IA décide-t-elle seule ?</span><i class="fas fa-chevron-down faq-icon"></i></div><div class="faq-answer">Jamais. Vous avez la puissance de la technologie <b>et</b> l'œil de l'expert : l'IA propose, notre équipe vérifie chaque combiné avant publication et valide chaque résultat à la main. Rien ne sort sans ce double contrôle. C'est notre exigence de qualité, et votre tranquillité.</div></div>
@@ -2689,7 +2696,7 @@ async function fetchApiScore(id, dateRaw) {
                     <h3 style="font-size:18px; font-weight:800; margin-bottom:8px;">Prêt à passer au niveau supérieur ?</h3>
                     <p style="font-size:13px; color:var(--text-gray); margin-bottom:18px;">Rejoignez notre communauté de passionnés et optimisez vos analyses</p>
                     <button class="final-cta-btn" onclick="openCheckout('vip', 99.99)"><i class="fas fa-crown"></i> Devenir VIP+ maintenant</button>
-                    <span style="font-size:11px; color:var(--text-gray); margin-top:10px; display:block;">🤝 Accès validé par notre équipe • Satisfait ou remboursé</span>
+                    <span style="font-size:11px; color:var(--text-gray); margin-top:10px; display:block;"><i class="fas fa-user-check" style="color:var(--primary-yellow);margin-right:4px;"></i> Accès validé par notre équipe • <i class="fas fa-shield-alt" style="color:var(--primary-yellow);margin:0 4px;"></i>Satisfait ou remboursé</span>
                 </div>
             </div>
         </div>
