@@ -902,6 +902,46 @@
 
 
 
+
+        /* ---------- Pronostics AI ---------- */
+        .nav-item-ai:not(.active) .nav-svg{color:var(--blue)}
+        .nav-item.active .nav-ia{animation:navIA 2.4s ease-in-out infinite}
+        .nav-item.active .nav-ia .nav-ia-points circle{animation:navIAPoint 1.2s ease-in-out infinite}
+        .nav-item.active .nav-ia .nav-ia-points circle:nth-child(2){animation-delay:.3s}.nav-item.active .nav-ia .nav-ia-points circle:nth-child(3){animation-delay:.6s}.nav-item.active .nav-ia .nav-ia-points circle:nth-child(4){animation-delay:.9s}
+        @keyframes navIA{0%,100%{transform:translateY(-1px) scale(1)}50%{transform:translateY(-2px) scale(1.06)}}
+        @keyframes navIAPoint{50%{fill:#fff}}
+        .ai-hero{position:relative;overflow:hidden;display:block!important;padding:22px 20px 14px!important;background:radial-gradient(120% 100% at 50% 0%,#1a2140 0%,#0d1124 60%,transparent 100%)}
+        .ai-hero-in{position:relative;z-index:1}
+        .ai-hero h2{display:flex;align-items:center;gap:10px;font-family:'Montserrat',sans-serif;font-size:24px!important;font-weight:900!important;margin:0 0 6px}
+        .ai-hero-ic{width:38px;height:38px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-size:18px;color:#1a1200;background:linear-gradient(145deg,#FFE082,#FFC107 55%,#B8860B);box-shadow:0 0 18px rgba(255,193,7,.45);animation:aiPulse 2.6s ease-in-out infinite}
+        @keyframes aiPulse{50%{box-shadow:0 0 0 6px rgba(255,193,7,.1),0 0 26px rgba(255,193,7,.6)}}
+        .ai-hero-or{background:linear-gradient(90deg,#C9971C,#FFE9A8,#FFC107,#FFE9A8,#C9971C);background-size:200% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:pkGold 4s linear infinite}
+        .ai-hero-sub{font-size:13px;color:var(--text-gray);line-height:1.5;margin:0}
+        #page-ai .ai-intro-banner{position:relative;overflow:hidden;border-radius:20px;background:linear-gradient(160deg,rgba(255,193,7,.1),rgba(255,255,255,.01)),var(--bg-card);border:1px solid rgba(255,193,7,.25);box-shadow:0 12px 30px rgba(0,0,0,.3)}
+        #page-ai .ai-intro-text{font-size:13px;line-height:1.6}
+        #page-ai .ai-scene{border-radius:16px}
+        #page-ai .ai-date-tabs{scrollbar-width:none;gap:8px}
+        #page-ai .ai-date-tab{padding:9px 18px;border-radius:14px;font-weight:700;transition:transform .2s}
+        #page-ai .ai-date-tab.active{background:linear-gradient(145deg,#FFD54F,#FFB300);border-color:transparent;color:#1a1200;box-shadow:0 6px 18px rgba(255,193,7,.3);transform:translateY(-2px)}
+        .ai-filtres{scrollbar-width:none}.ai-filtres::-webkit-scrollbar{display:none}
+        .ai-filtres>select,.ai-filtres>div{border-radius:20px!important;background:rgba(255,255,255,.05)!important;border:1px solid rgba(255,255,255,.1)!important;padding:8px 14px!important}
+        .ai-filtres>#ai-vip-filter-btn.active{background:linear-gradient(135deg,#FFC107,#B8860B)!important;color:#000;border-color:#FFC107!important}
+        .ai-filtres>#ai-free-filter-btn.active{background:linear-gradient(135deg,var(--green),#16A34A)!important;color:#fff;border-color:var(--green)!important}
+        #page-ai .ai-match-card{position:relative;overflow:hidden;border-radius:20px;padding:16px;background:linear-gradient(160deg,rgba(255,255,255,.045),rgba(255,255,255,.01)),var(--bg-card);border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 24px rgba(0,0,0,.25);animation:aiCarteIn .45s ease both}
+        @keyframes aiCarteIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+        #page-ai .ai-match-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#FFC107,rgba(255,193,7,0))}
+        #page-ai .ai-match-time{background:rgba(255,193,7,.12);color:var(--primary-yellow);font-weight:800;border-radius:10px;padding:4px 10px}
+        #page-ai .ai-match-teams{padding:10px 0;margin-bottom:12px;border-top:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05)}
+        #page-ai .ai-match-team{font-size:14px;font-weight:800;color:#fff}
+        #page-ai .ai-match-vs{width:30px;height:30px;padding:0;margin:0 8px;flex-shrink:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);font-size:10px}
+        #page-ai .ai-prob-bar-track{height:9px;background:rgba(255,255,255,.06)}
+        #page-ai .ai-prob-bar-fill{position:relative;overflow:hidden;animation:aiBarre .9s cubic-bezier(.2,.8,.2,1) both}
+        #page-ai .ai-prob-bar-fill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);transform:translateX(-100%);animation:aiReflet 3s ease-in-out infinite 1s}
+        @keyframes aiBarre{from{transform:scaleX(0);transform-origin:left}to{transform:scaleX(1);transform-origin:left}}
+        @keyframes aiReflet{60%,100%{transform:translateX(100%)}}
+        #page-ai .ai-prob-value{color:#fff;font-weight:800}
+        #page-ai .ai-confidence-badge{padding:5px 11px}
+        @media (prefers-reduced-motion:reduce){.nav-item.active .nav-ia,.nav-item.active .nav-ia .nav-ia-points circle,.ai-hero-ic,.ai-hero-or,#page-ai .ai-match-card,#page-ai .ai-prob-bar-fill,#page-ai .ai-prob-bar-fill::after{animation:none}}
         /* ---------- Accueil ---------- */
         .hm-live{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px 14px;border-radius:14px;cursor:pointer;background:linear-gradient(135deg,rgba(244,63,94,.18),rgba(244,63,94,.04));border:1px solid rgba(244,63,94,.45);box-shadow:0 0 0 0 rgba(244,63,94,.4);animation:hmLive 2s infinite}
         @keyframes hmLive{70%{box-shadow:0 0 0 8px rgba(244,63,94,0)}100%{box-shadow:0 0 0 0 rgba(244,63,94,0)}}
@@ -2979,7 +3019,7 @@ async function fetchApiScore(id, dateRaw) {
 
         <!-- PRONOSTICS AI PAGE -->
         <div class="page" id="page-ai">
-            <div class="vip-header"><h2><i class="fas fa-brain" style="color:var(--primary-yellow);"></i> Pronostics AI</h2></div>
+            <div class="vip-header ai-hero"><div class="pk-sky"><i class="pk-dots"></i><span class="pk-met" style="--x:12%;--y:-15px;--t:4.4s;--d:0.6s;--s:11px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.6" fill="#f4f4f4"/><g fill="#2a2a2a"><polygon points="12,7.6 15.6,10.2 14.2,14.4 9.8,14.4 8.4,10.2"/><polygon points="12,1.4 14.6,3.2 12,5.2 9.4,3.2"/><polygon points="21.4,9.6 21.6,13.2 18.6,12.4 19.2,9.2"/><polygon points="2.6,9.6 4.8,9.2 5.4,12.4 2.4,13.2"/><polygon points="6.6,20.4 8.6,18.2 10.4,20.6 8.6,22"/><polygon points="17.4,20.4 15.4,22 13.6,20.6 15.4,18.2"/></g></svg></span><span class="pk-met" style="--x:60%;--y:-30px;--t:5s;--d:2.4s;--s:10px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.6" fill="#f4f4f4"/><g fill="#2a2a2a"><polygon points="12,7.6 15.6,10.2 14.2,14.4 9.8,14.4 8.4,10.2"/><polygon points="12,1.4 14.6,3.2 12,5.2 9.4,3.2"/><polygon points="21.4,9.6 21.6,13.2 18.6,12.4 19.2,9.2"/><polygon points="2.6,9.6 4.8,9.2 5.4,12.4 2.4,13.2"/><polygon points="6.6,20.4 8.6,18.2 10.4,20.6 8.6,22"/><polygon points="17.4,20.4 15.4,22 13.6,20.6 15.4,18.2"/></g></svg></span><span class="pk-met" style="--x:85%;--y:-10px;--t:4.1s;--d:3.6s;--s:12px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.6" fill="#f4f4f4"/><g fill="#2a2a2a"><polygon points="12,7.6 15.6,10.2 14.2,14.4 9.8,14.4 8.4,10.2"/><polygon points="12,1.4 14.6,3.2 12,5.2 9.4,3.2"/><polygon points="21.4,9.6 21.6,13.2 18.6,12.4 19.2,9.2"/><polygon points="2.6,9.6 4.8,9.2 5.4,12.4 2.4,13.2"/><polygon points="6.6,20.4 8.6,18.2 10.4,20.6 8.6,22"/><polygon points="17.4,20.4 15.4,22 13.6,20.6 15.4,18.2"/></g></svg></span></div><div class="ai-hero-in"><div class="mx-eyebrow"><span class="mx-eyebrow-dot"></span> Analyses IA · Gratuit</div><h2><span class="ai-hero-ic"><i class="fas fa-brain"></i></span> Pronostics <span class="ai-hero-or">AI</span></h2><p class="ai-hero-sub">Nos agents IA analysent chaque match du jour. Choisissez une date et suivez leurs pronostics.</p></div></div>
             <div class="ai-intro-banner">
                 <div class="ai-intro-badge"><i class="fas fa-microchip"></i> AI-POWERED</div>
                 <div class="ai-intro-text">Analyse automatique des prochains matchs (forme, contexte, cote domicile/extérieur), gratuite et ouverte à tous. Certains pronostics, marqués <span style="color:#FFC107;font-weight:700;">VIP</span>, obtiennent nos indices de confiance les plus élevés et restent floutés tant que tu n'as pas rejoint le VIP+ — débloque-les dès maintenant pour ne plus rien manquer.</div>
@@ -3032,7 +3072,7 @@ async function fetchApiScore(id, dateRaw) {
                 <div class="ai-date-tab" data-offset="1" onclick="switchAIDate(1)">Demain</div>
                 <div class="ai-date-tab" data-offset="2" onclick="switchAIDate(2)">J+2</div>
             </div>
-            <div class="ai-filter-bar" style="display:flex; align-items:center; gap:8px; padding:0 20px 15px; flex-wrap:nowrap; overflow-x:auto;">
+            <div class="ai-filter-bar ai-filtres" style="display:flex; align-items:center; gap:8px; padding:0 20px 15px; flex-wrap:nowrap; overflow-x:auto;">
                 <select id="ai-sort-select" onchange="setAISort(this.value)" style="flex-shrink:0; background:var(--bg-input); color:#fff; border:1px solid var(--border-color); border-radius:10px; padding:8px 10px; font-size:12px; font-weight:600; font-family:'Montserrat',sans-serif;">
                     <option value="time">Heure : croissante</option>
                     <option value="desc">Confiance : décroissante</option>
@@ -3052,7 +3092,7 @@ async function fetchApiScore(id, dateRaw) {
     <div class="bottom-nav">
         <div class="nav-item active" onclick="navigateTo('home')"><svg class="nav-svg nav-maison" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13.4 12 6.4l9 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.4 12v7.4c0 .9.7 1.6 1.6 1.6h3.4v-4.4c0-.6.5-1.1 1.1-1.1h1c.6 0 1.1.5 1.1 1.1V21H17c.9 0 1.6-.7 1.6-1.6V12L12 7z" fill="currentColor" opacity=".88"/><path class="nav-couronne" d="M8.7 4.6 8.2 1.3l2.2 1.6L12 .6l1.6 2.3 2.2-1.6-.5 3.3z" fill="currentColor"/></svg><span>Accueil</span></div>
         <div class="nav-item" onclick="navigateTo('packs')"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="navPackMask"><rect width="24" height="24" fill="#fff"/><rect x="10.9" y="7" width="2.2" height="16" fill="#000"/><rect x="2" y="11.6" width="20" height="1.3" fill="#000"/></mask></defs><g mask="url(#navPackMask)"><rect x="3" y="7.6" width="18" height="4.6" rx="1.3" fill="currentColor"/><rect x="4.4" y="12.2" width="15.2" height="9.3" rx="1.6" fill="currentColor" opacity=".72"/></g><path d="M12 7.3c-1.1-2.6-3.6-4-5-2.8-1.2 1 .1 2.9 5 2.8zm0 0c1.1-2.6 3.6-4 5-2.8 1.2 1-.1 2.9-5 2.8z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path class="nav-svg-eclat" d="M20.3 1.2l.55 1.45 1.45.55-1.45.55-.55 1.45-.55-1.45-1.45-.55 1.45-.55z" fill="currentColor"/></svg><span>Nos packs</span></div>
-        <div class="nav-item nav-item-ai" onclick="navigateTo('ai')"><i class="fas fa-brain"></i><span>Pronostics<br>AI</span></div>
+        <div class="nav-item nav-item-ai" onclick="navigateTo('ai')"><svg class="nav-svg nav-ia" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.2 3.2a3 3 0 0 0-3 2.6A3.2 3.2 0 0 0 3.4 9a3.3 3.3 0 0 0 .6 4.6 3.2 3.2 0 0 0 2.2 4.6 3 3 0 0 0 3 2.6c.9 0 1.7-.4 2.2-1V4.3a3 3 0 0 0-2.2-1.1z" fill="currentColor"/><path d="M14.8 3.2a3 3 0 0 1 3 2.6A3.2 3.2 0 0 1 20.6 9a3.3 3.3 0 0 1-.6 4.6 3.2 3.2 0 0 1-2.2 4.6 3 3 0 0 1-3 2.6c-.9 0-1.7-.4-2.2-1V4.3a3 3 0 0 1 2.2-1.1z" fill="currentColor" opacity=".72"/><g class="nav-ia-circuit" fill="none" stroke="#0A0E1F" stroke-width="1.3" stroke-linecap="round"><path d="M7.4 8.2h2.2v2.4M6.6 13.4h3v2.2M16.6 8.2h-2.2v2.4M17.4 13.4h-3v2.2"/></g><g class="nav-ia-points" fill="#0A0E1F"><circle cx="7.4" cy="8.2" r="1"/><circle cx="6.6" cy="13.4" r="1"/><circle cx="16.6" cy="8.2" r="1"/><circle cx="17.4" cy="13.4" r="1"/></g><path class="nav-svg-eclat" d="M20.3 1.2l.55 1.45 1.45.55-1.45.55-.55 1.45-.55-1.45-1.45-.55 1.45-.55z" fill="currentColor"/></svg><span>Pronostics<br>AI</span></div>
         <div class="nav-item" onclick="navigateTo('matchs')"><svg class="nav-svg nav-ballon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.9"/><polygon points="12,7.4 15.4,9.9 14.1,13.9 9.9,13.9 8.6,9.9" fill="currentColor"/><path d="M12 7.4V3.2M15.4 9.9l3.9-1.6M14.1 13.9l2.5 3.6M9.9 13.9l-2.5 3.6M8.6 9.9L4.7 8.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path class="nav-svg-eclat" d="M20.3 1.2l.55 1.45 1.45.55-1.45.55-.55 1.45-.55-1.45-1.45-.55 1.45-.55z" fill="currentColor"/></svg><span>Matchs</span></div>
         <div class="nav-item vip" onclick="navigateTo('vip')"><span class="vip-medal-wrap"><span class="vip-aura"></span><i class="vip-etincelle" style="--dx:-12px"></i><i class="vip-etincelle" style="--dx:11px"></i><i class="vip-etincelle" style="--dx:-2px"></i><span class="vip-medal"><i class="fas fa-crown"></i></span></span><span class="vip-label">Espace<br>SM VIP+</span></div>
     </div>
@@ -14865,7 +14905,7 @@ ${aiPrompt}
         if (sc === 'en-cours' && typeof buildTicketCardHtml === 'function') {
             return `<div class="combined-card tk-cadre" id="combined-card-${isHome ? 'home' : 'vip'}-${c.id}" style="width:100%;">`
                 + ticketEnCoursHtml(c, isHome)
-                + vipRevealBtn + cartBtnHome + timeMessage + liveFollowBtn + `</div>`; // sans le bouton Telegram bleu
+                + vipRevealBtn + cartBtnHome + timeMessage + (isHome ? '' : liveFollowBtn) + `</div>`; // sans le bouton Telegram bleu ; sur l'accueil, le label LIVE remplace « Suivre en LIVE »
         }
         return `
         <div class="combined-card" id="combined-card-${isHome ? 'home' : 'vip'}-${c.id}" style="width:100%;">
