@@ -898,6 +898,49 @@
         .matchs-match-score.is-live{color:var(--red)}
 
 
+
+        /* ---------- Accueil ---------- */
+        .hm-header{position:relative;overflow:hidden;margin:0 0 6px;padding:18px 20px 16px;background:radial-gradient(120% 110% at 20% 0%,#1a2140 0%,#0d1124 60%,transparent 100%)}
+        .hm-header>*:not(.pk-sky){position:relative;z-index:1}
+        #page-home .logo-avatar.small{box-shadow:0 0 0 3px rgba(255,193,7,.18),0 0 18px rgba(255,193,7,.35);animation:hmAvatar 3s ease-in-out infinite}
+        @keyframes hmAvatar{50%{box-shadow:0 0 0 5px rgba(255,193,7,.1),0 0 26px rgba(255,193,7,.5)}}
+        #page-home .home-username-text{font-family:'Montserrat',sans-serif;font-weight:900}
+        .hm-orders{transition:transform .15s,border-color .2s;background:rgba(255,255,255,.05)!important;backdrop-filter:blur(6px)}
+        .hm-orders:active{transform:scale(.96)}
+        #page-home .home-notif{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+        #page-home .home-notif i{animation:hmCloche 4s ease-in-out infinite;transform-origin:50% 0}
+        #page-home .home-notif .notif-dot{box-shadow:0 0 0 0 rgba(244,63,94,.7);animation:hmDot 1.8s infinite}
+        @keyframes hmCloche{0%,80%,100%{transform:rotate(0)}84%{transform:rotate(14deg)}88%{transform:rotate(-12deg)}92%{transform:rotate(8deg)}96%{transform:rotate(-4deg)}}
+        @keyframes hmDot{70%{box-shadow:0 0 0 7px rgba(244,63,94,0)}100%{box-shadow:0 0 0 0 rgba(244,63,94,0)}}
+        .hm-shine{position:relative;overflow:hidden;transition:transform .15s}
+        .hm-shine:active{transform:scale(.985)}
+        .hm-shine::after{content:'';position:absolute;top:-30%;bottom:-30%;left:-60%;width:35%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.13),transparent);transform:skewX(-20deg);animation:pkShine 5.5s ease-in-out infinite;pointer-events:none}
+        .ai-promo-banner.hm-shine::after{animation-delay:1.4s}
+        #page-home .ai-promo-icon{animation:hmBrain 2.6s ease-in-out infinite}
+        @keyframes hmBrain{50%{box-shadow:0 0 0 6px rgba(255,193,7,.08),0 0 18px rgba(255,193,7,.35)}}
+        .hm-title{display:inline-flex;align-items:center;gap:10px;font-family:'Montserrat',sans-serif;font-weight:800}
+        .hm-ic{width:30px;height:30px;font-size:13px}
+        .hm-more{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;background:rgba(255,193,7,.1);border:1px solid rgba(255,193,7,.25);font-size:12px!important}
+        .hm-more i{font-size:10px;transition:transform .2s}
+        .hm-more:active i{transform:translateX(3px)}
+        .hm-pack{position:relative;overflow:hidden;background:linear-gradient(160deg,rgba(255,255,255,.045),rgba(255,255,255,.01)),var(--bg-card)!important;border-top:3px solid var(--pk)!important;border-radius:20px!important;padding:16px!important}
+        .hm-pack:active{transform:scale(.985)}
+        .hm-pack-logo{width:58px;height:58px;flex-shrink:0}
+        .hm-pack-logo .logo-pack-icon{width:58px;height:58px;border-radius:16px;padding:9px;position:relative;z-index:1;animation:pkLogoFloat 3.6s ease-in-out infinite;box-shadow:0 6px 18px color-mix(in srgb,var(--pk) 40%,transparent)}
+        .hm-pack-vip{border:1px solid rgba(255,193,7,.4)!important;border-top:3px solid #FFC107!important;box-shadow:0 10px 30px rgba(255,193,7,.1)}
+        .hm-pack-vip .pack-card-name{color:#FFC107}
+        .hm-pack-vip::before{content:'';position:absolute;top:-30%;bottom:-30%;left:-60%;width:40%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.1),transparent);transform:skewX(-20deg);animation:pkShine 5s ease-in-out infinite;pointer-events:none}
+        .hm-btn{display:inline-flex!important;align-items:center;gap:7px;padding:8px 16px!important;border-radius:10px!important;font-weight:800!important;box-shadow:0 4px 14px color-mix(in srgb,var(--pk) 35%,transparent)}
+        .hm-btn i{font-size:10px;animation:hmFleche 1.6s ease-in-out infinite}
+        @keyframes hmFleche{50%{transform:translateX(3px)}}
+        .hm-pack .heart-icon{transition:transform .2s}
+        .hm-pack .heart-icon.liked{animation:hmCoeur .4s ease}
+        @keyframes hmCoeur{50%{transform:scale(1.35)}}
+        #page-home .home-vip-section h3{margin-bottom:14px}
+        .hm-help{background:linear-gradient(135deg,rgba(38,165,228,.14),rgba(38,165,228,.03)),var(--bg-card)!important;border-color:rgba(38,165,228,.3)!important;border-radius:16px!important}
+        .hm-help .help-card-icon{background:#26A5E4;color:#fff;animation:hmAide 3s ease-in-out infinite}
+        @keyframes hmAide{0%,85%,100%{transform:scale(1)}90%{transform:scale(1.12) rotate(-6deg)}95%{transform:scale(1.05) rotate(4deg)}}
+        @media (prefers-reduced-motion:reduce){#page-home .logo-avatar.small,#page-home .home-notif i,#page-home .home-notif .notif-dot,.hm-shine::after,#page-home .ai-promo-icon,.hm-pack-logo .logo-pack-icon,.hm-pack-vip::before,.hm-btn i,.hm-help .help-card-icon{animation:none}}
         /* ---------- Page Matchs ---------- */
         .mx-pv{display:flex;margin:0 20px 16px}
         .mx-hero{position:relative;overflow:hidden;padding:22px 20px 8px;background:radial-gradient(120% 90% at 50% 0%,#1a2140 0%,#0d1124 55%,transparent 100%)}
@@ -2570,7 +2613,7 @@ async function fetchApiScore(id, dateRaw) {
 
         <!-- HOME -->
         <div class="page active" id="page-home">
-            <div class="home-header fade-in-up delay-1">
+            <div class="home-header hm-header fade-in-up delay-1"><div class="pk-sky"><i class="pk-dots"></i><span class="pk-met" style="--x:15%;--y:-20px;--t:4.6s;--d:1s;--s:11px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.6" fill="#f4f4f4"/><g fill="#2a2a2a"><polygon points="12,7.6 15.6,10.2 14.2,14.4 9.8,14.4 8.4,10.2"/><polygon points="12,1.4 14.6,3.2 12,5.2 9.4,3.2"/><polygon points="21.4,9.6 21.6,13.2 18.6,12.4 19.2,9.2"/><polygon points="2.6,9.6 4.8,9.2 5.4,12.4 2.4,13.2"/><polygon points="6.6,20.4 8.6,18.2 10.4,20.6 8.6,22"/><polygon points="17.4,20.4 15.4,22 13.6,20.6 15.4,18.2"/></g></svg></span><span class="pk-met" style="--x:65%;--y:-30px;--t:5.2s;--d:3s;--s:10px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.6" fill="#f4f4f4"/><g fill="#2a2a2a"><polygon points="12,7.6 15.6,10.2 14.2,14.4 9.8,14.4 8.4,10.2"/><polygon points="12,1.4 14.6,3.2 12,5.2 9.4,3.2"/><polygon points="21.4,9.6 21.6,13.2 18.6,12.4 19.2,9.2"/><polygon points="2.6,9.6 4.8,9.2 5.4,12.4 2.4,13.2"/><polygon points="6.6,20.4 8.6,18.2 10.4,20.6 8.6,22"/><polygon points="17.4,20.4 15.4,22 13.6,20.6 15.4,18.2"/></g></svg></span></div>
                 <div class="home-user">
                     <div class="avatar-wrap">
                         <div class="logo-avatar small" id="avatar-home"></div>
@@ -2586,7 +2629,7 @@ async function fetchApiScore(id, dateRaw) {
                     </div>
                 </div>
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <div onclick="openMyOrdersPopup()" style="display:flex; align-items:center; gap:6px; height:40px; padding:0 14px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:20px; cursor:pointer;">
+                    <div class="hm-orders" onclick="openMyOrdersPopup()" style="display:flex; align-items:center; gap:6px; height:40px; padding:0 14px; background:var(--bg-card); border:1px solid var(--border-color); border-radius:20px; cursor:pointer;">
                         <i class="fas fa-receipt" style="color:var(--primary-yellow); font-size:14px;"></i>
                         <span style="font-size:12px; font-weight:700; color:#fff; white-space:nowrap;">Mes commandes</span>
                     </div>
@@ -2604,8 +2647,8 @@ async function fetchApiScore(id, dateRaw) {
                 </div>
                 <i class="fas fa-chevron-right campagne-chevron"></i>
             </div>
-            <div class="pv-banniere fade-in-up delay-2" style="margin:0 20px 15px;" onclick="ouvrirParisVip()"><span class="vipx-badge pv-badge-rouge"><img src="logo-dark.png" alt=""><em>VIP+</em></span><span><b>Paris SMVIP+ du jour<span class="pv-nouveau">Nouveau !</span></b><small>La sélection du jour par notre IA</small></span><i class="fas fa-chevron-right"></i></div>
-            <div class="ai-promo-banner fade-in-up delay-2" onclick="navigateTo('ai')">
+            <div class="pv-banniere hm-shine fade-in-up delay-2" style="margin:0 20px 12px;" onclick="ouvrirParisVip()"><span class="vipx-badge pv-badge-rouge"><img src="logo-dark.png" alt=""><em>VIP+</em></span><span><b>Paris SMVIP+ du jour<span class="pv-nouveau">Nouveau !</span></b><small>La sélection du jour par notre IA</small></span><i class="fas fa-chevron-right"></i></div>
+            <div class="ai-promo-banner hm-shine fade-in-up delay-2" onclick="navigateTo('ai')">
                 <div class="ai-promo-icon"><i class="fas fa-brain"></i></div>
                 <div class="ai-promo-info">
                     <div class="ai-promo-title">Pronostics AI <span class="ai-promo-badge">GRATUIT</span></div>
@@ -2615,52 +2658,52 @@ async function fetchApiScore(id, dateRaw) {
             </div>
             <div style="margin:5px 20px 15px;">
                 <div class="section-header" style="padding:0; margin-bottom:10px;">
-                    <span class="section-title" id="unlock-section-title"><i class="fas fa-lock-open" style="color:var(--primary-yellow); margin-right:6px;"></i>Débloquer mon accès</span>
+                    <span class="section-title hm-title" id="unlock-section-title"><span class="pk-sec-ic hm-ic"><i class="fas fa-lock-open"></i></span>Débloquer mon accès</span>
                 </div>
                 <div id="unlock-section-container"></div>
             </div>
             <div class="section-header fade-in-up delay-3">
-                <span class="section-title">Découvrez nos packs !</span>
-                <span class="section-more" onclick="navigateTo('packs')">Voir plus</span>
+                <span class="section-title hm-title"><span class="pk-sec-ic hm-ic"><i class="fas fa-gift"></i></span>Découvrez nos packs !</span>
+                <span class="section-more hm-more" onclick="navigateTo('packs')">Voir plus <i class="fas fa-arrow-right"></i></span>
             </div>
             <div class="packs-scroll">
-                <div class="pack-card fade-in-up delay-3" onclick="navigateTo('packs')">
-                    <div class="logo-pack-icon green" id="pack-icon-1"></div>
+                <div class="pack-card hm-pack fade-in-up delay-3" style="--pk:#22C55E" onclick="navigateTo('packs')">
+                    <div class="pk-logo hm-pack-logo"><span class="pk-logo-ring"></span><div class="logo-pack-icon green" id="pack-icon-1"></div><span class="pk-logo-shine"></span><span class="pk-logo-badge"><i class="fas fa-calendar-day"></i></span></div>
                     <div class="pack-card-info">
                         <div class="pack-card-name">SM Score Exact Journalier</div>
                         <div class="pack-card-tag"><i class="fas fa-circle"></i> Livraison instantanée !</div>
-                        <div class="pack-card-btn" style="background:var(--green);color:#fff;">Découvrir !</div>
+                        <div class="pack-card-btn hm-btn" style="background:var(--green);color:#fff;">Découvrir ! <i class="fas fa-arrow-right"></i></div>
                     </div>
                     <i class="far fa-heart heart-icon" onclick="event.stopPropagation();this.classList.toggle('liked');this.classList.toggle('far');this.classList.toggle('fas');"></i>
                 </div>
-                <div class="pack-card fade-in-up delay-4" onclick="navigateTo('packs')">
-                    <div class="logo-pack-icon red" id="pack-icon-2"></div>
+                <div class="pack-card hm-pack hm-pack-vip fade-in-up delay-4" style="--pk:#FFC107" onclick="navigateTo('packs')">
+                    <div class="pk-logo hm-pack-logo"><span class="pk-logo-ring"></span><div class="logo-pack-icon yellow" id="pack-icon-2"></div><span class="pk-logo-shine"></span><span class="pk-logo-badge"><i class="fas fa-gem"></i></span></div>
                     <div class="pack-card-info">
-                        <div class="pack-card-name">SM VIP+ (à vie)</div>
+                        <div class="pack-card-name">SM VIP+ <span class="pk-life">à vie</span> <i class="fas fa-crown pk-crown"></i></div>
                         <div class="pack-card-tag"><i class="fas fa-circle"></i> Livraison instantanée !</div>
-                        <div class="pack-card-btn" style="background:var(--red);color:#fff;">Découvrir !</div>
+                        <div class="pack-card-btn hm-btn" style="background:linear-gradient(135deg,#FFC107,#B8860B);color:#1a1200;">Découvrir ! <i class="fas fa-arrow-right"></i></div>
                     </div>
                     <i class="far fa-heart heart-icon" onclick="event.stopPropagation();this.classList.toggle('liked');this.classList.toggle('far');this.classList.toggle('fas');"></i>
                 </div>
             </div>
             <!-- Bouton "Suivre en LIVE" désormais intégré dans la carte du combiné (buildCC) -->
             <div class="home-vip-section fade-in-up delay-5">
-                <h3>🔥 Dernier Combiné VIP+</h3>
+                <h3 class="hm-title"><span class="pk-sec-ic hm-ic"><i class="fas fa-fire"></i></span>Dernier Combiné VIP+</h3>
                 <div id="home-combined-container"><div class="no-combined-message"><i class="fas fa-futbol"></i>Aucun combiné disponible.</div></div>
             </div>
             <div class="section-header fade-in-up delay-5" style="margin-top: 10px;">
-                <span class="section-title">Nos derniers combinés</span>
+                <span class="section-title hm-title"><span class="pk-sec-ic hm-ic"><i class="fas fa-clock-rotate-left"></i></span>Nos derniers combinés</span>
             </div>
             <div id="history-container" class="fade-in-up delay-5" style="padding: 0 20px; margin-bottom: 20px;">
                 <div class="no-combined-message"><i class="fas fa-history"></i>Aucun historique.</div>
             </div>
             <div class="section-header fade-in-up delay-5" style="margin-top: 10px;">
-                <span class="section-title">Mes commandes</span>
+                <span class="section-title hm-title"><span class="pk-sec-ic hm-ic"><i class="fas fa-receipt"></i></span>Mes commandes</span>
             </div>
             <div id="my-orders-container" class="fade-in-up delay-5" style="padding: 0 20px; margin-bottom: 20px;">
                 <div class="no-combined-message"><i class="fas fa-receipt"></i>Aucune commande pour le moment.</div>
             </div>
-            <div class="help-card fade-in-up delay-5" onclick="window.open(TELEGRAM_LINK, '_blank')">
+            <div class="help-card hm-help fade-in-up delay-5" onclick="window.open(TELEGRAM_LINK, '_blank')">
                 <div class="help-card-icon"><i class="fas fa-comment-dots"></i></div>
                 <div class="help-card-info">
                     <div class="help-card-title">Un problème, ou besoin d'aide ?</div>
