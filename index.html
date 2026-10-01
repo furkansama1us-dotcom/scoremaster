@@ -904,6 +904,11 @@
 
 
         /* ---------- Pronostics AI ---------- */
+        .ai-promo-icon .ia-cerveau{width:24px;height:24px;color:#FFC107;overflow:visible;filter:drop-shadow(0 0 6px rgba(255,193,7,.55));animation:navIA 2.4s ease-in-out infinite}
+        .ai-promo-icon .ia-cerveau .nav-ia-points circle{fill:#1a1406;animation:navIAPoint 1.2s ease-in-out infinite}
+        .ai-promo-icon .ia-cerveau .nav-ia-points circle:nth-child(2){animation-delay:.3s}.ai-promo-icon .ia-cerveau .nav-ia-points circle:nth-child(3){animation-delay:.6s}.ai-promo-icon .ia-cerveau .nav-ia-points circle:nth-child(4){animation-delay:.9s}
+        .ai-promo-icon .ia-cerveau .nav-ia-circuit{stroke:#1a1406}
+        .ai-promo-icon .ia-eclat{animation:navEclat 2.4s ease-in-out infinite;transform-origin:20.3px 3.2px}
         .nav-item-ai:not(.active) .nav-svg{color:var(--blue)}
         .nav-item.active .nav-ia{animation:navIA 2.4s ease-in-out infinite}
         .nav-item.active .nav-ia .nav-ia-points circle{animation:navIAPoint 1.2s ease-in-out infinite}
@@ -2701,7 +2706,7 @@ async function fetchApiScore(id, dateRaw) {
             </div>
             <div class="pv-banniere hm-shine fade-in-up delay-2" style="margin:0 20px 12px;" onclick="ouvrirParisVip()"><span class="vipx-badge pv-badge-rouge"><img src="logo-dark.png" alt=""><em>VIP+</em></span><span><b>Paris SMVIP+ du jour<span class="pv-nouveau">Nouveau !</span></b><small>La sélection du jour par notre IA</small></span><i class="fas fa-chevron-right"></i></div>
             <div class="ai-promo-banner hm-shine fade-in-up delay-2" onclick="navigateTo('ai')">
-                <div class="ai-promo-icon"><i class="fas fa-brain"></i></div>
+                <div class="ai-promo-icon"><svg class="ia-cerveau" viewBox="0 0 24 24" aria-hidden="true"><path d="M9.2 3.2a3 3 0 0 0-3 2.6A3.2 3.2 0 0 0 3.4 9a3.3 3.3 0 0 0 .6 4.6 3.2 3.2 0 0 0 2.2 4.6 3 3 0 0 0 3 2.6c.9 0 1.7-.4 2.2-1V4.3a3 3 0 0 0-2.2-1.1z" fill="currentColor"/><path d="M14.8 3.2a3 3 0 0 1 3 2.6A3.2 3.2 0 0 1 20.6 9a3.3 3.3 0 0 1-.6 4.6 3.2 3.2 0 0 1-2.2 4.6 3 3 0 0 1-3 2.6c-.9 0-1.7-.4-2.2-1V4.3a3 3 0 0 1 2.2-1.1z" fill="currentColor" opacity=".72"/><g class="nav-ia-circuit" fill="none" stroke="#0A0E1F" stroke-width="1.3" stroke-linecap="round"><path d="M7.4 8.2h2.2v2.4M6.6 13.4h3v2.2M16.6 8.2h-2.2v2.4M17.4 13.4h-3v2.2"/></g><g class="nav-ia-points" fill="#0A0E1F"><circle cx="7.4" cy="8.2" r="1"/><circle cx="6.6" cy="13.4" r="1"/><circle cx="16.6" cy="8.2" r="1"/><circle cx="17.4" cy="13.4" r="1"/></g><path class="ia-eclat" d="M20.3 1.2l.55 1.45 1.45.55-1.45.55-.55 1.45-.55-1.45-1.45-.55 1.45-.55z" fill="currentColor"/></svg></div>
                 <div class="ai-promo-info">
                     <div class="ai-promo-title">Pronostics AI <span class="ai-promo-badge">GRATUIT</span></div>
                     <div class="ai-promo-desc">Analyses automatiques des prochains matchs</div>
