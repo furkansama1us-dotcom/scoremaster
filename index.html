@@ -620,6 +620,8 @@
         .nav-item.active i{color:var(--primary-yellow)}
         .nav-item .nav-svg{width:22px;height:22px;color:var(--text-gray);transition:color .3s,transform .3s;overflow:visible}
         .nav-item.active .nav-svg{color:var(--primary-yellow);transform:translateY(-1px);filter:drop-shadow(0 0 6px rgba(255,193,7,.35))}
+        .nav-item.active .nav-ballon{animation:navBallon 3s ease-in-out infinite}
+        @keyframes navBallon{0%,100%{transform:translateY(-1px) rotate(0)}50%{transform:translateY(-3px) rotate(180deg)}}
         .nav-item.active .nav-svg-eclat{transform-origin:20.3px 3.2px;animation:navEclat 2.4s ease-in-out infinite}
         @keyframes navEclat{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.6)}}
         .nav-item.active span{color:var(--primary-yellow)}
@@ -895,6 +897,54 @@
         .matchs-match-score{font-size:15px;font-weight:800;color:var(--primary-yellow);background:var(--bg-input);padding:5px 12px;border-radius:8px;min-width:50px;text-align:center}
         .matchs-match-score.is-live{color:var(--red)}
 
+
+        /* ---------- Page Matchs ---------- */
+        .mx-hero{position:relative;overflow:hidden;padding:22px 20px 8px;background:radial-gradient(120% 90% at 50% 0%,#1a2140 0%,#0d1124 55%,transparent 100%)}
+        .mx-hero>*:not(.pk-sky){position:relative}
+        .mx-eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:10px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--primary-yellow);background:rgba(255,193,7,.1);border:1px solid rgba(255,193,7,.25);padding:5px 10px;border-radius:20px;margin-bottom:12px}
+        .mx-eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--primary-yellow);box-shadow:0 0 8px var(--primary-yellow);animation:pulse 1.6s infinite}
+        .mx-hero .matchs-hero-title{font-family:'Montserrat',sans-serif;font-size:21px;font-weight:900;line-height:1.25;margin-bottom:6px}
+        .mx-hero .matchs-hero-sub{font-size:13px;text-transform:capitalize;margin-bottom:16px}
+        .mx-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+        .mx-stat{position:relative;align-items:flex-start;gap:3px;padding:12px;border-radius:14px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);backdrop-filter:blur(6px)}
+        .mx-stat .matchs-stat-value{font-family:'Montserrat',sans-serif;font-size:24px;font-weight:900;line-height:1}
+        .mx-stat .matchs-stat-label{font-size:10px;letter-spacing:.3px;text-transform:uppercase}
+        .mx-stat-ic{position:absolute;top:12px;right:12px;font-size:12px;color:var(--text-gray);opacity:.8}
+        .mx-stat.live{border-color:rgba(244,63,94,.3);background:linear-gradient(160deg,rgba(244,63,94,.14),rgba(244,63,94,.03))}
+        .mx-stat.live .matchs-stat-value,.mx-stat.live .mx-stat-ic{color:var(--red)}
+        .matchs-date-tabs{scrollbar-width:none}.matchs-date-tabs::-webkit-scrollbar{display:none}
+        .matchs-date-tab{min-width:52px;border-radius:14px;transition:transform .2s,background .2s}
+        .matchs-date-tab.active{background:linear-gradient(145deg,#FFD54F,#FFB300);box-shadow:0 6px 18px rgba(255,193,7,.3);transform:translateY(-2px)}
+        .matchs-date-tab.active .dow,.matchs-date-tab.active .dom{color:#1a1200}
+        .matchs-filter-tab{display:inline-flex;align-items:center;gap:7px;font-weight:700}
+        .mx-n{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:rgba(255,255,255,.08);font-size:10px;display:inline-flex;align-items:center;justify-content:center;color:var(--text-light-gray)}
+        .matchs-filter-tab.active .mx-n{background:var(--primary-yellow);color:#1a1200}
+        .matchs-filter-tab[data-filter="live"] .mx-n{color:var(--red)}
+        .mx-league{position:sticky;top:0;z-index:2;padding:10px 2px;margin-bottom:4px;background:linear-gradient(180deg,var(--bg-dark,#0A0E1F) 75%,transparent);font-size:13px;color:#fff}
+        .mx-league-ic{width:24px;height:24px;border-radius:7px;background:rgba(255,255,255,.06);display:inline-flex;align-items:center;justify-content:center;color:var(--primary-yellow);font-size:11px;overflow:hidden}
+        .mx-league-ic .flag-img{width:18px;height:13px}
+        .mx-league-name{font-weight:800;letter-spacing:.2px}
+        .mx-league-n{margin-left:auto;font-size:10px;font-weight:700;color:var(--text-gray);background:rgba(255,255,255,.05);padding:3px 8px;border-radius:10px}
+        .mx-card{display:flex;align-items:stretch;gap:0;padding:0;border-radius:16px;overflow:hidden;margin-bottom:8px;background:linear-gradient(160deg,rgba(255,255,255,.04),rgba(255,255,255,.01)),var(--bg-card);transition:transform .15s}
+        .mx-card:active{transform:scale(.99)}
+        .mx-teams{flex:1;min-width:0;padding:11px 12px;display:flex;flex-direction:column;gap:8px}
+        .mx-team{display:flex;align-items:center;gap:10px;min-width:0;color:#e6e9f2}
+        .mx-name{flex:1;min-width:0;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .mx-team.win .mx-name,.mx-team.win .mx-goal{color:#fff;font-weight:800}
+        .finished .mx-team:not(.win) .mx-name{color:var(--text-gray)}
+        .mx-goal{font-family:'Montserrat',sans-serif;font-size:15px;font-weight:800;color:#cfd3df;min-width:16px;text-align:right}
+        .live .mx-goal{color:#fff}
+        .mx-crest{position:relative;width:24px;height:24px;flex-shrink:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:hsl(var(--h) 45% 26%);border:1px solid hsl(var(--h) 50% 40% / .6);overflow:hidden}
+        .mx-crest b{font-size:9px;font-weight:800;color:hsl(var(--h) 80% 85%)}
+        .mx-crest img{position:absolute;inset:2px;width:calc(100% - 4px);height:calc(100% - 4px);object-fit:contain;background:var(--bg-card)}
+        .mx-side{width:84px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-left:1px dashed rgba(255,255,255,.08);background:rgba(255,255,255,.025)}
+        .mx-side small{font-size:9px;font-weight:600;color:var(--text-gray);text-transform:uppercase;letter-spacing:.4px}
+        .mx-kick{font-family:'Montserrat',sans-serif;font-size:17px;font-weight:900;color:var(--primary-yellow)}
+        .mx-ft{font-size:12px;font-weight:900;color:var(--text-light-gray);background:rgba(255,255,255,.07);padding:3px 8px;border-radius:6px}
+        .mx-live{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:900;color:#fff;background:var(--red);padding:3px 8px;border-radius:6px;box-shadow:0 0 12px rgba(244,63,94,.5)}
+        .mx-live i{width:6px;height:6px;border-radius:50%;background:#fff;animation:pulse 1s infinite}
+        .mx-card.live{border-color:rgba(244,63,94,.45);box-shadow:0 0 0 1px rgba(244,63,94,.15),0 8px 22px rgba(244,63,94,.12)}
+        .mx-card.live .mx-side{background:rgba(244,63,94,.08)}
         .matchs-promo-block{margin:10px 20px 25px;padding:22px;background:linear-gradient(135deg,rgba(255,193,7,.12),rgba(10,14,31,0));border:1px solid rgba(255,193,7,.25);border-radius:18px}
         .matchs-promo-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:.5px;color:var(--primary-yellow);background:rgba(255,193,7,.15);border:1px solid rgba(255,193,7,.3);padding:4px 10px;border-radius:20px;margin-bottom:12px}
         .matchs-promo-title{font-size:17px;font-weight:800;margin-bottom:8px;line-height:1.3}
@@ -2787,23 +2837,25 @@ async function fetchApiScore(id, dateRaw) {
         <!-- MATCHS (façon sportmeridian.com) -->
         <div class="page" id="page-matchs">
 
-            <div class="matchs-hero">
+            <div class="matchs-hero mx-hero">
+                <div class="pk-sky"><i class="pk-dots"></i><span class="pk-met" style="--x:10%;--y:-10px;--t:4.2s;--d:0.4s;--s:12px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.6" fill="#f4f4f4"/><g fill="#2a2a2a"><polygon points="12,7.6 15.6,10.2 14.2,14.4 9.8,14.4 8.4,10.2"/><polygon points="12,1.4 14.6,3.2 12,5.2 9.4,3.2"/><polygon points="21.4,9.6 21.6,13.2 18.6,12.4 19.2,9.2"/><polygon points="2.6,9.6 4.8,9.2 5.4,12.4 2.4,13.2"/><polygon points="6.6,20.4 8.6,18.2 10.4,20.6 8.6,22"/><polygon points="17.4,20.4 15.4,22 13.6,20.6 15.4,18.2"/></g></svg></span><span class="pk-met" style="--x:55%;--y:-30px;--t:4.8s;--d:2.1s;--s:10px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.6" fill="#f4f4f4"/><g fill="#2a2a2a"><polygon points="12,7.6 15.6,10.2 14.2,14.4 9.8,14.4 8.4,10.2"/><polygon points="12,1.4 14.6,3.2 12,5.2 9.4,3.2"/><polygon points="21.4,9.6 21.6,13.2 18.6,12.4 19.2,9.2"/><polygon points="2.6,9.6 4.8,9.2 5.4,12.4 2.4,13.2"/><polygon points="6.6,20.4 8.6,18.2 10.4,20.6 8.6,22"/><polygon points="17.4,20.4 15.4,22 13.6,20.6 15.4,18.2"/></g></svg></span><span class="pk-met" style="--x:80%;--y:-20px;--t:4.0s;--d:3.3s;--s:12px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.6" fill="#f4f4f4"/><g fill="#2a2a2a"><polygon points="12,7.6 15.6,10.2 14.2,14.4 9.8,14.4 8.4,10.2"/><polygon points="12,1.4 14.6,3.2 12,5.2 9.4,3.2"/><polygon points="21.4,9.6 21.6,13.2 18.6,12.4 19.2,9.2"/><polygon points="2.6,9.6 4.8,9.2 5.4,12.4 2.4,13.2"/><polygon points="6.6,20.4 8.6,18.2 10.4,20.6 8.6,22"/><polygon points="17.4,20.4 15.4,22 13.6,20.6 15.4,18.2"/></g></svg></span></div>
+                <div class="mx-eyebrow"><span class="mx-eyebrow-dot"></span> Matchs du jour</div>
                 <h2 class="matchs-hero-title">Pronostics football du jour, scores en direct et analyses IA</h2>
                 <p class="matchs-hero-sub" id="matchs-hero-date"></p>
-                <div class="matchs-stats-row">
-                    <div class="matchs-stat"><span class="matchs-stat-value" id="matchs-stat-live" style="color:var(--red);">0</span><span class="matchs-stat-label"><i class="fas fa-circle" style="font-size:6px;color:var(--red);"></i> EN DIRECT</span></div>
-                    <div class="matchs-stat"><span class="matchs-stat-value" id="matchs-stat-upcoming">0</span><span class="matchs-stat-label">À VENIR</span></div>
-                    <div class="matchs-stat"><span class="matchs-stat-value" id="matchs-stat-finished">0</span><span class="matchs-stat-label">TERMINÉS</span></div>
+                <div class="matchs-stats-row mx-stats">
+                    <div class="matchs-stat mx-stat live"><i class="mx-stat-ic fas fa-tower-broadcast"></i><span class="matchs-stat-value" id="matchs-stat-live">0</span><span class="matchs-stat-label">En direct</span></div>
+                    <div class="matchs-stat mx-stat"><i class="mx-stat-ic fas fa-clock"></i><span class="matchs-stat-value" id="matchs-stat-upcoming">0</span><span class="matchs-stat-label">À venir</span></div>
+                    <div class="matchs-stat mx-stat"><i class="mx-stat-ic fas fa-flag-checkered"></i><span class="matchs-stat-value" id="matchs-stat-finished">0</span><span class="matchs-stat-label">Terminés</span></div>
                 </div>
             </div>
 
             <div class="matchs-date-tabs" id="matchs-date-tabs"></div>
 
             <div class="matchs-filter-tabs" id="matchs-filter-tabs">
-                <div class="matchs-filter-tab active" data-filter="all" onclick="setMatchsFilter('all')">Tous</div>
-                <div class="matchs-filter-tab" data-filter="live" onclick="setMatchsFilter('live')">Direct</div>
-                <div class="matchs-filter-tab" data-filter="upcoming" onclick="setMatchsFilter('upcoming')">À venir</div>
-                <div class="matchs-filter-tab" data-filter="finished" onclick="setMatchsFilter('finished')">Terminés</div>
+                <div class="matchs-filter-tab active" data-filter="all" onclick="setMatchsFilter('all')">Tous<span class="mx-n" id="mx-n-all">0</span></div>
+                <div class="matchs-filter-tab" data-filter="live" onclick="setMatchsFilter('live')">Direct<span class="mx-n" id="mx-n-live">0</span></div>
+                <div class="matchs-filter-tab" data-filter="upcoming" onclick="setMatchsFilter('upcoming')">À venir<span class="mx-n" id="mx-n-upcoming">0</span></div>
+                <div class="matchs-filter-tab" data-filter="finished" onclick="setMatchsFilter('finished')">Terminés<span class="mx-n" id="mx-n-finished">0</span></div>
             </div>
 
             <div id="matchs-league-list" style="padding: 0 20px 20px;">
@@ -2943,7 +2995,7 @@ async function fetchApiScore(id, dateRaw) {
         <div class="nav-item active" onclick="navigateTo('home')"><i class="fas fa-home"></i><span>Accueil</span></div>
         <div class="nav-item" onclick="navigateTo('packs')"><svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true"><defs><mask id="navPackMask"><rect width="24" height="24" fill="#fff"/><rect x="10.9" y="7" width="2.2" height="16" fill="#000"/><rect x="2" y="11.6" width="20" height="1.3" fill="#000"/></mask></defs><g mask="url(#navPackMask)"><rect x="3" y="7.6" width="18" height="4.6" rx="1.3" fill="currentColor"/><rect x="4.4" y="12.2" width="15.2" height="9.3" rx="1.6" fill="currentColor" opacity=".72"/></g><path d="M12 7.3c-1.1-2.6-3.6-4-5-2.8-1.2 1 .1 2.9 5 2.8zm0 0c1.1-2.6 3.6-4 5-2.8 1.2 1-.1 2.9-5 2.8z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path class="nav-svg-eclat" d="M20.3 1.2l.55 1.45 1.45.55-1.45.55-.55 1.45-.55-1.45-1.45-.55 1.45-.55z" fill="currentColor"/></svg><span>Nos packs</span></div>
         <div class="nav-item nav-item-ai" onclick="navigateTo('ai')"><i class="fas fa-brain"></i><span>Pronostics<br>AI</span></div>
-        <div class="nav-item" onclick="navigateTo('matchs')"><i class="fas fa-futbol"></i><span>Matchs</span></div>
+        <div class="nav-item" onclick="navigateTo('matchs')"><svg class="nav-svg nav-ballon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.9"/><polygon points="12,7.4 15.4,9.9 14.1,13.9 9.9,13.9 8.6,9.9" fill="currentColor"/><path d="M12 7.4V3.2M15.4 9.9l3.9-1.6M14.1 13.9l2.5 3.6M9.9 13.9l-2.5 3.6M8.6 9.9L4.7 8.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path class="nav-svg-eclat" d="M20.3 1.2l.55 1.45 1.45.55-1.45.55-.55 1.45-.55-1.45-1.45-.55 1.45-.55z" fill="currentColor"/></svg><span>Matchs</span></div>
         <div class="nav-item vip" onclick="navigateTo('vip')"><span class="vip-medal-wrap"><span class="vip-aura"></span><i class="vip-etincelle" style="--dx:-12px"></i><i class="vip-etincelle" style="--dx:11px"></i><i class="vip-etincelle" style="--dx:-2px"></i><span class="vip-medal"><i class="fas fa-crown"></i></span></span><span class="vip-label">Espace<br>SM VIP+</span></div>
     </div>
 </div>
@@ -10198,6 +10250,9 @@ async function fetchMatchesFromAPI() {
         var liveEl = document.getElementById('matchs-stat-live'); if (liveEl) liveEl.textContent = liveCount;
         var upcomingEl = document.getElementById('matchs-stat-upcoming'); if (upcomingEl) upcomingEl.textContent = upcomingCount;
         var finishedEl = document.getElementById('matchs-stat-finished'); if (finishedEl) finishedEl.textContent = finishedCount;
+        [['all', matches.length], ['live', liveCount], ['upcoming', upcomingCount], ['finished', finishedCount]].forEach(function (x) {
+            var n = document.getElementById('mx-n-' + x[0]); if (n) n.textContent = x[1];
+        });
 
         // Bandeau live
         var tickerWrap = document.getElementById('matchs-ticker-wrap');
@@ -10235,32 +10290,45 @@ async function fetchMatchesFromAPI() {
             groups[key].matches.push(m);
         });
 
+        // Heure de Paris pour tout le monde : le combiné et les pronostics sont
+        // annoncés à l'heure française, la page Matchs doit dire la même chose.
+        var heureParis = function (iso) { return iso ? new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Paris' }) : '--:--'; };
+        var echap = function (t) { return String(t || '').replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); };
+        var ecusson = function (team) {
+            var nom = (team && team.name) || '?';
+            var crest = team && (team.crest || team.logo);
+            var initiales = nom.split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w[0]; }).join('').toUpperCase();
+            var teinte = 0; for (var k = 0; k < nom.length; k++) teinte = (teinte * 31 + nom.charCodeAt(k)) % 360;
+            return '<span class="mx-crest" style="--h:' + teinte + '">' + (crest ? '<img src="' + echap(crest) + '" alt="" loading="lazy" onerror="this.remove()">' : '') + '<b>' + echap(initiales) + '</b></span>';
+        };
         var html = '';
         order.forEach(function (leagueName) {
             var g = groups[leagueName];
             var liveInGroup = g.matches.filter(function (m) { return matchsStatusBucket(m.status) === 'live'; }).length;
             html += `<div class="matchs-league-group">
-                <div class="matchs-league-header">
-                    ${g.flag ? `<img class="flag-img" src="${g.flag}">` : '<i class="fas fa-trophy" style="color:var(--text-gray);font-size:12px;"></i>'}
-                    ${leagueName}
-                    ${liveInGroup > 0 ? `<span class="live-badge"><span class="matchs-ticker-live-dot"></span> ${liveInGroup} EN DIRECT</span>` : ''}
+                <div class="matchs-league-header mx-league">
+                    <span class="mx-league-ic">${g.flag ? `<img class="flag-img" src="${g.flag}">` : '<i class="fas fa-trophy"></i>'}</span>
+                    <span class="mx-league-name">${echap(leagueName)}</span>
+                    ${liveInGroup > 0 ? `<span class="live-badge"><span class="matchs-ticker-live-dot"></span> ${liveInGroup} EN DIRECT</span>` : `<span class="mx-league-n">${g.matches.length} match${g.matches.length > 1 ? 's' : ''}</span>`}
                 </div>`;
 
             g.matches.forEach(function (m) {
                 var bucket = matchsStatusBucket(m.status);
-                var isLive = bucket === 'live';
-                var timeStr = m.utcDate ? new Date(m.utcDate).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '--:--';
-                var scoreDisplay;
-                if (bucket === 'upcoming') scoreDisplay = timeStr;
-                else if (m.score && m.score.fullTime && m.score.fullTime.home !== null) scoreDisplay = `${m.score.fullTime.home}-${m.score.fullTime.away}`;
-                else scoreDisplay = '-';
-
-                html += `<div class="matchs-match-row${isLive ? ' is-live' : ''}">
-                    <div>
-                        <div class="matchs-match-teams">${m.homeTeam.name} - ${m.awayTeam.name}</div>
-                        <div class="matchs-match-time">${bucket === 'live' ? 'En direct' : (bucket === 'finished' ? 'Terminé · ' + timeStr : timeStr)}</div>
+                var ft = m.score && m.score.fullTime;
+                var aScore = ft && ft.home !== null && ft.home !== undefined;
+                var h = aScore ? ft.home : null, w = aScore ? ft.away : null;
+                var gagne = function (cote) { return bucket === 'finished' && aScore && (cote === 'h' ? h > w : w > h) ? ' win' : ''; };
+                var but = function (v) { return bucket === 'upcoming' ? '' : `<b class="mx-goal">${aScore ? v : '-'}</b>`; };
+                var cote;
+                if (bucket === 'live') cote = `<span class="mx-live"><i></i>LIVE</span><small>En cours</small>`;
+                else if (bucket === 'finished') cote = `<span class="mx-ft">FT</span><small>Terminé</small>`;
+                else cote = `<span class="mx-kick">${heureParis(m.utcDate)}</span><small>Coup d'envoi</small>`;
+                html += `<div class="matchs-match-row mx-card ${bucket}">
+                    <div class="mx-teams">
+                        <div class="mx-team${gagne('h')}">${ecusson(m.homeTeam)}<span class="mx-name">${echap(m.homeTeam.name)}</span>${but(h)}</div>
+                        <div class="mx-team${gagne('a')}">${ecusson(m.awayTeam)}<span class="mx-name">${echap(m.awayTeam.name)}</span>${but(w)}</div>
                     </div>
-                    <div class="matchs-match-score${isLive ? ' is-live' : ''}">${scoreDisplay}</div>
+                    <div class="mx-side">${cote}</div>
                 </div>`;
             });
 

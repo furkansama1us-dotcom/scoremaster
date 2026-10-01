@@ -114,8 +114,8 @@ async function matchsDepuisCache(dateFrom) {
         matches: retenues.map(f => ({
             id: f.fixture_id,
             utcDate: f.kickoff,
-            homeTeam: { name: f.home },
-            awayTeam: { name: f.away },
+            homeTeam: { name: f.home, crest: f.home_logo || null },
+            awayTeam: { name: f.away, crest: f.away_logo || null },
             competition: { name: f.league_name, code: f.league_code, major: true },
             area: { name: f.country, flag: f.flag },
             // Le cache ne connaît pas le direct : statut estimé d'après le coup
