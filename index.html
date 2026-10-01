@@ -935,6 +935,33 @@
         .packs-page-list{padding:0 20px}
 
         /* ---------- Page « Nos packs » ---------- */
+        .pk-hero{background:radial-gradient(120% 90% at 50% 0%,#1a2140 0%,#0d1124 55%,transparent 100%)}
+        .pk-sky{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+        .pk-dots{position:absolute;inset:0;background-image:radial-gradient(1px 1px at 12% 22%,rgba(255,255,255,.7),transparent),radial-gradient(1px 1px at 32% 68%,rgba(255,255,255,.5),transparent),radial-gradient(1.5px 1.5px at 58% 18%,rgba(255,230,150,.8),transparent),radial-gradient(1px 1px at 78% 52%,rgba(255,255,255,.6),transparent),radial-gradient(1px 1px at 90% 14%,rgba(255,255,255,.5),transparent),radial-gradient(1.5px 1.5px at 6% 80%,rgba(255,230,150,.6),transparent),radial-gradient(1px 1px at 46% 40%,rgba(255,255,255,.4),transparent),radial-gradient(1px 1px at 68% 84%,rgba(255,255,255,.5),transparent);animation:pkTwinkle 4s ease-in-out infinite}
+        @keyframes pkTwinkle{50%{opacity:.45}}
+        .pk-met{position:absolute;left:var(--x);top:var(--y);width:var(--s);height:var(--s);opacity:0;animation:pkMet var(--t) linear infinite;animation-delay:var(--d)}
+        .pk-met svg{width:100%;height:100%;display:block;filter:drop-shadow(0 0 4px rgba(255,255,255,.8));animation:pkRoll .6s linear infinite}
+        .pk-met::before{content:'';position:absolute;right:55%;top:50%;width:70px;height:2px;margin-top:-1px;transform-origin:right center;transform:rotate(35deg);background:linear-gradient(90deg,transparent,rgba(255,214,90,.75));border-radius:2px}
+        @keyframes pkMet{0%{opacity:0;transform:translate(0,0)}8%{opacity:1}55%{opacity:1}70%,100%{opacity:0;transform:translate(150px,105px)}}
+        @keyframes pkRoll{to{transform:rotate(360deg)}}
+        .pk-logo{width:56px;height:56px}
+        .pk-logo .logo-pack-detail{position:relative;z-index:1;animation:pkLogoFloat 3.6s ease-in-out infinite}
+        .pk-card:nth-child(2) .pk-logo .logo-pack-detail{animation-delay:.6s}.pk-card:nth-child(3) .pk-logo .logo-pack-detail{animation-delay:1.2s}
+        @keyframes pkLogoFloat{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-3px) rotate(-3deg)}}
+        .pk-logo-ring{position:absolute;inset:-4px;border-radius:19px;padding:2px;background:conic-gradient(from var(--pk-a,0deg),transparent 0 60%,var(--pk) 80%,#fff 88%,transparent 92%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:pkSpin 3s linear infinite}
+        .pk-logo-shine{position:absolute;inset:0;z-index:2;border-radius:16px;overflow:hidden;pointer-events:none}
+        .pk-logo-shine::after{content:'';position:absolute;top:-20%;bottom:-20%;left:-70%;width:45%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);transform:skewX(-20deg);animation:pkShine 4s ease-in-out infinite}
+        .pk-logo-badge{position:absolute;right:-6px;bottom:-6px;z-index:3;width:22px;height:22px;border-radius:50%;background:var(--bg-card);border:2px solid var(--pk);color:var(--pk);font-size:10px;display:flex;align-items:center;justify-content:center;animation:pkBadge 2.4s ease-in-out infinite}
+        @keyframes pkBadge{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+        .pk-feat-star{grid-column:1/-1;justify-content:center;background:rgba(255,193,7,.14);color:#FFC107}
+        .pk-feat-star i{color:#FFC107}
+        .pk-cta-duo{position:relative;display:flex;align-items:flex-end;justify-content:center;gap:4px;margin:-4px 0 14px}
+        .pk-cta-logo{margin:0;width:74px;height:74px}
+        .pk-cta-logo img{width:52px;height:52px}
+        .pk-cta-masc{animation:pkFloat 3.2s ease-in-out infinite .4s;filter:drop-shadow(0 0 10px rgba(255,200,40,.55))}
+        .pk-cta-crown{display:inline-block;animation:pkCrown 2.4s ease-in-out infinite}
+        @media (prefers-reduced-motion:reduce){.pk-met,.pk-dots,.pk-logo .logo-pack-detail,.pk-logo-ring,.pk-logo-shine::after,.pk-logo-badge,.pk-cta-masc,.pk-cta-crown{animation:none}.pk-met{display:none}}
+
         .pk-sec{display:flex;align-items:center;justify-content:center;gap:10px;font-family:'Montserrat',sans-serif;font-size:17px;font-weight:800;margin-bottom:15px}
         .pk-sec-ic{width:32px;height:32px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(145deg,rgba(255,193,7,.22),rgba(255,193,7,.06));border:1px solid rgba(255,193,7,.35);color:#FFC107;font-size:14px;box-shadow:0 0 14px rgba(255,193,7,.18)}
         .pk-stars{display:flex;gap:3px;color:#FFC107;font-size:12px}
@@ -2546,7 +2573,7 @@ async function fetchApiScore(id, dateRaw) {
         <!-- PACKS PAGE -->
         <div class="page" id="page-packs">
             <div class="pk-hero">
-                <div class="pk-hero-glow"></div>
+                <div class="pk-sky"><i class="pk-dots"></i><span class="pk-met" style="--x:8%;--y:-10px;--t:3.6s;--d:0s;--s:14px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.6" fill="#f4f4f4"/><g fill="#2a2a2a"><polygon points="12,7.6 15.6,10.2 14.2,14.4 9.8,14.4 8.4,10.2"/><polygon points="12,1.4 14.6,3.2 12,5.2 9.4,3.2"/><polygon points="21.4,9.6 21.6,13.2 18.6,12.4 19.2,9.2"/><polygon points="2.6,9.6 4.8,9.2 5.4,12.4 2.4,13.2"/><polygon points="6.6,20.4 8.6,18.2 10.4,20.6 8.6,22"/><polygon points="17.4,20.4 15.4,22 13.6,20.6 15.4,18.2"/></g></svg></span><span class="pk-met" style="--x:42%;--y:-30px;--t:4.4s;--d:1.3s;--s:11px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.6" fill="#f4f4f4"/><g fill="#2a2a2a"><polygon points="12,7.6 15.6,10.2 14.2,14.4 9.8,14.4 8.4,10.2"/><polygon points="12,1.4 14.6,3.2 12,5.2 9.4,3.2"/><polygon points="21.4,9.6 21.6,13.2 18.6,12.4 19.2,9.2"/><polygon points="2.6,9.6 4.8,9.2 5.4,12.4 2.4,13.2"/><polygon points="6.6,20.4 8.6,18.2 10.4,20.6 8.6,22"/><polygon points="17.4,20.4 15.4,22 13.6,20.6 15.4,18.2"/></g></svg></span><span class="pk-met" style="--x:70%;--y:-20px;--t:3.9s;--d:2.6s;--s:13px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.6" fill="#f4f4f4"/><g fill="#2a2a2a"><polygon points="12,7.6 15.6,10.2 14.2,14.4 9.8,14.4 8.4,10.2"/><polygon points="12,1.4 14.6,3.2 12,5.2 9.4,3.2"/><polygon points="21.4,9.6 21.6,13.2 18.6,12.4 19.2,9.2"/><polygon points="2.6,9.6 4.8,9.2 5.4,12.4 2.4,13.2"/><polygon points="6.6,20.4 8.6,18.2 10.4,20.6 8.6,22"/><polygon points="17.4,20.4 15.4,22 13.6,20.6 15.4,18.2"/></g></svg></span><span class="pk-met" style="--x:25%;--y:10px;--t:4.8s;--d:3.4s;--s:10px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.6" fill="#f4f4f4"/><g fill="#2a2a2a"><polygon points="12,7.6 15.6,10.2 14.2,14.4 9.8,14.4 8.4,10.2"/><polygon points="12,1.4 14.6,3.2 12,5.2 9.4,3.2"/><polygon points="21.4,9.6 21.6,13.2 18.6,12.4 19.2,9.2"/><polygon points="2.6,9.6 4.8,9.2 5.4,12.4 2.4,13.2"/><polygon points="6.6,20.4 8.6,18.2 10.4,20.6 8.6,22"/><polygon points="17.4,20.4 15.4,22 13.6,20.6 15.4,18.2"/></g></svg></span><span class="pk-met" style="--x:88%;--y:-40px;--t:4.2s;--d:0.7s;--s:12px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.6" fill="#f4f4f4"/><g fill="#2a2a2a"><polygon points="12,7.6 15.6,10.2 14.2,14.4 9.8,14.4 8.4,10.2"/><polygon points="12,1.4 14.6,3.2 12,5.2 9.4,3.2"/><polygon points="21.4,9.6 21.6,13.2 18.6,12.4 19.2,9.2"/><polygon points="2.6,9.6 4.8,9.2 5.4,12.4 2.4,13.2"/><polygon points="6.6,20.4 8.6,18.2 10.4,20.6 8.6,22"/><polygon points="17.4,20.4 15.4,22 13.6,20.6 15.4,18.2"/></g></svg></span></div><div class="pk-hero-glow"></div>
                 <div class="pk-hero-logo"><img src="logo-dark.png" alt="Score Master"><span class="pk-hero-ring"></span></div>
                 <h2 class="pk-hero-title">Nos <span>packs</span></h2>
                 <p class="pk-hero-sub">Choisissez votre formule et recevez les analyses de nos IA, <b>vérifiées par notre équipe</b> avant chaque publication.</p>
@@ -2571,7 +2598,7 @@ async function fetchApiScore(id, dateRaw) {
                 <div class="pk-card pk-day" style="--pk:#22C55E">
                     
                     <div class="pk-top">
-                        <div class="pk-logo"><div class="logo-pack-detail" id="pack-detail-1"></div></div>
+                        <div class="pk-logo"><span class="pk-logo-ring"></span><div class="logo-pack-detail" id="pack-detail-1"></div><span class="pk-logo-shine"></span><span class="pk-logo-badge"><i class="fas fa-calendar-day"></i></span></div>
                         <div class="pk-head">
                             <div class="pk-name">SM Score Exact Journalier</div>
                             <div class="pack-subscribers"><i class="fas fa-users"></i> 342 abonnés actifs</div>
@@ -2580,7 +2607,7 @@ async function fetchApiScore(id, dateRaw) {
                         <button class="pk-info" onclick="showPackInfo('journalier')" aria-label="Détails du pack"><i class="fas fa-info"></i></button>
                     </div>
                     <p class="pk-desc">Recevez votre pronostic en score exact unique, accompagné de son analyse détaillée.</p>
-                    <div class="pk-feats"><div class="pk-feat" style="--d:0.35s"><i class="fas fa-check"></i>1 score exact</div><div class="pk-feat" style="--d:0.42s"><i class="fas fa-check"></i>Analyse détaillée</div><div class="pk-feat" style="--d:0.49s"><i class="fas fa-check"></i>Support 7j/7</div><div class="pk-feat" style="--d:0.56s"><i class="fas fa-check"></i>Notification push</div></div>
+                    <div class="pk-feats"><div class="pk-feat" style="--d:0.35s"><i class="fas fa-check"></i>1 score exact</div><div class="pk-feat" style="--d:0.42s"><i class="fas fa-check"></i>Analyse détaillée</div><div class="pk-feat" style="--d:0.49s"><i class="fas fa-check"></i>Support 7j/7</div><div class="pk-feat" style="--d:0.56s"><i class="fas fa-check"></i>Annonce sur Telegram</div></div>
                     <div class="spots-container">
                         <div class="spots-header">
                             <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:#FF9800;"></i> Plus que <strong id="spots-1">7</strong> places à ce prix !</span>
@@ -2594,7 +2621,7 @@ async function fetchApiScore(id, dateRaw) {
                 <div class="pk-card pk-vip" style="--pk:#FFC107">
                     <div class="pk-ribbon"><i class="fas fa-crown"></i> LE PLUS COMPLET</div><span class="pk-shine"></span>
                     <div class="pk-top">
-                        <div class="pk-logo"><div class="logo-pack-detail" id="pack-detail-2"></div></div>
+                        <div class="pk-logo"><span class="pk-logo-ring"></span><div class="logo-pack-detail" id="pack-detail-2"></div><span class="pk-logo-shine"></span><span class="pk-logo-badge"><i class="fas fa-gem"></i></span></div>
                         <div class="pk-head">
                             <div class="pk-name">SM VIP+ <span class="pk-life">à vie</span> <i class="fas fa-crown pk-crown"></i></div>
                             <div class="pack-subscribers"><i class="fas fa-users"></i> 1,247 membres VIP+</div>
@@ -2602,8 +2629,8 @@ async function fetchApiScore(id, dateRaw) {
                         </div>
                         <button class="pk-info" onclick="showPackInfo('vip')" aria-label="Détails du pack"><i class="fas fa-info"></i></button>
                     </div>
-                    <p class="pk-desc">Accès illimité et à vie à tous nos pronostics, aux combinés exclusifs et à l'espace membre VIP+.</p>
-                    <div class="pk-feats"><div class="pk-feat" style="--d:0.35s"><i class="fas fa-check"></i>Accès à vie</div><div class="pk-feat" style="--d:0.42s"><i class="fas fa-check"></i>4 à 5 combinés S.E / sem.</div><div class="pk-feat" style="--d:0.49s"><i class="fas fa-check"></i>Espace membre VIP+</div><div class="pk-feat" style="--d:0.56s"><i class="fas fa-check"></i>Canal Telegram VIP</div><div class="pk-feat" style="--d:0.63s"><i class="fas fa-check"></i>Priorité support</div><div class="pk-feat" style="--d:0.70s"><i class="fas fa-check"></i>Accès fondateurs</div></div>
+                    <p class="pk-desc">Tout Score Master, à vie : le combiné de chaque soir de match, les paris du jour, les analyses IA et le suivi en direct, dans votre espace VIP+.</p>
+                    <div class="pk-feats"><div class="pk-feat" style="--d:0.35s"><i class="fas fa-check"></i>Accès à vie</div><div class="pk-feat" style="--d:0.42s"><i class="fas fa-check"></i>1 combiné S.E chaque soir de match</div><div class="pk-feat" style="--d:0.49s"><i class="fas fa-check"></i>Espace membre VIP+</div><div class="pk-feat" style="--d:0.56s"><i class="fas fa-check"></i>Canal Telegram VIP</div><div class="pk-feat" style="--d:0.63s"><i class="fas fa-check"></i>Priorité support</div><div class="pk-feat" style="--d:0.70s"><i class="fas fa-check"></i>Paris du jour SMVIP+</div><div class="pk-feat" style="--d:0.77s"><i class="fas fa-check"></i>Analyses IA des matchs</div><div class="pk-feat" style="--d:0.84s"><i class="fas fa-check"></i>Suivi LIVE du combiné</div><div class="pk-feat pk-feat-star" style="--d:0.91s"><i class="fas fa-star"></i>Accès fondateurs</div></div>
                     <div class="spots-container">
                         <div class="spots-header">
                             <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:var(--red);"></i> Plus que <strong id="spots-2" style="color:var(--red);">3</strong> places à ce prix !</span>
@@ -2617,7 +2644,7 @@ async function fetchApiScore(id, dateRaw) {
                 <div class="pk-card pk-week" style="--pk:#3B82F6">
                     
                     <div class="pk-top">
-                        <div class="pk-logo"><div class="logo-pack-detail" id="pack-detail-3"></div></div>
+                        <div class="pk-logo"><span class="pk-logo-ring"></span><div class="logo-pack-detail" id="pack-detail-3"></div><span class="pk-logo-shine"></span><span class="pk-logo-badge"><i class="fas fa-calendar-week"></i></span></div>
                         <div class="pk-head">
                             <div class="pk-name">SM Combiné Hebdo</div>
                             <div class="pack-subscribers"><i class="fas fa-users"></i> 589 abonnés actifs</div>
@@ -2648,7 +2675,7 @@ async function fetchApiScore(id, dateRaw) {
                         <div class="comp-cell" style="color:#FFC107;">VIP+ <i class="fas fa-crown" style="font-size:10px;"></i></div>
                         <div class="comp-cell" style="color:var(--blue);">Hebdo</div>
                     </div>
-                    <div class="comp-row"><div class="comp-cell">Scores exacts</div><div class="comp-cell">1/jour</div><div class="comp-cell" style="color:#FFC107; font-weight:700;">Illimité</div><div class="comp-cell">5/sem.</div></div>
+                    <div class="comp-row"><div class="comp-cell">Scores exacts</div><div class="comp-cell">1/jour</div><div class="comp-cell" style="color:#FFC107; font-weight:700;">Chaque soir de match</div><div class="comp-cell">5/sem.</div></div>
                     <div class="comp-row"><div class="comp-cell">Canal Telegram</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-check" style="color:var(--green);"></i></div><div class="comp-cell"><i class="fas fa-check" style="color:var(--green);"></i></div></div>
                     <div class="comp-row"><div class="comp-cell">Support prioritaire</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell"><i class="fas fa-check" style="color:var(--green);"></i></div><div class="comp-cell"><i class="fas fa-check" style="color:var(--green);"></i></div></div>
                     <div class="comp-row"><div class="comp-cell">Durée</div><div class="comp-cell"><i class="fas fa-times" style="color:var(--red);"></i></div><div class="comp-cell" style="color:#FFC107; font-weight:700;">À VIE</div><div class="comp-cell">7 jours</div></div>
@@ -2692,7 +2719,11 @@ async function fetchApiScore(id, dateRaw) {
             <div style="padding: 0 20px; margin-bottom:30px;">
                 <div class="final-cta">
                     <div class="final-cta-glow"></div>
-                    <i class="fas fa-crown" style="font-size:30px; color:#FFC107; margin-bottom:12px;"></i>
+                    <i class="fas fa-crown pk-cta-crown" style="font-size:30px; color:#FFC107; margin-bottom:12px;"></i>
+                    <div class="pk-cta-duo">
+                        <div class="pk-hero-logo pk-cta-logo"><img src="logo-dark.png" alt="Score Master"><span class="pk-hero-ring"></span></div>
+                        <div class="pk-cta-masc"><div class="ssm"><img class="aile-g" src="mascotte-roi-mecha.webp" alt=""><img class="aile-d" src="mascotte-roi-mecha.webp" alt=""><img class="corps" src="mascotte-roi-mecha.webp" alt=""><img class="tete" src="mascotte-roi-mecha.webp" alt=""><i class="etincelle" style="left:14px;top:44px"></i><i class="etincelle" style="left:68px;top:44px;animation-delay:.6s"></i></div></div>
+                    </div>
                     <h3 style="font-size:18px; font-weight:800; margin-bottom:8px;">Prêt à passer au niveau supérieur ?</h3>
                     <p style="font-size:13px; color:var(--text-gray); margin-bottom:18px;">Rejoignez notre communauté de passionnés et optimisez vos analyses</p>
                     <button class="final-cta-btn" onclick="openCheckout('vip', 99.99)"><i class="fas fa-crown"></i> Devenir VIP+ maintenant</button>
@@ -8992,12 +9023,12 @@ async function clearAllPublicationHistory() {
             icon.innerHTML = '<i class="fas fa-calendar-check"></i>'; icon.style.background = 'rgba(34,197,94, 0.15)'; icon.style.color = 'var(--green)';
             title.textContent = 'SM Score Exact Journalier';
             desc.textContent = 'Notre algorithme et nos experts analysent quotidiennement des dizaines de paramètres pour dénicher LE match à suivre de la journée.';
-            extra.innerHTML = '<ul style="text-align:left; padding-left:20px; color:var(--text-light-gray);"><li style="margin-bottom:8px">Cotes moyennes : <span style="color:var(--green)">12.00 à 50.00</span></li><li style="margin-bottom:8px">Publié chaque jour avant 12h</li><li>Parfait pour faire monter sa bankroll</li></ul>';
+            extra.innerHTML = '<ul style="text-align:left; padding-left:20px; color:var(--text-light-gray);"><li style="margin-bottom:8px">Cotes <span style="color:var(--green)">réelles des bookmakers</span></li><li style="margin-bottom:8px">Publié la veille au soir ou dans la matinée</li><li>Parfait pour faire monter sa bankroll</li></ul>';
         } else if (packType === 'vip') {
             icon.innerHTML = '<i class="fas fa-crown"></i>'; icon.style.background = 'rgba(244,63,94, 0.15)'; icon.style.color = 'var(--red)';
             title.textContent = 'SM VIP+ (à vie)';
             desc.textContent = "Le Saint Graal du parieur. Rejoignez l'élite et accédez à l'intégralité de nos services pour toujours, sans aucun abonnement caché.";
-            extra.innerHTML = '<ul style="text-align:left; padding-left:20px; color:var(--text-light-gray);"><li style="margin-bottom:8px">Accès direct aux <span style="color:var(--red)">fondateurs</span></li><li style="margin-bottom:8px">Canal Telegram Secret inclus</li><li>Une seule transaction, à vie</li></ul>';
+            extra.innerHTML = '<ul style="text-align:left; padding-left:20px; color:var(--text-light-gray);"><li style="margin-bottom:8px">Accès direct aux <span style="color:var(--red)">fondateurs</span></li><li style="margin-bottom:8px">Canal Telegram Secret inclus</li><li style="margin-bottom:8px">Paris du jour, analyses IA et suivi LIVE</li><li>Une seule transaction, à vie</li></ul>';
         } else if (packType === 'hebdo') {
             icon.innerHTML = '<i class="fas fa-rocket"></i>'; icon.style.background = 'rgba(74, 144, 217, 0.15)'; icon.style.color = 'var(--blue)';
             title.textContent = 'SM Combiné Hebdo';
