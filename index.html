@@ -1137,6 +1137,18 @@
 
         .cart-fab{position:fixed;right:16px;bottom:calc(85px + var(--safe-bottom));width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--primary-yellow),var(--dark-yellow));display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(255,193,7,.4);cursor:pointer;z-index:500;transition:transform .2s}
         .cart-fab:active{transform:scale(.92)}
+        /* Bouton flottant Paris SMVIP+ : rond plaqué or, halo pulsé, étiquette dessous */
+        .smvip-fab{position:absolute;right:14px;bottom:calc(65px + env(safe-area-inset-bottom, 0px) + 14px);z-index:600;display:flex;flex-direction:column;align-items:center;gap:4px;padding:0;border:none;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:bottom .25s,transform .15s}
+        .smvip-fab:active{transform:scale(.92)}
+        .smvip-fab::before{content:'';position:absolute;top:-4px;left:50%;width:62px;height:62px;margin-left:-31px;border-radius:50%;background:rgba(255,193,7,.35);animation:smvipFabHalo 2.2s ease-out infinite;pointer-events:none}
+        .smvip-fab .vipx-badge{width:54px;height:54px;padding:3px;border:none;animation:none;
+            background:linear-gradient(135deg,#8a6512,#d4a62a 22%,#ffe9a3 40%,#f5c542 55%,#b8860b 75%,#f0cf6a);box-shadow:0 6px 18px rgba(0,0,0,.45),0 0 16px rgba(255,193,7,.45),inset 0 1px 0 rgba(255,255,255,.6)}
+        .smvip-fab .vipx-badge img{border-radius:50%;background:radial-gradient(circle at 35% 30%,#2a2410,#0d0d12 70%);padding:6px 6px 10px}
+        .smvip-fab .vipx-badge em{bottom:4px}
+        .smvip-fab b{position:relative;padding:2px 7px;border-radius:20px;background:#0F1424;border:1px solid rgba(255,193,7,.5);font:800 9.5px 'Montserrat',sans-serif;color:#FFE082;white-space:nowrap;box-shadow:0 3px 8px rgba(0,0,0,.4)}
+        body.panier-visible .smvip-fab{bottom:calc(65px + env(safe-area-inset-bottom, 0px) + 84px)}
+        @keyframes smvipFabHalo{0%{transform:scale(.85);opacity:.8}100%{transform:scale(1.45);opacity:0}}
+        @media (prefers-reduced-motion:reduce){.smvip-fab::before{animation:none;display:none}}
         .cart-fab i{color:#fff;font-size:20px}
         .cart-fab-badge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;font-size:11px;font-weight:800;min-width:20px;height:20px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 5px;border:2px solid var(--bg-dark)}
 
@@ -3166,6 +3178,9 @@ async function fetchApiScore(id, dateRaw) {
         </div>
 
     </div>
+
+    <!-- ACCÈS RAPIDE PARIS SMVIP+ (bas à droite, au-dessus de la navigation) -->
+    <button class="smvip-fab" onclick="ouvrirParisVip()" aria-label="Ouvrir les Paris SMVIP+ du jour"><span class="vipx-badge pv-badge-rouge"><img src="logo-dark.png" alt=""><em>VIP+</em></span><b>Paris du jour</b></button>
 
     <!-- BOTTOM NAV -->
     <div class="bottom-nav">
@@ -10640,6 +10655,7 @@ async function fetchMatchesFromAPI() {
         var count = window.cartItems.length;
         badge.textContent = count;
         fab.style.display = count > 0 ? 'flex' : 'none';
+        document.body.classList.toggle('panier-visible', count > 0);
     }
 
     function addToCart(packType, name, price) {
