@@ -3771,7 +3771,8 @@ async function fetchApiScore(id, dateRaw) {
     <div class="pv-tete">
         <button class="pv-secret" onclick="basculerSmvip()" aria-hidden="true" tabindex="-1"></button>
         <span class="vipx-badge pv-badge-rouge"><img src="logo-dark.png" alt=""><em>VIP+</em></span><h2>Paris SMVIP+<small>Sélection du jour par notre IA</small></h2>
-        <button class="fermer" style="margin-left:auto" onclick="fermerParisVip()" aria-label="Fermer"><i class="fas fa-times"></i></button>
+        <button class="fermer" id="pv-generer-btn" style="margin-left:auto;display:none" onclick="genererParisVipMaintenant(this)" aria-label="Générer les paris du jour (admin)"><i class="fas fa-rotate"></i></button>
+        <button class="fermer" style="margin-left:8px" onclick="fermerParisVip()" aria-label="Fermer"><i class="fas fa-times"></i></button>
     </div>
     <div class="pv-corps" id="pv-corps"></div>
 </div>
@@ -13441,6 +13442,8 @@ async function autoFetchFinalScores(combined) {
     function ouvrirParisVip() {
         var o = document.getElementById('paris-vip-overlay');
         o.classList.add('ouvert', 'smvip');
+        var g = document.getElementById('pv-generer-btn');
+        if (g) { g.style.display = window.isAdmin === true ? '' : 'none'; o.querySelector('.fermer:last-of-type').style.marginLeft = window.isAdmin === true ? '8px' : 'auto'; }
         chargerParisVip();
     }
     function demarrerCompteurPv() {
