@@ -2431,11 +2431,14 @@ async function handleManualRequest(req, res) {
     res.status(200).json({ ok: true, id: lignes && lignes[0] && lignes[0].id });
 }
 
-// GET ?action=manual-queue&secret=CALENDAR_SECRET — demandes en attente, prêtes
-// à générer : chaque slide porte son prompt final, sauf en mode personnalisé où
-// la routine écrit la scène ({{SCENE}}) d'après la légende.
+// GET ?action=manual-queue + en-tête X-Calendar-Secret (ou ?secret=, ancienne
+// forme) — demandes en attente, prêtes à générer : chaque slide porte son prompt
+// final, sauf en mode personnalisé où la routine écrit la scène ({{SCENE}}).
+// L'en-tête évite de mettre le secret dans l'URL, ce que le contrôle de sécurité
+// des routines Claude peut prendre pour une fuite de données.
 async function handleManualQueue(req, res) {
-    if (!CALENDAR_SECRET || req.query.secret !== CALENDAR_SECRET) return res.status(401).json({ error: 'Secret invalide' });
+    const secret = req.headers['x-calendar-secret'] || req.query.secret;
+    if (!CALENDAR_SECRET || secret !== CALENDAR_SECRET) return res.status(401).json({ error: 'Secret invalide' });
     const demandes = await sbFetch('pending_publications?status=eq.requested&select=id,scheduled_for,scheduled_time,overlay_data&order=created_at.asc&limit=4') || [];
     if (!demandes.length) return res.status(200).json({ jobs: [] });
 
