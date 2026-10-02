@@ -3120,6 +3120,7 @@ async function fetchApiScore(id, dateRaw) {
         <button class="admin-tab-btn" id="btn-tab-calendar" onclick="switchAdminTab('calendar')"><i class="fas fa-calendar-days"></i> Calendrier</button>
         <button class="admin-tab-btn" id="btn-tab-publications" onclick="switchAdminTab('publications')"><i class="fas fa-paper-plane"></i> Publications</button>
         <button class="admin-tab-btn" id="btn-tab-analyses" onclick="switchAdminTab('analyses')"><i class="fas fa-magnifying-glass-chart"></i> Analyses</button>
+        <button class="admin-tab-btn" id="btn-tab-laboia" onclick="switchAdminTab('laboia')"><i class="fas fa-flask"></i> Labo IA</button>
     </div>
 
     <!-- ONGLET 1 : DASHBOARD -->
@@ -3469,6 +3470,18 @@ async function fetchApiScore(id, dateRaw) {
             <div class="admin-section-title" style="font-size:16px; margin-bottom:8px;"><i class="fas fa-magnifying-glass-chart"></i> Analyses des matchs passés</div>
             <p style="font-size:13px; color:var(--text-gray); margin-bottom:16px; line-height:1.5;">Vue complète : tous les paris retenus avant le match, réalisés ou non.</p>
             <div id="admin-analyses"><div class="pv-vide"><i class="fas fa-spinner fa-spin"></i> Chargement…</div></div>
+        </div>
+    </div>
+
+    <!-- ONGLET LABO IA : usage interne, jamais exposé aux abonnés. Duplique l'Historique
+         Paris SMVIP+ en recalculant, pour les paris sur totaux de buts perdus, le seuil
+         réellement atteint par le score final — chaque ligne modifiée reste marquée
+         « PARI MODIFIÉ » pour qu'elle ne soit jamais confondue avec le pari réel. -->
+    <div class="admin-tab-content" id="admin-tab-laboia">
+        <div class="admin-section">
+            <div class="admin-section-title" style="font-size:16px; margin-bottom:8px;"><i class="fas fa-flask"></i> Labo IA</div>
+            <p style="font-size:13px; color:var(--text-gray); margin-bottom:16px; line-height:1.5;">Usage interne uniquement — jamais visible par les abonnés. Reprend l'Historique Paris SMVIP+ et recalcule le seuil de buts réellement atteint sur les paris perdus, pour tester la capacité de l'IA à identifier un marché gagnant après coup. Chaque ligne recalculée est marquée <b>PARI MODIFIÉ</b>.</p>
+            <div id="labo-ia-container"><div class="pv-vide"><i class="fas fa-spinner fa-spin"></i> Chargement…</div></div>
         </div>
     </div>
 
@@ -9393,6 +9406,51 @@ async function loadSmPointsHistory() {
         if (tabName === 'publications') loadAdminPublications();
         if (tabName === 'smpoints') loadAdminSmPoints();
         if (tabName === 'analyses') chargerAnalysesAdmin();
+        if (tabName === 'laboia') chargerLaboIA();
+    }
+
+    // ============================================================
+    // LABO IA (admin uniquement, jamais exposé aux abonnés) : reprend
+    // l'Historique Paris SMVIP+ et recalcule, pour les paris sur un total
+    // de buts qui ont perdu, le seuil réellement atteint par le score final.
+    // Chaque ligne recalculée est signalée « PARI MODIFIÉ » : ce n'est pas
+    // le pari réellement joué, seulement un test de ce que l'IA aurait pu
+    // identifier après coup.
+    // ============================================================
+    function laboMarcheCorrige(libelle, scoreFinal) {
+        if (!scoreFinal) return null;
+        var m = String(libelle || '').match(/^(Plus|Moins) de (\d),5 buts$/i);
+        if (!m) return null; // seuls les marchés "total de buts" sont recalculés ici
+        var parts = String(scoreFinal).split('-').map(Number);
+        if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return null;
+        var total = parts[0] + parts[1];
+        var seuil = parseFloat(m[2] + '.5');
+        var sensReel = total > seuil ? 'Plus' : 'Moins';
+        var libelleCorrige = sensReel + ' de ' + m[2] + ',5 buts';
+        return libelleCorrige === libelle ? null : libelleCorrige;
+    }
+
+    function laboCarte(p) {
+        var corrige = p.statut === 'perdu' ? laboMarcheCorrige(p.libelle, p.score_final) : null;
+        var libelleAffiche = corrige || p.libelle;
+        var statutAffiche = corrige ? 'gagne' : p.statut;
+        var tag = corrige ? '<div style="font-weight:800; color:#FF9800; font-size:12px; letter-spacing:.3px; margin-top:6px;"><i class="fas fa-triangle-exclamation"></i> PARI MODIFIÉ — pari réel : "' + pvEchap(p.libelle) + '" (perdu)</div>' : '';
+        return '<div class="pv-carte"><div class="pv-ligne1"><span>' + pvEchap(p.ligue || 'Football') + ' · ' + pvJour(p.fixture_date) + ' ' + pvHeure(p.kickoff) + '</span>'
+            + '<span class="pv-statut ' + statutAffiche + '">' + (PV_STATUTS[statutAffiche] || statutAffiche) + (p.score_final ? ' · ' + pvEchap(p.score_final) : '') + '</span></div>'
+            + '<div class="pv-match">' + pvEchap(p.home) + ' - ' + pvEchap(p.away) + '</div>'
+            + '<div class="pv-pari"><span class="lib">' + pvEchap(libelleAffiche) + '</span><span class="cote">' + pvCote(p.cote) + '</span></div>' + tag + '</div>';
+    }
+
+    async function chargerLaboIA() {
+        var box = document.getElementById('labo-ia-container');
+        box.innerHTML = '<div class="pv-vide"><i class="fas fa-spinner fa-spin"></i> Chargement…</div>';
+        var r;
+        try { var rep = await adminApiCall('/api/publish', { action: 'paris-vip-public', reveler: true }); r = { data: rep.paris }; }
+        catch (e) { box.innerHTML = '<div class="pv-vide">Erreur de chargement : ' + pvEchap(e.message) + '</div>'; return; }
+        var tous = r.data || [];
+        var histo = tous.filter(function (p) { return p.statut === 'gagne' || p.statut === 'perdu'; })
+            .sort(function (x, y) { return Date.parse(y.kickoff) - Date.parse(x.kickoff); });
+        box.innerHTML = histo.length ? histo.map(laboCarte).join('') : '<div class="pv-vide">Aucun pari terminé pour le moment.</div>';
     }
 
     // ============================================================
