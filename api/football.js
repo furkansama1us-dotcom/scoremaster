@@ -179,14 +179,6 @@ async function refreshPredictions(req, res) {
             matchsFd = (fdData.matches || []).filter(m => m.utcDate && m.utcDate.slice(0, 10) === date).slice(0, MAX_MATCHS_PAR_JOUR);
         } catch (e) { /* football-data indisponible : on s'appuie sur API-Football */ }
 
-        // Journée complète : aucun appel à API-Football.
-        const attendus = matchsFd.length ? matchsFd.length : Math.min(MAX_MATCHS_PAR_JOUR, liste.length);
-        if (liste.length && attendus > 0 && enCache.length >= attendus) {
-            resume.complet = true;
-            resume.deja = enCache.length;
-            return res.status(200).json(resume);
-        }
-
         // Liste des rencontres : redemandée seulement si absente ou vieillie.
         const plusRecente = liste.reduce((t, r) => Math.max(t, new Date(r.created_at).getTime() || 0), 0);
         if (!liste.length || (Date.now() - plusRecente) > FRAICHEUR_LISTE_MS) {
@@ -223,14 +215,30 @@ async function refreshPredictions(req, res) {
 
         // Rencontres à analyser, les plus importantes d'abord
         liste.sort((a, b) => (prioriteLigue(a.league_code) - prioriteLigue(b.league_code)) || (new Date(a.kickoff) - new Date(b.kickoff)));
-        const cibles = matchsFd.length
-            ? matchsFd.map(m => {
-                const home = m.homeTeam && m.homeTeam.name, away = m.awayTeam && m.awayTeam.name;
-                const fx = liste.find(r => memeEquipe(r.home, home) && memeEquipe(r.away, away));
-                return { home, away, fixtureId: fx ? fx.fixture_id : null };
-            })
-            : liste.slice(0, MAX_MATCHS_PAR_JOUR).map(r => ({ home: r.home, away: r.away, fixtureId: r.fixture_id }));
-        resume.source = matchsFd.length ? 'football-data' : 'api-football';
+        // Matchs football-data d'abord (ceux que la page affiche), complétés par les
+        // grandes affiches API-Football : un jour où football-data ne connaît qu'un
+        // match (trêve internationale, Ligue des Nations…), les autres rencontres
+        // doivent quand même être analysées, sinon les paris SMVIP+ du jour restent vides.
+        const cibles = matchsFd.map(m => {
+            const home = m.homeTeam && m.homeTeam.name, away = m.awayTeam && m.awayTeam.name;
+            const fx = liste.find(r => memeEquipe(r.home, home) && memeEquipe(r.away, away));
+            return { home, away, fixtureId: fx ? fx.fixture_id : null };
+        });
+        for (const r of liste) {
+            if (cibles.length >= MAX_MATCHS_PAR_JOUR) break;
+            if (cibles.some(c => c.fixtureId === r.fixture_id || (memeEquipe(c.home, r.home) && memeEquipe(c.away, r.away)))) continue;
+            cibles.push({ home: r.home, away: r.away, fixtureId: r.fixture_id });
+        }
+        resume.source = matchsFd.length ? 'football-data + api-football' : 'api-football';
+
+        // Journée complète : aucun appel d'analyse à API-Football.
+        const aAnalyser = cibles.filter(m => m.home && m.away && m.fixtureId);
+        if (aAnalyser.length && aAnalyser.every(m => estEnCache(m.home, m.away))) {
+            resume.complet = true;
+            resume.deja = enCache.length;
+            resume.appelsApi = appels;
+            return res.status(200).json(resume);
+        }
 
         for (const m of cibles) {
             if (!m.home || !m.away) continue;
