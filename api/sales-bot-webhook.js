@@ -55,6 +55,55 @@ const FAQ = {
     garantie: { q: '⚠️ Les pronostics sont-ils garantis ?', r: `⚠️ Non, et personne de sérieux ne peut te le promettre : un pari comporte toujours un risque. Notre engagement, c'est la rigueur de l'analyse et la transparence (les résultats, gagnés comme perdus, restent visibles dans l'historique). Mise uniquement ce que tu peux te permettre de perdre. Réservé aux plus de 18 ans.` }
 };
 
+// Réponses rapides de l'admin : boutons sous chaque alerte reçue dans son chat
+// avec le bot. Un clic envoie le message au client via le bot. Les coordonnées
+// de paiement viennent de variables Vercel (jamais écrites dans le code).
+const SALES_PAYPAL_INFO = process.env.SALES_PAYPAL_INFO || '';
+const SALES_PCS_INFO = process.env.SALES_PCS_INFO || '';
+const REPONSES_ADMIN = {
+    bonjour: { bouton: '👋 Prise en charge', texte: (c, p) => `Salut${c.prenom ? ' ' + c.prenom : ''} ! 😊 Merci pour ta confiance, ravi de t'accueillir chez Score Master ! Je m'occupe personnellement de ta demande${p ? ' pour le pack <b>' + p.label + '</b>' : ''}.` },
+    attente: { bouton: '⏳ J\'arrive', texte: () => `Je suis à toi dans quelques minutes, merci pour ta patience 🙏` },
+    paiement: { bouton: '💳 Modes de paiement', texte: (c, p) => `Pour finaliser ton accès${p ? ' <b>' + p.label + '</b> (' + p.price + '€)' : ''}, tu peux régler par :\n\n`
+        + `💙 <b>PayPal</b>${SALES_PAYPAL_INFO ? ' : ' + SALES_PAYPAL_INFO : ''}\n💳 <b>PCS</b>${SALES_PCS_INFO ? ' : ' + SALES_PCS_INFO : ''}\n\n`
+        + (SALES_PAYPAL_INFO || SALES_PCS_INFO ? `Envoie-moi une capture une fois le paiement fait et j'active ton accès aussitôt ✅` : `Dis-moi lequel tu préfères et je t'envoie les infos tout de suite 😊`) },
+    paypal: { bouton: '💙 Infos PayPal', texte: (c, p) => SALES_PAYPAL_INFO
+        ? `💙 Paiement PayPal${p ? ' (' + p.price + '€)' : ''} : ${SALES_PAYPAL_INFO}\n\nPense à choisir « Entre proches » si possible, puis envoie-moi une capture ✅`
+        : `💙 Je t'envoie l'adresse PayPal juste en dessous 👇` },
+    pcs: { bouton: '💳 Infos PCS', texte: (c, p) => SALES_PCS_INFO
+        ? `💳 Paiement PCS${p ? ' (' + p.price + '€)' : ''} : ${SALES_PCS_INFO}\n\nEnvoie-moi le code du recharge PCS ici, j'active ton accès dès réception ✅`
+        : `💳 Pour PCS, envoie-moi directement ici le code de ta recharge${p ? ' de ' + p.price + '€' : ''}, j'active ton accès dès réception ✅` },
+    recu: { bouton: '✅ Paiement reçu', texte: () => `✅ Paiement bien reçu, merci ! Je prépare ton accès, tu l'auras dans quelques instants 🚀` },
+    activer: { bouton: '🔑 Comment activer', texte: () => `🔑 Pour activer ton accès :\n1. Ouvre l'app 👉 https://scoremaster.fr\n2. Connecte-toi (ou crée ton compte)\n3. Rubrique <b>« Débloquer mon accès »</b> sur l'accueil\n4. Saisis le code que je t'envoie juste après 👇` },
+    bienvenue: { bouton: '🎉 Bienvenue membre', texte: (c, p) => `🎉 Ton accès${p ? ' <b>' + p.label + '</b>' : ''} est activé, bienvenue dans la team Score Master !\n\n`
+        + (c.pack === 'vip' ? `👑 Ce qui t'attend :\n• ton combiné score exact chaque soir de match\n• tes <b>Paris du jour SMVIP+</b> chaque matin dès 9 h (bouton doré en bas à droite de l'app)\n• les <b>Analyses IA</b> des matchs\n• le <b>Suivi LIVE</b> de ton combiné\n\n` : '')
+        + `Si tu as la moindre question, écris-moi ici 😊` },
+    relance: { bouton: '🔁 Relancer le client', texte: (c) => `Coucou${c.prenom ? ' ' + c.prenom : ''} 😊 Tu es toujours partant pour nous rejoindre ? Je suis dispo maintenant si tu veux finaliser ton accès.` },
+    app: { bouton: '📲 Lien de l\'app', texte: () => `📲 L'app Score Master : https://scoremaster.fr\n(Astuce : ajoute-la à ton écran d'accueil pour l'ouvrir en un geste.)` }
+};
+
+function adminKeyboard(leadChatId, pseudo, nom) {
+    const k = Object.keys(REPONSES_ADMIN), rows = [];
+    for (let i = 0; i < k.length; i += 2) rows.push(k.slice(i, i + 2).map(id => ({ text: REPONSES_ADMIN[id].bouton, callback_data: 'adm:' + id + ':' + leadChatId })));
+    if (pseudo) rows.push([{ text: '💬 Écrire à ' + nom, url: 'https://t.me/' + pseudo }]);
+    return rows;
+}
+
+async function handleAdminReponse(cq, id, leadChatId) {
+    const r = REPONSES_ADMIN[id];
+    if (!r || !leadChatId) return tg('answerCallbackQuery', { callback_query_id: cq.id, text: 'Réponse inconnue' });
+    const convo = await getConversation(leadChatId) || {};
+    const pack = PACKS[convo.pack_type] || null;
+    const texte = r.texte({ prenom: (convo.telegram_name || '').split(' ')[0] || '', pack: convo.pack_type }, pack);
+    const envoi = await sendMessage(leadChatId, texte);
+    if (!envoi || !envoi.ok) return tg('answerCallbackQuery', { callback_query_id: cq.id, text: '❌ Échec de l\'envoi', show_alert: true });
+    await safeUpsertConversation(leadChatId, {
+        messages: (convo.messages || []).concat([{ from: 'admin', text: texte.replace(/<[^>]+>/g, ''), at: new Date().toISOString() }]),
+        lead_resolved: false,
+        admin_contacted_at: new Date().toISOString()
+    });
+    await tg('answerCallbackQuery', { callback_query_id: cq.id, text: '✅ Envoyé : ' + r.bouton });
+}
+
 // Mots-clés d'un message libre -> réponse de la FAQ
 const FAQ_MOTS = [
     [/pai|pay|r[eè]gl|pcs|carte|virement|prix|tarif|combien/i, 'paiement'],
@@ -152,8 +201,7 @@ async function notifyAdminLead(text, chatId, convo) {
             + (pseudo ? ' (@' + escapeHtml(pseudo) + ')' : ' <i>(pas de pseudo)</i>');
         const html = escapeHtml(text).replace('{{CLIENT}}', clientHtml)
             + '\n\n<i>↩️ Réponds à ce message : ta réponse lui sera envoyée par le bot.</i>';
-        const bouton = pseudo ? [[{ text: '💬 Écrire à ' + nom, url: 'https://t.me/' + pseudo }]] : null;
-        const sent = await sendMessage(SALES_ADMIN_CHAT_ID, html, bouton);
+        const sent = await sendMessage(SALES_ADMIN_CHAT_ID, html + '\n<i>⚡ Ou utilise une réponse rapide ci-dessous.</i>', adminKeyboard(chatId, pseudo, nom));
         if (sent && sent.ok && sent.result && sent.result.message_id) {
             await sbFetch('bot_relay_map', {
                 method: 'POST',
@@ -352,8 +400,8 @@ async function relayLeadMessageToAdmin(leadChatId, convo, text) {
     if (!SALES_ADMIN_CHAT_ID) return;
     const leadName = convo.telegram_name || convo.telegram_username || ('Chat ' + leadChatId);
     const packLabel = convo.pack_type && PACKS[convo.pack_type] ? PACKS[convo.pack_type].label : (convo.pack_type || '?');
-    const relayText = `💬 <b>${leadName}</b>${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''} — ${packLabel}\n\n${text}\n\n<i>Réponds directement à ce message pour lui répondre sur Telegram.</i>`;
-    const sent = await sendMessage(SALES_ADMIN_CHAT_ID, relayText);
+    const relayText = `💬 <b>${escapeHtml(leadName)}</b>${convo.telegram_username ? ' (@' + convo.telegram_username + ')' : ''} — ${packLabel}\n\n${escapeHtml(text)}\n\n<i>Réponds directement à ce message pour lui répondre sur Telegram, ou utilise une réponse rapide.</i>`;
+    const sent = await sendMessage(SALES_ADMIN_CHAT_ID, relayText, adminKeyboard(leadChatId, convo.telegram_username, leadName));
     if (sent && sent.ok && sent.result && sent.result.message_id) {
         await sbFetch('bot_relay_map', {
             method: 'POST',
@@ -439,14 +487,14 @@ async function handleRelaunch(chatId, convo) {
         const elapsed = Date.now() - new Date(convo.last_relaunch_at).getTime();
         if (elapsed < 30000) {
             const remaining = Math.ceil((30000 - elapsed) / 1000);
-            await sendMessage(chatId, `Merci de patienter encore ${remaining}s avant de relancer à nouveau 😊`);
+            await sendMessage(chatId, `Merci de patienter encore ${remaining}s avant de relancer à nouveau 😊`, relaunchKeyboard());
             return;
         }
     }
 
     const newCount = count + 1;
     await upsertConversation(chatId, { relaunch_count: newCount, last_relaunch_at: new Date().toISOString() });
-    await sendMessage(chatId, `C'est noté ! Un admin va vous contacter très vite. Merci de votre patience 🙏 (${newCount}/3)`);
+    await sendMessage(chatId, `C'est noté ! Un admin va vous contacter très vite. Merci de votre patience 🙏 (${newCount}/3)`, newCount < 3 ? relaunchKeyboard() : null);
     const firstName = (convo.telegram_name || '').split(' ')[0] || '';
     await notifyAdminLead(
         `🔔 RELANCE (${newCount}/3) — Bot Telegram\n\nRéférence : ${convo.order_ref || '?'}\nPack : ${pack ? pack.label : convo.pack_type}\n\n👤 {{CLIENT}}\n💬 Chat ID : ${chatId}\n${convo.betting_platform ? `🎯 Plateforme habituelle : ${convo.betting_platform}\n` : ''}${convo.betting_sport ? `🏅 Sport favori : ${convo.betting_sport}\n` : ''}${convo.betting_experience ? `📅 Expérience : ${convo.betting_experience}\n` : ''}${convo.betting_luck ? `🎲 Régularité : ${convo.betting_luck}\n` : ''}\n➡️ Le client attend toujours ton contact.\n\n📋 Message suggéré à lui envoyer (copier-coller) :\n« Salut${firstName ? ' ' + firstName : ''} ! 😊 Désolé pour l'attente, je m'occupe de toi tout de suite ! En tout cas t'as fait le bon choix de nous rejoindre, l'équipe est hyper rigoureuse sur l'analyse, on ne sort un ticket que quand on est vraiment confiants dessus. »\n\n⚠️ Le paiement (PayPal/PCS) reste à toi de l'aborder plus tard, une fois le contact établi.`,
@@ -487,14 +535,25 @@ module.exports = async function handler(req, res) {
             };
             const matchedPrefix = Object.keys(STEP_STATES).find(function (p) { return data === p || data.startsWith(p); });
 
+            // Réponses rapides de l'admin (uniquement depuis son chat avec le bot)
+            if (data.startsWith('adm:')) {
+                const estAdmin = SALES_ADMIN_CHAT_ID && String(chatId) === String(SALES_ADMIN_CHAT_ID);
+                if (!estAdmin) { await tg('answerCallbackQuery', { callback_query_id: cq.id }); return res.status(200).json({ ok: true }); }
+                const [, id, lead] = data.split(':');
+                await handleAdminReponse(cq, id, lead);
+                return res.status(200).json({ ok: true });
+            }
             if (data === 'info:packs') {
                 await tg('answerCallbackQuery', { callback_query_id: cq.id });
+                await clearKeyboard(chatId, messageId);
                 await sendMessage(chatId, `Quel pack t'intéresse ? 👇`, packKeyboard());
             } else if (data.startsWith('info:')) {
                 await tg('answerCallbackQuery', { callback_query_id: cq.id });
+                await clearKeyboard(chatId, messageId);
                 await handleInfo(chatId, data.slice(5));
             } else if (data.startsWith('faq:')) {
                 await tg('answerCallbackQuery', { callback_query_id: cq.id });
+                await clearKeyboard(chatId, messageId);
                 await handleFaq(chatId, data.slice(4));
             } else if (data.startsWith('pack:')) {
                 await tg('answerCallbackQuery', { callback_query_id: cq.id });
@@ -518,6 +577,7 @@ module.exports = async function handler(req, res) {
                 }
             } else if (data === 'relaunch') {
                 await tg('answerCallbackQuery', { callback_query_id: cq.id });
+                await clearKeyboard(chatId, messageId);
                 const convo = await getConversation(chatId);
                 if (convo) {
                     await handleRelaunch(chatId, convo);
