@@ -19,11 +19,51 @@ const SALES_BOT_WEBHOOK_SECRET = process.env.SALES_BOT_WEBHOOK_SECRET;
 // "Répondre" de Telegram) relaie la réponse au lead, sans jamais ouvrir l'app.
 const SALES_ADMIN_CHAT_ID = process.env.SALES_ADMIN_CHAT_ID;
 
+// Contenu des packs : identique aux cartes et au tableau comparatif de la page
+// « Nos packs » de l'app. À tenir à jour ensemble.
 const PACKS = {
-    journalier: { label: 'SM Score Exact Journalier', price: 50, emoji: '⚡' },
-    vip: { label: 'SM VIP+ (à vie)', price: 99.99, emoji: '👑' },
-    hebdo: { label: 'SM Combiné Hebdo', price: 69.99, emoji: '🔥' }
+    journalier: { label: 'SM Score Exact Journalier', price: 50, emoji: '⚡',
+        features: ['1 score exact', 'Analyse détaillée', 'Support 7j/7', 'Annonce sur Telegram'] },
+    vip: { label: 'SM VIP+ (à vie)', price: 99.99, emoji: '👑',
+        features: ['Accès à vie', '1 combiné score exact chaque soir de match', 'Espace membre VIP+', 'Canal Telegram VIP', 'Priorité support',
+            'Paris du jour SMVIP+ 🆕', 'Analyses IA des matchs 🆕', 'Suivi LIVE du combiné 🆕', 'Accès fondateurs ⭐'] },
+    hebdo: { label: 'SM Combiné Hebdo', price: 69.99, emoji: '🔥',
+        features: ['5 combinés score exact / semaine', 'Cotes élevées', 'Suivi LIVE du combiné 🆕', 'Canal Telegram', 'Support prioritaire', 'Récap hebdomadaire', 'Accès 7 jours'] }
 };
+
+// Informations consultables à tout moment depuis le menu du bot.
+const INFOS = {
+    comparer: `🔎 <b>Ce qui est inclus dans chaque pack</b>\n\n`
+        + `⚡ <b>Journalier</b>\n• 1 score exact du jour\n• Analyse détaillée\n• Support 7j/7\n\n`
+        + `🔥 <b>Hebdo</b> (7 jours)\n• 5 combinés score exact par semaine\n• Canal Telegram\n• Support prioritaire\n• Suivi LIVE du combiné 🆕\n\n`
+        + `👑 <b>SM VIP+</b> (à vie)\n• 1 combiné score exact chaque soir de match\n• Canal Telegram VIP + priorité support\n• Suivi LIVE du combiné 🆕\n• Espace membre VIP+\n• Paris du jour SMVIP+ 🆕\n• Analyses IA des matchs 🆕\n• Accès fondateurs ⭐\n\n`
+        + `👉 Le VIP+ est le seul pack qui réunit <b>toutes</b> les fonctionnalités, et il est valable à vie.`,
+    nouveau: `🆕 <b>Les nouveautés Score Master</b>\n\n`
+        + `🎯 <b>Paris du jour SMVIP+</b> <i>(VIP+)</i>\nChaque matin à partir de 9 h, notre IA sélectionne jusqu'à 3 paris du jour, validés par l'équipe. Ils s'affichent dans l'app (bouton doré en bas à droite), avec un historique où chaque résultat reste visible.\n\n`
+        + `🧠 <b>Analyses IA des matchs</b> <i>(VIP+)</i>\nAprès les matchs : probabilités d'avant-match, prédiction de l'IA face au score réel, forces et faiblesses de chaque équipe.\n\n`
+        + `📡 <b>Suivi LIVE du combiné</b> <i>(Hebdo et VIP+)</i>\nLe score de chaque match de ton combiné en direct, dans l'app.\n\n`
+        + `🆓 <b>Pronostics AI</b> <i>(gratuit)</i>\nDes analyses automatiques des prochains matchs, ouvertes à tous dans l'app.`,
+    faq: `❓ <b>Questions fréquentes</b>\n\nChoisis ta question ci-dessous 👇`
+};
+
+const FAQ = {
+    paiement: { q: '💳 Comment se passe le paiement ?', r: `💳 Une fois ta demande confirmée ici, un admin te contacte en privé sur Telegram et te guide pour le paiement (PayPal ou PCS). Rien n'est prélevé automatiquement.` },
+    acces: { q: '🔑 Comment j\'accède à mon pack ?', r: `🔑 Après le paiement, tu reçois ton accès : tu le débloques dans l'app, rubrique <b>« Débloquer mon accès »</b>, et tout s'ouvre immédiatement sur ton compte.` },
+    parisjour: { q: '🎯 C\'est quoi les Paris du jour SMVIP+ ?', r: INFOS.nouveau.split('\n\n')[1] },
+    analyses: { q: '🧠 Que contiennent les Analyses IA ?', r: INFOS.nouveau.split('\n\n')[2] },
+    gratuit: { q: '🆓 Il y a quelque chose de gratuit ?', r: `🆓 Oui ! Dans l'app, l'onglet <b>Pronostics AI</b> te donne gratuitement des analyses automatiques des prochains matchs. Idéal pour découvrir notre approche avant de choisir un pack.` },
+    garantie: { q: '⚠️ Les pronostics sont-ils garantis ?', r: `⚠️ Non, et personne de sérieux ne peut te le promettre : un pari comporte toujours un risque. Notre engagement, c'est la rigueur de l'analyse et la transparence (les résultats, gagnés comme perdus, restent visibles dans l'historique). Mise uniquement ce que tu peux te permettre de perdre. Réservé aux plus de 18 ans.` }
+};
+
+// Mots-clés d'un message libre -> réponse de la FAQ
+const FAQ_MOTS = [
+    [/pai|pay|r[eè]gl|pcs|carte|virement|prix|tarif|combien/i, 'paiement'],
+    [/code|acc[eè]s|d[ée]bloqu|activer/i, 'acces'],
+    [/paris? du jour|smvip/i, 'parisjour'],
+    [/analys/i, 'analyses'],
+    [/gratuit|free|essai|tester/i, 'gratuit'],
+    [/garanti|s[uû]r ?[àa] ?100|rembours|perdre|risque/i, 'garantie']
+];
 
 async function sbFetch(path, options) {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, Object.assign({}, options, {
@@ -133,8 +173,35 @@ function packKeyboard() {
     });
 }
 
-function joinKeyboard() {
-    return [[{ text: '✅ J\'adhère maintenant !', callback_data: 'join' }]];
+function menuKeyboard() {
+    return packKeyboard().concat([
+        [{ text: '🔎 Comparer les packs', callback_data: 'info:comparer' }, { text: '🆕 Nouveautés', callback_data: 'info:nouveau' }],
+        [{ text: '❓ Questions fréquentes', callback_data: 'info:faq' }]
+    ]);
+}
+
+function retourKeyboard() {
+    return [
+        [{ text: '👑 Choisir mon pack', callback_data: 'info:packs' }],
+        [{ text: '🔎 Comparer', callback_data: 'info:comparer' }, { text: '❓ Autres questions', callback_data: 'info:faq' }]
+    ];
+}
+
+function faqKeyboard() {
+    return Object.keys(FAQ).map(function (k) { return [{ text: FAQ[k].q, callback_data: 'faq:' + k }]; })
+        .concat([[{ text: '👑 Choisir mon pack', callback_data: 'info:packs' }]]);
+}
+
+// Le VIP+ est proposé en alternative quand un pack plus court est choisi.
+function joinKeyboard(packKey) {
+    const rows = [[{ text: '✅ J\'adhère maintenant !', callback_data: 'join' }]];
+    if (packKey && packKey !== 'vip') rows.push([{ text: '👑 Voir plutôt le VIP+ (à vie)', callback_data: 'pack:vip' }]);
+    rows.push([{ text: '🔎 Comparer les packs', callback_data: 'info:comparer' }]);
+    return rows;
+}
+
+function packDetails(pack) {
+    return `${pack.emoji} <b>${pack.label}</b>\n\nCe qui est inclus :\n` + pack.features.map(f => '✅ ' + f).join('\n');
 }
 
 function relaunchKeyboard() {
@@ -240,11 +307,14 @@ async function handleStart(chatId, from, startParam) {
     });
 
     if (preselectedPack) {
-        await sendMessage(chatId, hypeMessage(PACKS[preselectedPack]), joinKeyboard());
+        await sendMessage(chatId, packDetails(PACKS[preselectedPack]) + '\n\n' + hypeMessage(PACKS[preselectedPack]), joinKeyboard());
     } else {
+        const depuisApp = packPart === 'app';
         await sendMessage(chatId,
-            `Bonjour, ici Master Gon ! 👋😊 Et bienvenue chez <b>Score Master</b> !\n\nRavi de vous accueillir. Quel pack vous intéresse aujourd'hui ?`,
-            packKeyboard()
+            `Bonjour${appPseudo ? ' ' + escapeHtml(appPseudo) : ''}, ici Master Gon ! 👋😊 Bienvenue chez <b>Score Master</b> !\n\n`
+            + (depuisApp ? `Ravi de te voir arriver depuis l'app 📲. ` : `Ravi de t'accueillir. `)
+            + `Je peux te présenter nos packs, te montrer les nouveautés (Paris du jour SMVIP+, Analyses IA, Suivi LIVE…) ou répondre à tes questions.\n\nQuel pack t'intéresse aujourd'hui ?`,
+            menuKeyboard()
         );
     }
 }
@@ -253,7 +323,18 @@ async function handlePackChoice(chatId, packKey) {
     const pack = PACKS[packKey];
     if (!pack) return;
     await upsertConversation(chatId, { state: 'awaiting_join', pack_type: packKey });
-    await sendMessage(chatId, hypeMessage(pack), joinKeyboard());
+    await sendMessage(chatId, packDetails(pack) + '\n\n' + hypeMessage(pack), joinKeyboard(packKey));
+}
+
+// Menu d'information (comparatif, nouveautés, FAQ) : consultable à toute étape,
+// ne modifie pas l'avancement de la demande.
+async function handleInfo(chatId, key) {
+    if (key === 'faq') return sendMessage(chatId, INFOS.faq, faqKeyboard());
+    if (INFOS[key]) return sendMessage(chatId, INFOS[key], retourKeyboard());
+}
+async function handleFaq(chatId, key) {
+    const f = FAQ[key];
+    if (f) await sendMessage(chatId, f.r, retourKeyboard());
 }
 
 async function safeUpsertConversation(chatId, patch) {
@@ -286,7 +367,7 @@ async function handleJoinConfirm(chatId, convo) {
     const pack = PACKS[convo.pack_type];
     const orderRef = generateOrderRef();
     await sendMessage(chatId,
-        `Top ! Hâte de te voir parmi nous. 🙌\n\nUn admin se libère pour toi dans quelques instants. En attendant, j'ai deux petites questions pour mieux te connaître et t'orienter au mieux 😊\n\nSur quelle plateforme paries-tu d'habitude ? <i>(ça nous permet d'adapter nos conseils aux meilleures cotes disponibles chez toi)</i>`,
+        `Top ! Hâte de te voir parmi nous. 🙌\n\nUn admin se libère pour toi dans quelques instants. En attendant, j'ai quelques petites questions pour mieux te connaître et t'orienter au mieux 😊\n\nSur quelle plateforme paries-tu d'habitude ? <i>(ça nous permet d'adapter nos conseils aux meilleures cotes disponibles chez toi)</i>`,
         platformKeyboard()
     );
     await safeUpsertConversation(chatId, { state: 'awaiting_platform', order_ref: orderRef });
@@ -328,7 +409,7 @@ async function handleLuckChoice(chatId, luckKey, convo) {
     const pack = PACKS[convo.pack_type];
     const reply = LUCK_REPLIES[luckKey] || '';
     await sendMessage(chatId,
-        `${reply}\n\nEn tout cas t'as fait le bon choix de nous rejoindre, l'équipe est hyper rigoureuse sur l'analyse, on ne sort un ticket que quand on est vraiment confiants dessus. Merci pour ces questions et réponses aussi rapides ! 🙏 Je relance l'admin de mon côté !`,
+        `${reply}\n\nEn tout cas t'as fait le bon choix de nous rejoindre, l'équipe est hyper rigoureuse sur l'analyse, on ne sort un ticket que quand on est vraiment confiants dessus. Merci pour ces questions et réponses aussi rapides ! 🙏 Je relance l'admin de mon côté !\n\n💡 En attendant, tu peux déjà découvrir gratuitement nos <b>Pronostics AI</b> dans l'app 📲${convo.pack_type === 'vip' ? ', et dès ton accès VIP+ activé, tes <b>Paris du jour SMVIP+</b> t\'attendent chaque matin à partir de 9 h (bouton doré en bas à droite)' : ''}.`,
         relaunchKeyboard()
     );
     await safeUpsertConversation(chatId, { state: 'awaiting_admin', betting_luck: LUCK_LABELS[luckKey] || luckKey });
@@ -406,7 +487,16 @@ module.exports = async function handler(req, res) {
             };
             const matchedPrefix = Object.keys(STEP_STATES).find(function (p) { return data === p || data.startsWith(p); });
 
-            if (data.startsWith('pack:')) {
+            if (data === 'info:packs') {
+                await tg('answerCallbackQuery', { callback_query_id: cq.id });
+                await sendMessage(chatId, `Quel pack t'intéresse ? 👇`, packKeyboard());
+            } else if (data.startsWith('info:')) {
+                await tg('answerCallbackQuery', { callback_query_id: cq.id });
+                await handleInfo(chatId, data.slice(5));
+            } else if (data.startsWith('faq:')) {
+                await tg('answerCallbackQuery', { callback_query_id: cq.id });
+                await handleFaq(chatId, data.slice(4));
+            } else if (data.startsWith('pack:')) {
                 await tg('answerCallbackQuery', { callback_query_id: cq.id });
                 await clearKeyboard(chatId, messageId);
                 await handlePackChoice(chatId, data.slice(5));
@@ -491,7 +581,9 @@ module.exports = async function handler(req, res) {
                     await sendMessage(chatId, `Un membre de notre équipe va vous répondre très vite, merci de patienter un instant 🙏😊`);
                 }
             } else {
-                await sendMessage(chatId, `Merci de choisir une option ci-dessus 👆 pour continuer.`);
+                const trouve = FAQ_MOTS.find(([re]) => re.test(text));
+                if (trouve) await handleFaq(chatId, trouve[1]);
+                else await sendMessage(chatId, `Je n'ai pas bien compris 😅 Choisis une option ci-dessous, ou réponds à la question en cours plus haut 👆`, menuKeyboard());
             }
         }
 
