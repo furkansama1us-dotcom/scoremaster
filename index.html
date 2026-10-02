@@ -3106,7 +3106,7 @@ async function fetchApiScore(id, dateRaw) {
     <!-- ADMIN PANEL -->
 <div data-nosnippet id="admin-page">
     <div class="admin-header">
-        <h2><img id="img-admin" alt="SM" class="admin-header-logo"> Panel Admin</h2>
+        <h2><img id="img-admin" alt="SM" class="admin-header-logo"> Panel Admin <span id="admin-header-flag" style="display:none;color:#FF9800;font-size:13px;font-weight:800;margin-left:6px;">PARI MODIFIÉ</span></h2>
         <button onclick="openContentPlanner()" title="Content Planner" style="margin-left:auto;margin-right:10px;width:38px;height:38px;border-radius:50%;background:linear-gradient(145deg,#f2cf7c,#e8b84b);color:#141821;border:none;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;"><i class="fas fa-calendar-days"></i></button>
         <button class="admin-close" onclick="closeAdmin()"><i class="fas fa-times"></i></button>
     </div>
@@ -9405,6 +9405,8 @@ async function loadSmPointsHistory() {
         if (tabName === 'smpoints') loadAdminSmPoints();
         if (tabName === 'analyses') chargerAnalysesAdmin();
         if (tabName === 'laboia') chargerLaboIA();
+        var flag = document.getElementById('admin-header-flag');
+        if (flag) flag.style.display = (tabName === 'laboia') ? 'inline' : 'none';
     }
 
     // ============================================================
@@ -9432,11 +9434,11 @@ async function loadSmPointsHistory() {
         var corrige = p.statut === 'perdu' ? laboMarcheCorrige(p.libelle, p.score_final) : null;
         var libelleAffiche = corrige || p.libelle;
         var statutAffiche = corrige ? 'gagne' : p.statut;
-        var tag = corrige ? '<div style="font-weight:800; color:#FF9800; font-size:12px; letter-spacing:.3px; margin-top:6px;"><i class="fas fa-triangle-exclamation"></i> PARI MODIFIÉ — pari réel : "' + pvEchap(p.libelle) + '" (perdu)</div>' : '';
+        var icone = corrige ? ' <i class="fas fa-triangle-exclamation" style="color:#FF9800;" title="PARI MODIFIÉ — pari réel : &quot;' + pvEchap(p.libelle) + '&quot; (perdu)"></i>' : '';
         return '<div class="pv-carte"><div class="pv-ligne1"><span>' + pvEchap(p.ligue || 'Football') + ' · ' + pvJour(p.fixture_date) + ' ' + pvHeure(p.kickoff) + '</span>'
-            + '<span class="pv-statut ' + statutAffiche + '">' + (PV_STATUTS[statutAffiche] || statutAffiche) + (p.score_final ? ' · ' + pvEchap(p.score_final) : '') + '</span></div>'
+            + '<span class="pv-statut ' + statutAffiche + '">' + (PV_STATUTS[statutAffiche] || statutAffiche) + (p.score_final ? ' · ' + pvEchap(p.score_final) : '') + icone + '</span></div>'
             + '<div class="pv-match">' + pvEchap(p.home) + ' - ' + pvEchap(p.away) + '</div>'
-            + '<div class="pv-pari"><span class="lib">' + pvEchap(libelleAffiche) + '</span><span class="cote">' + pvCote(p.cote) + '</span></div>' + tag + '</div>';
+            + '<div class="pv-pari"><span class="lib">' + pvEchap(libelleAffiche) + '</span><span class="cote">' + pvCote(p.cote) + '</span></div></div>';
     }
 
     // Reconstruit la page Paris SMVIP+ à l'identique (hero, mascotte, étoiles, countdown,
