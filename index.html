@@ -886,6 +886,15 @@
         .ai-promo-title{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
         .ai-promo-badge{font-size:9px;font-weight:800;background:var(--green);color:#fff;padding:2px 7px;border-radius:6px;letter-spacing:.5px}
         .ai-promo-desc{font-size:12px;color:var(--text-gray);margin-top:2px}
+        /* Bandeau Pronostics AI : fond plaqué argent (dégradé métallique + reflet) */
+        .ai-promo-banner{background:linear-gradient(135deg,#7d8590 0%,#c9ced6 18%,#f4f6f9 34%,#d5dae1 48%,#8f97a3 66%,#dfe3e9 82%,#858d99 100%);border:1px solid #f1f4f8;
+            box-shadow:0 8px 22px rgba(0,0,0,.35),0 0 16px rgba(220,228,240,.18),inset 0 1px 0 rgba(255,255,255,.7),inset 0 -2px 6px rgba(40,48,60,.3)}
+        .ai-promo-banner.hm-shine::after{background:linear-gradient(100deg,transparent,rgba(255,255,255,.6),transparent)}
+        .ai-promo-banner > *{position:relative;z-index:1}
+        .ai-promo-banner .ai-promo-title{color:#151a24;text-shadow:0 1px 0 rgba(255,255,255,.45)}
+        .ai-promo-banner .ai-promo-desc{color:#2f3746;font-weight:600}
+        .ai-promo-banner .ai-promo-icon{background:#151a24;box-shadow:0 0 0 2px rgba(21,26,36,.35),0 4px 10px rgba(30,38,50,.35)}
+        .ai-promo-banner > .fa-chevron-right{color:#232a36 !important}
 
         .ai-intro-banner{margin:5px 20px 15px;padding:16px;background:linear-gradient(135deg,rgba(255,193,7,.12),rgba(10,14,31,0));border:1px solid rgba(255,193,7,.25);border-radius:14px}
         .ai-intro-badge{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:800;letter-spacing:.5px;color:var(--primary-yellow);background:rgba(255,193,7,.15);border:1px solid rgba(255,193,7,.3);padding:4px 10px;border-radius:20px;margin-bottom:10px}
