@@ -9434,9 +9434,9 @@ async function loadSmPointsHistory() {
         var corrige = p.statut === 'perdu' ? laboMarcheCorrige(p.libelle, p.score_final) : null;
         var libelleAffiche = corrige || p.libelle;
         var statutAffiche = corrige ? 'gagne' : p.statut;
-        var icone = corrige ? ' <i class="fas fa-triangle-exclamation" style="color:#FF9800;" title="PARI MODIFIÉ — pari réel : &quot;' + pvEchap(p.libelle) + '&quot; (perdu)"></i>' : '';
+        var icone = corrige ? '<i class="fas fa-triangle-exclamation" style="color:#FF9800;margin-right:6px;" title="PARI MODIFIÉ — pari réel : &quot;' + pvEchap(p.libelle) + '&quot; (perdu)"></i>' : '';
         return '<div class="pv-carte"><div class="pv-ligne1"><span>' + pvEchap(p.ligue || 'Football') + ' · ' + pvJour(p.fixture_date) + ' ' + pvHeure(p.kickoff) + '</span>'
-            + '<span class="pv-statut ' + statutAffiche + '">' + (PV_STATUTS[statutAffiche] || statutAffiche) + (p.score_final ? ' · ' + pvEchap(p.score_final) : '') + icone + '</span></div>'
+            + '<span>' + icone + '<span class="pv-statut ' + statutAffiche + '">' + (PV_STATUTS[statutAffiche] || statutAffiche) + (p.score_final ? ' · ' + pvEchap(p.score_final) : '') + '</span></span></div>'
             + '<div class="pv-match">' + pvEchap(p.home) + ' - ' + pvEchap(p.away) + '</div>'
             + '<div class="pv-pari"><span class="lib">' + pvEchap(libelleAffiche) + '</span><span class="cote">' + pvCote(p.cote) + '</span></div></div>';
     }
