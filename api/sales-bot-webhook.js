@@ -60,18 +60,17 @@ const FAQ = {
 // de paiement viennent de variables Vercel (jamais écrites dans le code).
 const SALES_PAYPAL_INFO = process.env.SALES_PAYPAL_INFO || '';
 const SALES_PCS_INFO = process.env.SALES_PCS_INFO || '';
+// Texte de l'admin sur l'achat d'une recharge PCS (envoyé tel quel)
+const PCS_OU_ACHETER = `Si c'est par PCS, tu peux t'en procurer sur :\n\nrecharge.fr ou dundle.com\n\nTu peux également te rendre dans un tabac et t'en procurer là-bas. ✅\n\n`
+    + `Attention également à ne pas confondre avec paysafecard ! Beaucoup font l'erreur et confondent PCS et paysafecard. C'est bel et bien une recharge PCS qu'il faut prendre 👍🏼`;
 const REPONSES_ADMIN = {
     bonjour: { bouton: '👋 Prise en charge', texte: (c, p) => `Salut${c.prenom ? ' ' + c.prenom : ''} ! 😊 Merci pour ta confiance, ravi de t'accueillir chez Score Master ! Je m'occupe personnellement de ta demande${p ? ' pour le pack <b>' + p.label + '</b>' : ''}.` },
     attente: { bouton: '⏳ J\'arrive', texte: () => `Je suis à toi dans quelques minutes, merci pour ta patience 🙏` },
-    paiement: { bouton: '💳 Modes de paiement', texte: (c, p) => `Pour finaliser ton accès${p ? ' <b>' + p.label + '</b> (' + p.price + '€)' : ''}, tu peux régler par :\n\n`
-        + `💙 <b>PayPal</b>${SALES_PAYPAL_INFO ? ' : ' + SALES_PAYPAL_INFO : ''}\n💳 <b>PCS</b>${SALES_PCS_INFO ? ' : ' + SALES_PCS_INFO : ''}\n\n`
-        + (SALES_PAYPAL_INFO || SALES_PCS_INFO ? `Envoie-moi une capture une fois le paiement fait et j'active ton accès aussitôt ✅` : `Dis-moi lequel tu préfères et je t'envoie les infos tout de suite 😊`) },
+    paiement: { bouton: '💳 Modes de paiement', texte: () => `Nous proposons 2 modes de paiement pour le moment : par PayPal ou par PCS.\n\n` + PCS_OU_ACHETER },
     paypal: { bouton: '💙 Infos PayPal', texte: (c, p) => SALES_PAYPAL_INFO
         ? `💙 Paiement PayPal${p ? ' (' + p.price + '€)' : ''} : ${SALES_PAYPAL_INFO}\n\nPense à choisir « Entre proches » si possible, puis envoie-moi une capture ✅`
         : `💙 Je t'envoie l'adresse PayPal juste en dessous 👇` },
-    pcs: { bouton: '💳 Infos PCS', texte: (c, p) => SALES_PCS_INFO
-        ? `💳 Paiement PCS${p ? ' (' + p.price + '€)' : ''} : ${SALES_PCS_INFO}\n\nEnvoie-moi le code du recharge PCS ici, j'active ton accès dès réception ✅`
-        : `💳 Pour PCS, envoie-moi directement ici le code de ta recharge${p ? ' de ' + p.price + '€' : ''}, j'active ton accès dès réception ✅` },
+    pcs: { bouton: '💳 Infos PCS', texte: (c, p) => PCS_OU_ACHETER + `\n\nUne fois ta recharge PCS${p ? ' de ' + p.price + '€' : ''} achetée, envoie-moi son code ici et j'active ton accès dès réception ✅` },
     recu: { bouton: '✅ Paiement reçu', texte: () => `✅ Paiement bien reçu, merci ! Je prépare ton accès, tu l'auras dans quelques instants 🚀` },
     activer: { bouton: '🔑 Comment activer', texte: () => `🔑 Pour activer ton accès :\n1. Ouvre l'app 👉 https://scoremaster.fr\n2. Connecte-toi (ou crée ton compte)\n3. Rubrique <b>« Débloquer mon accès »</b> sur l'accueil\n4. Saisis le code que je t'envoie juste après 👇` },
     bienvenue: { bouton: '🎉 Bienvenue membre', texte: (c, p) => `🎉 Ton accès${p ? ' <b>' + p.label + '</b>' : ''} est activé, bienvenue dans la team Score Master !\n\n`
