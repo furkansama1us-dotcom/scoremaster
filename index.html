@@ -1138,7 +1138,8 @@
         .cart-fab{position:fixed;right:16px;bottom:calc(85px + var(--safe-bottom));width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--primary-yellow),var(--dark-yellow));display:flex;align-items:center;justify-content:center;box-shadow:0 6px 20px rgba(255,193,7,.4);cursor:pointer;z-index:500;transition:transform .2s}
         .cart-fab:active{transform:scale(.92)}
         /* Bouton flottant Paris SMVIP+ : rond plaqué or, halo pulsé, étiquette dessous */
-        .smvip-fab{position:absolute;right:14px;bottom:calc(65px + env(safe-area-inset-bottom, 0px) + 14px);z-index:600;display:flex;flex-direction:column;align-items:center;gap:4px;padding:0;border:none;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:bottom .25s,transform .15s}
+        .fab-pile{position:absolute;right:14px;bottom:calc(65px + env(safe-area-inset-bottom, 0px) + 14px);z-index:600;display:flex;flex-direction:column;align-items:center;gap:12px;transition:bottom .25s}
+        .smvip-fab{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:0;border:none;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:bottom .25s,transform .15s}
         .smvip-fab:active{transform:scale(.92)}
         .smvip-fab::before{content:'';position:absolute;top:-4px;left:50%;width:62px;height:62px;margin-left:-31px;border-radius:50%;background:rgba(255,193,7,.35);animation:smvipFabHalo 2.2s ease-out infinite;pointer-events:none}
         .smvip-fab .vipx-badge{width:54px;height:54px;padding:3px;border:none;animation:none;
@@ -1146,7 +1147,12 @@
         .smvip-fab .vipx-badge img{border-radius:50%;background:radial-gradient(circle at 35% 30%,#2a2410,#0d0d12 70%);padding:6px 6px 10px}
         .smvip-fab .vipx-badge em{bottom:4px}
         .smvip-fab b{position:relative;padding:2px 7px;border-radius:20px;background:#0F1424;border:1px solid rgba(255,193,7,.5);font:800 9.5px 'Montserrat',sans-serif;color:#FFE082;white-space:nowrap;box-shadow:0 3px 8px rgba(0,0,0,.4)}
-        body.panier-visible .smvip-fab{bottom:calc(65px + env(safe-area-inset-bottom, 0px) + 84px)}
+        .tg-fab::before{display:none}
+        .tg-fab .rond{width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;
+            background:linear-gradient(135deg,#5ccbf7,#26A5E4 50%,#1a7fb5);box-shadow:0 6px 18px rgba(0,0,0,.45),0 0 14px rgba(38,165,228,.45),inset 0 1px 0 rgba(255,255,255,.45)}
+        .tg-fab .rond i{margin-left:-3px}
+        .tg-fab b{border-color:rgba(38,165,228,.55);color:#9fdcfa}
+        body.panier-visible .fab-pile{bottom:calc(65px + env(safe-area-inset-bottom, 0px) + 84px)}
         @keyframes smvipFabHalo{0%{transform:scale(.85);opacity:.8}100%{transform:scale(1.45);opacity:0}}
         @media (prefers-reduced-motion:reduce){.smvip-fab::before{animation:none;display:none}}
         .cart-fab i{color:#fff;font-size:20px}
@@ -3180,7 +3186,10 @@ async function fetchApiScore(id, dateRaw) {
     </div>
 
     <!-- ACCÈS RAPIDE PARIS SMVIP+ (bas à droite, au-dessus de la navigation) -->
-    <button class="smvip-fab" onclick="ouvrirParisVip()" aria-label="Ouvrir les Paris SMVIP+ du jour"><span class="vipx-badge pv-badge-rouge"><img src="logo-dark.png" alt=""><em>VIP+</em></span><b>Paris du jour</b></button>
+    <div class="fab-pile">
+        <button class="smvip-fab" onclick="ouvrirParisVip()" aria-label="Ouvrir les Paris SMVIP+ du jour"><span class="vipx-badge pv-badge-rouge"><img src="logo-dark.png" alt=""><em>VIP+</em></span><b>Paris du jour</b></button>
+        <button class="smvip-fab tg-fab" onclick="ouvrirBotTelegram()" aria-label="Discuter avec notre assistant Telegram"><span class="rond"><i class="fab fa-telegram-plane"></i></span><b>Assistant</b></button>
+    </div>
 
     <!-- BOTTOM NAV -->
     <div class="bottom-nav">
@@ -15512,6 +15521,14 @@ ${aiPrompt}
     }
 
     function toggleFaq(el) { el.classList.toggle('open'); }
+
+    // Bouton flottant Telegram : ouvre la discussion avec le bot de vente (accueil
+    // + choix du pack). Le pseudo de l'app suit, comme pour les liens de souscription.
+    function ouvrirBotTelegram() {
+        var pseudo = (window.currentUserProfile && window.currentUserProfile.pseudo) ? window.currentUserProfile.pseudo : '';
+        var safePseudo = pseudo.replace(/[^A-Za-z0-9]/g, '').slice(0, 32);
+        window.open('https://t.me/' + SALES_BOT_USERNAME + '?start=app' + (safePseudo ? '__u_' + safePseudo : ''), '_blank');
+    }
 
     function openCheckout(packType, price) {
         var packNames = { 'journalier': 'SM Score Exact Journalier', 'vip': 'SM VIP+ (à vie)', 'hebdo': 'SM Combiné Hebdo' };
