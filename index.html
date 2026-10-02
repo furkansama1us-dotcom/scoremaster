@@ -13201,6 +13201,7 @@ async function autoFetchFinalScores(combined) {
         if (histo.length) html += '<div class="pv-titre"><small>SUIVI</small><b>Historique</b></div>' + histo.map(pvCarteHistoPublic).join('');
         if (bTotal.j > 0) html += '<div class="pv-titre pv-apparait"><small>BILAN</small><b>Nos performances</b></div>'
             + '<div class="pv-dashboard pv-apparait" style="margin:0 20px 18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:4px 16px;">'
+            + '<div style="text-align:center;padding:18px 0;border-bottom:1px solid rgba(255,255,255,.07);"><b style="font-size:34px;color:#2ecc71;">' + Math.round(bTotal.g / bTotal.j * 100) + '%</b><br><small style="color:var(--text-gray,#9a93a0);">Taux de réussite global de l\'IA</small></div>'
             + pvLigneBilan('J-1 · ' + pvJour(hierDate), bJ1)
             + pvLigneBilan('7 derniers jours', bSemaine)
             + pvLigneBilan('Total historique', bTotal, true)
