@@ -1402,7 +1402,14 @@ async function genererParisVip(now) {
         if (dansCombine(r)) continue;
         const p = preds.find(x => memesEquipes(x.home, r.home) && memesEquipes(x.away, r.away));
         if (!p) continue;
-        const o = ((await apiFootballPublish('/odds?fixture=' + r.fixture_id)).response || [])[0];
+        let o;
+        try { o = ((await apiFootballPublish('/odds?fixture=' + r.fixture_id)).response || [])[0]; }
+        catch (e) {
+            // Limite de 10 appels/minute : rien n'est enregistré, le prochain passage
+            // (cron ou bouton ↻) refera une sélection complète.
+            if (/-> 429$/.test(String(e.message))) return { limite: true, crees: 0 };
+            throw e;
+        }
         if (!o || !o.bookmakers || !o.bookmakers.length) continue;
         const bk = BOOKMAKERS_PREFERES.map(id => o.bookmakers.find(b => b.id === id)).find(Boolean) || o.bookmakers[0];
         const choix = pvCandidats(bk.bets || [], r, p).sort((x, y) => (y.score - x.score) || (Math.abs(x.cote - 1.75) - Math.abs(y.cote - 1.75)))[0];
