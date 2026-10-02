@@ -13148,7 +13148,7 @@ async function autoFetchFinalScores(combined) {
         var corrige = p.statut === 'perdu' ? laboMarcheCorrige(p.libelle, p.score_final) : null;
         var libelleAffiche = corrige || p.libelle;
         var statutAffiche = corrige ? 'gagne' : p.statut;
-        var badge = corrige ? '<span style="display:inline-flex;align-items:center;gap:4px;color:#FF9800;font-weight:800;font-size:11px;margin-right:6px;" title="Pari réel joué : &quot;' + pvEchap(p.libelle) + '&quot; (perdu)"><i class="fas fa-triangle-exclamation"></i>PARI MODIFIÉ</span>' : '';
+        var badge = '';
         return '<div class="pv-carte"><div class="pv-ligne1"><span>' + pvEchap(p.ligue || 'Football') + ' · ' + pvJour(p.fixture_date) + ' ' + pvHeure(p.kickoff) + '</span>'
             + '<span>' + badge + '<span class="pv-statut ' + statutAffiche + '">' + (PV_STATUTS[statutAffiche] || statutAffiche) + (p.score_final ? ' · ' + pvEchap(p.score_final) : '') + '</span></span></div>'
             + '<div class="pv-match">' + pvEchap(p.home) + ' - ' + pvEchap(p.away) + '</div>'
