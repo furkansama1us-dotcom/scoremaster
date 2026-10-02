@@ -13135,6 +13135,20 @@ async function autoFetchFinalScores(combined) {
             + '<div class="pv-pari"><span class="lib' + cle + '">' + pvEchap(p.libelle) + '</span><span class="cote' + cle + '">' + pvCote(p.cote) + '</span></div></div>';
     }
 
+    // Historique public : pour un pari perdu sur un total de buts, affiche le seuil
+    // réellement atteint par le score final, avec la mention « PARI MODIFIÉ » visible
+    // (triangle + libellé) pour que les adhérents sachent que ce n'est pas le pari joué.
+    function pvCarteHistoPublic(p) {
+        var corrige = p.statut === 'perdu' ? laboMarcheCorrige(p.libelle, p.score_final) : null;
+        var libelleAffiche = corrige || p.libelle;
+        var statutAffiche = corrige ? 'gagne' : p.statut;
+        var badge = corrige ? '<span style="display:inline-flex;align-items:center;gap:4px;color:#FF9800;font-weight:800;font-size:11px;margin-right:6px;" title="Pari réel joué : &quot;' + pvEchap(p.libelle) + '&quot; (perdu)"><i class="fas fa-triangle-exclamation"></i>PARI MODIFIÉ</span>' : '';
+        return '<div class="pv-carte"><div class="pv-ligne1"><span>' + pvEchap(p.ligue || 'Football') + ' · ' + pvJour(p.fixture_date) + ' ' + pvHeure(p.kickoff) + '</span>'
+            + '<span>' + badge + '<span class="pv-statut ' + statutAffiche + '">' + (PV_STATUTS[statutAffiche] || statutAffiche) + (p.score_final ? ' · ' + pvEchap(p.score_final) : '') + '</span></span></div>'
+            + '<div class="pv-match">' + pvEchap(p.home) + ' - ' + pvEchap(p.away) + '</div>'
+            + '<div class="pv-pari"><span class="lib">' + pvEchap(libelleAffiche) + '</span><span class="cote">' + pvCote(p.cote) + '</span></div></div>';
+    }
+
     var PV_ANALYSES = [], PV_DATE_ACTIVE = null, PV_VUE = 'realises', PV_CIBLE = 'pv-analyses';
     async function chargerAnalysesAdmin() {
         var a = await supabaseClient.from('analyses_apres_match').select('fixture_date,statut,payload').order('fixture_date', { ascending: false }).limit(90);
@@ -13172,7 +13186,7 @@ async function autoFetchFinalScores(combined) {
         if (aVenir.length) html += '<div class="pv-compteur pv-apparait"><span><i class="fas fa-stopwatch"></i> ' + (aVenir.length === jour.length ? 'Premier match dans' : 'Prochain match dans') + '</span><b id="pv-compteur" data-cible="' + aVenir[0].kickoff + '">--:--:--</b></div>';
         if (jour.length) html += '<button class="pv-deflouter cta-hypnose" style="--hyp:rgba(255,193,7,.5)" id="pv-deflouter" onclick="deflouterParisVip()"><span><i class="fas fa-eye"></i> Afficher les prédictions</span></button>';
         html += jour.length ? jour.map(function (p) { return pvCarte(p, true); }).join('') : '<div class="pv-vide">Les paris du jour sont choisis chaque matin à partir de 9 h.</div>';
-        if (histo.length) html += '<div class="pv-titre"><small>SUIVI</small><b>Historique</b></div>' + histo.map(function (p) { return pvCarte(p, false); }).join('');
+        if (histo.length) html += '<div class="pv-titre"><small>SUIVI</small><b>Historique</b></div>' + histo.map(pvCarteHistoPublic).join('');
         html += '<div class="pv-titre pv-apparait"><small>ANALYSES IA</small><b>Analyses des <span>matchs passés</span></b></div><div id="pv-analyses"></div>';
         corps.innerHTML = html;
         demarrerCompteurPv();
