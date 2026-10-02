@@ -2803,7 +2803,7 @@ async function fetchApiScore(id, dateRaw) {
                         <div class="pk-logo"><span class="pk-logo-ring"></span><div class="logo-pack-detail" id="pack-detail-1"></div><span class="pk-logo-shine"></span><span class="pk-logo-badge"><i class="fas fa-calendar-day"></i></span></div>
                         <div class="pk-head">
                             <div class="pk-name">SM Score Exact Journalier</div>
-                            <div class="pack-subscribers"><i class="fas fa-users"></i> 342 abonnés actifs</div>
+                            <div class="pack-subscribers"><i class="fas fa-users"></i> 47 abonnés actifs</div>
                             <div class="pk-tag"><i class="fas fa-calendar-day"></i> À la journée</div>
                         </div>
                         <button class="pk-info" onclick="showPackInfo('journalier')" aria-label="Détails du pack"><i class="fas fa-info"></i></button>
@@ -2813,9 +2813,9 @@ async function fetchApiScore(id, dateRaw) {
                     <div class="spots-container">
                         <div class="spots-header">
                             <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:#FF9800;"></i> Plus que <strong id="spots-1">7</strong> places à ce prix !</span>
-                            <span class="spots-percent">86% vendus</span>
+                            <span class="spots-percent" id="spots-pct-1">86% vendus</span>
                         </div>
-                        <div class="spots-bar"><div class="spots-fill" style="width:86%; background:linear-gradient(90deg, #FF9800, #FF5722);"></div></div>
+                        <div class="spots-bar"><div class="spots-fill" id="spots-fill-1" style="width:86%; background:linear-gradient(90deg, #FF9800, #FF5722);"></div></div>
                     </div>
                     <div class="pk-guar"><i class="fas fa-shield-alt"></i> Satisfait ou remboursé sous 48h</div>
                     <button class="pk-btn cta-hypnose" style="--hyp:rgba(34,197,94,.55)" onclick="openCheckout('journalier', 50)"><span><i class="fab fa-telegram-plane"></i> J'adhère !</span></button>
@@ -2826,7 +2826,7 @@ async function fetchApiScore(id, dateRaw) {
                         <div class="pk-logo"><span class="pk-logo-ring"></span><div class="logo-pack-detail" id="pack-detail-3"></div><span class="pk-logo-shine"></span><span class="pk-logo-badge"><i class="fas fa-calendar-week"></i></span></div>
                         <div class="pk-head">
                             <div class="pk-name">SM Combiné Hebdo</div>
-                            <div class="pack-subscribers"><i class="fas fa-users"></i> 589 abonnés actifs</div>
+                            <div class="pack-subscribers"><i class="fas fa-users"></i> 89 abonnés actifs</div>
                             <div class="pk-tag"><i class="fas fa-calendar-week"></i> 7 jours</div>
                         </div>
                         <button class="pk-info" onclick="showPackInfo('hebdo')" aria-label="Détails du pack"><i class="fas fa-info"></i></button>
@@ -2836,9 +2836,9 @@ async function fetchApiScore(id, dateRaw) {
                     <div class="spots-container">
                         <div class="spots-header">
                             <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:#FF9800;"></i> Plus que <strong id="spots-3">12</strong> places à ce prix !</span>
-                            <span class="spots-percent">76% vendus</span>
+                            <span class="spots-percent" id="spots-pct-3">76% vendus</span>
                         </div>
-                        <div class="spots-bar"><div class="spots-fill" style="width:76%; background:linear-gradient(90deg, var(--blue), #2563EB);"></div></div>
+                        <div class="spots-bar"><div class="spots-fill" id="spots-fill-3" style="width:76%; background:linear-gradient(90deg, var(--blue), #2563EB);"></div></div>
                     </div>
                     <div class="pk-guar"><i class="fas fa-shield-alt"></i> Satisfait ou remboursé sous 48h</div>
                     <button class="pk-btn cta-hypnose" style="--hyp:rgba(59,130,246,.55)" onclick="openCheckout('hebdo', 69.99)"><span><i class="fab fa-telegram-plane"></i> J'adhère !</span></button>
@@ -2849,7 +2849,7 @@ async function fetchApiScore(id, dateRaw) {
                         <div class="pk-logo"><span class="pk-logo-ring"></span><div class="logo-pack-detail" id="pack-detail-2"></div><span class="pk-logo-shine"></span><span class="pk-logo-badge"><i class="fas fa-gem"></i></span></div>
                         <div class="pk-head">
                             <div class="pk-name">SM VIP+ <span class="pk-life">à vie</span> <i class="fas fa-crown pk-crown"></i></div>
-                            <div class="pack-subscribers"><i class="fas fa-users"></i> 1,247 membres VIP+</div>
+                            <div class="pack-subscribers"><i class="fas fa-users"></i> 198 membres VIP+</div>
                             <div class="pk-tag"><i class="fas fa-gem"></i> Accès complet</div>
                         </div>
                         <button class="pk-info" onclick="showPackInfo('vip')" aria-label="Détails du pack"><i class="fas fa-info"></i></button>
@@ -2859,9 +2859,9 @@ async function fetchApiScore(id, dateRaw) {
                     <div class="spots-container">
                         <div class="spots-header">
                             <span class="spots-text"><i class="fas fa-exclamation-triangle" style="color:var(--red);"></i> Plus que <strong id="spots-2" style="color:var(--red);">3</strong> places à ce prix !</span>
-                            <span class="spots-percent" style="color:var(--red);">94% vendus</span>
+                            <span class="spots-percent" id="spots-pct-2" style="color:var(--red);">94% vendus</span>
                         </div>
-                        <div class="spots-bar"><div class="spots-fill" style="width:94%; background:linear-gradient(90deg, var(--red), #B71C1C);"></div></div>
+                        <div class="spots-bar"><div class="spots-fill" id="spots-fill-2" style="width:94%; background:linear-gradient(90deg, var(--red), #B71C1C);"></div></div>
                     </div>
                     <div class="pk-guar"><i class="fas fa-shield-alt"></i> Garantie satisfait ou remboursé 7 jours</div>
                     <button class="pk-btn pk-btn-vip cta-hypnose" style="--hyp:rgba(255,193,7,.6)" onclick="openCheckout('vip', 99.99)"><span><i class="fas fa-crown"></i> J'adhère !</span></button>
@@ -12043,6 +12043,8 @@ async function fetchMatchesFromAPI() {
         document.getElementById('role-vip').innerHTML = '<span style="color:var(--blue);">Visiteur</span>';
         startCountdown();
         animateOnlineCount();
+        updatePackSpots();
+        setInterval(updatePackSpots, 60000);
         updateCartBadge();
 
         supabaseClient.auth.getSession().then(async function(result) {
@@ -15208,10 +15210,42 @@ ${aiPrompt}
         }
 
         // Exécuter tout de suite à l'ouverture de la page
-        updateCount(); 
-        
+        updateCount();
+
         // Puis rafraîchir toutes les 8 secondes
         setInterval(updateCount, 8000);
+    }
+
+    // Fait monter progressivement la rareté (places restantes) des 3 packs, de la publication
+    // du combiné du jour (created_at) jusqu'à 1h avant le début des matchs, où il ne reste
+    // plus que 2 à 3 places affichées. Se réinitialise automatiquement à chaque nouveau combiné
+    // publié puisque le calcul repart de son created_at.
+    function updatePackSpots() {
+        var cfg = {
+            1: { min: 2, max: 18 }, // Journalier
+            3: { min: 3, max: 24 }, // Hebdo
+            2: { min: 2, max: 14 }  // VIP+
+        };
+        var ratio = 0.5;
+        var c = window.currentCombined;
+        if (c && c.date && c.time && c.created_at) {
+            var matchDT = new Date(c.date + 'T' + c.time + ':00');
+            var target = new Date(matchDT.getTime() - 60 * 60000);
+            var start = new Date(c.created_at);
+            var span = target - start;
+            ratio = span > 0 ? (Date.now() - start.getTime()) / span : 1;
+            if (ratio < 0) ratio = 0;
+            if (ratio > 1) ratio = 1;
+        }
+        Object.keys(cfg).forEach(function (k) {
+            var p = cfg[k];
+            var remaining = Math.round(p.max - (p.max - p.min) * ratio);
+            if (remaining < p.min) remaining = p.min;
+            var pctSold = Math.round(((p.max - remaining) / p.max) * 100);
+            var spotsEl = document.getElementById('spots-' + k); if (spotsEl) spotsEl.textContent = remaining;
+            var fillEl = document.getElementById('spots-fill-' + k); if (fillEl) fillEl.style.width = pctSold + '%';
+            var pctEl = document.getElementById('spots-pct-' + k); if (pctEl) pctEl.textContent = pctSold + '% vendus';
+        });
     }
 
     function toggleFaq(el) { el.classList.toggle('open'); }
