@@ -1427,6 +1427,27 @@
         @keyframes duelEnvol{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-5px) scale(1.02)}}
         @keyframes duelReflet{0%,60%{background-position:150% 0}100%{background-position:-50% 0}}
         @media (prefers-reduced-motion:reduce){.ai-duel-carte.vip,.vip .ai-duel-img img,.vip .ai-duel-img::after,.ai-duel-cta{animation:none}}
+        #pv-reserve-popup{display:none;position:fixed;inset:0;z-index:10050;background:rgba(0,0,0,.82);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:16px;opacity:0;transition:opacity .25s}
+        #pv-reserve-popup.ouvert{display:flex}
+        #pv-reserve-popup.visible{opacity:1}
+        .pvr-boite{position:relative;width:100%;max-width:380px;padding:28px 22px 22px;border-radius:24px;text-align:center;transform:scale(.92);transition:transform .25s;
+            background:radial-gradient(ellipse 90% 55% at 50% 0%,rgba(255,193,7,.16),transparent 70%),linear-gradient(180deg,#151c32,#0e1426);border:1.5px solid rgba(255,193,7,.4);box-shadow:0 20px 50px rgba(0,0,0,.55)}
+        #pv-reserve-popup.visible .pvr-boite{transform:scale(1)}
+        .pvr-fermer{position:absolute;top:14px;right:14px;width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:#aab3c7;cursor:pointer}
+        .pvr-badge{position:relative;width:74px;height:74px;margin:0 auto 14px}
+        .pvr-badge .vipx-badge{display:block;width:74px;height:74px}
+        .pvr-badge > i{position:absolute;right:-4px;bottom:-2px;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#E11D48;color:#fff;font-size:12px;border:3px solid #10162a}
+        .pvr-boite h3{margin:0 0 10px;font:800 20px/1.25 'Montserrat',sans-serif;color:#fff}
+        .pvr-boite h3 span{color:var(--primary-yellow)}
+        .pvr-boite p{margin:0 0 14px;font:500 13.5px/1.55 'Inter',sans-serif;color:#aab3c7}
+        .pvr-boite p b{color:#FFE082}
+        .pvr-boite ul{list-style:none;margin:0 0 18px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);text-align:left}
+        .pvr-boite li{display:flex;align-items:center;gap:9px;padding:4px 0;font:600 12.5px 'Inter',sans-serif;color:#dfe5f1}
+        .pvr-boite li i{color:var(--primary-yellow);font-size:13px}
+        .pvr-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;border-radius:12px;font:800 15px 'Montserrat',sans-serif;color:#fff;text-decoration:none;box-sizing:border-box}
+        .pvr-btn i{font-size:18px}
+        .pvr-btn.tg{background:#26A5E4;margin-bottom:10px}
+        .pvr-btn.wa{background:#25D366}
         .cta-hint{text-align:center;font-size:13px;font-weight:800;color:#26A5E4;margin-bottom:10px;font-family:'Montserrat',sans-serif;animation:hintBounce 1.2s ease-in-out infinite}
         @keyframes hintBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
         @media (prefers-reduced-motion:reduce){.cta-hypnose,.cta-hypnose::before,.cta-hypnose::after,.cta-hint{animation:none}}
@@ -4301,6 +4322,25 @@ async function fetchApiScore(id, dateRaw) {
         <div class="cta-hint">👇 Dernière étape : clique ici</div>
         <a id="subscribe-bot-link" class="cta-hypnose" href="#" target="_blank" rel="noopener" style="--hyp:rgba(38,165,228,.6);display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:#26A5E4;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;margin-bottom:10px;text-decoration:none;"><span style="display:inline-flex;align-items:center;gap:10px;"><i class="fab fa-telegram-plane" style="font-size:18px;"></i> Démarrer avec notre assistant</span></a>
         <a id="subscribe-whatsapp-link" href="#" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:14px;background:#25D366;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:800;font-family:'Montserrat',sans-serif;cursor:pointer;text-decoration:none;"><i class="fab fa-whatsapp" style="font-size:18px;"></i> Contacter via WhatsApp</a>
+    </div>
+</div>
+
+<!-- POPUP RÉSERVÉ SMVIP+ (bouton « Afficher les prédictions » pour un non-membre) -->
+<div data-nosnippet id="pv-reserve-popup" onclick="if(event.target===this)fermerReserveSmvip()">
+    <div class="pvr-boite">
+        <button class="pvr-fermer" onclick="fermerReserveSmvip()" aria-label="Fermer"><i class="fas fa-times"></i></button>
+        <div class="pvr-badge"><span class="vipx-badge pv-badge-rouge"><img src="logo-dark.png" alt=""><em>VIP+</em></span><i class="fas fa-lock"></i></div>
+        <h3>Réservé aux membres <span>SMVIP+</span></h3>
+        <p>Malheureusement, les prédictions du jour sont une fonctionnalité exclusive aux membres <b>SMVIP+</b>. Rejoins-les pour les débloquer dès maintenant.</p>
+        <ul>
+            <li><i class="fas fa-circle-check"></i>Paris du jour SMVIP+, chaque matin dès 9&nbsp;h</li>
+            <li><i class="fas fa-circle-check"></i>1 combiné score exact chaque soir de match</li>
+            <li><i class="fas fa-circle-check"></i>Analyses IA et Suivi LIVE du combiné</li>
+            <li><i class="fas fa-circle-check"></i>Accès à vie, sans abonnement</li>
+        </ul>
+        <div class="cta-hint">👇 Débloque ton accès ici</div>
+        <a id="pvr-telegram" class="cta-hypnose pvr-btn tg" href="#" target="_blank" rel="noopener" style="--hyp:rgba(38,165,228,.6)"><span style="display:inline-flex;align-items:center;gap:10px;"><i class="fab fa-telegram-plane"></i> Devenir membre via Telegram</span></a>
+        <a id="pvr-whatsapp" class="pvr-btn wa" href="#" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Nous contacter sur WhatsApp</a>
     </div>
 </div>
 
@@ -13502,8 +13542,8 @@ async function autoFetchFinalScores(combined) {
                 o.classList.remove('smvip');
                 var b = document.getElementById('pv-deflouter'); if (b) b.style.display = 'none';
             });
-        } else if (typeof openCheckout === 'function') {
-            openCheckout('vip', 99.99);
+        } else {
+            ouvrirReserveSmvip();
         }
     }
     function fermerParisVip() { clearInterval(window._pvCompteur); document.getElementById('paris-vip-overlay').classList.remove('ouvert'); }
@@ -15546,6 +15586,23 @@ ${aiPrompt}
         var popup = document.getElementById('subscribe-popup');
         popup.style.display = 'flex';
         setTimeout(function () { popup.style.opacity = '1'; popup.firstElementChild.style.transform = 'scale(1)'; }, 10);
+    }
+
+    // Non-membre qui veut voir les prédictions SMVIP+ : fenêtre dédiée, au-dessus
+    // de la page Paris SMVIP+, avec le bot Telegram (pack VIP+ présélectionné) et WhatsApp.
+    function ouvrirReserveSmvip() {
+        var pseudo = (window.currentUserProfile && window.currentUserProfile.pseudo) ? window.currentUserProfile.pseudo : '';
+        var safePseudo = pseudo.replace(/[^A-Za-z0-9]/g, '').slice(0, 32);
+        document.getElementById('pvr-telegram').href = 'https://t.me/' + SALES_BOT_USERNAME + '?start=pack_vip' + (safePseudo ? '__u_' + safePseudo : '');
+        document.getElementById('pvr-whatsapp').href = 'https://wa.me/' + WHATSAPP_ADMIN_NUMBER + '?text=' + encodeURIComponent('Bonjour ! Je souhaite rejoindre SM VIP+ pour accéder aux Paris du jour SMVIP+. Pouvez-vous m\'aider à finaliser mon accès ?');
+        var p = document.getElementById('pv-reserve-popup');
+        p.classList.add('ouvert');
+        requestAnimationFrame(function () { p.classList.add('visible'); });
+    }
+    function fermerReserveSmvip() {
+        var p = document.getElementById('pv-reserve-popup');
+        p.classList.remove('visible');
+        setTimeout(function () { p.classList.remove('ouvert'); }, 250);
     }
 
     function closeSubscribePopup() {
