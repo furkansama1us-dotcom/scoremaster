@@ -13,6 +13,7 @@ const APIFOOTBALL_KEY = process.env.APIFOOTBALL_KEY;
 const CRON_SECRET = process.env.CRON_SECRET;
 const SUPABASE_URL = 'https://pytqquerlktxnfnohwmg.supabase.co';
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB5dHFxdWVybGt0eG5mbm9od21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTkxNzgsImV4cCI6MjA5MDczNTE3OH0.aBEIXwv-uSMLuuokUDJPEIgcAFMOrb6hi2LhZ56Pdng';
 // Nombre de matchs analysés par journée : 100 requêtes/jour au total, et on
 // couvre trois journées (aujourd'hui, J+1, J+2).
 const MAX_MATCHS_PAR_JOUR = 15;
@@ -148,13 +149,26 @@ async function alerterAdmin(sujet, message) {
     } catch (e) { /* une alerte manquée ne doit pas faire échouer le passage */ }
 }
 
+// Admin connecté : jeton Supabase valide et profil is_admin
+async function estAdmin(accessToken) {
+    if (!accessToken) return false;
+    const r = await fetch(SUPABASE_URL + '/auth/v1/user', { headers: { apikey: SUPABASE_ANON_KEY, Authorization: 'Bearer ' + accessToken } });
+    if (!r.ok) return false;
+    const user = await r.json();
+    if (!user || !user.id) return false;
+    const rows = await sbFetch('profiles?id=eq.' + user.id + '&select=is_admin');
+    return !!(rows && rows[0] && rows[0].is_admin);
+}
+
 // GET /api/football?type=refresh-predictions&secret=...&date=AAAA-MM-JJ
 // Met en cache les rencontres de la journée et leurs analyses API-Football.
 // Idempotent : un match déjà analysé n'est jamais redemandé.
 async function refreshPredictions(req, res) {
     if (!APIFOOTBALL_KEY) return res.status(500).json({ error: 'APIFOOTBALL_KEY manquante côté serveur.' });
     if (!SUPABASE_SERVICE_ROLE_KEY) return res.status(500).json({ error: 'SUPABASE_SERVICE_ROLE_KEY manquante.' });
-    if (!CRON_SECRET || req.query.secret !== CRON_SECRET) return res.status(401).json({ error: 'Secret invalide' });
+    // Cron (secret) ou admin connecté (bouton ↻ de l'aperçu Paris SMVIP+)
+    const parCron = CRON_SECRET && req.query.secret === CRON_SECRET;
+    if (!parCron && !(await estAdmin((req.headers.authorization || '').replace(/^Bearer\s+/i, '')))) return res.status(401).json({ error: 'Secret invalide' });
 
     const date = req.query.date || new Date().toISOString().slice(0, 10);
     const resume = { date, appelsApi: 0, analyses: 0, deja: 0, sansCorrespondance: 0, restant: 0, quotaAtteint: false, erreurs: [] };

@@ -13474,6 +13474,8 @@ async function autoFetchFinalScores(combined) {
     async function genererParisVipMaintenant(btn) {
         btn.disabled = true; btn.innerHTML = '<i class="fas fa-rotate fa-spin"></i>';
         try {
+            // Prédictions IA du jour d'abord : sans elles, aucun match n'est éligible
+            try { await adminApiCall('/api/football?type=refresh-predictions&date=' + pvDateParis(), {}); } catch (e) { console.warn('Prédictions :', e.message); }
             var r = await adminApiCall('/api/publish', { action: 'paris-vip' });
             var n = (r.generation && r.generation.crees) || 0, c = (r.correction && r.correction.corriges) || 0;
             showToast(r.generation && r.generation.deja ? 'Paris du jour déjà choisis' + (c ? ' · ' + c + ' corrigé(s)' : '') : (n + ' pari(s) choisi(s)' + (c ? ' · ' + c + ' corrigé(s)' : '')));
