@@ -1357,8 +1357,9 @@ async function handleCampagneRelance(req, res) {
 // choisi après coup : l'historique reflète ce qui a réellement été proposé.
 // ------------------------------------------------------------
 const PV_COTE_MIN = 1.5, PV_COTE_MAX = 2.0, PV_PAR_JOUR = 3;
+const PV_COTE_MIN_SOUPLE = 1.35, PV_COTE_MAX_SOUPLE = 2.3;
 
-function pvCandidats(bets, r, p) {
+function pvCandidats(bets, r, p, souple) {
     const val = (id, v) => { const b = bets.find(x => x.id === id); const e = b && (b.values || []).find(y => String(y.value) === v); return e ? parseFloat(e.odd) : null; };
     const plus = String(p.under_over || '').startsWith('+'), moins = String(p.under_over || '').startsWith('-');
     const h = p.home_prob || 0, n = p.draw_prob || 0, a = p.away_prob || 0;
@@ -1373,7 +1374,10 @@ function pvCandidats(bets, r, p) {
         { marche: 'dcx2', libelle: 'Nul ou ' + r.away, cote: val(12, 'Draw/Away'), score: (a + n - 62) / 8 },
         { marche: 'dc12', libelle: r.home + ' ou ' + r.away, cote: val(12, 'Home/Away'), score: (h + a - 72) / 8 }
     ];
-    return liste.filter(c => c.cote && c.cote >= PV_COTE_MIN && c.cote <= PV_COTE_MAX && c.score > 0);
+    // Mode souple (repli) : fourchette de cotes élargie et marchés neutres acceptés,
+    // pour qu'une journée calme ait quand même sa sélection.
+    const min = souple ? PV_COTE_MIN_SOUPLE : PV_COTE_MIN, max = souple ? PV_COTE_MAX_SOUPLE : PV_COTE_MAX;
+    return liste.filter(c => c.cote && c.cote >= min && c.cote <= max && (souple ? c.score >= 0 : c.score > 0));
 }
 
 // Rencontres déjà utilisées dans un combiné score exact de cette date : exclues des paris VIP.
@@ -1396,7 +1400,7 @@ async function genererParisVip(now) {
         .sort((x, y) => (prioriteLigue(x.league_code) - prioriteLigue(y.league_code)) || (Date.parse(x.kickoff) - Date.parse(y.kickoff)));
     const preds = await sbFetch('ai_predictions?fixture_date=eq.' + now.dateStr + '&select=*') || [];
     const dansCombine = await matchsDesCombines(now.dateStr);
-    const lignes = [];
+    const lignes = [], vus = [];
     for (const r of rencontres.slice(0, 8)) {
         if (lignes.length >= PV_PAR_JOUR) break;
         if (dansCombine(r)) continue;
@@ -1412,11 +1416,24 @@ async function genererParisVip(now) {
         }
         if (!o || !o.bookmakers || !o.bookmakers.length) continue;
         const bk = BOOKMAKERS_PREFERES.map(id => o.bookmakers.find(b => b.id === id)).find(Boolean) || o.bookmakers[0];
+        vus.push({ r, p, bk });
         const choix = pvCandidats(bk.bets || [], r, p).sort((x, y) => (y.score - x.score) || (Math.abs(x.cote - 1.75) - Math.abs(y.cote - 1.75)))[0];
         if (!choix) continue;
         lignes.push({ fixture_id: r.fixture_id, fixture_date: now.dateStr, kickoff: r.kickoff, home: r.home, away: r.away, ligue: r.league_name || null,
             marche: choix.marche, libelle: choix.libelle, cote: choix.cote, bookmaker: bk.name || null });
     }
+    // Repli sans appel API supplémentaire : les cotes déjà lues sont réexaminées
+    // avec des critères assouplis pour compléter la sélection du jour.
+    for (const { r, p, bk } of vus) {
+        if (lignes.length >= PV_PAR_JOUR) break;
+        if (lignes.some(l => l.fixture_id === r.fixture_id)) continue;
+        const choix = pvCandidats(bk.bets || [], r, p, true).sort((x, y) => (y.score - x.score) || (Math.abs(x.cote - 1.75) - Math.abs(y.cote - 1.75)))[0];
+        if (!choix) continue;
+        lignes.push({ fixture_id: r.fixture_id, fixture_date: now.dateStr, kickoff: r.kickoff, home: r.home, away: r.away, ligue: r.league_name || null,
+            marche: choix.marche, libelle: choix.libelle, cote: choix.cote, bookmaker: bk.name || null });
+        bilan.repli = (bilan.repli || 0) + 1;
+    }
+    if (!lignes.length) bilan.aucunCandidat = { rencontres: rencontres.length, predictions: preds.length, cotesLues: vus.length };
     for (const l of lignes) { await sbFetch('vip_paris', { method: 'POST', body: JSON.stringify([l]) }); bilan.crees++; }
     return bilan;
 }
@@ -1512,7 +1529,25 @@ async function liveCombine(now) {
 async function parisVipAutomatique(now) {
     const bilan = { correction: await corrigerParisVip() };
     try { bilan.analyses = await analysesAutomatiques(now); } catch (e) { bilan.analyses = { erreur: String(e) }; }
-    if (now.minutes >= 9 * 60) bilan.generation = await genererParisVip(now);
+    if (now.minutes >= 9 * 60) {
+        const deja = await sbFetch('vip_paris?fixture_date=eq.' + now.dateStr + '&select=id&limit=1') || [];
+        if (deja.length) { bilan.generation = { deja: true }; return bilan; }
+        // Prédictions IA du jour d'abord (sans elles aucun match n'est éligible).
+        // Si elles viennent de consommer des appels API-Football (limite 10/min),
+        // la sélection est faite au passage suivant du cron.
+        try {
+            const r = await fetch('https://scoremaster.fr/api/football?type=refresh-predictions&date=' + now.dateStr + '&secret=' + encodeURIComponent(CRON_SECRET), { signal: AbortSignal.timeout(30000) });
+            bilan.predictions = await r.json();
+        } catch (e) { bilan.predictions = { erreur: String(e) }; }
+        if (bilan.predictions && bilan.predictions.appelsApi > 0) bilan.generation = { reporte: 'prédictions mises à jour, sélection au prochain passage' };
+        else bilan.generation = await genererParisVip(now);
+        // Toujours rien à midi : l'admin est prévenu une fois sur Telegram.
+        if (!bilan.generation.crees && !bilan.generation.reporte && !bilan.generation.limite && now.minutes >= 12 * 60) {
+            const marque = 'PARIS SMVIP+ ' + now.dateStr;
+            const prevenu = await sbFetch('telegram_queue?select=id&message=like.' + encodeURIComponent('*' + marque + '*') + '&limit=1').catch(() => []) || [];
+            if (!prevenu.length) await sbFetch('telegram_queue', { method: 'POST', body: JSON.stringify([{ message: '⚠️ ' + marque + ' : aucune sélection trouvée.\n' + JSON.stringify(bilan.generation).slice(0, 300) + '\nBouton ↻ de la page Paris SMVIP+ pour relancer.' }]) }).catch(() => {});
+        }
+    }
     return bilan;
 }
 
