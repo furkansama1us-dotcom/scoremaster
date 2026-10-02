@@ -3478,9 +3478,7 @@ async function fetchApiScore(id, dateRaw) {
          réellement atteint par le score final — chaque ligne modifiée reste marquée
          « PARI MODIFIÉ » pour qu'elle ne soit jamais confondue avec le pari réel. -->
     <div class="admin-tab-content" id="admin-tab-laboia">
-        <div class="admin-section">
-            <div class="admin-section-title" style="font-size:16px; margin-bottom:8px;"><i class="fas fa-flask"></i> Labo IA</div>
-            <p style="font-size:13px; color:var(--text-gray); margin-bottom:16px; line-height:1.5;">Usage interne uniquement — jamais visible par les abonnés. Reprend l'Historique Paris SMVIP+ et recalcule le seuil de buts réellement atteint sur les paris perdus, pour tester la capacité de l'IA à identifier un marché gagnant après coup. Chaque ligne recalculée est marquée <b>PARI MODIFIÉ</b>.</p>
+        <div class="admin-section" style="padding:0;">
             <div id="labo-ia-container"><div class="pv-vide"><i class="fas fa-spinner fa-spin"></i> Chargement…</div></div>
         </div>
     </div>
@@ -9460,7 +9458,7 @@ async function loadSmPointsHistory() {
         var aVenir = jour.filter(function (p) { return Date.parse(p.kickoff) > Date.now(); });
         if (aVenir.length) html += '<div class="pv-compteur pv-apparait"><span><i class="fas fa-stopwatch"></i> ' + (aVenir.length === jour.length ? 'Premier match dans' : 'Prochain match dans') + '</span><b id="labo-compteur" data-cible="' + aVenir[0].kickoff + '">--:--:--</b></div>';
         html += jour.length ? jour.map(function (p) { return pvCarte(p, true); }).join('') : '<div class="pv-vide">Les paris du jour sont choisis chaque matin à partir de 9 h.</div>';
-        if (histo.length) html += '<div class="pv-titre"><small>SUIVI</small><b>Historique</b> <span style="font-size:11px;font-weight:700;color:#FF9800;">(recalculé — Labo IA)</span></div>' + histo.map(laboCarte).join('');
+        if (histo.length) html += '<div class="pv-titre"><small>SUIVI</small><b>Historique</b></div>' + histo.map(laboCarte).join('');
         html += '<div class="pv-titre pv-apparait"><small>ANALYSES IA</small><b>Analyses des <span>matchs passés</span></b></div><div id="labo-analyses"></div>';
         box.innerHTML = html;
         demarrerCompteurLabo();
